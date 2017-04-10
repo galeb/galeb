@@ -20,14 +20,14 @@ import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
 
 import static com.jayway.restassured.RestAssured.with;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Ignore
 public class StepDefs {
 
@@ -46,6 +46,7 @@ public class StepDefs {
     @PostConstruct
     public void init() {
         backendService.setBackendPort(backendPort).start();
+        LOGGER.info(backendService);
     }
 
     @Before
@@ -62,7 +63,7 @@ public class StepDefs {
     @Given("^a http client$")
     public void aHttpClient() throws Throwable {
         request = with().config(restAssuredConfig);
-        LOGGER.info("Using "+RestAssured.class.getName());
+        LOGGER.info("Using " + RestAssured.class.getName());
     }
 
     @When("^send (.+) (.+)$")

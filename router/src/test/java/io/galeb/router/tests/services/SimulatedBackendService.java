@@ -4,9 +4,9 @@ import io.undertow.Undertow;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.boot.test.context.TestComponent;
+import org.springframework.stereotype.Service;
 
-@TestComponent
+@Service
 public class SimulatedBackendService {
 
     private static final Log LOGGER = LogFactory.getLog(SimulatedBackendService.class);

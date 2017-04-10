@@ -11,6 +11,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.galeb.router.Application;
 import io.galeb.router.tests.services.SimulatedBackendService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,7 +20,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootContextLoader;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
@@ -27,7 +29,10 @@ import java.net.URI;
 import static com.jayway.restassured.RestAssured.with;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ContextConfiguration(
+        classes = { Application.class },
+        loader = SpringBootContextLoader.class
+)
 @Ignore
 public class StepDefs {
 
@@ -46,7 +51,6 @@ public class StepDefs {
     @PostConstruct
     public void init() {
         backendService.setBackendPort(backendPort).start();
-        LOGGER.info(backendService);
     }
 
     @Before

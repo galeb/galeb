@@ -6,9 +6,11 @@ package io.galeb.router.configurations;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.zalando.boot.etcd.EtcdClient;
 
 @Configuration
+@Profile({ "production" })
 public class EtcdConfiguration {
 
     @Bean("etcdClient")

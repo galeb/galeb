@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Properties>
+    <Property name="LOGLEVEL">INFO</Property>
+    <Property name="hostname">${env:HOSTNAME}</Property>
+  </Properties>
+  <Appenders>
+    <Socket name="Syslog" host="127.0.0.1" port="514" protocol="UDP">
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %m\ttags: galeb,app%n"/>
+    </Socket>
+  </Appenders>
+  <Loggers>
+    <Root level="trace">
+      <AppenderRef ref="Syslog" level="${env:LOGLEVEL}"/>
+    </Root>
+  </Loggers>
+</Configuration>

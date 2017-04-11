@@ -25,6 +25,7 @@ public class PoolHandler implements HttpHandler {
     private ProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
+    private final LoadBalancingProxyClient proxyClient = new LoadBalancingProxyClient().setConnectionsPerThread(2000);
 
     public PoolHandler(final ExternalData externalData) {
         this.data = externalData;
@@ -51,8 +52,7 @@ public class PoolHandler implements HttpHandler {
                 loaded.set(true);
                 if (poolname != null) {
                     logger.info("creating pool " + poolname);
-                    final LoadBalancingProxyClient proxyClient = new LoadBalancingProxyClient().setConnectionsPerThread(2000);
-                    addTargets(proxyClient);
+                    addTargets();
                     proxyHandler = new ProxyHandler(proxyClient, ResponseCodeHandler.HANDLE_500);
                     proxyHandler.handleRequest(exchange);
                     return;
@@ -62,10 +62,15 @@ public class PoolHandler implements HttpHandler {
         };
     }
 
-    private void addTargets(final LoadBalancingProxyClient proxyClient) {
+    private void addTargets() {
         if (poolname != null) {
             final String poolNameKey = POOLS_KEY + "/" + poolname + "/targets";
-            data.listFrom(poolNameKey).stream().map(EtcdNode::getValue).map(URI::create).forEach(proxyClient::addHost);
+            for (EtcdNode etcdNode : data.listFrom(poolNameKey)) {
+                String value = etcdNode.getValue();
+                URI uri = URI.create(value);
+                proxyClient.addHost(uri);
+                logger.info("added target " + value);
+            }
         }
     }
 }

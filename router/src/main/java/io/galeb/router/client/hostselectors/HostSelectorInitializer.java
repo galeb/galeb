@@ -9,11 +9,15 @@ import io.undertow.server.HttpServerExchange;
 
 public class HostSelectorInitializer implements HostSelector {
 
-    private HostSelector hostSelector = new LeastConnHostSelector();
+    private HostSelector hostSelector = new RoundRobinHostSelector();
 
     public HostSelectorInitializer setHostSelector(final HostSelector hostSelector) {
         this.hostSelector = hostSelector;
         return this;
+    }
+
+    public HostSelector getHostSelector() {
+        return hostSelector;
     }
 
     @Override

@@ -1,12 +1,17 @@
 package io.galeb.router.handlers;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
+import io.galeb.router.client.hostselectors.HostSelectorInitializer;
 import io.galeb.router.services.ExternalData;
+import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import io.undertow.util.Headers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -28,7 +33,12 @@ public class PoolHandler implements HttpHandler {
     private ExtendedProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient().setConnectionsPerThread(2000);
+    private HostSelectorInitializer hostSelectorInicializer = new HostSelectorInitializer();
+    private final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(), exchange -> {
+                                                                        // we always create a new connection for upgrade requests
+                                                                        return exchange.getRequestHeaders().contains(Headers.UPGRADE);
+                                                                    }, hostSelectorInicializer)
+                                                                    .setConnectionsPerThread(2000);
 
     public PoolHandler(final ApplicationContext context, final ExternalData externalData) {
         this.context = context;
@@ -57,14 +67,31 @@ public class PoolHandler implements HttpHandler {
                 if (poolname != null) {
                     logger.info("creating pool " + poolname);
                     addTargets();
+                    defineHostSelector();
                     proxyHandler = context.getBean(ExtendedProxyHandler.class);
-                    proxyHandler.setProxyClientAndDefaultHandler(proxyClient, ResponseCodeHandler.HANDLE_500);
+                    proxyHandler.setProxyClientAndDefaultHandler(proxyClient, badGatewayExchange -> badGatewayExchange.setStatusCode(502));
                     proxyHandler.handleRequest(exchange);
                     return;
                 }
                 ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
             }
         };
+    }
+
+    private void defineHostSelector() {
+        if (poolname != null) {
+            final String hostSelectorKeyName = POOLS_KEY + "/" + poolname + "/loadbalance";
+            final EtcdNode hostSelectorNode = data.node(hostSelectorKeyName);
+            final HostSelector hostSelector;
+            if (hostSelectorNode.getKey() != null) {
+                String hostSelectorName = hostSelectorNode.getValue();
+                hostSelector = HostSelectorAlgorithm.valueOf(hostSelectorName).getHostSelector();
+                hostSelectorInicializer.setHostSelector(hostSelector);
+            } else {
+                hostSelector = hostSelectorInicializer.getHostSelector();
+            }
+            logger.info("[Pool " + poolname + "] HostSelector: " + hostSelector.getClass().getSimpleName());
+        }
     }
 
     private void addTargets() {

@@ -1,5 +1,6 @@
 package io.galeb.router.handlers;
 
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.services.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -8,6 +9,7 @@ import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.zalando.boot.etcd.EtcdNode;
 
 import java.net.URI;
@@ -21,13 +23,15 @@ public class PoolHandler implements HttpHandler {
 
     private final HttpHandler defaultHandler;
     private final ExternalData data;
+    private final ApplicationContext context;
 
-    private ProxyHandler proxyHandler = null;
+    private ExtendedProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final LoadBalancingProxyClient proxyClient = new LoadBalancingProxyClient().setConnectionsPerThread(2000);
+    private final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient().setConnectionsPerThread(2000);
 
-    public PoolHandler(final ExternalData externalData) {
+    public PoolHandler(final ApplicationContext context, final ExternalData externalData) {
+        this.context = context;
         this.data = externalData;
         this.defaultHandler = buildPoolHandler();
     }
@@ -53,7 +57,8 @@ public class PoolHandler implements HttpHandler {
                 if (poolname != null) {
                     logger.info("creating pool " + poolname);
                     addTargets();
-                    proxyHandler = new ProxyHandler(proxyClient, ResponseCodeHandler.HANDLE_500);
+                    proxyHandler = context.getBean(ExtendedProxyHandler.class);
+                    proxyHandler.setProxyClientAndDefaultHandler(proxyClient, ResponseCodeHandler.HANDLE_500);
                     proxyHandler.handleRequest(exchange);
                     return;
                 }

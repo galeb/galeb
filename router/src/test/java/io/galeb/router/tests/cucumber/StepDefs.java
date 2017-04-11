@@ -38,17 +38,18 @@ import static com.jayway.restassured.RestAssured.with;
 @Ignore
 public class StepDefs {
 
-    private static final Log LOGGER = LogFactory.getLog(StepDefs.class);
+    private final Log logger = LogFactory.getLog(this.getClass());
 
-    private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
-    private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
-    private int backendPort = 8080;
+    private final RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
+    private final RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
+    private final int backendPort = 8080;
 
     private RequestSpecification request;
     private ValidatableResponse response;
 
     @Autowired
     private SimulatedBackendService backendService;
+    private String hostName = "test.com";
 
     @PostConstruct
     public void init() {
@@ -68,20 +69,20 @@ public class StepDefs {
 
     @Given("^a http client$")
     public void aHttpClient() throws Throwable {
-        request = with().config(restAssuredConfig);
-        LOGGER.info("Using " + RestAssured.class.getName());
+        request = with().config(restAssuredConfig).header("host", hostName);
+        logger.info("Using " + RestAssured.class.getName());
     }
 
     @When("^send (.+) (.+)$")
     public void sendMethodPath(String method, String path) throws Throwable {
-        URI fullUrl = URI.create(path);
+        final String fullUrlStr = "http://127.0.0.1:8000" + path;
+        URI fullUrl = URI.create(fullUrlStr);
         switch (method) {
         case "GET":
             response = request.get(fullUrl).then();
             break;
         case "POST":
-            final String fullUrlStr="http://127.0.0.1:" + backendPort + path;
-            response = request.post(URI.create(fullUrlStr)).then();
+            response = request.post(fullUrl).then();
             break;
         case "PUT":
             response = request.put(fullUrl).then();

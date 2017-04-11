@@ -9,19 +9,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimulatedBackendService {
 
-    private static final Log LOGGER = LogFactory.getLog(SimulatedBackendService.class);
+    private final Log logger = LogFactory.getLog(this.getClass());
 
     private Undertow undertow;
 
     public SimulatedBackendService setBackendPort(int backendPort) {
-        LOGGER.info(this.getClass().getSimpleName() + ": using " + backendPort + "/tcp port");
+        logger.info(this.getClass().getSimpleName() + ": using " + backendPort + "/tcp port");
         undertow = Undertow.builder().addHttpListener(backendPort, "0.0.0.0", ResponseCodeHandler.HANDLE_200).build();
         return this;
     }
 
     public void start() {
         if (undertow != null) {
-            LOGGER.info(this.getClass().getSimpleName() + " started");
+            logger.info(this.getClass().getSimpleName() + " started");
             undertow.start();
         }
     }

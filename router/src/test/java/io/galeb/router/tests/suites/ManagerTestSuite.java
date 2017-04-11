@@ -12,7 +12,4 @@ import org.junit.runners.Suite;
 })
 public class ManagerTestSuite {
 
-    @AfterClass
-    public static void after() {
-    }
 }

@@ -74,7 +74,8 @@ public class ExternalData {
 
     public EtcdNode node(String key, boolean recursive, GenericNode def) {
         try {
-            return client.get(key, recursive).getNode();
+            final EtcdNode node = client.get(key, recursive).getNode();
+            return node != null ? node : def.get();
         } catch (Exception e) {
             logger.error(e.getMessage());
             return def.get();

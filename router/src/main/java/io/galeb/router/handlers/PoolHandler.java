@@ -29,21 +29,21 @@ public class PoolHandler implements HttpHandler {
     private final HttpHandler defaultHandler;
     private final ExternalData data;
     private final ApplicationContext context;
+    private final ExtendedLoadBalancingProxyClient proxyClient;
 
     private ExtendedProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private HostSelectorInitializer hostSelectorInicializer = new HostSelectorInitializer();
-    private final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(), exchange -> {
-                                                                        // we always create a new connection for upgrade requests
-                                                                        return exchange.getRequestHeaders().contains(Headers.UPGRADE);
-                                                                    }, hostSelectorInicializer)
-                                                                    .setConnectionsPerThread(2000);
+    private final HostSelectorInitializer hostSelectorInicializer = new HostSelectorInitializer();
 
     public PoolHandler(final ApplicationContext context, final ExternalData externalData) {
         this.context = context;
         this.data = externalData;
         this.defaultHandler = buildPoolHandler();
+        this.proxyClient =
+                new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
+                        exchange -> exchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelectorInicializer)
+                    .setConnectionsPerThread(2000);
     }
 
     @Override

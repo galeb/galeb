@@ -17,14 +17,21 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
+
+        <undertow.version>1.4.12.Final</undertow.version>
+        <zalando-boot-etcd-starter.version>2.3</zalando-boot-etcd-starter.version>
         <org.apache.logging.log4j.version>2.8.1</org.apache.logging.log4j.version>
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
-        <metrics.version>3.2.2</metrics.version>
-        <info-cukes.version>1.2.4</info-cukes.version>
-        <com.jayway.restassured.version>2.5.0</com.jayway.restassured.version>
-        <mockito.version>1.10.19</mockito.version>
         <commons-lang3.version>3.4</commons-lang3.version>
-        <java-statsd-client.version>3.1.0</java-statsd-client.version>
+        <disruptor.version>3.3.6</disruptor.version>
+        <metrics.version>3.2.2</metrics.version>
+        <slf4j.version>1.7.19</slf4j.version>
+        <jodd.version>3.8.1</jodd.version>
+        <guava.version>21.0</guava.version>
+
+        <info-cukes.version>1.2.4</info-cukes.version>
+        <mockito.version>1.10.19</mockito.version>
+        <asynchttpclient.version>2.1.0-alpha8</asynchttpclient.version>
     </properties>
 
     <dependencies>
@@ -65,32 +72,32 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.19</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <version>1.4.11.Final</version>
+            <version>${undertow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jodd</groupId>
             <artifactId>jodd-core</artifactId>
-            <version>3.8.1</version>
+            <version>${jodd.version}</version>
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>zalando-boot-etcd-starter</artifactId>
-            <version>2.3</version>
+            <version>${zalando-boot-etcd-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>21.0</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>com.lmax</groupId>
             <artifactId>disruptor</artifactId>
-            <version>3.3.6</version>
+            <version>${disruptor.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -134,21 +141,27 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>json-schema-validator</artifactId>
-            <version>${com.jayway.restassured.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.restassured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>${com.jayway.restassured.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>${asynchttpclient.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>2.1.0-alpha8</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>2.1.0-alpha8</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -14,9 +14,8 @@ import java.util.stream.Collectors;
 
 import static io.galeb.router.consistenthash.HashAlgorithm.HashType.SIP24;
 
-public class HashSourceIpHostSelector implements HostSelector {
+public class HashUriPathHostSelector implements HostSelector {
 
-    private static final boolean IGNORE_XFORWARDED_FOR = Boolean.valueOf(System.getProperty("IGNORE_XFORWARDED_FOR", "false"));
     private static final int NUM_REPLICAS = 1;
 
     private final HashAlgorithm hashAlgorithm = new HashAlgorithm(SIP24);
@@ -35,29 +34,6 @@ public class HashSourceIpHostSelector implements HostSelector {
     }
 
     private String getKey(final HttpServerExchange exchange) {
-        String aSourceIP;
-        String defaultSourceIp = "127.0.0.1";
-        String httpHeaderXrealIp = "X-Real-IP";
-        String httpHeaderXForwardedFor = "X-Forwarded-For";
-
-        if (exchange == null) {
-            return defaultSourceIp;
-        }
-
-        if (IGNORE_XFORWARDED_FOR) {
-            aSourceIP = exchange.getSourceAddress().getHostString();
-        } else {
-            aSourceIP = exchange.getRequestHeaders().getFirst(httpHeaderXrealIp);
-            if (aSourceIP!=null) {
-                return aSourceIP;
-            }
-            aSourceIP = exchange.getRequestHeaders().getFirst(httpHeaderXForwardedFor);
-            if (aSourceIP!=null) {
-                return aSourceIP.contains(",") ? aSourceIP.split(",")[0] : aSourceIP;
-            }
-            aSourceIP = exchange.getSourceAddress().getHostString();
-        }
-
-        return aSourceIP!=null ? aSourceIP : defaultSourceIp;
+        return exchange.getRelativePath();
     }
 }

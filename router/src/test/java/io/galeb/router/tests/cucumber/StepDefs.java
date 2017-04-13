@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import static io.galeb.router.tests.backend.SimulatedBackendService.ResponseBehavior.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -77,9 +76,9 @@ public class StepDefs {
         logger.info("request time (ms): " + requestTime);
     }
 
-    @Given("^a (.+) host request$")
-    public void withHostRequester(String expression) throws Throwable {
-        backendService.setResponseBehavior(FASTTER).start();
+    @Given("^a (.+) host request to (.+) backend$")
+    public void withHostRequester(String expression, String backendBehavior) throws Throwable {
+        backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
         this.headers.add("host", ("valid".equals(expression) ? "test.com" : expression));
     }
 
@@ -106,4 +105,5 @@ public class StepDefs {
     public void bodyIs(String body) throws Throwable {
         assertThat(response.getResponseBody(), equalTo(body));
     }
+
 }

@@ -72,6 +72,10 @@ public class PathGlobHandler implements HttpHandler {
         }
     }
 
+    public ConcurrentMap<PathOrdered, HttpHandler> getPaths() {
+        return paths;
+    }
+
     public synchronized boolean contains(final String path) {
         return paths.containsKey(new PathOrdered(path, 0));
     }
@@ -97,16 +101,16 @@ public class PathGlobHandler implements HttpHandler {
         paths.clear();
     }
 
-    private static class PathOrdered implements Comparable<PathOrdered> {
+    public static class PathOrdered implements Comparable<PathOrdered> {
         private final String path;
         private final int order;
 
-        PathOrdered(String path, int order) {
+        public PathOrdered(String path, int order) {
             this.path = path;
             this.order = order;
         }
 
-        String getPath() {
+        public String getPath() {
             return path;
         }
 

@@ -16,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.zalando.boot.etcd.EtcdNode;
 
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
@@ -58,6 +59,10 @@ public class PoolHandler implements HttpHandler {
         return this;
     }
 
+    public String getPoolname() {
+        return poolname;
+    }
+
     private HttpHandler buildPoolHandler() {
         return exchange -> {
             synchronized (loaded) {
@@ -68,7 +73,9 @@ public class PoolHandler implements HttpHandler {
                     logger.info("[Pool " + poolname + "] HostSelector: " + hostSelector.getClass().getSimpleName());
                     final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
                                         exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
-                                    .setConnectionsPerThread(2000);
+                                    .setTtl(Math.toIntExact(TimeUnit.HOURS.toMillis(1))) // TODO: property
+                                    .setConnectionsPerThread(2000) // TODO: property
+                                    .setSoftMaxConnectionsPerThread(2000); // TODO: property
                     addTargets(proxyClient);
                     proxyHandler = context.getBean(ExtendedProxyHandler.class)
                             .setProxyClientAndDefaultHandler(proxyClient, badGatewayHandler());

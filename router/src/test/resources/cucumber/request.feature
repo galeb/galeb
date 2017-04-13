@@ -9,4 +9,4 @@ Feature: Request Support
   Scenario: Sending GET to / with invalid host header
     Given a invalid host request to FASTTER backend
     When Do GET /
-    Then the response status is 500
+    Then the response status is 503

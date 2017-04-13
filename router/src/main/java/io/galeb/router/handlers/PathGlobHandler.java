@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.galeb.router.configurations.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.Headers;
 import jodd.util.Wildcard;
 import org.slf4j.Logger;
@@ -23,11 +23,7 @@ public class PathGlobHandler implements HttpHandler {
 
     private final ConcurrentMap<PathOrdered, HttpHandler> paths = new ConcurrentSkipListMap<>();
 
-    private HttpHandler defaultHandler = ResponseCodeHandler.HANDLE_500;
-
-    public PathGlobHandler(HttpHandler defaultHandler) {
-        this.defaultHandler = defaultHandler;
-    }
+    private HttpHandler defaultHandler = ResponseCodeOnError.RULE_PATH_NOT_FOUND.getHandler();
 
     private HttpHandler pathGlobHandlerCheck() {
         return exchange -> {
@@ -88,7 +84,7 @@ public class PathGlobHandler implements HttpHandler {
         return paths.remove(new PathOrdered(path, 0)) == null;
     }
 
-    public HttpHandler setDefaultHandler(HttpHandler defaultHandler) {
+    public PathGlobHandler setDefaultHandler(HttpHandler defaultHandler) {
         this.defaultHandler = defaultHandler;
         return this;
     }

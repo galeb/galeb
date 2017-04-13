@@ -1,8 +1,8 @@
 package io.galeb.router.services;
 
-import io.galeb.router.Application;
 import io.galeb.router.client.etcd.EtcdClient;
 import io.galeb.router.client.etcd.EtcdGenericNode;
+import io.galeb.router.configurations.SystemEnvs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class ExternalData {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final String ROOT_KEY         = "/";
-    public static final String PREFIX_KEY       = ROOT_KEY + Application.PREFIX;
+    public static final String PREFIX_KEY       = ROOT_KEY + SystemEnvs.CLUSTER_ID.getValue();
     public static final String VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
     public static final String POOLS_KEY        = PREFIX_KEY + "/pools";
 

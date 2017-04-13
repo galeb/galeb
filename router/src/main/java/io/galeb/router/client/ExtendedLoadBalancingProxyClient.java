@@ -6,6 +6,7 @@ package io.galeb.router.client;
 
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
+import io.galeb.router.configurations.ResponseCodeOnError;
 import io.undertow.UndertowLogger;
 import io.undertow.client.ClientConnection;
 import io.undertow.client.ClientStatistics;
@@ -17,7 +18,6 @@ import io.undertow.server.handlers.proxy.*;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.AttachmentList;
 import io.undertow.util.CopyOnWriteMap;
-import io.undertow.util.HttpString;
 import org.xnio.OptionMap;
 import org.xnio.ssl.XnioSsl;
 
@@ -219,7 +219,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
 
         final Host host = selectHost(exchange);
         if (host == null) {
-            exchange.getResponseHeaders().add(HttpString.tryFromString("X-Error-Message"), "couldNotResolveBackend");
+            exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.COULD_NOT_RESOLVE_BACKEND.getMessage());
             callback.couldNotResolveBackend(exchange);
         } else {
             exchange.addToAttachmentList(ATTEMPTED_HOSTS, host);
@@ -265,6 +265,9 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
             }
         }
         int host = hostSelector.selectHost(hosts, exchange);
+        if (host < 0) {
+            return null;
+        }
 
         final int startHost = host; //if the all hosts have problems we come back to this one
         Host full = null;
@@ -414,7 +417,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
         @Override
         public void queuedRequestFailed(HttpServerExchange exchange) {
             exchange.removeAttachment(HostSelector.REAL_DEST);
-            exchange.getResponseHeaders().add(HttpString.tryFromString("X-Error-Message"), "queuedRequestFailed");
+            exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.QUEUED_REQUEST_FAILED.getMessage());
             callback.queuedRequestFailed(exchange);
         }
 
@@ -428,7 +431,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
         @Override
         public void couldNotResolveBackend(HttpServerExchange exchange) {
             exchange.removeAttachment(HostSelector.REAL_DEST);
-            exchange.getResponseHeaders().add(HttpString.tryFromString("X-Error-Message"), "couldNotResolveBackend");
+            exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.COULD_NOT_RESOLVE_BACKEND.getMessage());
             callback.couldNotResolveBackend(exchange);
         }
         

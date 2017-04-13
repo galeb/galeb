@@ -2,6 +2,8 @@ package io.galeb.router.handlers;
 
 import io.galeb.router.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.completionListeners.StatsdCompletionListener;
+import io.galeb.router.configurations.ResponseCodeOnError;
+import io.galeb.router.configurations.SystemEnvs;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -13,16 +15,14 @@ import java.util.Map;
 
 public class RootHandler implements HttpHandler {
 
-    private static final int SERVICE_UNAVAILABLE = 503;
-
     private final Log logger = LogFactory.getLog(this.getClass());
 
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
 
-    private boolean enableAccessLog = false; // TODO: property
-    private boolean enableStatsd    = true;  // TODO: property
+    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnvs.ENABLE_ACCESSLOG.getValue());
+    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnvs.ENABLE_STATSD.getValue());
 
     public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,
@@ -41,7 +41,7 @@ public class RootHandler implements HttpHandler {
 
             nameVirtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {
-            exchange.setStatusCode(SERVICE_UNAVAILABLE);
+            ResponseCodeOnError.ROOT_HANDLER_FAILED.getHandler().handleRequest(exchange);
         }
     }
 

@@ -1,10 +1,10 @@
 package io.galeb.router.handlers;
 
+import io.galeb.router.configurations.ResponseCodeOnError;
 import io.galeb.router.services.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -27,7 +27,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     public synchronized void handleRequest(HttpServerExchange exchange) throws Exception {
         if (!data.exist(VIRTUALHOSTS_KEY)) {
             logger.error(VIRTUALHOSTS_KEY + " not found");
-            ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
+            ResponseCodeOnError.ETCD_VIRTUALHOSTS_PATH_NOT_FOUND.getHandler().handleRequest(exchange);
             return;
         }
         final String hostName = exchange.getHostName();
@@ -37,7 +37,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
             nameVirtualHostHandler.addHost(hostName, ((RuleTargetHandler) context.getBean("ruleTargetHandler")).setVirtualHost(hostName));
             nameVirtualHostHandler.handleRequest(exchange);
         } else {
-            ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
+            ResponseCodeOnError.VIRTUALHOST_NOT_FOUND.getHandler().handleRequest(exchange);
         }
     }
 

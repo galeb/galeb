@@ -1,11 +1,11 @@
 package io.galeb.router.handlers;
 
 import io.galeb.router.client.etcd.EtcdGenericNode;
+import io.galeb.router.configurations.ResponseCodeOnError;
 import io.galeb.router.services.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -69,7 +69,7 @@ public class RuleTargetHandler implements HttpHandler {
                 if (!pathGlobHandler.getPaths().isEmpty()) {
                     next.handleRequest(exchange);
                 } else {
-                    ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
+                    ResponseCodeOnError.RULES_EMPTY.getHandler().handleRequest(exchange);
                 }
             }
 

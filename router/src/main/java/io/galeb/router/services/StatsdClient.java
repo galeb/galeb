@@ -5,7 +5,7 @@
 package io.galeb.router.services;
 
 import com.timgroup.statsd.NonBlockingStatsDClient;
-import io.galeb.router.Application;
+import io.galeb.router.configurations.SystemEnvs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatsdClient {
 
-    private static final String STATSD_PREFIX = System.getProperty("STATSD_PREFIX", Application.PREFIX);
-    private static final String STATSD_HOST   = System.getProperty("STATSD_HOST", "127.0.0.1");
-    private static final int    STATSD_PORT   = Integer.parseInt(System.getProperty("STATSD_PORT", "8125"));
+    private static final String STATSD_PREFIX = SystemEnvs.STATSD_PREFIX.getValue();
+    private static final String STATSD_HOST   = SystemEnvs.STATSD_HOST.getValue();
+    private static final int    STATSD_PORT   = Integer.parseInt(SystemEnvs.STATSD_PORT.getValue());
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

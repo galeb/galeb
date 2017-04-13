@@ -3,11 +3,12 @@ package io.galeb.router.handlers;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
+import io.galeb.router.configurations.ResponseCodeOnError;
+import io.galeb.router.configurations.SystemEnvs;
 import io.galeb.router.services.ExternalData;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.zalando.boot.etcd.EtcdNode;
 
 import java.net.URI;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
@@ -68,22 +69,25 @@ public class PoolHandler implements HttpHandler {
         return exchange -> {
             synchronized (loaded) {
                 loaded.set(true);
-                if (poolname != null) {
+                if (poolname != null && data.exist(POOLS_KEY + "/" + poolname)) {
                     logger.info("creating pool " + poolname);
                     HostSelector hostSelector = defineHostSelector();
                     logger.info("[Pool " + poolname + "] HostSelector: " + hostSelector.getClass().getSimpleName());
                     final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
                                         exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
-                                    .setTtl(Math.toIntExact(TimeUnit.HOURS.toMillis(1))) // TODO: property
-                                    .setConnectionsPerThread(2000) // TODO: property
-                                    .setSoftMaxConnectionsPerThread(2000); // TODO: property
-                    addTargets(proxyClient);
+                                    .setTtl(Integer.parseInt(SystemEnvs.POOL_CONN_TTL.getValue()))
+                                    .setConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_CONN_PER_THREAD.getValue()))
+                                    .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_SOFTMAXCONN.getValue()));
+                    if (!addTargets(proxyClient)) {
+                        ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
+                        return;
+                    }
                     proxyHandler = context.getBean(ExtendedProxyHandler.class)
                             .setProxyClientAndDefaultHandler(proxyClient, badGatewayHandler());
                     proxyHandler.handleRequest(exchange);
                     return;
                 }
-                ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
+                ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
             }
         };
     }
@@ -104,16 +108,20 @@ public class PoolHandler implements HttpHandler {
         return ROUNDROBIN.getHostSelector();
     }
 
-    private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
+    private boolean addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
+        boolean hasHosts = false;
         if (poolname != null) {
             final String poolNameKey = POOLS_KEY + "/" + poolname + "/targets";
-            for (EtcdNode etcdNode : data.listFrom(poolNameKey)) {
+            List<EtcdNode> hostNodes = data.listFrom(poolNameKey);
+            hasHosts = !hostNodes.isEmpty();
+            for (EtcdNode etcdNode : hostNodes) {
                 String value = etcdNode.getValue();
                 URI uri = URI.create(value);
                 proxyClient.addHost(uri);
                 logger.info("added target " + value);
             }
         }
+        return hasHosts;
     }
 
     private HttpHandler healthcheckPoolHandler() {

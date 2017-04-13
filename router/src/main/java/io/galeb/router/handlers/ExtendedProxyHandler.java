@@ -3,9 +3,10 @@
  */
 package io.galeb.router.handlers;
 
+import io.galeb.router.configurations.ResponseCodeOnError;
+import io.galeb.router.configurations.SystemEnvs;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.proxy.ProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.apache.commons.logging.Log;
@@ -19,6 +20,10 @@ public class ExtendedProxyHandler implements HttpHandler {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
+    private final int maxRequestTime = Integer.parseInt(SystemEnvs.POOL_MAX_REQUESTS.getValue());
+    private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnvs.REUSE_XFORWARDED.getValue());
+    private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnvs.REWRITE_HOST_HEADER.getValue());
+
     private ProxyHandler proxyHandler;
 
     @Override
@@ -27,12 +32,12 @@ public class ExtendedProxyHandler implements HttpHandler {
             proxyHandler.handleRequest(exchange);
         } else {
             logger.error("proxyHandler is NULL");
-            ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
+            ResponseCodeOnError.PROXY_HANDLER_NOT_DEFINED.getHandler().handleRequest(exchange);
         }
     }
 
     public ExtendedProxyHandler setProxyClientAndDefaultHandler(final ProxyClient proxyClient, final HttpHandler defaultHandler) {
-        proxyHandler = new ProxyHandler(proxyClient, defaultHandler);
+        proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, defaultHandler, rewriteHostHeader, reuseXForwarded);
         return this;
     }
 

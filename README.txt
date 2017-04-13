@@ -23,10 +23,10 @@ GALEB 4
 # etcdctl set /GALEB/pools/0/loadbalance ROUNDROBIN
 # etcdctl set /GALEB/pools/0/targets/0 http://127.0.0.1:8080
 
-5. Resetting all
+5. Force ALL update
 
-# etcdctl set /GALEB/reset_all 0 --ttl 5
+# etcdctl set /GALEB/force_update 0 --ttl 5
 
-6. Resetting only one virtualhost
+6. Force update
 
-# etcdctl set /GALEB/virtualhosts/test.com/reset test.com --ttl 5
+# etcdctl set /GALEB/virtualhosts/test.com/force_update test.com --ttl 5

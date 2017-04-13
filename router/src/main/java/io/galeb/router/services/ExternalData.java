@@ -1,11 +1,13 @@
 package io.galeb.router.services;
 
 import io.galeb.router.Application;
+import io.galeb.router.client.etcd.EtcdClient;
+import io.galeb.router.client.etcd.EtcdGenericNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zalando.boot.etcd.EtcdClient;
 import org.zalando.boot.etcd.EtcdNode;
 
 import java.util.Collections;
@@ -14,22 +16,6 @@ import java.util.Optional;
 
 @Service
 public class ExternalData {
-
-    public enum GenericNode {
-        NULL(new EtcdNode()),
-        EMPTY(new EtcdNode() { public String getValue() { return ""; }}),
-        UNDEF(new EtcdNode() { public String getValue() { return "UNDEF"; }}),
-        ZERO(new EtcdNode() { public String getValue() { return "0"; }});
-
-        private final EtcdNode node;
-        GenericNode(final EtcdNode node) {
-            this.node = node;
-        }
-
-        public EtcdNode get() {
-            return node;
-        }
-    }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -40,8 +26,9 @@ public class ExternalData {
 
     private final EtcdClient client;
 
-    public ExternalData(@Value("#{etcdClient}") final EtcdClient template) {
-        this.client = template;
+    @Autowired
+    public ExternalData(@Value("#{etcdClient}") final EtcdClient etcdClient) {
+        this.client = etcdClient;
     }
 
     public EtcdClient client() {
@@ -65,19 +52,21 @@ public class ExternalData {
     }
 
     public EtcdNode node(String key, boolean recursive) {
-        return node(key, recursive, GenericNode.NULL);
+        return node(key, recursive, EtcdGenericNode.NULL);
     }
 
-    public EtcdNode node(String key, GenericNode def) {
+    public EtcdNode node(String key, EtcdGenericNode def) {
         return node(key, false, def);
     }
 
-    public EtcdNode node(String key, boolean recursive, GenericNode def) {
+    public EtcdNode node(String key, boolean recursive, EtcdGenericNode def) {
         try {
             final EtcdNode node = client.get(key, recursive).getNode();
             return node != null ? node : def.get();
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getMessage());
+            }
             return def.get();
         }
     }

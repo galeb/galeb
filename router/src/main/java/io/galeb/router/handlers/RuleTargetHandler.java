@@ -1,5 +1,6 @@
 package io.galeb.router.handlers;
 
+import io.galeb.router.client.etcd.EtcdGenericNode;
 import io.galeb.router.services.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -53,6 +54,10 @@ public class RuleTargetHandler implements HttpHandler {
         next.handleRequest(exchange);
     }
 
+    public HttpHandler getNext() {
+        return next;
+    }
+
     private HttpHandler loadRulesHandler(HttpHandler next) {
         return new HttpHandler() {
 
@@ -86,7 +91,7 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private Integer extractRuleOrder(String ruleKey) {
-                return Integer.valueOf(data.node(ruleKey + "/order", ExternalData.GenericNode.ZERO).getValue());
+                return Integer.valueOf(data.node(ruleKey + "/order", EtcdGenericNode.ZERO).getValue());
             }
 
             private void loadRules(String virtualHost) {
@@ -126,6 +131,7 @@ public class RuleTargetHandler implements HttpHandler {
         final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(next);
         Arrays.asList(data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "allow").getValue().split(","))
                 .forEach(ipAddressAccessControlHandler::addAllow);
+        ipAddressAccessControlHandler.setDefaultAllow(false);
         return ipAddressAccessControlHandler;
     }
 }

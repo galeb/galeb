@@ -2,6 +2,7 @@ package io.galeb.router.tests.mocks;
 
 import static org.mockito.Mockito.*;
 
+import io.galeb.router.client.etcd.EtcdClient;
 import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalData;
 import org.apache.commons.logging.Log;
@@ -9,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.zalando.boot.etcd.EtcdClient;
 import org.zalando.boot.etcd.EtcdException;
 import org.zalando.boot.etcd.EtcdNode;
 import org.zalando.boot.etcd.EtcdResponse;
@@ -20,6 +20,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Configuration
 @Profile({ "test" })
@@ -31,7 +32,7 @@ public class EtcdConfigurationMock {
     private final Map<String, EtcdNode> nodes = new HashMap<>();
 
     @Bean("etcdClient")
-    public EtcdClient etcdClient() throws EtcdException {
+    public EtcdClient etcdClient() throws EtcdException, ExecutionException, InterruptedException {
         logger.info("Using " + this.getClass().getSimpleName());
 
         String theVirtualhostKey = ExternalData.VIRTUALHOSTS_KEY + "/test.com";

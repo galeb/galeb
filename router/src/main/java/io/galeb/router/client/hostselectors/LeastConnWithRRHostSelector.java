@@ -34,8 +34,11 @@ public class LeastConnWithRRHostSelector extends ClientStatisticsMarker implemen
                             .map(Map.Entry::getKey)
                             .collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
         }
-        int pos = leastConnList.poll();
-        stamp(availableHosts[pos], exchange);
-        return pos;
+        Integer pos = leastConnList.poll();
+        if (pos != null) {
+            stamp(availableHosts[pos], exchange);
+            return pos;
+        }
+        return -1;
     }
 }

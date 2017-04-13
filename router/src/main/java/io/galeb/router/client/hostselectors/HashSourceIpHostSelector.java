@@ -6,7 +6,6 @@ import io.galeb.router.consistenthash.HashAlgorithm;
 import io.undertow.server.HttpServerExchange;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

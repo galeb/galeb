@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
-import java.util.stream.IntStream;
 
 @Service
 public class SimulatedBackendService {

@@ -24,6 +24,8 @@ import static io.galeb.router.services.ExternalData.POOLS_KEY;
 
 public class PoolHandler implements HttpHandler {
 
+    private static final String CHECK_RULE_HEADER = "X-Check-Pool";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final HttpHandler defaultHandler;
@@ -33,7 +35,6 @@ public class PoolHandler implements HttpHandler {
     private ExtendedProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
-    private final String checkRuleHeader = "X-Check-Pool";
 
     public PoolHandler(final ApplicationContext context, final ExternalData externalData) {
         this.context = context;
@@ -43,7 +44,7 @@ public class PoolHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (exchange.getRequestHeaders().contains(checkRuleHeader)) {
+        if (exchange.getRequestHeaders().contains(CHECK_RULE_HEADER)) {
             healthcheckPoolHandler().handleRequest(exchange);
             return;
         }
@@ -117,7 +118,7 @@ public class PoolHandler implements HttpHandler {
 
     private HttpHandler healthcheckPoolHandler() {
         return exchange -> {
-            logger.warn("detected header " + checkRuleHeader);
+            logger.warn("detected header " + CHECK_RULE_HEADER);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
             exchange.getResponseHeaders().put(HttpString.tryFromString("X-Pool-Name"), poolname);

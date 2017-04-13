@@ -17,12 +17,14 @@ import static org.asynchttpclient.Dsl.config;
 @Scope("prototype")
 public class HttpClient {
 
-    private final Boolean followRedirect = false;
-    private final int timeout = 10000;
+    private static final boolean KEEP_ALIVE = false;
+    private static final boolean FOLLOW_REDIRECT = false;
+    private static final int TIMEOUT = 10000;
+
     private final AsyncHttpClient asyncHttpClient = asyncHttpClient(config()
-            .setFollowRedirect(followRedirect)
-            .setKeepAlive(false)
-            .setConnectTimeout(timeout)
+            .setFollowRedirect(FOLLOW_REDIRECT)
+            .setKeepAlive(KEEP_ALIVE)
+            .setConnectTimeout(TIMEOUT)
             .setPooledConnectionIdleTimeout(1)
             .setMaxConnectionsPerHost(1).build());
 

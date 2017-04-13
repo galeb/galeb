@@ -59,7 +59,7 @@ public class ExternalData {
         return node(key, false, def);
     }
 
-    public EtcdNode node(String key, boolean recursive, EtcdGenericNode def) {
+    public synchronized EtcdNode node(String key, boolean recursive, EtcdGenericNode def) {
         try {
             final EtcdNode node = client.get(key, recursive).getNode();
             return node != null ? node : def.get();
@@ -71,13 +71,9 @@ public class ExternalData {
         }
     }
 
-    public boolean exist(String key) {
+    public synchronized boolean exist(String key) {
         final EtcdNode node = node(key);
         return node.getValue() != null || node.isDir();
-    }
-
-    public boolean endsWith(final EtcdNode node, String key) {
-        return node.getKey().endsWith(key);
     }
 
 }

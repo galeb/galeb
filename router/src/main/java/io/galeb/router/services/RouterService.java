@@ -19,9 +19,10 @@ import javax.annotation.PostConstruct;
 @Service
 public class RouterService {
 
+    private static final int ROUTER_PORT = 8000; // TODO: property
+
     private final Logger      logger = LoggerFactory.getLogger(this.getClass());
     private final HttpHandler rootHandler;
-    private final int routerPort = 8000; // TODO: property
 
     @Autowired
     public RouterService(final RootHandler rootHandler) {
@@ -32,7 +33,7 @@ public class RouterService {
     public void run() {
         logger.info(this.getClass().getSimpleName() + " started");
 
-        final Undertow undertow = Undertow.builder().addHttpListener(routerPort, "0.0.0.0", rootHandler)
+        final Undertow undertow = Undertow.builder().addHttpListener(ROUTER_PORT, "0.0.0.0", rootHandler)
                 .setIoThreads(4) // TODO: property
                 .setWorkerThreads(4 * 8) // TODO: property
                 .setBufferSize(16384) // TODO: property

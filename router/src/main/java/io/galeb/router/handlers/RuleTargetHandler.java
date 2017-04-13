@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.galeb.router.services.ExternalData.VIRTUALHOSTS_KEY;
 
@@ -29,7 +28,6 @@ public class RuleTargetHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final AtomicBoolean loaded = new AtomicBoolean(false);
     private final HttpHandler next;
     private final ApplicationContext context;
     private final ExternalData data;
@@ -65,8 +63,10 @@ public class RuleTargetHandler implements HttpHandler {
 
             @Override
             public synchronized void handleRequest(HttpServerExchange exchange) throws Exception {
-                if (!loaded.get()) {
+                if (pathGlobHandler.getPaths().isEmpty()) {
                     loadRules(virtualHost);
+                }
+                if (!pathGlobHandler.getPaths().isEmpty()) {
                     next.handleRequest(exchange);
                 } else {
                     ResponseCodeHandler.HANDLE_500.handleRequest(exchange);
@@ -116,7 +116,6 @@ public class RuleTargetHandler implements HttpHandler {
                                 }
                             }
                         }
-                        loaded.set(true);
                     }
                 }
             }

@@ -72,7 +72,7 @@ public class PathGlobHandler implements HttpHandler {
         }
     }
 
-    public ConcurrentMap<PathOrdered, HttpHandler> getPaths() {
+    public synchronized ConcurrentMap<PathOrdered, HttpHandler> getPaths() {
         return paths;
     }
 

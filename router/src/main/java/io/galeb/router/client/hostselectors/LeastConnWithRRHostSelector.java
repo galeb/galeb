@@ -20,7 +20,7 @@ public class LeastConnWithRRHostSelector extends ClientStatisticsMarker implemen
 
     private ConcurrentLinkedQueue<Integer> leastConnList = null;
 
-    private double cuttingLine = 0.666;
+    private float cuttingLine = 0.666f;
 
     @Override
     public int selectHost(final ExtendedLoadBalancingProxyClient.Host[] availableHosts, final HttpServerExchange exchange) {

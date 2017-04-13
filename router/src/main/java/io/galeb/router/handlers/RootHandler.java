@@ -2,12 +2,10 @@ package io.galeb.router.handlers;
 
 import io.galeb.router.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.completionListeners.StatsdCompletionListener;
-import io.galeb.router.configurations.RootHandlerConfiguration;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,7 +41,6 @@ public class RootHandler implements HttpHandler {
 
             nameVirtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
             exchange.setStatusCode(SERVICE_UNAVAILABLE);
         }
     }
@@ -56,7 +53,6 @@ public class RootHandler implements HttpHandler {
         if ("__ping__".equals(virtualhost)) return;
         logger.warn("[" + virtualhost + "] FORCING UPDATE");
         nameVirtualHostHandler.removeHost(virtualhost);
-        ((NameVirtualHostDefaultHandler)nameVirtualHostHandler.getDefaultHandler()).forgetIt(virtualhost);
     }
 
     public synchronized void forcePoolUpdate(String poolName) {
@@ -76,7 +72,7 @@ public class RootHandler implements HttpHandler {
         });
     }
 
-    private void forcePoolUpdateByPathGlobHandler(String poolName, String virtualhost, PathGlobHandler handler) {
+    private synchronized void forcePoolUpdateByPathGlobHandler(String poolName, String virtualhost, PathGlobHandler handler) {
         handler.getPaths().entrySet().stream().map(Map.Entry::getValue)
                 .filter(pathHandler -> pathHandler instanceof PoolHandler &&
                         ((PoolHandler) pathHandler).getPoolname() != null &&
@@ -84,7 +80,7 @@ public class RootHandler implements HttpHandler {
                 .forEach(v -> forceVirtualhostUpdate(virtualhost));
     }
 
-    private void forcePoolUpdateByIpAclHandler(String poolName, String virtualhost, IPAddressAccessControlHandler handler) {
+    private synchronized void forcePoolUpdateByIpAclHandler(String poolName, String virtualhost, IPAddressAccessControlHandler handler) {
         forcePoolUpdateByPathGlobHandler(poolName, virtualhost, (PathGlobHandler) handler.getNext());
     }
 }

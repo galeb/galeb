@@ -8,7 +8,6 @@ import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.cookie.Cookie;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.asynchttpclient.RequestBuilder;
@@ -25,8 +24,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static io.galeb.router.tests.backend.SimulatedBackendService.ResponseBehavior.*;
@@ -47,9 +44,8 @@ public class StepDefs {
     private Response response;
     private String method;
     private Uri uri = Uri.create("http://127.0.0.1:8000");
-    private InetAddress address= InetAddress.getLocalHost();
-    private HttpHeaders headers = new DefaultHttpHeaders();
-    private List<Cookie> cookies = new ArrayList<>();
+    private final InetAddress address= InetAddress.getLocalHost();
+    private final HttpHeaders headers = new DefaultHttpHeaders();
 
     @Autowired
     private HttpClient httpClient;
@@ -101,7 +97,7 @@ public class StepDefs {
     }
 
     @Do("^the response status is (\\d+)$")
-    public void ThenTheResponseStatusIs(int status) throws Throwable {
+    public void theResponseStatusIs(int status) throws Throwable {
         executeRequest();
         assertThat(response.getStatusCode(), is(status));
     }

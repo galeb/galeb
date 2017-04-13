@@ -20,11 +20,11 @@ public class EtcdConfiguration {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private final String server = "http://127.0.0.1:2379"; // TODO: property
+    private static final String ETCD_SERVER = "http://127.0.0.1:2379"; // TODO: property
 
     @Bean("etcdClient")
     public EtcdClient etcdClient() throws EtcdException, ExecutionException, InterruptedException {
-        final EtcdClient etcdClient = new EtcdClient(server);
+        final EtcdClient etcdClient = new EtcdClient(ETCD_SERVER);
         logger.info("Using " + etcdClient);
         return etcdClient;
     }

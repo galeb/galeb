@@ -61,12 +61,12 @@ public class ExternalData {
 
     public synchronized EtcdNode node(String key, boolean recursive, EtcdGenericNode def) {
         try {
-            final EtcdNode node = client.get(key, recursive).getNode();
-            return node != null ? node : def.get();
+            EtcdNode node = client.get(key, recursive).getNode();
+            node = node != null ? node : def.get();
+            logger.info("GET " + key + ": " +  "EtcNode(value=" + node.getValue() + ", dir=" + node.isDir() + ")");
+            return node;
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(e.getMessage());
-            }
+            logger.warn("GET " + key + " FAIL: " + e.getMessage());
             return def.get();
         }
     }

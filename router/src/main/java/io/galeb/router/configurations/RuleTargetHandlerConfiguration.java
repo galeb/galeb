@@ -1,7 +1,7 @@
 package io.galeb.router.configurations;
 
 import io.galeb.router.handlers.RuleTargetHandler;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -12,10 +12,10 @@ import org.springframework.context.annotation.Scope;
 public class RuleTargetHandlerConfiguration {
 
     private final ApplicationContext context;
-    private final ExternalData data;
+    private final ExternalDataService data;
 
     @Autowired
-    public RuleTargetHandlerConfiguration(final ApplicationContext context, final ExternalData externalData) {
+    public RuleTargetHandlerConfiguration(final ApplicationContext context, final ExternalDataService externalData) {
         this.context = context;
         this.data = externalData;
     }

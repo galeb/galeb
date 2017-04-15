@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct;
 
 import java.util.Objects;
 
-import static io.galeb.router.services.ExternalData.*;
+import static io.galeb.router.services.ExternalDataService.*;
 
 @Service
 public class AutoResetter {
@@ -25,10 +25,10 @@ public class AutoResetter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final RootHandler rootHandler;
-    private final ExternalData data;
+    private final ExternalDataService data;
 
     @Autowired
-    public AutoResetter(final RootHandler rootHandler, final ExternalData externalData) {
+    public AutoResetter(final RootHandler rootHandler, final ExternalDataService externalData) {
         this.rootHandler = rootHandler;
         this.data = externalData;
     }

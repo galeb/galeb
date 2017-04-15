@@ -2,7 +2,7 @@ package io.galeb.router.handlers;
 
 import io.galeb.router.client.etcd.EtcdGenericNode;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -17,7 +17,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-import static io.galeb.router.services.ExternalData.VIRTUALHOSTS_KEY;
+import static io.galeb.router.services.ExternalDataService.VIRTUALHOSTS_KEY;
 
 public class RuleTargetHandler implements HttpHandler {
 
@@ -29,12 +29,12 @@ public class RuleTargetHandler implements HttpHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationContext context;
-    private final ExternalData data;
+    private final ExternalDataService data;
     private String virtualHost;
 
     private HttpHandler next;
 
-    public RuleTargetHandler(final ApplicationContext context, final ExternalData externalData) {
+    public RuleTargetHandler(final ApplicationContext context, final ExternalDataService externalData) {
         this.context = context;
         this.data = externalData;
     }

@@ -5,7 +5,7 @@ import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.SystemEnvs;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
-import static io.galeb.router.services.ExternalData.POOLS_KEY;
+import static io.galeb.router.services.ExternalDataService.POOLS_KEY;
 
 public class PoolHandler implements HttpHandler {
 
@@ -30,14 +30,14 @@ public class PoolHandler implements HttpHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final HttpHandler defaultHandler;
-    private final ExternalData data;
+    private final ExternalDataService data;
     private final ApplicationContext context;
 
     private ExtendedProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
 
-    public PoolHandler(final ApplicationContext context, final ExternalData externalData) {
+    public PoolHandler(final ApplicationContext context, final ExternalDataService externalData) {
         this.context = context;
         this.data = externalData;
         this.defaultHandler = buildPoolHandler();

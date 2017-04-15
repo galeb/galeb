@@ -3,7 +3,7 @@ package io.galeb.router.configurations;
 import io.galeb.router.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.RootHandler;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.util.Headers;
@@ -17,13 +17,13 @@ public class RootHandlerConfiguration {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
-    private final ExternalData data;
+    private final ExternalDataService data;
 
     @Autowired
     public RootHandlerConfiguration(final NameVirtualHostHandler nameVirtualHostHandler,
                                     final AccessLogCompletionListener accessLogCompletionListener,
                                     final StatsdCompletionListener statsdCompletionListener,
-                                    final ExternalData externalData) {
+                                    final ExternalDataService externalData) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
@@ -35,7 +35,7 @@ public class RootHandlerConfiguration {
         return exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-            exchange.getResponseSender().send((data.exist(ExternalData.PREFIX_KEY) ? "WORKING" : "FAIL: " + ExternalData.PREFIX_KEY + " not found"));
+            exchange.getResponseSender().send((data.exist(ExternalDataService.PREFIX_KEY) ? "WORKING" : "FAIL: " + ExternalDataService.PREFIX_KEY + " not found"));
         };
     }
 

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ExternalData {
+public class ExternalDataService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -27,7 +27,7 @@ public class ExternalData {
     private final EtcdClient client;
 
     @Autowired
-    public ExternalData(@Value("#{etcdClient}") final EtcdClient etcdClient) {
+    public ExternalDataService(@Value("#{etcdClient}") final EtcdClient etcdClient) {
         this.client = etcdClient;
     }
 

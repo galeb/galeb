@@ -1,7 +1,7 @@
 package io.galeb.router.handlers;
 
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -9,16 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import static io.galeb.router.services.ExternalData.VIRTUALHOSTS_KEY;
+import static io.galeb.router.services.ExternalDataService.VIRTUALHOSTS_KEY;
 
 public class NameVirtualHostDefaultHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationContext context;
-    private final ExternalData data;
+    private final ExternalDataService data;
 
-    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ExternalData externalData) {
+    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ExternalDataService externalData) {
         this.context = context;
         this.data = externalData;
     }

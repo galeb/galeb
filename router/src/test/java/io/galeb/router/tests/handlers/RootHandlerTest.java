@@ -7,7 +7,7 @@ import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RootHandler;
 import io.galeb.router.handlers.RuleTargetHandler;
-import io.galeb.router.services.ExternalData;
+import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.services.StatsdClient;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -32,7 +32,7 @@ public class RootHandlerTest {
     private final StatsdCompletionListener statsdCompletionListener = new StatsdCompletionListener(statsdClient);
     private final RootHandler rootHandler = new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
     private final ApplicationContext context = mock(ApplicationContext.class);
-    private final ExternalData externalData = mock(ExternalData.class);
+    private final ExternalDataService externalData = mock(ExternalDataService.class);
     private final String virtualhost = "test.com";
 
     @Before

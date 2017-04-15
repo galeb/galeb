@@ -18,7 +18,7 @@ import java.util.Objects;
 import static io.galeb.router.services.ExternalDataService.*;
 
 @Service
-public class AutoResetter {
+public class SchedForceUpdateService {
 
     private static final String FORCE_UPDATE_FLAG = "/force_update";
 
@@ -28,7 +28,7 @@ public class AutoResetter {
     private final ExternalDataService data;
 
     @Autowired
-    public AutoResetter(final RootHandler rootHandler, final ExternalDataService externalData) {
+    public SchedForceUpdateService(final RootHandler rootHandler, final ExternalDataService externalData) {
         this.rootHandler = rootHandler;
         this.data = externalData;
     }

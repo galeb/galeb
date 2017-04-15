@@ -4,6 +4,7 @@
 
 package io.galeb.router.configurations;
 
+import io.galeb.router.SystemEnvs;
 import io.galeb.router.client.etcd.EtcdClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

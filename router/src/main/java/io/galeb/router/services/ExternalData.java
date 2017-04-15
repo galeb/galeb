@@ -2,7 +2,7 @@ package io.galeb.router.services;
 
 import io.galeb.router.client.etcd.EtcdClient;
 import io.galeb.router.client.etcd.EtcdGenericNode;
-import io.galeb.router.configurations.SystemEnvs;
+import io.galeb.router.SystemEnvs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

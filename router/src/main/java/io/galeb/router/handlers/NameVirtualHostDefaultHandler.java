@@ -1,6 +1,6 @@
 package io.galeb.router.handlers;
 
-import io.galeb.router.configurations.ResponseCodeOnError;
+import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.services.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

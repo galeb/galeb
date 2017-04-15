@@ -3,8 +3,8 @@
  */
 package io.galeb.router.handlers;
 
-import io.galeb.router.configurations.ResponseCodeOnError;
-import io.galeb.router.configurations.SystemEnvs;
+import io.galeb.router.ResponseCodeOnError;
+import io.galeb.router.SystemEnvs;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.proxy.ProxyClient;

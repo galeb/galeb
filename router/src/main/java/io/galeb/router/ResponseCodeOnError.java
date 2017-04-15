@@ -1,4 +1,4 @@
-package io.galeb.router.configurations;
+package io.galeb.router;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.util.HttpString;

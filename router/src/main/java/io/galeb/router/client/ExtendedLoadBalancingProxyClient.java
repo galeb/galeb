@@ -6,7 +6,7 @@ package io.galeb.router.client;
 
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
-import io.galeb.router.configurations.ResponseCodeOnError;
+import io.galeb.router.ResponseCodeOnError;
 import io.undertow.UndertowLogger;
 import io.undertow.client.ClientConnection;
 import io.undertow.client.ClientStatistics;

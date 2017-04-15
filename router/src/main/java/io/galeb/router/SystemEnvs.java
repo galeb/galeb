@@ -1,4 +1,4 @@
-package io.galeb.router.configurations;
+package io.galeb.router;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

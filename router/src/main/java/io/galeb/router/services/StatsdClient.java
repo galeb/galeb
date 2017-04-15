@@ -5,7 +5,7 @@
 package io.galeb.router.services;
 
 import com.timgroup.statsd.NonBlockingStatsDClient;
-import io.galeb.router.configurations.SystemEnvs;
+import io.galeb.router.SystemEnvs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

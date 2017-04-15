@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import static io.galeb.router.consistenthash.HashAlgorithm.HashType.MURMUR3_32;
+
 public enum SystemEnvs {
 
     CLUSTER_ID(System.getenv("CLUSTER_ID"), "GALEB"),
@@ -27,7 +29,10 @@ public enum SystemEnvs {
     ENABLE_ACCESSLOG(System.getenv("ENABLE_ACCESSLOG"), Boolean.TRUE),
     ENABLE_STATSD(System.getenv("ENABLE_STATSD"), Boolean.TRUE),
     REUSE_XFORWARDED(System.getenv("REUSE_XFORWARDED"), Boolean.TRUE),
-    REWRITE_HOST_HEADER(System.getenv("REWRITE_HOST_HEADER"), Boolean.FALSE);
+    REWRITE_HOST_HEADER(System.getenv("REWRITE_HOST_HEADER"), Boolean.FALSE),
+    IGNORE_XFORWARDED_FOR(System.getenv("IGNORE_XFORWARDED_FOR"), Boolean.FALSE),
+    HASH_NUM_REPLICAS(System.getenv("HASH_NUM_REPLICAS"), 100),
+    HASH_ALGORITHM(System.getenv("HASH_ALGORITHM"), MURMUR3_32);
 
     private static Integer getSOBacklog() {
         try {

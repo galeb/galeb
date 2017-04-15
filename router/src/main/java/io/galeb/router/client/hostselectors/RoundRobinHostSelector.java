@@ -19,4 +19,9 @@ public class RoundRobinHostSelector extends ClientStatisticsMarker implements Ho
         stamp(availableHosts[pos], exchange);
         return pos;
     }
+
+    // Test only
+    public synchronized void reset() {
+        currentHost.set(0);
+    }
 }

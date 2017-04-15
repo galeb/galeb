@@ -28,9 +28,10 @@ public class LeastConnWithRRHostSelector extends ClientStatisticsMarker implemen
             Float tempCuttingLine = exchange.getAttachment(CUTTING_LINE_ATTACH);
             cuttingLine = tempCuttingLine != null ? tempCuttingLine : cuttingLine;
 
+            final long limit = (int) Math.ceil((float) availableHosts.length * cuttingLine);
             leastConnList = convertToMapStream(availableHosts)
                             .sorted(Comparator.comparing(e -> e.getValue().getOpenConnection()))
-                            .limit(Integer.toUnsignedLong((int) ((availableHosts.length * cuttingLine) - Float.MIN_VALUE)))
+                            .limit(limit)
                             .map(Map.Entry::getKey)
                             .collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
         }
@@ -39,6 +40,17 @@ public class LeastConnWithRRHostSelector extends ClientStatisticsMarker implemen
             stamp(availableHosts[pos], exchange);
             return pos;
         }
-        return -1;
+        return selectHost(availableHosts, exchange);
+    }
+
+    public float getCuttingLine() {
+        return cuttingLine;
+    }
+
+    // Test only
+    public synchronized void reset() {
+        if (leastConnList != null) {
+            leastConnList.clear();
+        }
     }
 }

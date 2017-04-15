@@ -28,22 +28,26 @@ public class RuleTargetHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final HttpHandler next;
     private final ApplicationContext context;
     private final ExternalData data;
     private String virtualHost;
 
+    private HttpHandler next;
+
     public RuleTargetHandler(final ApplicationContext context, final ExternalData externalData) {
         this.context = context;
         this.data = externalData;
-
-        final PathGlobHandler pathGlobHandler = (PathGlobHandler) context.getBean("pathGlobHandler");
-        this.next = hasAcl() ? loadAcl() : pathGlobHandler;
-        pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
     }
 
     public RuleTargetHandler setVirtualHost(String virtualHost) {
         this.virtualHost = virtualHost;
+        return this;
+    }
+
+    public RuleTargetHandler build() {
+        final PathGlobHandler pathGlobHandler = (PathGlobHandler) context.getBean("pathGlobHandler");
+        this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
+        pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
         return this;
     }
 
@@ -123,12 +127,12 @@ public class RuleTargetHandler implements HttpHandler {
     }
 
     private boolean hasAcl() {
-        return data.exist(VIRTUALHOSTS_KEY + "/" + virtualHost + "allow");
+        return data.exist(VIRTUALHOSTS_KEY + "/" + virtualHost + "/allow");
     }
 
-    private HttpHandler loadAcl() {
-        final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(next);
-        Arrays.asList(data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "allow").getValue().split(","))
+    private HttpHandler loadAcl(PathGlobHandler pathGlobHandler) {
+        final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(pathGlobHandler);
+        Arrays.asList(data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "/allow").getValue().split(","))
                 .forEach(ipAddressAccessControlHandler::addAllow);
         ipAddressAccessControlHandler.setDefaultAllow(false);
         return ipAddressAccessControlHandler;

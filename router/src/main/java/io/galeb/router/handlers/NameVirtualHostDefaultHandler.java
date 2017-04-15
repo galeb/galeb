@@ -34,7 +34,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
         final NameVirtualHostHandler nameVirtualHostHandler = (NameVirtualHostHandler) context.getBean("nameVirtualHostHandler");
         if (isValid(hostName, nameVirtualHostHandler)) {
             logger.info("adding " + hostName);
-            nameVirtualHostHandler.addHost(hostName, ((RuleTargetHandler) context.getBean("ruleTargetHandler")).setVirtualHost(hostName));
+            nameVirtualHostHandler.addHost(hostName, ((RuleTargetHandler) context.getBean("ruleTargetHandler")).setVirtualHost(hostName).build());
             nameVirtualHostHandler.handleRequest(exchange);
         } else {
             ResponseCodeOnError.VIRTUALHOST_NOT_FOUND.getHandler().handleRequest(exchange);

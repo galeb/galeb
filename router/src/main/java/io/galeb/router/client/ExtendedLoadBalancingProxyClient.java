@@ -18,6 +18,8 @@ import io.undertow.server.handlers.proxy.*;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.AttachmentList;
 import io.undertow.util.CopyOnWriteMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.xnio.OptionMap;
 import org.xnio.ssl.XnioSsl;
 
@@ -33,11 +35,14 @@ import static org.xnio.IoUtils.safeClose;
 
 public class ExtendedLoadBalancingProxyClient implements ProxyClient {
 
+    private final Log logger = LogFactory.getLog(this.getClass());
+
     private final AttachmentKey<ExclusiveConnectionHolder> exclusiveConnectionKey = AttachmentKey.create(ExclusiveConnectionHolder.class);
 
     private static final AttachmentKey<AttachmentList<Host>> ATTEMPTED_HOSTS = AttachmentKey.createList(Host.class);
 
-    private volatile int problemServerRetry = 10;
+    // If a host fails we retry periodically every X seconds
+    private volatile int problemServerRetry = 10; // seconds
 
     private final Set<String> sessionCookieNames = new CopyOnWriteArraySet<>();
 
@@ -239,19 +244,6 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
         }
     }
 
-    private boolean tryNextHostIfFailed(final ProxyTarget target, final HttpServerExchange exchange, final ProxyCallback<ProxyConnection> callback, long timeout, TimeUnit timeUnit) {
-        String uri = exchange.getAttachment(HostSelector.REAL_DEST);
-        if (uri != null) {
-            removeHost(URI.create(uri));
-            exchange.removeAttachment(HostSelector.REAL_DEST);
-            if (hosts.length > 0) {
-                getConnection(target, exchange, callback, timeout, timeUnit);
-                return true;
-            }
-        }
-        return false;
-    }
-
     protected Host selectHost(HttpServerExchange exchange) {
         AttachmentList<Host> attempted = exchange.getAttachment(ATTEMPTED_HOSTS);
         Host[] hosts = this.hosts;
@@ -265,10 +257,6 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
             }
         }
         int host = hostSelector.selectHost(hosts, exchange);
-        if (host < 0) {
-            return null;
-        }
-
         final int startHost = host; //if the all hosts have problems we come back to this one
         Host full = null;
         Host problem = null;
@@ -281,6 +269,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
                 } else if (available == FULL && full == null) {
                     full = selected;
                 } else if ((available == PROBLEM || available == FULL_QUEUE) && problem == null) {
+                    logger.warn("Host " + selected.getUri().toString() + " ignored: PROBLEM (scheduled to retry after " + problemServerRetry + " seconds)");
                     problem = selected;
                 }
             }
@@ -321,13 +310,13 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
         return hosts.length == 0;
     }
 
-    public final class Host extends ConnectionPoolErrorHandler.SimpleConnectionPoolErrorHandler implements ConnectionPoolManager {
+    public class Host extends ConnectionPoolErrorHandler.SimpleConnectionPoolErrorHandler implements ConnectionPoolManager {
         final ProxyConnectionPool connectionPool;
         final String jvmRoute;
         final URI uri;
         final XnioSsl ssl;
 
-        private Host(String jvmRoute, InetSocketAddress bindAddress, URI uri, XnioSsl ssl, OptionMap options) {
+        public Host(String jvmRoute, InetSocketAddress bindAddress, URI uri, XnioSsl ssl, OptionMap options) {
             this.connectionPool = new ProxyConnectionPool(this, bindAddress, uri, ssl, client, options);
             this.jvmRoute = jvmRoute;
             this.uri = uri;
@@ -423,7 +412,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
 
         @Override
         public void failed(HttpServerExchange exchange) {
-            if (tryNextHostIfFailed(target, exchange, callback, timeout, timeUnit)) return;
+            exchange.removeAttachment(HostSelector.REAL_DEST);
             UndertowLogger.PROXY_REQUEST_LOGGER.proxyFailedToConnectToBackend(exchange.getRequestURI(), host.uri);
             callback.failed(exchange);
         }

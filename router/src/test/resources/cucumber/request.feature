@@ -10,3 +10,8 @@ Feature: Request Support
     Given a invalid host request to FASTTER backend
     When Do GET /
     Then the response status is 503
+
+  Scenario: Sending GET to / without server backend
+    Given a valib host request to BROKEN backend
+    When Do GET /
+    Then the response status is 503

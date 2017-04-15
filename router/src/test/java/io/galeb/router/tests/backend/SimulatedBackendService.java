@@ -16,6 +16,7 @@ public class SimulatedBackendService {
 
     @SuppressWarnings("unused")
     public enum ResponseBehavior {
+        BROKEN(ResponseCodeHandler.HANDLE_500),
         FASTTER(ResponseCodeHandler.HANDLE_200),
         FAST(exchange -> exchange.getResponseSender().send("A")),
         SLOW(exchange -> { Thread.sleep(5000); ResponseCodeHandler.HANDLE_200.handleRequest(exchange);}),
@@ -40,6 +41,8 @@ public class SimulatedBackendService {
     private final Log logger = LogFactory.getLog(this.getClass());
     private final HttpClient client;
 
+    private ResponseBehavior behavior = null;
+
     private Undertow undertow;
 
     @Autowired
@@ -48,6 +51,7 @@ public class SimulatedBackendService {
     }
 
     public SimulatedBackendService setResponseBehavior(ResponseBehavior behavior) {
+        this.behavior = behavior;
         int backendPort = 8080;
         this.undertow = Undertow.builder().addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
         return this;
@@ -57,8 +61,12 @@ public class SimulatedBackendService {
         try {
             client.get("http://127.0.0.1:" + 8080 + "/");
         } catch (Exception ignore) {
-            undertow.start();
-            logger.info(this.getClass().getSimpleName() + " started");
+            if (behavior != null && behavior != ResponseBehavior.BROKEN) {
+                undertow.start();
+                logger.info(this.getClass().getSimpleName() + " started");
+            } else {
+                logger.info(this.getClass().getSimpleName() + " not started");
+            }
         }
     }
 

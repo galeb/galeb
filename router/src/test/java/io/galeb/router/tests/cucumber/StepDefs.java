@@ -6,6 +6,7 @@ import cucumber.api.java.eo.Do;
 import io.galeb.router.Application;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
+import io.galeb.router.tests.client.JmxClientService;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.apache.commons.logging.Log;
@@ -54,6 +55,10 @@ public class StepDefs {
 
     @Autowired
     private HttpClient client;
+
+    @Autowired
+    private JmxClientService jmxClientService;
+
     private long requestTime = 0L;
 
     public StepDefs() throws UnknownHostException {}
@@ -104,6 +109,16 @@ public class StepDefs {
     @Do("^body is (.+)")
     public void bodyIs(String body) throws Throwable {
         assertThat(response.getResponseBody(), equalTo(body));
+    }
+
+    @Do("^has (\\d+) active connections$")
+    public void hasXActiveConnections(long count) {
+        assertThat(jmxClientService.getValue("ActiveConnections"), equalTo(count));
+    }
+
+    @Do("^has (\\d+) active requests")
+    public void hasXActiveRequests(long count) {
+        assertThat(jmxClientService.getValue("ActiveRequests"), equalTo(count));
     }
 
 }

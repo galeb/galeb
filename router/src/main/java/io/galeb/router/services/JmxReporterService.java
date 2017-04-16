@@ -9,14 +9,18 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import io.undertow.Undertow;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.ToLongFunction;
 
 @Service
+@Order(10)
 public class JmxReporterService {
+
+    public static final String MBEAN_DOMAIN = JmxReporterService.class.getName();
 
     private final AtomicLong lastRequestCount = new AtomicLong(0L);
     private final AtomicLong lastBytesReceived = new AtomicLong(0L);
@@ -28,20 +32,19 @@ public class JmxReporterService {
         this.undertow = undertow;
     }
 
-    @PostConstruct
-    public void startReporter() {
+    @Bean
+    public JmxReporter jmxReporter() {
         final MetricRegistry register = new MetricRegistry();
-        register.register(MetricRegistry.name(Undertow.class, "active_connections"),
-                (Gauge<Long>) () -> undertow.getListenerInfo().stream()
-                                                .mapToLong(l -> l.getConnectorStatistics().getActiveConnections()).sum());
-        register.register(MetricRegistry.name(Undertow.class, "active_requests"),
-                (Gauge<Long>) () -> undertow.getListenerInfo().stream()
-                                                .mapToLong(l -> l.getConnectorStatistics().getActiveRequests()).sum());
-        register.register(MetricRegistry.name(Undertow.class, "request_count"), (Gauge<Long>) this::getRequestCount);
-        register.register(MetricRegistry.name(Undertow.class, "bytes_received"), (Gauge<Long>) this::getBytesReceived);
-        register.register(MetricRegistry.name(Undertow.class, "bytes_sent"), (Gauge<Long>) this::getBytesSent);
-        final JmxReporter jmxReporter = JmxReporter.forRegistry(register).build();
+        register.register("ActiveConnections", (Gauge<Long>) () -> undertow.getListenerInfo().stream()
+                .mapToLong(l -> l.getConnectorStatistics().getActiveConnections()).sum());
+        register.register("ActiveRequests", (Gauge<Long>) () -> undertow.getListenerInfo().stream()
+                .mapToLong(l -> l.getConnectorStatistics().getActiveRequests()).sum());
+        register.register("RequestCount", (Gauge<Long>) this::getRequestCount);
+        register.register("BytesReceived", (Gauge<Long>) this::getBytesReceived);
+        register.register("BytesSent", (Gauge<Long>) this::getBytesSent);
+        final JmxReporter jmxReporter = JmxReporter.forRegistry(register).inDomain(MBEAN_DOMAIN).build();
         jmxReporter.start();
+        return jmxReporter;
     }
 
     private long extractDelta(final AtomicLong last, final ToLongFunction<Undertow.ListenerInfo> longFunction) {
@@ -50,7 +53,7 @@ public class JmxReporterService {
         double current = undertow.getListenerInfo().stream().mapToLong(longFunction).sum() * 1.0;
         long end = System.nanoTime();
         last.set((long) current);
-        return Math.round((current * (end/start)) - localLast);
+        return Math.round((current * ((double) end / (double) start)) - localLast);
     }
 
     private long getRequestCount() {

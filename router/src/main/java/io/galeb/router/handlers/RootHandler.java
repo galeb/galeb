@@ -51,8 +51,10 @@ public class RootHandler implements HttpHandler {
 
     public synchronized void forceVirtualhostUpdate(String virtualhost) {
         if ("__ping__".equals(virtualhost)) return;
-        logger.warn("[" + virtualhost + "] FORCING UPDATE");
-        nameVirtualHostHandler.removeHost(virtualhost);
+        if (nameVirtualHostHandler.getHosts().containsKey(virtualhost)) {
+            logger.warn("[" + virtualhost + "] FORCING UPDATE");
+            nameVirtualHostHandler.removeHost(virtualhost);
+        }
     }
 
     public synchronized void forcePoolUpdate(String poolName) {

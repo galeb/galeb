@@ -1,7 +1,7 @@
 package io.galeb.router.configurations;
 
-import io.galeb.router.completionListeners.AccessLogCompletionListener;
-import io.galeb.router.completionListeners.StatsdCompletionListener;
+import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
+import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.RootHandler;
 import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
@@ -10,8 +10,10 @@ import io.undertow.util.Headers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 @Configuration
+@Order(1)
 public class RootHandlerConfiguration {
 
     private final NameVirtualHostHandler nameVirtualHostHandler;

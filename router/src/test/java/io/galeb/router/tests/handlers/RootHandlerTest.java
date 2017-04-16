@@ -1,7 +1,7 @@
 package io.galeb.router.tests.handlers;
 
-import io.galeb.router.completionListeners.AccessLogCompletionListener;
-import io.galeb.router.completionListeners.StatsdCompletionListener;
+import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
+import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RootHandler;
@@ -32,7 +32,6 @@ public class RootHandlerTest {
     private final RootHandler rootHandler = new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
     private final ApplicationContext context = mock(ApplicationContext.class);
     private final ExternalDataService externalData = mock(ExternalDataService.class);
-    private final String virtualhost = "test.com";
 
     @Before
     public void setUp() {
@@ -55,6 +54,8 @@ public class RootHandlerTest {
 
     @Test
     public void testForceVirtualhostUpdate() {
+        final String virtualhost = "test.com";
+
         nameVirtualHostHandler.addHost(virtualhost, exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
@@ -64,6 +65,8 @@ public class RootHandlerTest {
 
     @Test
     public void testForceAllUpdate() {
+        final String virtualhost = "test.com";
+
         nameVirtualHostHandler.addHost(virtualhost, exchange -> {});
         nameVirtualHostHandler.addHost(virtualhost + "1", exchange -> {});
         nameVirtualHostHandler.addHost(virtualhost + "2", exchange -> {});
@@ -88,6 +91,8 @@ public class RootHandlerTest {
 
     @Test
     public void testForcePoolUpdate() {
+        final String virtualhost = "test.com";
+
         PathGlobHandler pathGlobHandler = new PathGlobHandler();
         RuleTargetHandler ruleTargetHandler = mock(RuleTargetHandler.class);
         PoolHandler poolHandler = mock(PoolHandler.class);
@@ -105,6 +110,8 @@ public class RootHandlerTest {
 
     @Test
     public void testForcePoolUpdateByIpAclHandler() {
+        final String virtualhost = "test.com";
+
         PathGlobHandler pathGlobHandler = new PathGlobHandler();
         IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(pathGlobHandler);
         RuleTargetHandler ruleTargetHandler = mock(RuleTargetHandler.class);

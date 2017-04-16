@@ -2,7 +2,7 @@
  *
  */
 
-package io.galeb.router.consistenthash;
+package io.galeb.router.client.hostselectors.consistenthash;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.HashCode;

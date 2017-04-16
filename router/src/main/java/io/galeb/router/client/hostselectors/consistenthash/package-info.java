@@ -7,4 +7,4 @@
  * This package provides classes who maps each available node to many
  * pseudo-randomly distributed points on the edge of the same circle.
  */
-package io.galeb.router.consistenthash;
+package io.galeb.router.client.hostselectors.consistenthash;

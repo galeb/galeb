@@ -1,7 +1,7 @@
 package io.galeb.router.handlers;
 
-import io.galeb.router.completionListeners.AccessLogCompletionListener;
-import io.galeb.router.completionListeners.StatsdCompletionListener;
+import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
+import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.SystemEnvs;
 import io.undertow.server.HttpHandler;

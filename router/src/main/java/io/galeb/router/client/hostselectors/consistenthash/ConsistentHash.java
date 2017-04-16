@@ -2,7 +2,7 @@
  *
  */
 
-package io.galeb.router.consistenthash;
+package io.galeb.router.client.hostselectors.consistenthash;
 
 import java.util.Collection;
 import java.util.SortedMap;

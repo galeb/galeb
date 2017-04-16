@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.router.completionListeners;
+package io.galeb.router.handlers.completionListeners;
 
 import io.undertow.attribute.ResponseTimeAttribute;
 import io.undertow.util.StatusCodes;

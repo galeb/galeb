@@ -1,4 +1,4 @@
-package io.galeb.router.completionListeners;
+package io.galeb.router.handlers.completionListeners;
 
 import io.galeb.router.client.hostselectors.ClientStatisticsMarker;
 import io.galeb.router.client.hostselectors.HostSelector;

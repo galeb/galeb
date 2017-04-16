@@ -62,7 +62,7 @@ public class ExternalDataService {
         try {
             final EtcdNode node = client.get(key, recursive).getNode();
             final ExternalData data = node != null ? new ExternalData(node) : def.instance();
-            logger.info("GET " + key + ": " +  "ExternalData(value=" + data.getValue() + ", dir=" + data.isDir() + ")");
+            logger.debug("GET " + key + ": " +  "ExternalData(value=" + data.getValue() + ", dir=" + data.isDir() + ")");
             return data;
         } catch (Exception e) {
             logger.warn("GET " + key + " FAIL: " + e.getMessage());

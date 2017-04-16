@@ -7,9 +7,11 @@ import io.undertow.UndertowOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.xnio.Options;
 
 @Configuration
+@Order(2)
 public class UndertowConfiguration {
 
     private final int port = Integer.parseInt(SystemEnvs.ROUTER_PORT.getValue());

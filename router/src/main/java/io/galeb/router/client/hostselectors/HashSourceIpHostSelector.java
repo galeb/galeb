@@ -2,8 +2,8 @@ package io.galeb.router.client.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.SystemEnvs;
-import io.galeb.router.consistenthash.ConsistentHash;
-import io.galeb.router.consistenthash.HashAlgorithm;
+import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
+import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
 import io.undertow.server.HttpServerExchange;
 
 import java.util.Collections;

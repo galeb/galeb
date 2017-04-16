@@ -6,7 +6,7 @@ Feature: Request Support
     When Do GET /
     Then the response status is 200
     And has 0 active connections
-    And has 1 active requests
+    And has not 0 active requests
 
   Scenario: Sending GET to / with invalid host header
     Given a invalid host request to FASTTER backend

@@ -1,9 +1,11 @@
 
 package io.galeb.router.tests.cucumber;
 
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
 import io.galeb.router.Application;
+import io.galeb.router.SystemEnvs;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
 import io.galeb.router.tests.client.JmxClientService;
@@ -43,7 +45,7 @@ public class StepDefs {
 
     private Response response;
     private String method;
-    private Uri uri = Uri.create("http://127.0.0.1:8000");
+    private Uri uri = Uri.create("http://127.0.0.1:" + SystemEnvs.ROUTER_PORT.getValue());
     private final InetAddress address= InetAddress.getLocalHost();
     private final HttpHeaders headers = new DefaultHttpHeaders();
 
@@ -96,7 +98,7 @@ public class StepDefs {
 
     @Do("^Do (.+) (.+)$")
     public void sendMethodPath(String method, String path) throws Throwable {
-        this.uri = Uri.create("http://127.0.0.1:8000" + path);
+        this.uri = Uri.create("http://127.0.0.1:" + SystemEnvs.ROUTER_PORT.getValue() + path);
         this.method = method;
     }
 
@@ -121,4 +123,8 @@ public class StepDefs {
         assertThat(jmxClientService.getValue("ActiveRequests"), equalTo(count));
     }
 
+    @And("^has not (\\d+) active requests$")
+    public void hasNotActiveRequests(int count) throws Throwable {
+        assertThat(jmxClientService.getValue("ActiveRequests"), not(equalTo(count)));
+    }
 }

@@ -1,15 +1,14 @@
 package io.galeb.router.handlers;
 
-import io.galeb.router.client.etcd.EtcdGenericNode;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.services.ExternalDataService;
+import io.galeb.router.cluster.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.zalando.boot.etcd.EtcdNode;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -95,15 +94,15 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private Integer extractRuleOrder(String ruleKey) {
-                return Integer.valueOf(data.node(ruleKey + "/order", EtcdGenericNode.ZERO).getValue());
+                return Integer.valueOf(data.node(ruleKey + "/order", ExternalData.Generic.ZERO).getValue());
             }
 
             private void loadRules(String virtualHost) {
-                EtcdNode rulesNode = data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "/rules");
+                ExternalData rulesNode = data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "/rules");
                 if (rulesNode.getKey() != null) {
-                    final List<EtcdNode> rulesRegistered = data.listFrom(rulesNode);
+                    final List<ExternalData> rulesRegistered = data.listFrom(rulesNode);
                     if (!rulesRegistered.isEmpty()) {
-                        for (EtcdNode keyComplete : rulesRegistered) {
+                        for (ExternalData keyComplete : rulesRegistered) {
                             if (keyComplete.isDir()) {
                                 String ruleKey = keyComplete.getKey();
                                 Integer order = extractRuleOrder(ruleKey);

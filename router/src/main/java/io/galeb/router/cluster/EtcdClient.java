@@ -1,4 +1,4 @@
-package io.galeb.router.client.etcd;
+package io.galeb.router.cluster;
 
 import com.google.gson.Gson;
 import org.asynchttpclient.AsyncHttpClient;

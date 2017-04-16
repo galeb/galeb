@@ -1,6 +1,5 @@
 package io.galeb.router.tests.handlers;
 
-import io.galeb.router.client.etcd.EtcdGenericNode;
 import io.galeb.router.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -8,13 +7,13 @@ import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RootHandler;
 import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
+import io.galeb.router.cluster.ExternalData;
 import io.galeb.router.services.StatsdClient;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
-import org.zalando.boot.etcd.EtcdNode;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -40,14 +39,14 @@ public class RootHandlerTest {
         when(externalData.exist(anyString())).thenReturn(true);
         when(externalData.node(anyString())).thenAnswer(invocationOnMock -> {
             String key = invocationOnMock.getArgumentAt(0, String.class);
-            EtcdNode node = new EtcdNode();
+            ExternalData node = new ExternalData();
 
             switch (key) {
                 case "": {
                     return node;
                 }
                 default: {
-                    return EtcdGenericNode.NULL.get();
+                    return ExternalData.Generic.NULL.instance();
                 }
             }
         });

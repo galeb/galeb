@@ -1,7 +1,7 @@
 package io.galeb.router.services;
 
-import io.galeb.router.client.etcd.EtcdClient;
-import io.galeb.router.client.etcd.EtcdGenericNode;
+import io.galeb.router.cluster.EtcdClient;
+import io.galeb.router.cluster.ExternalData;
 import io.galeb.router.SystemEnvs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,9 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zalando.boot.etcd.EtcdNode;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class ExternalDataService {
@@ -35,45 +34,49 @@ public class ExternalDataService {
         return client;
     }
 
-    public List<EtcdNode> listFrom(String key) {
+    public List<ExternalData> listFrom(String key) {
         return listFrom(key, false);
     }
 
-    public List<EtcdNode> listFrom(String key, boolean recursive) {
+    public List<ExternalData> listFrom(String key, boolean recursive) {
         return listFrom(node(key, recursive));
     }
 
-    public List<EtcdNode> listFrom(EtcdNode node) {
-        return Optional.ofNullable(node.getNodes()).orElse(Collections.emptyList());
+    public List<ExternalData> listFrom(ExternalData node) {
+        return node.getNodes();
     }
 
-    public EtcdNode node(String key) {
+    public ExternalData node(String key) {
         return node(key, false);
     }
 
-    public EtcdNode node(String key, boolean recursive) {
-        return node(key, recursive, EtcdGenericNode.NULL);
+    public ExternalData node(String key, boolean recursive) {
+        return node(key, recursive, ExternalData.Generic.NULL);
     }
 
-    public EtcdNode node(String key, EtcdGenericNode def) {
+    public ExternalData node(String key, ExternalData.Generic def) {
         return node(key, false, def);
     }
 
-    public synchronized EtcdNode node(String key, boolean recursive, EtcdGenericNode def) {
+    public synchronized ExternalData node(String key, boolean recursive, ExternalData.Generic def) {
         try {
-            EtcdNode node = client.get(key, recursive).getNode();
-            node = node != null ? node : def.get();
-            logger.info("GET " + key + ": " +  "EtcNode(value=" + node.getValue() + ", dir=" + node.isDir() + ")");
-            return node;
+            final EtcdNode node = client.get(key, recursive).getNode();
+            final ExternalData data = node != null ? new ExternalData(node) : def.instance();
+            logger.info("GET " + key + ": " +  "ExternalData(value=" + data.getValue() + ", dir=" + data.isDir() + ")");
+            return data;
         } catch (Exception e) {
             logger.warn("GET " + key + " FAIL: " + e.getMessage());
-            return def.get();
+            return def.instance();
         }
     }
 
     public synchronized boolean exist(String key) {
-        final EtcdNode node = node(key);
-        return node.getValue() != null || node.isDir();
+        try {
+            final EtcdNode node = client.get(key, false).getNode();
+            return node != null && (node.getValue() != null || node.isDir());
+        } catch (ExecutionException | InterruptedException e) {
+            return false;
+        }
     }
 
 }

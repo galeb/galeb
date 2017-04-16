@@ -6,6 +6,7 @@ import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.SystemEnvs;
 import io.galeb.router.services.ExternalDataService;
+import io.galeb.router.cluster.ExternalData;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -14,7 +15,6 @@ import io.undertow.util.HttpString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.zalando.boot.etcd.EtcdNode;
 
 import java.net.URI;
 import java.util.List;
@@ -99,7 +99,7 @@ public class PoolHandler implements HttpHandler {
     private HostSelector defineHostSelector() {
         if (poolname != null) {
             final String hostSelectorKeyName = POOLS_KEY + "/" + poolname + "/loadbalance";
-            final EtcdNode hostSelectorNode = data.node(hostSelectorKeyName);
+            final ExternalData hostSelectorNode = data.node(hostSelectorKeyName);
             if (hostSelectorNode.getKey() != null) {
                 String hostSelectorName = hostSelectorNode.getValue();
                 return HostSelectorAlgorithm.valueOf(hostSelectorName).getHostSelector();
@@ -112,9 +112,9 @@ public class PoolHandler implements HttpHandler {
         boolean hasHosts = false;
         if (poolname != null) {
             final String poolNameKey = POOLS_KEY + "/" + poolname + "/targets";
-            List<EtcdNode> hostNodes = data.listFrom(poolNameKey);
+            List<ExternalData> hostNodes = data.listFrom(poolNameKey);
             hasHosts = !hostNodes.isEmpty();
-            for (EtcdNode etcdNode : hostNodes) {
+            for (ExternalData etcdNode : hostNodes) {
                 String value = etcdNode.getValue();
                 URI uri = URI.create(value);
                 proxyClient.addHost(uri);

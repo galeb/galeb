@@ -2,7 +2,7 @@ package io.galeb.router.tests.mocks;
 
 import static org.mockito.Mockito.*;
 
-import io.galeb.router.client.etcd.EtcdClient;
+import io.galeb.router.cluster.EtcdClient;
 import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
 import org.apache.commons.logging.Log;

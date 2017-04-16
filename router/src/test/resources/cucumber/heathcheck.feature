@@ -6,10 +6,16 @@ Feature: Internal healthcheck support
     Then the response status is 200
     And body is WORKING
 
-  Scenario: Check rule internal
+  Scenario: Check rule target
     Given a valid host request to FASTTER backend
     When Do GET /
     And with headers:
         | X-Check-Pool | check |
     Then the response status is 200
     And body is POOL_REACHABLE
+
+  Scenario: Check rule path
+    Given a valid host request to FASTTER backend
+    When Do GET /__galeb_rule_path_check__
+    Then the response status is 200
+    And body is RULE_PATH_REACHABLE

@@ -28,8 +28,8 @@ public class PathGlobHandler implements HttpHandler {
     private HttpHandler pathGlobHandlerCheck() {
         return exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-            exchange.getResponseHeaders().put(Headers.SERVER, "PLANC");
-            exchange.getResponseSender().send("1");
+            exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
+            exchange.getResponseSender().send("RULE_PATH_REACHABLE");
         };
     }
 
@@ -40,7 +40,7 @@ public class PathGlobHandler implements HttpHandler {
             return;
         }
         final String path = exchange.getRelativePath();
-        if (path.equals("/__path_handler_check__")) {
+        if (path.equals("/__galeb_rule_path_check__")) {
             pathGlobHandlerCheck().handleRequest(exchange);
             return;
         }

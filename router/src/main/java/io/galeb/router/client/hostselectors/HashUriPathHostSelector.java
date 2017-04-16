@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class HashUriPathHostSelector implements HashHostSelector {
+public class HashUriPathHostSelector extends ClientStatisticsMarker implements HashHostSelector {
 
     private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnvs.HASH_ALGORITHM.getValue()));
     private final int numReplicas = Integer.parseInt(SystemEnvs.HASH_NUM_REPLICAS.getValue());
@@ -27,7 +27,9 @@ public class HashUriPathHostSelector implements HashHostSelector {
                                                     .collect(Collectors.toCollection(LinkedHashSet::new));
             consistentHash.rebuild(hashAlgorithm, numReplicas, listPos);
         }
-        return consistentHash.get(getKey(exchange));
+        int pos = consistentHash.get(getKey(exchange));
+        stamp(availableHosts[pos], exchange);
+        return pos;
     }
 
     private String getKey(final HttpServerExchange exchange) {

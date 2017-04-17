@@ -6,15 +6,18 @@ package io.galeb.router.client.hostselectors;
 
 @SuppressWarnings("unused")
 public enum HostSelectorAlgorithm {
-    ROUNDROBIN (new RoundRobinHostSelector()),
-    STRICT_LEASTCONN (new LeastConnHostSelector()),
-    LEASTCONN (new LeastConnWithRRHostSelector()),
-    HASH_SOURCEIP (new HashSourceIpHostSelector()),
-    HASH_URIPATH (new HashUriPathHostSelector());
+    ROUNDROBIN       (RoundRobinHostSelector.class),
+    STRICT_LEASTCONN (LeastConnHostSelector.class),
+    LEASTCONN        (LeastConnWithRRHostSelector.class),
+    HASH_SOURCEIP    (HashSourceIpHostSelector.class),
+    HASH_URIPATH     (HashUriPathHostSelector.class);
 
-    private final HostSelector hostSelector;
-    public HostSelector getHostSelector() { return hostSelector; }
-    HostSelectorAlgorithm(final HostSelector hostSelector) {
-        this.hostSelector = hostSelector;
+    private final Class klazz;
+    HostSelectorAlgorithm(final Class klazz) {
+        this.klazz = klazz;
+    }
+
+    public HostSelector getHostSelector() throws IllegalAccessException, InstantiationException {
+        return (HostSelector) klazz.newInstance();
     }
 }

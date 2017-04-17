@@ -17,7 +17,7 @@ public class RoundRobinHostSelectorTest extends AbstractHostSelectorTest {
         int loopFactor = 100;
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
             int loopLimit = (int) (NUM_HOSTS * Math.random() * loopFactor);
-            IntStream.range(1, loopLimit).forEach(x -> {
+            IntStream.range(0, loopLimit).forEach(x -> {
                 long result = roundRobinHostSelector.selectHost(hosts, commonExchange);
                 assertThat(result, equalTo((long) x % NUM_HOSTS));
             });

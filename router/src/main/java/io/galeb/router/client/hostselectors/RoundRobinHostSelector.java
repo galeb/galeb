@@ -11,18 +11,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobinHostSelector extends ClientStatisticsMarker implements HostSelector {
 
-    private volatile int currentHost = 0;
+    private final AtomicInteger currentHost = new AtomicInteger(0);
 
     @Override
     public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {
-        int pos = currentHost;
-        currentHost = ++currentHost % availableHosts.length;
+        final int pos = currentHost.getAndIncrement() % availableHosts.length;
         stamp(availableHosts[pos], exchange);
         return pos;
     }
 
     // Test only
     public synchronized void reset() {
-        currentHost = 0;
+        currentHost.set(0);
     }
 }

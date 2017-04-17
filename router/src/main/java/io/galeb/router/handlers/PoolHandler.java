@@ -65,6 +65,10 @@ public class PoolHandler implements HttpHandler {
         return poolname;
     }
 
+    public ProxyHandler getProxyHandler() {
+        return proxyHandler;
+    }
+
     private synchronized HttpHandler buildPoolHandler() {
         return exchange -> {
             if (poolname != null && data.exist(POOLS_KEY + "/" + poolname)) {

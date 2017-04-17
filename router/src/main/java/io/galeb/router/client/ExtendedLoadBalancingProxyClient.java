@@ -25,6 +25,7 @@ import org.xnio.ssl.XnioSsl;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.*;
 import static org.xnio.IoUtils.safeClose;
 
-public class ExtendedLoadBalancingProxyClient implements ProxyClient {
+public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedProxyClient {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -308,6 +309,10 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
 
     public boolean isHostsEmpty() {
         return hosts.length == 0;
+    }
+
+    public synchronized void removeAllHosts() {
+        Arrays.stream(hosts).map(Host::getUri).forEach(this::removeHost);
     }
 
     public class Host extends ConnectionPoolErrorHandler.SimpleConnectionPoolErrorHandler implements ConnectionPoolManager {

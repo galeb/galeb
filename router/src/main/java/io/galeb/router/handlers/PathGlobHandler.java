@@ -35,16 +35,7 @@ public class PathGlobHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (paths.isEmpty()) {
-            defaultHandler.handleRequest(exchange);
-            return;
-        }
         final String path = exchange.getRelativePath();
-        if (path.equals("/__galeb_rule_path_check__")) {
-            pathGlobHandlerCheck().handleRequest(exchange);
-            return;
-        }
-
         AtomicBoolean hit = new AtomicBoolean(false);
         paths.forEach((key, handler) -> {
             if (!hit.get()) {
@@ -64,6 +55,10 @@ public class PathGlobHandler implements HttpHandler {
             }
         });
         if (!hit.get()) {
+            if ("/__galeb_rule_path_check__".equals(path)) {
+                pathGlobHandlerCheck().handleRequest(exchange);
+                return;
+            }
             defaultHandler.handleRequest(exchange);
         }
     }

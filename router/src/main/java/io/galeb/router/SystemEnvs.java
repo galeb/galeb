@@ -109,6 +109,11 @@ public enum SystemEnvs {
     ENABLE_STATSD         (System.getenv("ENABLE_STATSD"),         Boolean.TRUE),
 
     /**
+     * Get and send to statsd the Target(Backend) openConnections counter.
+     */
+    SEND_OPENCONN_COUNTER (System.getenv("SEND_OPENCONN_COUNTER"), Boolean.TRUE),
+
+    /**
      * Should any existing X-Forwarded-For header be used or should it be overwritten.
      */
     REUSE_XFORWARDED      (System.getenv("REUSE_XFORWARDED"),      Boolean.TRUE),

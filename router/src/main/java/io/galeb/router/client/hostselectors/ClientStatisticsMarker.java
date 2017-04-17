@@ -1,5 +1,6 @@
 package io.galeb.router.client.hostselectors;
 
+import io.galeb.router.SystemEnvs;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
@@ -12,9 +13,14 @@ public abstract class ClientStatisticsMarker {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnvs.SEND_OPENCONN_COUNTER.getValue());
+
     void stamp(final Host host, final HttpServerExchange exchange) {
-        final int openConnections = host.getOpenConnection();
-        exchange.putAttachment(TARGET_CONN, openConnections);
+        int openConnections = 0;
+        if (sendOpenconnCounter) {
+            openConnections = host.getOpenConnection();
+            exchange.putAttachment(TARGET_CONN, openConnections);
+        }
         if (logger.isDebugEnabled()) {
             final String uri = host.getUri().toString();
             logger.debug("{\"client_statistic\": { \"uri\": \"" + uri + "\", \"open_connections\": " + openConnections + "} }");

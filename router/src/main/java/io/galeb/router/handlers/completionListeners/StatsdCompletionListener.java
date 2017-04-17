@@ -1,5 +1,6 @@
 package io.galeb.router.handlers.completionListeners;
 
+import io.galeb.router.SystemEnvs;
 import io.galeb.router.client.hostselectors.ClientStatisticsMarker;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.services.StatsdClient;
@@ -18,6 +19,8 @@ public class StatsdCompletionListener implements ExchangeCompletionListener, Pro
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
+    private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnvs.SEND_OPENCONN_COUNTER.getValue());
+
     private final StatsdClient statsdClient;
 
     @Autowired
@@ -35,16 +38,18 @@ public class StatsdCompletionListener implements ExchangeCompletionListener, Pro
             final boolean targetIsUndef = UNDEF.equals(targetUri);
 
             final Integer statusCode = exchange.getStatusCode();
-            final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
-
             final String key = cleanUpKey(virtualhost) + "." + cleanUpKey(targetUri);
 
             sendStatusCodeCount(key, statusCode, targetIsUndef);
-            sendActiveConnCount(key, clientOpenConnection, targetIsUndef);
             sendHttpMethodCount(key, method);
             sendResponseTime(key, responseTime, targetIsUndef);
+
+            if (sendOpenconnCounter) {
+                final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
+                sendActiveConnCount(key, clientOpenConnection, targetIsUndef);
+            }
 
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));

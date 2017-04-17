@@ -2,16 +2,26 @@
 <Configuration status="WARN">
   <Properties>
     <Property name="LOGLEVEL">INFO</Property>
-    <Property name="hostname">${env:HOSTNAME}</Property>
+    <Property name="hostname">localhost</Property>
+    <Property name="SYSLOG_HOST">127.0.0.1</Property>
+    <Property name="SYSLOG_PORT">514</Property>
   </Properties>
   <Appenders>
-    <Socket name="Syslog" host="127.0.0.1" port="514" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %m\ttags: galeb,app%n"/>
+    <Socket name="SyslogAccess" host="${env:SYSLOG_HOST}" port="${env:SYSLOG_PORT}" protocol="UDP">
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: %m\ttags: GALEB,ACCESS%n"/>
+    </Socket>
+    <Socket name="SyslogApp" host="${env:SYSLOG_HOST}" port="${env:SYSLOG_PORT}" protocol="UDP">
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %enc{%m} %exception\ttags: GALEB,APP%n"/>
     </Socket>
   </Appenders>
   <Loggers>
+    <Logger name="org.xnio.listener" level="FATAL" additivity="false"/>
+    <Logger name="io.undertow.request" level="FATAL" additivity="false"/>
+    <Logger name="io.galeb.router.handlers.completionListeners.AccessLogCompletionListener" level="debug" additivity="false">
+      <AppenderRef ref="SyslogAccess" level="${env:LOGLEVEL}"/>
+    </Logger>
     <Root level="trace">
-      <AppenderRef ref="Syslog" level="${env:LOGLEVEL}"/>
+      <AppenderRef ref="SyslogApp" level="${env:LOGLEVEL}"/>
     </Root>
   </Loggers>
 </Configuration>

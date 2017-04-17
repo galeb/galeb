@@ -10,11 +10,11 @@ import io.galeb.router.cluster.ExternalData;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 import java.net.URI;
 import java.util.List;
@@ -29,16 +29,18 @@ public class PoolHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final int maxRequestTime = Integer.parseInt(SystemEnvs.POOL_MAX_REQUEST_TIME.getValue());
+    private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnvs.REUSE_XFORWARDED.getValue());
+    private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnvs.REWRITE_HOST_HEADER.getValue());
+
     private final HttpHandler defaultHandler;
     private final ExternalDataService data;
-    private final ApplicationContext context;
 
-    private ExtendedProxyHandler proxyHandler = null;
+    private ProxyHandler proxyHandler = null;
     private String poolname = null;
     private final AtomicBoolean loaded = new AtomicBoolean(false);
 
-    public PoolHandler(final ApplicationContext context, final ExternalDataService externalData) {
-        this.context = context;
+    public PoolHandler(final ExternalDataService externalData) {
         this.data = externalData;
         this.defaultHandler = buildPoolHandler();
     }
@@ -82,8 +84,7 @@ public class PoolHandler implements HttpHandler {
                         ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
                         return;
                     }
-                    proxyHandler = context.getBean(ExtendedProxyHandler.class)
-                            .setProxyClientAndDefaultHandler(proxyClient, badGatewayHandler());
+                    proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
                     proxyHandler.handleRequest(exchange);
                     return;
                 }

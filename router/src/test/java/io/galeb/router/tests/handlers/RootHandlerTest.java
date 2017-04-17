@@ -49,7 +49,7 @@ public class RootHandlerTest {
                 }
             }
         });
-        when(context.getBean(anyString())).thenReturn(new PoolHandler(context, externalData));
+        when(context.getBean(anyString())).thenReturn(new PoolHandler(externalData));
     }
 
     @Test

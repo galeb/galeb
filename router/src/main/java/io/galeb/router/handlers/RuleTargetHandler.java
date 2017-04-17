@@ -31,11 +31,16 @@ public class RuleTargetHandler implements HttpHandler {
     private final ExternalDataService data;
     private String virtualHost;
 
-    private HttpHandler next;
+    private HttpHandler next = null;
 
     public RuleTargetHandler(final ApplicationContext context, final ExternalDataService externalData) {
         this.context = context;
         this.data = externalData;
+    }
+
+    @Override
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
+        next.handleRequest(exchange);
     }
 
     public RuleTargetHandler setVirtualHost(String virtualHost) {
@@ -44,15 +49,12 @@ public class RuleTargetHandler implements HttpHandler {
     }
 
     public RuleTargetHandler build() {
-        final PathGlobHandler pathGlobHandler = (PathGlobHandler) context.getBean("pathGlobHandler");
-        this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
-        pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
+        if (next == null) {
+            final PathGlobHandler pathGlobHandler = context.getBean(PathGlobHandler.class);
+            this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
+            pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
+        }
         return this;
-    }
-
-    @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        next.handleRequest(exchange);
     }
 
     public HttpHandler getNext() {
@@ -114,7 +116,7 @@ public class RuleTargetHandler implements HttpHandler {
                                 logger.info("add rule " + ruleDecoded + " [order:" + order + ", type:" + type + "]");
 
                                 if (RuleType.valueOf(type) == RuleType.PATH) {
-                                    final PoolHandler poolHandler = ((PoolHandler) context.getBean("poolHandler")).setPoolName(ruleTarget);
+                                    final PoolHandler poolHandler = context.getBean(PoolHandler.class).setPoolName(ruleTarget);
                                     pathGlobHandler.addPath(ruleDecoded, order, poolHandler);
                                 }
                             }

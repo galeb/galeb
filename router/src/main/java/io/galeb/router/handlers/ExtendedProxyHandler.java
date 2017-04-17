@@ -20,7 +20,7 @@ public class ExtendedProxyHandler implements HttpHandler {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private final int maxRequestTime = Integer.parseInt(SystemEnvs.POOL_MAX_REQUESTS.getValue());
+    private final int maxRequestTime = Integer.parseInt(SystemEnvs.POOL_MAX_REQUEST_TIME.getValue());
     private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnvs.REUSE_XFORWARDED.getValue());
     private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnvs.REWRITE_HOST_HEADER.getValue());
 

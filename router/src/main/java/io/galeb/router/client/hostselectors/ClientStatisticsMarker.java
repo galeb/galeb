@@ -1,6 +1,6 @@
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ public abstract class ClientStatisticsMarker {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    void stamp(final ExtendedLoadBalancingProxyClient.Host host, final HttpServerExchange exchange) {
+    void stamp(final Host host, final HttpServerExchange exchange) {
         final int openConnections = host.getOpenConnection();
         exchange.putAttachment(TARGET_CONN, openConnections);
         if (logger.isDebugEnabled()) {

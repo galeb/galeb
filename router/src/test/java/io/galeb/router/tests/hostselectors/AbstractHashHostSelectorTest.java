@@ -1,6 +1,6 @@
 package io.galeb.router.tests.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.HashHostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -22,7 +22,7 @@ abstract class AbstractHashHostSelectorTest extends AbstractHostSelectorTest {
 
     void doRandomTest(double errorPercentMax, double limitOfNotHitsPercent, int numPopulation, HashHostSelector hashHostSelector) {
         final HttpServerExchange exchange = new HttpServerExchange(null);
-        final ExtendedLoadBalancingProxyClient.Host[] newHosts = numPopulation < hosts.length ? Arrays.copyOf(hosts, numPopulation) : hosts;
+        final Host[] newHosts = numPopulation < hosts.length ? Arrays.copyOf(hosts, numPopulation) : hosts;
         final Map<Integer, String> remains = IntStream.rangeClosed(0, newHosts.length - 1).boxed().collect(Collectors.toMap(x -> x, x -> ""));
 
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
@@ -46,7 +46,7 @@ abstract class AbstractHashHostSelectorTest extends AbstractHostSelectorTest {
         assertThat(listOfNotHit.size(), lessThanOrEqualTo((int) (newHosts.length * (limitOfNotHitsPercent / 100))));
     }
 
-    abstract int getResult(HttpServerExchange exchange, ExtendedLoadBalancingProxyClient.Host[] newHosts);
+    abstract int getResult(HttpServerExchange exchange, Host[] newHosts);
 
     abstract void changeExchange(HttpServerExchange exchange, int x);
 }

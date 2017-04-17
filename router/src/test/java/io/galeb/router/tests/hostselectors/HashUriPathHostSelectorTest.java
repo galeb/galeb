@@ -1,6 +1,6 @@
 package io.galeb.router.tests.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.HashUriPathHostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class HashUriPathHostSelectorTest extends AbstractHashHostSelectorTest {
     }
 
     @Override
-    int getResult(HttpServerExchange exchange, ExtendedLoadBalancingProxyClient.Host[] newHosts) {
+    int getResult(HttpServerExchange exchange, Host[] newHosts) {
         return hashUriPathHostSelector.selectHost(newHosts, exchange);
     }
 

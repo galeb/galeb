@@ -234,7 +234,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
                 // If we have a holder, even if the connection was closed we now exclusivity was already requested so our client
                 // may be assuming it still exists.
                 host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
-                        .setHolder(holder).setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host).setExclusive(true),
+                        .setHolder(holder).setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host).setExclusive(),
                         timeout, timeUnit, true);
             } else {
                 host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
@@ -454,8 +454,8 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient {
             return this;
         }
 
-        public ProxyConnectionProxyCallback setExclusive(final boolean exclusive) {
-            this.exclusive = exclusive;
+        public ProxyConnectionProxyCallback setExclusive() {
+            this.exclusive = true;
             return this;
         }
 

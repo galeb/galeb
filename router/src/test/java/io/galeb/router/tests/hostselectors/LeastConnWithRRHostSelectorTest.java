@@ -1,6 +1,6 @@
 package io.galeb.router.tests.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.LeastConnWithRRHostSelector;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class LeastConnWithRRHostSelectorTest extends AbstractHostSelectorTest {
             int hostsLength = new Random().nextInt(NUM_HOSTS);
             final long limit = (int) Math.ceil((float) hostsLength * leastConnWithRRHostSelector.getCuttingLine());
             IntStream.range(0, hostsLength - 1).forEach(x -> {
-                final ExtendedLoadBalancingProxyClient.Host[] newHosts = Arrays.copyOf(hosts, hostsLength);
+                final Host[] newHosts = Arrays.copyOf(hosts, hostsLength);
                 long result = leastConnWithRRHostSelector.selectHost(newHosts, commonExchange);
                 assertThat(result, equalTo(x % limit));
             });

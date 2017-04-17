@@ -1,6 +1,6 @@
 package io.galeb.router.tests.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.LeastConnHostSelector;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class LeastConnHostSelectorTest extends AbstractHostSelectorTest {
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
             int hostsLength = new Random().nextInt(NUM_HOSTS);
             IntStream.range(0, hostsLength - 1).forEach(x -> {
-                final ExtendedLoadBalancingProxyClient.Host[] newHosts = Arrays.copyOf(hosts, hostsLength);
+                final Host[] newHosts = Arrays.copyOf(hosts, hostsLength);
                 long result = leastConnHostSelector.selectHost(newHosts, commonExchange);
                 assertThat(result, equalTo(0L));
             });

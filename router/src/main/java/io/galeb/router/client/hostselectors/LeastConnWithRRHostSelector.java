@@ -4,7 +4,7 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
 
@@ -23,7 +23,7 @@ public class LeastConnWithRRHostSelector extends ClientStatisticsMarker implemen
     private float cuttingLine = 0.666f;
 
     @Override
-    public int selectHost(final ExtendedLoadBalancingProxyClient.Host[] availableHosts, final HttpServerExchange exchange) {
+    public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {
         if (leastConnList == null || leastConnList.isEmpty()) {
             Float tempCuttingLine = exchange.getAttachment(CUTTING_LINE_ATTACH);
             cuttingLine = tempCuttingLine != null ? tempCuttingLine : cuttingLine;

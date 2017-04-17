@@ -4,7 +4,7 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
 
@@ -17,9 +17,9 @@ public interface HostSelector {
 
     AttachmentKey<String> REAL_DEST = AttachmentKey.create(String.class);
 
-    int selectHost(ExtendedLoadBalancingProxyClient.Host[] availableHosts, HttpServerExchange exchange);
+    int selectHost(Host[] availableHosts, HttpServerExchange exchange);
 
-    default Stream<Map.Entry<Integer, ExtendedLoadBalancingProxyClient.Host>> convertToMapStream(final ExtendedLoadBalancingProxyClient.Host[] availableHosts) {
+    default Stream<Map.Entry<Integer, Host>> convertToMapStream(final Host[] availableHosts) {
         return IntStream.range(0, availableHosts.length)
                 .boxed()
                 .collect(Collectors.toMap(i -> i, i -> availableHosts[i]))

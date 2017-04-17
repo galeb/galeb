@@ -1,6 +1,6 @@
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.SystemEnvs;
 import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
 import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
@@ -21,7 +21,7 @@ public class HashSourceIpHostSelector extends ClientStatisticsMarker implements 
     private final boolean ignoreXForwardedFor = Boolean.parseBoolean(SystemEnvs.IGNORE_XFORWARDED_FOR.getValue());
 
     @Override
-    public int selectHost(final ExtendedLoadBalancingProxyClient.Host[] availableHosts, final HttpServerExchange exchange) {
+    public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {
         if (!initialized.getAndSet(true)) {
             final LinkedHashSet<Integer> listPos = convertToMapStream(availableHosts)
                                                     .map(Map.Entry::getKey)

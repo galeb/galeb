@@ -23,7 +23,7 @@ public class EtcdConfiguration {
 
     private static final String ETCD_SERVER = SystemEnvs.ETCD_SERVER.getValue();
 
-    @Bean("etcdClient")
+    @Bean
     public EtcdClient etcdClient() throws EtcdException, ExecutionException, InterruptedException {
         final EtcdClient etcdClient = new EtcdClient(ETCD_SERVER);
         logger.info("Using " + etcdClient);

@@ -26,7 +26,7 @@ public class ExternalDataService {
     private final EtcdClient client;
 
     @Autowired
-    public ExternalDataService(@Value("#{etcdClient}") final EtcdClient etcdClient) {
+    public ExternalDataService(final EtcdClient etcdClient) {
         this.client = etcdClient;
     }
 

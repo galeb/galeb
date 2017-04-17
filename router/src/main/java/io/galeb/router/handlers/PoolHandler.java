@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
 import static io.galeb.router.services.ExternalDataService.POOLS_KEY;
@@ -38,7 +37,6 @@ public class PoolHandler implements HttpHandler {
 
     private ProxyHandler proxyHandler = null;
     private String poolname = null;
-    private final AtomicBoolean loaded = new AtomicBoolean(false);
 
     public PoolHandler(final ExternalDataService externalData) {
         this.data = externalData;
@@ -67,29 +65,26 @@ public class PoolHandler implements HttpHandler {
         return poolname;
     }
 
-    private HttpHandler buildPoolHandler() {
+    private synchronized HttpHandler buildPoolHandler() {
         return exchange -> {
-            synchronized (loaded) {
-                loaded.set(true);
-                if (poolname != null && data.exist(POOLS_KEY + "/" + poolname)) {
-                    logger.info("creating pool " + poolname);
-                    HostSelector hostSelector = defineHostSelector();
-                    logger.info("[Pool " + poolname + "] HostSelector: " + hostSelector.getClass().getSimpleName());
-                    final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
-                                        exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
-                                    .setTtl(Integer.parseInt(SystemEnvs.POOL_CONN_TTL.getValue()))
-                                    .setConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_CONN_PER_THREAD.getValue()))
-                                    .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_SOFTMAXCONN.getValue()));
-                    if (!addTargets(proxyClient)) {
-                        ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
-                        return;
-                    }
-                    proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
-                    proxyHandler.handleRequest(exchange);
+            if (poolname != null && data.exist(POOLS_KEY + "/" + poolname)) {
+                logger.info("creating pool " + poolname);
+                HostSelector hostSelector = defineHostSelector();
+                logger.info("[Pool " + poolname + "] HostSelector: " + hostSelector.getClass().getSimpleName());
+                final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
+                                    exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
+                                .setTtl(Integer.parseInt(SystemEnvs.POOL_CONN_TTL.getValue()))
+                                .setConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_CONN_PER_THREAD.getValue()))
+                                .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_SOFTMAXCONN.getValue()));
+                if (!addTargets(proxyClient)) {
+                    ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
                     return;
                 }
-                ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
+                proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
+                proxyHandler.handleRequest(exchange);
+                return;
             }
+            ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
         };
     }
 
@@ -97,7 +92,7 @@ public class PoolHandler implements HttpHandler {
         return exchange -> exchange.setStatusCode(502);
     }
 
-    private HostSelector defineHostSelector() {
+    private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
         if (poolname != null) {
             final String hostSelectorKeyName = POOLS_KEY + "/" + poolname + "/loadbalance";
             final ExternalData hostSelectorNode = data.node(hostSelectorKeyName);

@@ -78,7 +78,7 @@ public enum SystemEnvs {
      * The timeout for idle connections. Note that if POOL_SOFTMAXCONN > 0 then once the pool is down
      * to the core size no more connections will be timed out.
      */
-    POOL_CONN_TTL         (System.getenv("POOL_CONN_TTL"),         -1),
+    POOL_CONN_TTL         (System.getenv("POOL_CONN_TTL"),         10000),
 
     /**
      * The minimum number of connections that this proxy connection pool will try and keep established. Once the pool

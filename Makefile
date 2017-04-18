@@ -13,6 +13,7 @@ dist: galeb-next
     cd router/target && \
     cp -a ../../wrapper . && \
     cp ../../wrapper.conf wrapper/conf/ && \
+    cp -a ../../galeb-router.initscript wrapper/bin/ && \
     fpm -s dir \
         -t rpm \
         -n 'galeb-router' \

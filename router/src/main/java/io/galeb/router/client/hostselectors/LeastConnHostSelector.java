@@ -18,7 +18,7 @@ public class LeastConnHostSelector extends ClientStatisticsMarker implements Hos
                 .sorted(Comparator.comparing(e -> e.getValue().getOpenConnection()))
                 .findFirst()
                 .map(Map.Entry::getKey)
-                .orElse(-1);
+                .orElse(DEFAULT_POS);
         stamp(availableHosts[pos], exchange);
         return pos;
     }

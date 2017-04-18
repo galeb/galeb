@@ -17,6 +17,8 @@ public interface HostSelector {
 
     AttachmentKey<String> REAL_DEST = AttachmentKey.create(String.class);
 
+    int DEFAULT_POS = 0;
+
     int selectHost(Host[] availableHosts, HttpServerExchange exchange);
 
     default Stream<Map.Entry<Integer, Host>> convertToMapStream(final Host[] availableHosts) {

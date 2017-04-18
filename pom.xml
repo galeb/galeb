@@ -10,6 +10,7 @@
 
   <modules>
     <module>router</module>
+    <module>health</module>
   </modules>
 
   <organization>

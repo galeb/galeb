@@ -20,6 +20,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.Arrays;
 
 @Service
 @Profile({ "test" })
@@ -29,10 +31,21 @@ public class JmxClientService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private MBeanServerConnection client;
+    private String pidProperty = null;
 
     @PostConstruct
     public void start() throws Exception {
-        int pid = Integer.parseInt(System.getProperty("galeb.pid"));
+        if (pidProperty == null) {
+            pidProperty = System.getProperty("galeb.pid", "0");
+        }
+        if ("0".equals(pidProperty)) {
+            pidProperty = Arrays.stream(ManagementFactory.getRuntimeMXBean().getName().split("@")).findFirst().orElse("-1");
+        }
+        if ("-1".equals(pidProperty)) {
+            logger.error("PID not found");
+            throw new RuntimeException("PID not found");
+        }
+        int pid = Integer.parseInt(pidProperty);
         String jmxUrl = ConnectorAddressLink.importFrom(pid);
         final JMXServiceURL url = new JMXServiceURL(jmxUrl);
         final JMXConnector jmxConn = JMXConnectorFactory.connect(url);

@@ -3,7 +3,6 @@ package io.galeb.health;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @SuppressWarnings("unused")
@@ -27,7 +26,37 @@ public enum SystemEnvs {
     /**
      * Syslog server port
      */
-    SYSLOG_PORT           (System.getenv("SYSLOG_PORT"),           514);
+    SYSLOG_PORT           (System.getenv("SYSLOG_PORT"),           514),
+
+    /**
+     *  AMQP Queue name
+     */
+    QUEUE_NAME(System.getenv("QUEUE_NAME"), "galeb-health"),
+
+    /**
+     *  Galeb Manager Farm -> Environment ID
+     */
+    ENVIRONMENT_ID(System.getenv("ENVIRONMENT_ID"), 2),
+
+    /**
+     *  Galeb Manager URL
+     */
+    MANAGER_URL(System.getenv("MANAGER_URL"), "http://127.0.0.1:8000"),
+
+    /**
+     *  Galeb Manager user
+     */
+    MANAGER_USER(System.getenv("MANAGER_USER"), "health"),
+
+    /**
+     *  Galeb Manager password
+     */
+    MANAGER_PASS(System.getenv("MANAGER_PASS"), "password"),
+
+    /**
+     *  Tester request timeout
+     */
+    TEST_TIMEOUT(System.getenv("TEST_TIMEOUT"), 2000);
 
     static {
         try {

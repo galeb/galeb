@@ -1,82 +1,29 @@
 package io.galeb.router.services;
 
-import io.galeb.router.cluster.EtcdClient;
-import io.galeb.router.cluster.ExternalData;
 import io.galeb.router.SystemEnvs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.zalando.boot.etcd.EtcdNode;
+import io.galeb.router.cluster.ExternalData;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-@Service
-public class ExternalDataService {
+public interface ExternalDataService {
+    String ROOT_KEY         = "/";
+    String PREFIX_KEY       = ROOT_KEY + SystemEnvs.CLUSTER_ID.getValue();
+    String VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
+    String POOLS_KEY        = PREFIX_KEY + "/pools";
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    List<ExternalData> listFrom(String key);
 
-    public static final String ROOT_KEY         = "/";
-    public static final String PREFIX_KEY       = ROOT_KEY + SystemEnvs.CLUSTER_ID.getValue();
-    public static final String VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
-    public static final String POOLS_KEY        = PREFIX_KEY + "/pools";
+    List<ExternalData> listFrom(String key, boolean recursive);
 
-    private final EtcdClient client;
+    List<ExternalData> listFrom(ExternalData node);
 
-    @Autowired
-    public ExternalDataService(final EtcdClient etcdClient) {
-        this.client = etcdClient;
-    }
+    ExternalData node(String key);
 
-    public EtcdClient client() {
-        return client;
-    }
+    ExternalData node(String key, boolean recursive);
 
-    public List<ExternalData> listFrom(String key) {
-        return listFrom(key, false);
-    }
+    ExternalData node(String key, ExternalData.Generic def);
 
-    public List<ExternalData> listFrom(String key, boolean recursive) {
-        return listFrom(node(key, recursive));
-    }
+    ExternalData node(String key, boolean recursive, ExternalData.Generic def);
 
-    public List<ExternalData> listFrom(ExternalData node) {
-        return node.getNodes();
-    }
-
-    public ExternalData node(String key) {
-        return node(key, false);
-    }
-
-    public ExternalData node(String key, boolean recursive) {
-        return node(key, recursive, ExternalData.Generic.NULL);
-    }
-
-    public ExternalData node(String key, ExternalData.Generic def) {
-        return node(key, false, def);
-    }
-
-    public synchronized ExternalData node(String key, boolean recursive, ExternalData.Generic def) {
-        try {
-            final EtcdNode node = client.get(key, recursive).getNode();
-            final ExternalData data = node != null ? new ExternalData(node) : def.instance();
-            logger.debug("GET " + key + ": " +  "ExternalData(value=" + data.getValue() + ", dir=" + data.isDir() + ")");
-            return data;
-        } catch (Exception e) {
-            logger.warn("GET " + key + " FAIL: " + e.getMessage());
-            return def.instance();
-        }
-    }
-
-    public synchronized boolean exist(String key) {
-        try {
-            final EtcdNode node = client.get(key, false).getNode();
-            return node != null && (node.getValue() != null || node.isDir());
-        } catch (ExecutionException | InterruptedException e) {
-            return false;
-        }
-    }
-
+    boolean exist(String key);
 }

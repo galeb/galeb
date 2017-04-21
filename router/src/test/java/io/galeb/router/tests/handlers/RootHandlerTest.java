@@ -38,7 +38,7 @@ public class RootHandlerTest {
         when(externalData.exist(anyString())).thenReturn(true);
         when(externalData.node(anyString())).thenAnswer(invocationOnMock -> {
             String key = invocationOnMock.getArgumentAt(0, String.class);
-            ExternalData node = new ExternalData();
+            ExternalData node = mock(ExternalData.class);
 
             switch (key) {
                 case "": {

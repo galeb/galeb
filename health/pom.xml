@@ -30,6 +30,7 @@
         <artemis-jms-server.version>1.5.4</artemis-jms-server.version>
         <spring-jms.version>4.3.7.RELEASE</spring-jms.version>
         <galeb-manager.version>1.0.19-SNAPSHOT</galeb-manager.version>
+        <undertow.version>1.4.12.Final</undertow.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
         <mockito.version>1.10.19</mockito.version>
@@ -131,6 +132,11 @@
             <groupId>io.galeb</groupId>
             <artifactId>galeb-manager</artifactId>
             <version>${galeb-manager.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>${undertow.version}</version>
         </dependency>
 
         <!--  tests -->

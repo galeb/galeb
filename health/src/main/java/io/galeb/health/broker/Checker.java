@@ -1,9 +1,8 @@
 package io.galeb.health.broker;
 
 import io.galeb.health.SystemEnvs;
-import io.galeb.health.externaldata.ManagerClient;
+import io.galeb.health.externaldata.TargetHealth;
 import io.galeb.manager.entity.Target;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
@@ -14,45 +13,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.galeb.health.broker.Checker.State.FAIL;
-import static io.galeb.health.broker.Checker.State.OK;
-import static io.galeb.health.broker.Checker.State.UNKNOWN;
-import static io.galeb.health.externaldata.ManagerClient.*;
+import static io.galeb.health.externaldata.TargetHealth.HcState.*;
+import static io.galeb.health.externaldata.TargetHealth.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
 @Component
 public class Checker {
 
-    public enum State {
-        OK,
-        FAIL,
-        UNKNOWN
-    }
-
     public static final AtomicLong LAST_CALL = new AtomicLong(0L);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final String connectionTimeout = SystemEnvs.TEST_CONN_TIMEOUT.getValue();
+
+    private final TargetHealth targetHealth;
+
     private final AsyncHttpClient asyncHttpClient;
-    private final ManagerClient managerClient;
 
     @Autowired
-    public Checker(final ManagerClient managerClient) {
+    public Checker(final TargetHealth targetHealth) {
+        this.targetHealth = targetHealth;
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
                 .setKeepAlive(false)
-                .setConnectTimeout(Integer.parseInt(SystemEnvs.TEST_TIMEOUT.getValue()))
+                .setConnectTimeout(Integer.parseInt(connectionTimeout))
                 .setPooledConnectionIdleTimeout(1)
                 .setMaxConnectionsPerHost(1).build());
-        this.managerClient = managerClient;
     }
 
     @SuppressWarnings("unused")
@@ -64,11 +58,16 @@ public class Checker {
         hcPath.compareAndSet(null,"/");
         final String hcStatusCode = properties.get(PROP_HEALTHCHECK_CODE);
         final String hcBody = properties.get(PROP_HEALTHCHECK_RETURN);
-        final String hcHost = properties.getOrDefault(ManagerClient.PROP_HEALTHCHECK_HOST, target.getName());
-        final String lastReason = properties.get(ManagerClient.PROP_STATUS_DETAILED);
+        String hcHost = properties.get(PROP_HEALTHCHECK_HOST);
+        if (hcHost == null) {
+            URI targetURI = URI.create(target.getName());
+            hcHost = targetURI.getHost() + ":" + targetURI.getPort();
+        }
+        final String realHost = hcHost;
+        final String lastReason = properties.get(PROP_STATUS_DETAILED);
         long start = System.currentTimeMillis();
 
-        RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(hcHost);
+        RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(realHost);
         asyncHttpClient.executeRequest(requestBuilder, new AsyncCompletionHandler<Response>() {
             @Override
             public Response onCompleted(Response response) throws Exception {
@@ -87,7 +86,7 @@ public class Checker {
                 if (hcBody != null) {
                     String body = response.getResponseBody();
                     if (body != null && !body.isEmpty() && !body.contains(hcBody)) {
-                        definePropertiesAndUpdate(FAIL, "Body FAIL");
+                        definePropertiesAndUpdate(FAIL, "Body check FAIL");
                         return true;
                     }
                 }
@@ -98,32 +97,35 @@ public class Checker {
                 if (hcStatusCode != null) {
                     int statusCode = response.getStatusCode();
                     if (statusCode != Integer.parseInt(hcStatusCode)) {
-                        definePropertiesAndUpdate(FAIL, "Status code FAIL");
+                        definePropertiesAndUpdate(FAIL, "HTTP Status Code check FAIL");
                         return true;
                     }
                 }
                 return false;
             }
 
-            private void definePropertiesAndUpdate(Checker.State state, String reason) {
+            private void definePropertiesAndUpdate(TargetHealth.HcState state, String reason) {
                 String newHealthyState = state.toString();
 
-                target.getProperties().put(ManagerClient.PROP_HEALTHY, newHealthyState);
-                target.getProperties().put(ManagerClient.PROP_STATUS_DETAILED, reason);
+                target.getProperties().put(PROP_HEALTHY, newHealthyState);
+                target.getProperties().put(PROP_STATUS_DETAILED, reason);
                 String scheduleId = target.getProperties().get("SCHEDULER_ID");
-                String logMessage = "[" + scheduleId + "] " + target.getName() + hcPath.get() + ": " + reason
-                        + " (request time: " + (System.currentTimeMillis() - start) + " ms)";
+                String logMessage = "[schedId: " + scheduleId + "] "
+                        + "Test Params: { "
+                            + "ExpectedBody:\"" + hcBody + "\", "
+                            + "ExpectedStatusCode:" + hcStatusCode + ", "
+                            + "Host:\"" + realHost + "\", "
+                            + "FullUrl:\"" + target.getName() + hcPath.get() + "\", "
+                            + "ConnectionTimeout:" + connectionTimeout + "ms }, "
+                        + "Result: [ " + reason
+                            + " (request time: " + (System.currentTimeMillis() - start) + " ms) ]";
                 if (state.equals(OK)) {
                     logger.info(logMessage);
                 } else {
                     logger.warn(logMessage);
                 }
                 if (lastReason == null || !reason.equals(lastReason)) {
-                    try {
-                        managerClient.update(target);
-                    } catch (ExecutionException | InterruptedException e) {
-                        logger.error(ExceptionUtils.getStackTrace(e));
-                    }
+                    targetHealth.patchTarget(target);
                 }
             }
 

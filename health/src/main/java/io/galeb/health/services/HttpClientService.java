@@ -1,6 +1,5 @@
 package io.galeb.health.services;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Realm;
 import org.asynchttpclient.RequestBuilder;
@@ -10,9 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+import static io.galeb.health.utils.ErrorLogger.logError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
@@ -21,12 +19,11 @@ public class HttpClientService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ExecutorService executor = Executors.newWorkStealingPool();
-
     private final AsyncHttpClient asyncHttpClient;
 
     public HttpClientService() {
         asyncHttpClient = asyncHttpClient(config()
+
                 .setFollowRedirect(false)
                 .setKeepAlive(true)
                 .setConnectTimeout(10000)
@@ -35,29 +32,46 @@ public class HttpClientService {
                 .setMaxConnectionsPerHost(100).build());
     }
 
-    public String getResponseBodyWithToken(String url, String token) throws InterruptedException, ExecutionException {
-        RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
-                .setHeader("x-auth-token", token);
-        Response response = asyncHttpClient.executeRequest(requestBuilder.build()).get();
-        return response.getResponseBody();
+    public String getResponseBodyWithToken(String url, String token) {
+        try {
+            RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
+                    .setHeader("x-auth-token", token);
+            Response response = asyncHttpClient.executeRequest(requestBuilder.build()).get();
+            return response.getResponseBody();
+        } catch (NullPointerException e) {
+            logger.error("Token is NULL (auth problem?)");
+        } catch (ExecutionException | InterruptedException e) {
+            logError(e, this.getClass());
+        }
+        return "";
     }
 
-    public void patchResponse(String url, String body, String token) {
-        executor.submit(() -> {
+    public boolean patchResponse(String url, String body, String token) {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                     .setHeader("x-auth-token", token).setMethod("PATCH")
                     .setBody(body);
             try {
-                asyncHttpClient.executeRequest(requestBuilder.build()).get();
+                Response response = asyncHttpClient.executeRequest(requestBuilder.build()).get();
+                if (response.getStatusCode() < 400) return true;
             } catch (InterruptedException | ExecutionException e) {
-                logger.error(ExceptionUtils.getStackTrace(e));
+                logError(e, this.getClass());
             }
-        });
+            return false;
     }
 
-    public String getResponseBodyWithAuth(String user, String pass, String url) throws InterruptedException, ExecutionException {
+    public String getResponseBodyWithAuth(String user, String pass, String url) {
         RequestBuilder requestTokenBuilder = new RequestBuilder().setUrl(url)
                 .setRealm(new Realm.Builder(user, pass).setScheme(Realm.AuthScheme.BASIC).build());
-        return asyncHttpClient.executeRequest(requestTokenBuilder).get().getResponseBody();
+        try {
+            Response response = asyncHttpClient.executeRequest(requestTokenBuilder).get();
+            if (response.getStatusCode() == 401) {
+                logger.error("401 Unauthorized: \"" + user + "\" auth failed");
+                return "";
+            }
+            return response.getResponseBody();
+        } catch (ExecutionException | InterruptedException e) {
+            logError(e, this.getClass());
+        }
+        return "";
     }
 }

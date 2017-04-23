@@ -136,7 +136,27 @@ public enum SystemEnvs {
     /**
      * Consistent Hash Algorithm (HashHostSelector exclusive use).
      */
-    HASH_ALGORITHM        (System.getenv("HASH_ALGORITHM"),        "MURMUR3_32");
+    HASH_ALGORITHM        (System.getenv("HASH_ALGORITHM"),        "MURMUR3_32"),
+
+    /**
+     *  External Data provider tcp max connections
+     */
+    EXTERNALDATA_MAXCONN  (System.getenv("EXTERNALDATA_MAXCONN"),  1),
+
+    /**
+     *  Extenal Data provider connections pool size
+     */
+    EXTERNALDATA_POOL     (System.getenv("EXTERNALDATA_POOL"),     1),
+
+    /**
+     *  External Data provider connection timeout
+     */
+    EXTERNALDATA_TIMEOUT  (System.getenv("EXTERNALDATA_TIMEOUT"),  10000),
+
+    /**
+     *  Enable JMX reporter (Undertow front-end metrics)
+     */
+    ENABLE_UNDERTOW_JMX   (System.getenv("EXTERNALDATA_TIMEOUT"),  Boolean.TRUE);
 
     private static int getSOBacklog() {
         int tcp_max_syn_backlog = 1000;

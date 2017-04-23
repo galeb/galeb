@@ -14,6 +14,11 @@ public enum SystemEnvs {
     CLUSTER_ID          (System.getenv("CLUSTER_ID"),           "GALEB"),
 
     /**
+     *  Enable JMS HA
+     */
+    ENABLE_HA           (System.getenv("ENABLE_HA"),            Boolean.FALSE),
+
+    /**
      * Service healthchecker port.
      */
     HEALTH_PORT         (System.getenv("HEALTH_PORT"),          7000),

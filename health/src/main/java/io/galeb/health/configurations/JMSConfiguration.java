@@ -32,11 +32,15 @@ public class JMSConfiguration {
 
     private static final String JMS_BROKER_URL = "vm://0?useShutdownHook=false";
 
+    private boolean enableHa = Boolean.parseBoolean(SystemEnvs.ENABLE_HA.getValue());
+
     @Bean
     public DefaultJmsListenerContainerFactory containerFactory(DefaultJmsListenerContainerFactoryConfigurer configurer) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(JMS_BROKER_URL);
-        connectionFactory.setConnectionLoadBalancingPolicyClassName(RoundRobinConnectionLoadBalancingPolicy.class.getName());
+        if (enableHa) {
+            connectionFactory.setConnectionLoadBalancingPolicyClassName(RoundRobinConnectionLoadBalancingPolicy.class.getName());
+        }
         CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(connectionFactory);
         cachingConnectionFactory.setSessionCacheSize(100);
         cachingConnectionFactory.setCacheConsumers(true);
@@ -47,39 +51,43 @@ public class JMSConfiguration {
     @Bean
     public ArtemisConfigurationCustomizer artemisConfigurationCustomizer() {
         return configuration -> {
-            ClusterConnectionConfiguration clusterConnectionConfiguration = new ClusterConnectionConfiguration()
-                    .setName("mycluster")
-                    .setDiscoveryGroupName("mydistgroup")
-                    .setAddress("jms")
-                    .setMessageLoadBalancingType(MessageLoadBalancingType.STRICT)
-                    .setMaxHops(1)
-                    .setRetryInterval(500)
-                    .setDuplicateDetection(true);
+            if (enableHa) {
+                ClusterConnectionConfiguration clusterConnectionConfiguration = new ClusterConnectionConfiguration()
+                        .setName("mycluster")
+                        .setDiscoveryGroupName("mydistgroup")
+                        .setAddress("jms")
+                        .setMessageLoadBalancingType(MessageLoadBalancingType.STRICT)
+                        .setMaxHops(1)
+                        .setRetryInterval(500)
+                        .setDuplicateDetection(true);
 
-            JGroupsFileBroadcastEndpointFactory endpointFactory = new JGroupsFileBroadcastEndpointFactory()
-                    .setChannelName(SystemEnvs.CLUSTER_ID.getValue())
-                    .setFile("jgroups.xml");
+                JGroupsFileBroadcastEndpointFactory endpointFactory = new JGroupsFileBroadcastEndpointFactory()
+                        .setChannelName(SystemEnvs.CLUSTER_ID.getValue())
+                        .setFile("jgroups.xml");
 
-            BroadcastGroupConfiguration broadcastGroupConfiguration = new BroadcastGroupConfiguration()
-                    .setName("my-broadcast-group")
-                    .setEndpointFactory(endpointFactory)
-                    .setBroadcastPeriod(5000)
-                    .setConnectorInfos(Collections.singletonList("netty-connector"));
+                BroadcastGroupConfiguration broadcastGroupConfiguration = new BroadcastGroupConfiguration()
+                        .setName("my-broadcast-group")
+                        .setEndpointFactory(endpointFactory)
+                        .setBroadcastPeriod(5000)
+                        .setConnectorInfos(Collections.singletonList("netty-connector"));
 
-            DiscoveryGroupConfiguration discoveryGroupConfiguration = new DiscoveryGroupConfiguration()
-                    .setName("mydistgroup")
-                    .setRefreshTimeout(10000)
-                    .setBroadcastEndpointFactory(endpointFactory);
+                DiscoveryGroupConfiguration discoveryGroupConfiguration = new DiscoveryGroupConfiguration()
+                        .setName("mydistgroup")
+                        .setRefreshTimeout(10000)
+                        .setBroadcastEndpointFactory(endpointFactory);
 
+                configuration.addClusterConfiguration(clusterConnectionConfiguration)
+                        .addDiscoveryGroupConfiguration("mydistgroup", discoveryGroupConfiguration)
+                        .addBroadcastGroupConfiguration(broadcastGroupConfiguration)
+                        .addConnectorConfiguration("netty-connector",
+                                new TransportConfiguration(NettyConnectorFactory.class.getName(), new HashMap<>()))
+                        .addAcceptorConfiguration(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+
+            }
             configuration.setPersistenceEnabled(false)
                     .setSecurityEnabled(false)
-                    .addClusterConfiguration(clusterConnectionConfiguration)
-                    .addDiscoveryGroupConfiguration("mydistgroup", discoveryGroupConfiguration)
-                    .addBroadcastGroupConfiguration(broadcastGroupConfiguration)
                     .addConnectorConfiguration("invm-connector",
-                        new TransportConfiguration(InVMConnectorFactory.class.getName(), generateInVMParams()))
-                    .addConnectorConfiguration("netty-connector", new TransportConfiguration(NettyConnectorFactory.class.getName(), new HashMap<>()))
-                    .addAcceptorConfiguration(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+                        new TransportConfiguration(InVMConnectorFactory.class.getName(), generateInVMParams()));
         };
     }
 

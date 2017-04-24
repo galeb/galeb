@@ -27,52 +27,57 @@ public enum SystemEnvs {
     /**
      * Cluster ID (same as Farm ID).
      */
-    CLUSTER_ID            (System.getenv("CLUSTER_ID"),            "GALEB"),
+    CLUSTER_ID          (System.getenv("CLUSTER_ID"),           "GALEB"),
 
     /**
-     * Service router port.
+     *  Enable JMS HA
      */
-    ROUTER_PORT           (System.getenv("HEALTH_PORT"),           7000),
+    ENABLE_HA           (System.getenv("ENABLE_HA"),            Boolean.FALSE),
+
+    /**
+     * Service healthchecker port.
+     */
+    HEALTH_PORT         (System.getenv("HEALTH_PORT"),          7000),
 
     /**
      * Syslog server host.
      */
-    SYSLOG_HOST           (System.getenv("SYSLOG_HOST"),           "127.0.0.1"),
+    SYSLOG_HOST         (System.getenv("SYSLOG_HOST"),          "127.0.0.1"),
 
     /**
      * Syslog server port
      */
-    SYSLOG_PORT           (System.getenv("SYSLOG_PORT"),           514),
+    SYSLOG_PORT         (System.getenv("SYSLOG_PORT"),          514),
 
     /**
      *  AMQP Queue name
      */
-    QUEUE_NAME(System.getenv("QUEUE_NAME"), "galeb-health"),
+    QUEUE_NAME          (System.getenv("QUEUE_NAME"),           "galeb-health"),
 
     /**
-     *  Galeb Manager Farm -> Environment ID
+     *  Galeb Manager Farm -> Environment Name
      */
-    ENVIRONMENT_ID(System.getenv("ENVIRONMENT_ID"), 2),
+    ENVIRONMENT_NAME    (System.getenv("ENVIRONMENT_NAME"),     ""),
 
     /**
      *  Galeb Manager URL
      */
-    MANAGER_URL(System.getenv("MANAGER_URL"), "http://127.0.0.1:8000"),
+    MANAGER_URL         (System.getenv("MANAGER_URL"),          "http://127.0.0.1:8000"),
 
     /**
      *  Galeb Manager user
      */
-    MANAGER_USER(System.getenv("MANAGER_USER"), "health"),
+    MANAGER_USER        (System.getenv("MANAGER_USER"),         "health"),
 
     /**
      *  Galeb Manager password
      */
-    MANAGER_PASS(System.getenv("MANAGER_PASS"), "password"),
+    MANAGER_PASS        (System.getenv("MANAGER_PASS"),         "password"),
 
     /**
-     *  Tester request timeout
+     *  Tester request timeout (ms)
      */
-    TEST_TIMEOUT(System.getenv("TEST_TIMEOUT"), 2000);
+    TEST_CONN_TIMEOUT   (System.getenv("TEST_CONN_TIMEOUT"),    2000);
 
     static {
         try {

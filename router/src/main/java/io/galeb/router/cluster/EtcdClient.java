@@ -17,10 +17,12 @@
 package io.galeb.router.cluster;
 
 import com.google.gson.Gson;
+import io.galeb.router.SystemEnvs;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
+import org.asynchttpclient.channel.KeepAliveStrategy;
 import org.springframework.http.HttpMethod;
 import org.zalando.boot.etcd.EtcdResponse;
 
@@ -40,13 +42,18 @@ public class EtcdClient {
 
     public EtcdClient(String server) {
         this.server = server;
-        final int timeout = 10000;
+        int timeout = Integer.parseInt(SystemEnvs.EXTERNALDATA_TIMEOUT.getValue());
+        int pooledConnectionIdleTimeout = Integer.parseInt(SystemEnvs.EXTERNALDATA_POOL.getValue());
+        int maxConnectionsPerHost = Integer.parseInt(SystemEnvs.EXTERNALDATA_MAXCONN.getValue());
         asyncHttpClient = asyncHttpClient(config()
+                .setIoThreadsCount(1)
+                .setSoReuseAddress(true)
+                .setTcpNoDelay(true)
                 .setFollowRedirect(false)
                 .setKeepAlive(true)
                 .setConnectTimeout(timeout)
-                .setPooledConnectionIdleTimeout(10)
-                .setMaxConnectionsPerHost(10).build());
+                .setPooledConnectionIdleTimeout(pooledConnectionIdleTimeout)
+                .setMaxConnectionsPerHost(maxConnectionsPerHost).build());
     }
 
     public EtcdResponse get(String key, boolean recursive) throws ExecutionException, InterruptedException {

@@ -16,18 +16,13 @@
 
 package io.galeb.router.cluster;
 
-import org.zalando.boot.etcd.EtcdNode;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-public class ExternalData {
-
+public interface ExternalData {
+    
     @SuppressWarnings("unused")
-    public enum Generic {
-        NULL(new ExternalData()),
+    enum Generic {
+        NULL(new ExternalData() {}),
         EMPTY(new ExternalData() { public String getValue() { return ""; }}),
         UNDEF(new ExternalData() { public String getValue() { return "UNDEF"; }}),
         ZERO(new ExternalData() { public String getValue() { return "0"; }});
@@ -42,58 +37,20 @@ public class ExternalData {
         }
     }
 
-    private final EtcdNode etcdNode = new EtcdNode();
+    default String getKey() { return null; }
 
-    public ExternalData() {
-        // etcdNode default
-    }
+    default void setKey(String key) {}
 
-    public ExternalData(EtcdNode etcdNode) {
-        this.etcdNode.setKey(etcdNode.getKey());
-        this.etcdNode.setValue(etcdNode.getValue());
-        this.etcdNode.setDir(etcdNode.isDir());
-        this.etcdNode.setNodes(etcdNode.getNodes());
-    }
+    default String getValue() { return null; }
 
-    public String getKey() {
-        return etcdNode.getKey();
-    }
+    default void setValue(String value) {}
 
-    public void setKey(String key) {
-        this.etcdNode.setKey(key);
-    }
+    default boolean isDir() { return false; }
 
-    public String getValue() {
-        return etcdNode.getValue();
-    }
+    default void setDir(boolean dir) {}
 
-    public void setValue(String value) {
-        this.etcdNode.setValue(value);
-    }
+    default List<ExternalData> getNodes() { return null; }
 
-    public boolean isDir() {
-        return etcdNode.isDir();
-    }
-
-    public void setDir(boolean dir) {
-        this.etcdNode.setDir(dir);
-    }
-
-    public List<ExternalData> getNodes() {
-        final List<ExternalData> externalDatas = new ArrayList<>();
-        Optional.ofNullable(etcdNode.getNodes()).orElse(Collections.emptyList()).forEach(n -> externalDatas.add(new ExternalData(n)));
-        return externalDatas;
-    }
-
-    public void setNodes(List<ExternalData> nodes) {
-        etcdNode.setNodes(convertListExternalDataToListEtcNode(nodes));
-    }
-
-    private List<EtcdNode> convertListExternalDataToListEtcNode(final List<ExternalData> nodes) {
-        final List<EtcdNode> listOfEtcNodes = this.etcdNode.getNodes();
-        nodes.forEach(n -> listOfEtcNodes.add(new EtcdNode(n.getKey(), n.getValue(), null, n.isDir(), 0, 0, null,
-                n.getNodes().isEmpty() ? null : convertListExternalDataToListEtcNode(n.getNodes()))));
-        return listOfEtcNodes;
-    }
+    default void setNodes(List<ExternalData> nodes) {}
 
 }

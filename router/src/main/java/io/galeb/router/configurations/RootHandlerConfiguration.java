@@ -53,8 +53,14 @@ public class RootHandlerConfiguration {
         return exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-            exchange.getResponseSender().send((data.exist(ExternalDataService.PREFIX_KEY) ? "WORKING" : "FAIL: " + ExternalDataService.PREFIX_KEY + " not found"));
+            exchange.getResponseSender().send((data.exist(ExternalDataService.PREFIX_KEY) ?
+                    (isEmpty() ? "EMPTY" : "WORKING") : "FAIL: " + ExternalDataService.PREFIX_KEY + " not found"));
+            exchange.endExchange();
         };
+    }
+
+    boolean isEmpty() {
+        return data.listFrom(ExternalDataService.VIRTUALHOSTS_KEY).isEmpty();
     }
 
     @Bean

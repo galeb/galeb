@@ -63,15 +63,17 @@ public class JmxClientService {
         }
         int pid = Integer.parseInt(pidProperty);
         String jmxUrl = ConnectorAddressLink.importFrom(pid);
-        final JMXServiceURL url = new JMXServiceURL(jmxUrl);
-        final JMXConnector jmxConn = JMXConnectorFactory.connect(url);
-        client = jmxConn.getMBeanServerConnection();
+        if (jmxUrl != null) {
+            final JMXServiceURL url = new JMXServiceURL(jmxUrl);
+            final JMXConnector jmxConn = JMXConnectorFactory.connect(url);
+            client = jmxConn.getMBeanServerConnection();
+        }
     }
 
     public Long getValue(String name) {
         try {
             final ObjectName mBeanObject = new ObjectName(JmxReporterService.MBEAN_DOMAIN + ":name=" + name);
-            return (Long)client.getAttribute(mBeanObject, "Value");
+            return client != null ? (Long)client.getAttribute(mBeanObject, "Value") : 0L;
         } catch (MalformedObjectNameException |IOException | ReflectionException | AttributeNotFoundException | InstanceNotFoundException | MBeanException e) {
             logger.error(e.getMessage());
         }

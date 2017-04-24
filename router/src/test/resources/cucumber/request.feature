@@ -5,7 +5,7 @@ Feature: Request Support
     Given a valid host request to FASTTER backend
     When Do GET /
     Then the response status is 200
-    And has 0 active connections
+    And has not 0 active connections
     And has not 0 active requests
 
   Scenario: Sending GET to / with invalid host header

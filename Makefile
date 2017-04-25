@@ -8,8 +8,8 @@ test:
 
 clean:
 	mvn clean
-	rm -f galeb-router-${VERSION}-1.el6.noarch.rpm
-	rm -f galeb-health-${VERSION}-1.el6.noarch.rpm
+	rm -f galeb-router-${VERSION}-1.el7.noarch.rpm
+	rm -f galeb-health-${VERSION}-1.el7.noarch.rpm
 
 dist: galeb-next
 	type fpm > /dev/null 2>&1 && \
@@ -22,7 +22,7 @@ dist: galeb-next
             -t rpm \
             -n "galeb-$$service" \
             -v ${VERSION} \
-            --iteration 1.el6 \
+            --iteration 1.el7 \
             -a noarch \
             --rpm-os linux \
             --prefix /opt/galeb/$$service/lib \

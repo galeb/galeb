@@ -17,10 +17,12 @@
 package io.galeb.core.configuration;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @SuppressWarnings("unused")
 public enum SystemEnvs {
@@ -50,7 +52,7 @@ public enum SystemEnvs {
     /**
      *  Galeb Manager user
      */
-    MANAGER_USER        (System.getenv("MANAGER_USER"),         "health"),
+    MANAGER_USER        (System.getenv("MANAGER_USER"),         "user"),
 
     /**
      *  Galeb Manager password
@@ -96,7 +98,6 @@ public enum SystemEnvs {
     /**
      * Etcd API full url (schema+host:port).
      */
-    @Deprecated
     ETCD_SERVER           (System.getenv("ETCD_SERVER"),           "http://127.0.0.1:2379"),
 
     /**
@@ -234,21 +235,6 @@ public enum SystemEnvs {
             }
         }
         return tcp_max_syn_backlog;
-    }
-
-    private static void registerPid() {
-        String contentPid = null;
-        try {
-            contentPid = new String(Files.readAllBytes(Paths.get("/proc/self/stat")), Charset.defaultCharset());
-            String pid = contentPid.split(" ")[0];
-            System.setProperty("galeb.pid", pid);
-        } catch (IOException e) {
-            System.setProperty("galeb.pid", "-1");
-        }
-    }
-
-    static {
-        registerPid();
     }
 
     public String getValue() {

@@ -16,7 +16,7 @@
 
 package io.galeb.router.configurations;
 
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.router.handlers.RootHandler;
 import io.undertow.Undertow;
 import io.undertow.UndertowOptions;

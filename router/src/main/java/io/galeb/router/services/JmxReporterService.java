@@ -19,7 +19,7 @@ package io.galeb.router.services;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.undertow.Undertow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

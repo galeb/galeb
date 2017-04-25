@@ -16,7 +16,7 @@
 
 package io.galeb.router.services;
 
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.router.cluster.ExternalData;
 
 import java.util.List;

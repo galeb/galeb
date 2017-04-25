@@ -16,11 +16,11 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.SystemEnvs;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.cluster.ExternalData;
 import io.undertow.client.UndertowClient;

@@ -17,12 +17,11 @@
 package io.galeb.router.cluster;
 
 import com.google.gson.Gson;
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
-import org.asynchttpclient.channel.KeepAliveStrategy;
 import org.springframework.http.HttpMethod;
 import org.zalando.boot.etcd.EtcdResponse;
 

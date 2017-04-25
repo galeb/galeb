@@ -16,7 +16,7 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;

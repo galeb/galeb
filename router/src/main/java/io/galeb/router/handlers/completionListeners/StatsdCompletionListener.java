@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers.completionListeners;
 
-import io.galeb.router.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.router.client.hostselectors.ClientStatisticsMarker;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.services.StatsdClient;

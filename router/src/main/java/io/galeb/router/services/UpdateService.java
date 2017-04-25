@@ -30,7 +30,7 @@ import java.util.Objects;
 import static io.galeb.router.services.ExternalDataService.*;
 
 @Service
-public class SchedForceUpdateService {
+public class UpdateService {
 
     private static final String FORCE_UPDATE_FLAG = "/force_update";
 
@@ -40,7 +40,7 @@ public class SchedForceUpdateService {
     private final ExternalDataService data;
 
     @Autowired
-    public SchedForceUpdateService(final RootHandler rootHandler, final ExternalDataService externalData) {
+    public UpdateService(final RootHandler rootHandler, final ExternalDataService externalData) {
         this.rootHandler = rootHandler;
         this.data = externalData;
     }
@@ -50,7 +50,6 @@ public class SchedForceUpdateService {
         logger.info(this.getClass().getSimpleName() + " started");
     }
 
-    @Scheduled(fixedRate = 5000)
     public void checkForceUpdateFlag() {
         if (forceUpdateAll()) return;
         forceUpdateByVirtualhost();

@@ -18,7 +18,7 @@ package io.galeb.router.handlers;
 
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.services.ExternalDataService;
-import io.galeb.router.cluster.ExternalData;
+import io.galeb.router.kv.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.router.cluster;
+package io.galeb.router.kv;
 
 import org.zalando.boot.etcd.EtcdNode;
 

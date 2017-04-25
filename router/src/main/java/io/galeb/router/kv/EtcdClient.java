@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.router.cluster;
+package io.galeb.router.kv;
 
 import com.google.gson.Gson;
 import io.galeb.core.configuration.SystemEnvs;

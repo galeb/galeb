@@ -23,7 +23,7 @@ import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RootHandler;
 import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
-import io.galeb.router.cluster.ExternalData;
+import io.galeb.router.kv.ExternalData;
 import io.galeb.router.services.StatsdClient;
 import io.galeb.router.services.UpdateService;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;

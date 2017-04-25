@@ -16,9 +16,9 @@
 
 package io.galeb.router.services;
 
-import io.galeb.router.cluster.EtcdClient;
-import io.galeb.router.cluster.EtcdExternalData;
-import io.galeb.router.cluster.ExternalData;
+import io.galeb.router.kv.EtcdClient;
+import io.galeb.router.kv.EtcdExternalData;
+import io.galeb.router.kv.ExternalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

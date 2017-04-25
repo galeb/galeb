@@ -22,7 +22,7 @@ import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.services.ExternalDataService;
-import io.galeb.router.cluster.ExternalData;
+import io.galeb.router.kv.ExternalData;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

@@ -17,7 +17,7 @@
 package io.galeb.router.configurations;
 
 import io.galeb.core.configuration.SystemEnvs;
-import io.galeb.router.cluster.EtcdClient;
+import io.galeb.router.kv.EtcdClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;

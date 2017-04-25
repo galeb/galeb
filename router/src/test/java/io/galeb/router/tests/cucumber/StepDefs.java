@@ -134,7 +134,7 @@ public class StepDefs {
     @Do("^has (\\w* )(\\d+) active connections$")
     public void hasXActiveConnections(String not, long count) {
         if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveConnections"), "not".equals(not) ? not(equalTo(count)) : equalTo(count));
+            assertThat(jmxClientService.getValue("ActiveConnections"), "not ".equals(not) ? not(equalTo(count)) : equalTo(count));
         }
     }
 

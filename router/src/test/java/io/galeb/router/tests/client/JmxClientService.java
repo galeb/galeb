@@ -37,7 +37,11 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Profile({ "test" })
@@ -46,27 +50,31 @@ public class JmxClientService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final AtomicBoolean enabled = new AtomicBoolean(false);
+
     private MBeanServerConnection client;
-    private String pidProperty = null;
 
     @PostConstruct
     public void start() throws Exception {
-        if (pidProperty == null) {
-            pidProperty = System.getProperty("galeb.pid", "0");
+        String pid;
+        try {
+            String pidProperty = Arrays.stream(ManagementFactory.getRuntimeMXBean().getName().split("@")).findFirst().orElse("-1");
+            String pidFromSO = new String(Files.readAllBytes(Paths.get("/proc/self/stat")), Charset.defaultCharset());
+            pidFromSO = pidFromSO.split(" ")[0];
+            pid = !"-1".equals(pidProperty) ? pidProperty : pidFromSO;
+        } catch (IOException e) {
+            pid = "-1";
         }
-        if ("0".equals(pidProperty)) {
-            pidProperty = Arrays.stream(ManagementFactory.getRuntimeMXBean().getName().split("@")).findFirst().orElse("-1");
-        }
-        if ("-1".equals(pidProperty)) {
+        if ("-1".equals(pid)) {
             logger.error("PID not found");
-            throw new RuntimeException("PID not found");
+            return;
         }
-        int pid = Integer.parseInt(pidProperty);
-        String jmxUrl = ConnectorAddressLink.importFrom(pid);
+        String jmxUrl = ConnectorAddressLink.importFrom(Integer.parseInt(pid));
         if (jmxUrl != null) {
             final JMXServiceURL url = new JMXServiceURL(jmxUrl);
             final JMXConnector jmxConn = JMXConnectorFactory.connect(url);
             client = jmxConn.getMBeanServerConnection();
+            enabled.set(true);
         }
     }
 
@@ -78,6 +86,10 @@ public class JmxClientService {
             logger.error(e.getMessage());
         }
         return -1L;
+    }
+
+    public boolean isEnabled() {
+        return enabled.get();
     }
 
 }

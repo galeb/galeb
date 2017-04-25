@@ -131,16 +131,22 @@ public class StepDefs {
 
     @Do("^has (\\d+) active connections$")
     public void hasXActiveConnections(long count) {
-        assertThat(jmxClientService.getValue("ActiveConnections"), equalTo(count));
+        if (jmxClientService.isEnabled()) {
+            assertThat(jmxClientService.getValue("ActiveConnections"), equalTo(count));
+        }
     }
 
     @Do("^has (\\d+) active requests")
     public void hasXActiveRequests(long count) {
-        assertThat(jmxClientService.getValue("ActiveRequests"), equalTo(count));
+        if (jmxClientService.isEnabled()) {
+            assertThat(jmxClientService.getValue("ActiveRequests"), equalTo(count));
+        }
     }
 
     @And("^has not (\\d+) active requests$")
     public void hasNotActiveRequests(int count) throws Throwable {
-        assertThat(jmxClientService.getValue("ActiveRequests"), not(equalTo(count)));
+        if (jmxClientService.isEnabled()) {
+            assertThat(jmxClientService.getValue("ActiveRequests"), not(equalTo(count)));
+        }
     }
 }

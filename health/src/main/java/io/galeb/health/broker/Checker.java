@@ -18,7 +18,7 @@ package io.galeb.health.broker;
 
 import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.core.entity.Target;
-import io.galeb.health.externaldata.TargetHealth;
+import io.galeb.health.util.TargetStamper;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
@@ -35,8 +35,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.galeb.health.externaldata.TargetHealth.HcState.*;
-import static io.galeb.health.externaldata.TargetHealth.*;
+import static io.galeb.health.util.TargetStamper.HcState.*;
+import static io.galeb.health.util.TargetStamper.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
@@ -49,13 +49,13 @@ public class Checker {
 
     private final String connectionTimeout = SystemEnvs.TEST_CONN_TIMEOUT.getValue();
 
-    private final TargetHealth targetHealth;
+    private final TargetStamper targetStamper;
 
     private final AsyncHttpClient asyncHttpClient;
 
     @Autowired
-    public Checker(final TargetHealth targetHealth) {
-        this.targetHealth = targetHealth;
+    public Checker(final TargetStamper targetStamper) {
+        this.targetStamper = targetStamper;
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
@@ -120,7 +120,7 @@ public class Checker {
                 return false;
             }
 
-            private void definePropertiesAndUpdate(TargetHealth.HcState state, String reason) {
+            private void definePropertiesAndUpdate(TargetStamper.HcState state, String reason) {
                 String newHealthyState = state.toString();
 
                 target.getProperties().put(PROP_HEALTHY, newHealthyState);
@@ -141,7 +141,7 @@ public class Checker {
                     logger.warn(logMessage);
                 }
                 if (lastReason == null || !reason.equals(lastReason)) {
-                    targetHealth.patchTarget(target);
+                    targetStamper.patchTarget(target);
                 }
             }
 

@@ -19,7 +19,7 @@ package io.galeb.health.services;
 import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.health.broker.Checker;
 import io.galeb.health.broker.Producer;
-import io.galeb.health.externaldata.TargetHealth;
+import io.galeb.health.util.TargetStamper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +39,11 @@ public class HealthCheckerService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Producer producer;
-    private final TargetHealth targetHealth;
+    private final TargetStamper targetStamper;
 
-    HealthCheckerService(final Producer producer, final TargetHealth targetHealth) {
+    HealthCheckerService(final Producer producer, final TargetStamper targetStamper) {
         this.producer = producer;
-        this.targetHealth = targetHealth;
+        this.targetStamper = targetStamper;
         logger.info(this.getClass().getSimpleName() + " started");
     }
 
@@ -55,7 +55,7 @@ public class HealthCheckerService {
         String id = UUID.randomUUID().toString();
         logger.info("Running scheduling " + id);
         try {
-            targetHealth.targetsByEnvName(environmentName).parallel().forEach(target -> {
+            targetStamper.targetsByEnvName(environmentName).parallel().forEach(target -> {
                 try {
                     target.getProperties().put("SCHEDULER_ID", id);
                     producer.send(target);

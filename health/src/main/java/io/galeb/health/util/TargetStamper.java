@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.health.externaldata;
+package io.galeb.health.util;
 
 import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.core.entity.Target;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Component
-public class TargetHealth {
+public class TargetStamper {
 
     public enum HcState {
         FAIL,
@@ -47,7 +47,7 @@ public class TargetHealth {
     private final ManagerClient managerClient;
 
     @Autowired
-    public TargetHealth(final ManagerClient managerClient) {
+    public TargetStamper(final ManagerClient managerClient) {
         this.managerClient = managerClient;
     }
 

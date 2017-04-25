@@ -16,6 +16,7 @@
 
 package io.galeb.router.configurations;
 
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
 import io.galeb.router.services.ExternalDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +28,17 @@ import org.springframework.context.annotation.Configuration;
 public class NameVirtualHostDefaultHandlerConfiguration {
 
     private final ApplicationContext context;
-    private final ExternalDataService data;
+    private final ManagerClient managerClient;
 
     @Autowired
-    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context, final ExternalDataService externalData) {
+    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context, ManagerClient managerClient) {
         this.context = context;
-        this.data = externalData;
+        this.managerClient = managerClient;
     }
 
     @Bean
     public NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler() {
-        return new NameVirtualHostDefaultHandler(context, data);
+        return new NameVirtualHostDefaultHandler(context, managerClient);
     }
 
 }

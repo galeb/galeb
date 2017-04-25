@@ -61,7 +61,7 @@ public class UpdateService {
     private void forceUpdateByPool() {
         data.listFrom(POOLS_KEY).stream()
                 .filter(node -> data.exist(node.getKey() + FORCE_UPDATE_FLAG))
-                .map(node -> data.node(node.getKey() + FORCE_UPDATE_FLAG).getValue())
+                .map(node -> Long.parseLong(data.node(node.getKey() + FORCE_UPDATE_FLAG).getValue()))
                 .filter(Objects::nonNull)
                 .forEach(this::forcePoolUpdate);
     }
@@ -107,7 +107,7 @@ public class UpdateService {
         }
     }
 
-    public synchronized void forcePoolUpdate(String poolName) {
+    public synchronized void forcePoolUpdate(long poolId) {
         nameVirtualHostHandler.getHosts().entrySet().stream()
                 .filter(e -> e.getValue() instanceof RuleTargetHandler).forEach(entryHost ->
         {
@@ -115,25 +115,25 @@ public class UpdateService {
             final HttpHandler handler = ((RuleTargetHandler)entryHost.getValue()).getNext();
             if (handler != null) {
                 if (handler instanceof PathGlobHandler) {
-                    forcePoolUpdateByPathGlobHandler(poolName, virtualhost, (PathGlobHandler) handler);
+                    forcePoolUpdateByPathGlobHandler(poolId, virtualhost, (PathGlobHandler) handler);
                 }
                 if (handler instanceof IPAddressAccessControlHandler) {
-                    forcePoolUpdateByIpAclHandler(poolName, virtualhost, (IPAddressAccessControlHandler) handler);
+                    forcePoolUpdateByIpAclHandler(poolId, virtualhost, (IPAddressAccessControlHandler) handler);
                 }
             }
         });
     }
 
-    private synchronized void forcePoolUpdateByPathGlobHandler(String poolName, String virtualhost, PathGlobHandler handler) {
+    private synchronized void forcePoolUpdateByPathGlobHandler(long poolId, String virtualhost, PathGlobHandler handler) {
         handler.getPaths().entrySet().stream().map(Map.Entry::getValue)
                 .filter(pathHandler -> pathHandler instanceof PoolHandler &&
-                        ((PoolHandler) pathHandler).getPoolname() != null &&
-                        ((PoolHandler) pathHandler).getPoolname().equals(poolName))
+                        ((PoolHandler) pathHandler).getPool() != null &&
+                        ((PoolHandler) pathHandler).getPool().getId() == poolId)
                 .forEach(v -> forceVirtualhostUpdate(virtualhost));
     }
 
-    private synchronized void forcePoolUpdateByIpAclHandler(String poolName, String virtualhost, IPAddressAccessControlHandler handler) {
-        forcePoolUpdateByPathGlobHandler(poolName, virtualhost, (PathGlobHandler) handler.getNext());
+    private synchronized void forcePoolUpdateByIpAclHandler(long poolId, String virtualhost, IPAddressAccessControlHandler handler) {
+        forcePoolUpdateByPathGlobHandler(poolId, virtualhost, (PathGlobHandler) handler.getNext());
     }
 
     public synchronized void forceAllUpdate() {

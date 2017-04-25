@@ -16,40 +16,35 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.Rule;
+import io.galeb.core.entity.RuleType;
+import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.rest.ManagerClient;
+import io.galeb.core.rest.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.services.ExternalDataService;
-import io.galeb.router.kv.ExternalData;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-
-import static io.galeb.router.services.ExternalDataService.VIRTUALHOSTS_KEY;
+import java.util.*;
 
 public class RuleTargetHandler implements HttpHandler {
 
-    public enum RuleType {
-        PATH,
-        UNDEF
-    }
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ExternalDataService data;
-    private final String virtualHost;
+    private final ManagerClient managerClient;
+    private final VirtualHost virtualHost;
 
     private HttpHandler next = null;
 
-    public RuleTargetHandler(final ExternalDataService externalData, final String virtualHost) {
-        this.data = externalData;
-        this.virtualHost = virtualHost;
+    public RuleTargetHandler(final ManagerClient managerClient, final String virtualHostName) {
+        this.managerClient = managerClient;
+        this.virtualHost = managerClient.virtualhostFindByName(virtualHostName);
+        Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         final PathGlobHandler pathGlobHandler = new PathGlobHandler();
         this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
         pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
@@ -72,7 +67,7 @@ public class RuleTargetHandler implements HttpHandler {
             @Override
             public synchronized void handleRequest(HttpServerExchange exchange) throws Exception {
                 if (pathGlobHandler.getPaths().isEmpty()) {
-                    loadRules(virtualHost);
+                    loadRules();
                 }
                 if (!pathGlobHandler.getPaths().isEmpty()) {
                     next.handleRequest(exchange);
@@ -81,62 +76,46 @@ public class RuleTargetHandler implements HttpHandler {
                 }
             }
 
-            private String extractRule(String ruleKey) {
-                int ruleFromIndex = ruleKey.lastIndexOf("/");
-                return ruleKey.substring(ruleFromIndex + 1, ruleKey.length());
+            private String extractRuleType(Rule rule) {
+                RuleType ruleType = rule.getRuleType();
+                return ruleType.getName();
             }
 
-            private String extractRuleDecoded(String rule) {
-                return new String(Base64.getDecoder().decode(rule.getBytes(Charset.defaultCharset())), Charset.defaultCharset()).trim();
+            private Long extractPoolId(Rule rule) {
+                Pool pool = rule.getPool();
+                return pool.getId();
             }
 
-            private String extractRuleType(String ruleKey) {
-                return Optional.ofNullable(data.node(ruleKey + "/type").getValue()).orElse(RuleType.PATH.toString());
-            }
+            private void loadRules() {
+                Set<Rule> rules = managerClient.getRules(virtualHost.getId());
+                if (!rules.isEmpty()) {
+                    for (Rule rule : rules) {
+                        Integer order = rule.getRuleOrder();
+                        String type = extractRuleType(rule);
+                        Long poolId = extractPoolId(rule);
 
-            private String extractRuleTarget(String ruleKey) {
-                return Optional.ofNullable(data.node(ruleKey + "/target").getValue()).orElse("");
-            }
+                        logger.info("add rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
-            private Integer extractRuleOrder(String ruleKey) {
-                return Integer.valueOf(data.node(ruleKey + "/order", ExternalData.Generic.ZERO).getValue());
-            }
-
-            private void loadRules(String virtualHost) {
-                ExternalData rulesNode = data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "/rules");
-                if (rulesNode.getKey() != null) {
-                    final List<ExternalData> rulesRegistered = data.listFrom(rulesNode);
-                    if (!rulesRegistered.isEmpty()) {
-                        for (ExternalData keyComplete : rulesRegistered) {
-                            if (keyComplete.isDir()) {
-                                String ruleKey = keyComplete.getKey();
-                                Integer order = extractRuleOrder(ruleKey);
-                                String type = extractRuleType(ruleKey);
-                                String rule = extractRule(ruleKey);
-                                String ruleDecoded = extractRuleDecoded(rule);
-                                String ruleTarget = extractRuleTarget(ruleKey);
-
-                                logger.info("add rule " + ruleDecoded + " [order:" + order + ", type:" + type + "]");
-
-                                if (RuleType.valueOf(type) == RuleType.PATH) {
-                                    final PoolHandler poolHandler = new PoolHandler(data).setPoolName(ruleTarget);
-                                    pathGlobHandler.addPath(ruleDecoded, order, poolHandler);
-                                }
-                            }
+                        if (EnumRuleType.valueOf(type) == EnumRuleType.PATH) {
+                            final PoolHandler poolHandler = new PoolHandler(managerClient).setPooId(poolId);
+                            pathGlobHandler.addPath(rule.getName(), order, poolHandler);
                         }
+
                     }
+
                 }
             }
         };
     }
 
     private boolean hasAcl() {
-        return data.exist(VIRTUALHOSTS_KEY + "/" + virtualHost + "/allow");
+        return virtualHost.getProperties().containsKey("allow");
     }
 
     private HttpHandler loadAcl(PathGlobHandler pathGlobHandler) {
         final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(pathGlobHandler);
-        Arrays.asList(data.node(VIRTUALHOSTS_KEY + "/" + virtualHost + "/allow").getValue().split(","))
+
+        Arrays.asList(virtualHost.getProperties().get("allow").split(","))
                 .forEach(ipAddressAccessControlHandler::addAllow);
         ipAddressAccessControlHandler.setDefaultAllow(false);
         return ipAddressAccessControlHandler;

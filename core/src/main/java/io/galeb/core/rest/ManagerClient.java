@@ -18,8 +18,7 @@ package io.galeb.core.rest;
 
 import com.google.gson.Gson;
 import io.galeb.core.configuration.SystemEnvs;
-import io.galeb.core.entity.Environment;
-import io.galeb.core.entity.Target;
+import io.galeb.core.entity.*;
 import io.galeb.core.services.HttpClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.galeb.core.rest.ManagerSpringRestResponse.*;
@@ -137,4 +139,27 @@ public class ManagerClient {
         }
     }
 
+    public VirtualHost virtualhostFindByName(String virtualHostName) {
+        return null;
+    }
+
+    public Set<Rule> getRules(long id) {
+        return Collections.emptySet();
+    }
+
+    public Pool poolFindById(Long poolId) {
+        return null;
+    }
+
+    public BalancePolicy poolGetBalancePolicy(Pool pool) {
+        return null;
+    }
+
+    public Set<Target> getTargets(Pool pool) {
+        return Collections.emptySet();
+    }
+
+    public boolean virtualhostsIsEmpty() {
+        return false;
+    }
 }

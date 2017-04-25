@@ -16,6 +16,7 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
@@ -32,25 +33,25 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationContext context;
-    private final ExternalDataService data;
+    private final ManagerClient managerClient;
 
-    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ExternalDataService externalData) {
+    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ManagerClient managerClient) {
         this.context = context;
-        this.data = externalData;
+        this.managerClient = managerClient;
     }
 
     @Override
     public synchronized void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (!data.exist(VIRTUALHOSTS_KEY)) {
+        if (!exist(VIRTUALHOSTS_KEY)) {
             logger.error(VIRTUALHOSTS_KEY + " not found");
             ResponseCodeOnError.ETCD_VIRTUALHOSTS_PATH_NOT_FOUND.getHandler().handleRequest(exchange);
             return;
         }
         final String hostName = exchange.getHostName();
-        final NameVirtualHostHandler nameVirtualHostHandler = (NameVirtualHostHandler) context.getBean("nameVirtualHostHandler");
+        final NameVirtualHostHandler nameVirtualHostHandler = context.getBean(NameVirtualHostHandler.class);
         if (isValid(hostName, nameVirtualHostHandler)) {
             logger.info("adding " + hostName);
-            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(data, hostName));
+            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(managerClient, hostName));
             nameVirtualHostHandler.handleRequest(exchange);
         } else {
             ResponseCodeOnError.VIRTUALHOST_NOT_FOUND.getHandler().handleRequest(exchange);
@@ -58,7 +59,10 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     }
 
     private synchronized boolean isValid(String hostName, final NameVirtualHostHandler nameVirtualHostHandler) {
-        final String virtualhostNodeKey = VIRTUALHOSTS_KEY + "/" + hostName;
-        return data.exist(virtualhostNodeKey) && !nameVirtualHostHandler.getHosts().containsKey(virtualhostNodeKey);
+        return exist(hostName) && !nameVirtualHostHandler.getHosts().containsKey(hostName);
+    }
+
+    private boolean exist(String hostName) {
+        return managerClient.virtualhostFindByName(hostName) != null;
     }
 }

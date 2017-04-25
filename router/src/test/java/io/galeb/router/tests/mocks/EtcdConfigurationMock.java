@@ -18,8 +18,8 @@ package io.galeb.router.tests.mocks;
 
 import static org.mockito.Mockito.*;
 
+import io.galeb.core.rest.EnumRuleType;
 import io.galeb.router.kv.EtcdClient;
-import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,7 +75,7 @@ public class EtcdConfigurationMock {
 
         EtcdNode typeNode = new EtcdNode();
         typeNode.setKey(theRuleTypeKey);
-        typeNode.setValue(RuleTargetHandler.RuleType.PATH.toString());
+        typeNode.setValue(EnumRuleType.PATH.toString());
         nodes.put(theRuleTypeKey, typeNode);
 
         EtcdNode ruleNode = new EtcdNode();

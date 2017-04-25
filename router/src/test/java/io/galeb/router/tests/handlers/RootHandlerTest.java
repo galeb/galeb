@@ -16,6 +16,8 @@
 
 package io.galeb.router.tests.handlers;
 
+import io.galeb.core.entity.Pool;
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -43,12 +45,9 @@ import static org.mockito.Mockito.when;
 public class RootHandlerTest {
 
     private final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
-    private final AccessLogCompletionListener accessLogCompletionListener = new AccessLogCompletionListener();
-    private final StatsdClient statsdClient = new StatsdClient();
-    private final StatsdCompletionListener statsdCompletionListener = new StatsdCompletionListener(statsdClient);
-    private final RootHandler rootHandler = new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
     private final ApplicationContext context = mock(ApplicationContext.class);
     private final ExternalDataService externalData = mock(ExternalDataService.class);
+    private final ManagerClient managerClient = mock(ManagerClient.class);
     private final UpdateService updateService = new UpdateService(nameVirtualHostHandler, externalData);
 
     @Before
@@ -67,7 +66,7 @@ public class RootHandlerTest {
                 }
             }
         });
-        when(context.getBean(anyString())).thenReturn(new PoolHandler(externalData));
+        when(context.getBean(anyString())).thenReturn(new PoolHandler(managerClient));
     }
 
     @Test
@@ -114,15 +113,15 @@ public class RootHandlerTest {
         PathGlobHandler pathGlobHandler = new PathGlobHandler();
         RuleTargetHandler ruleTargetHandler = mock(RuleTargetHandler.class);
         PoolHandler poolHandler = mock(PoolHandler.class);
-        String poolName = "pool0";
-        when(poolHandler.getPoolname()).thenReturn(poolName);
+        Pool pool = mock(Pool.class);
+        when(poolHandler.getPool()).thenReturn(pool);
         when(ruleTargetHandler.getNext()).thenReturn(pathGlobHandler);
         pathGlobHandler.addPath("/", 0, poolHandler);
 
         nameVirtualHostHandler.addHost(virtualhost, ruleTargetHandler);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
-        updateService.forcePoolUpdate(poolName);
+        updateService.forcePoolUpdate(pool.getId());
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 
@@ -135,14 +134,14 @@ public class RootHandlerTest {
         RuleTargetHandler ruleTargetHandler = mock(RuleTargetHandler.class);
         PoolHandler poolHandler = mock(PoolHandler.class);
         pathGlobHandler.addPath("/", 0, poolHandler);
-        String poolName = "pool0";
-        when(poolHandler.getPoolname()).thenReturn(poolName);
+        Pool pool = mock(Pool.class);
+        when(poolHandler.getPool()).thenReturn(pool);
         when(ruleTargetHandler.getNext()).thenReturn(ipAddressAccessControlHandler);
 
         nameVirtualHostHandler.addHost(virtualhost, ruleTargetHandler);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
-        updateService.forcePoolUpdate(poolName);
+        updateService.forcePoolUpdate(pool.getId());
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 }

@@ -16,9 +16,12 @@
 
 package io.galeb.health.externaldata;
 
-import io.galeb.health.SystemEnvs;
-import io.galeb.manager.entity.Target;
+import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.entity.Target;
+import io.galeb.core.rest.ManagerClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

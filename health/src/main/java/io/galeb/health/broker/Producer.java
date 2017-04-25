@@ -16,8 +16,8 @@
 
 package io.galeb.health.broker;
 
-import io.galeb.health.SystemEnvs;
-import io.galeb.manager.entity.Target;
+import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.entity.Target;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

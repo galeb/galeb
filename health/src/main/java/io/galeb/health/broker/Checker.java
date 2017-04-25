@@ -16,9 +16,9 @@
 
 package io.galeb.health.broker;
 
-import io.galeb.health.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.entity.Target;
 import io.galeb.health.externaldata.TargetHealth;
-import io.galeb.manager.entity.Target;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;

@@ -16,7 +16,7 @@
 
 package io.galeb.health.services;
 
-import io.galeb.health.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.health.broker.Checker;
 import io.galeb.health.broker.Producer;
 import io.galeb.health.externaldata.TargetHealth;
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-import static io.galeb.health.utils.ErrorLogger.logError;
+import static io.galeb.core.logger.ErrorLogger.logError;
 
 @Service
 public class HealthCheckerService {

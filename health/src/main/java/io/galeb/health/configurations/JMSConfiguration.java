@@ -16,7 +16,7 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.health.SystemEnvs;
+import io.galeb.core.configuration.SystemEnvs;
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.JGroupsFileBroadcastEndpointFactory;

@@ -16,7 +16,6 @@
 
 package io.galeb.router.configurations;
 
-import io.galeb.router.handlers.PingHandler;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.RootHandler;
@@ -33,18 +32,14 @@ public class RootHandlerConfiguration {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
-    private final PingHandler pingHandler;
 
     @Autowired
     public RootHandlerConfiguration(final NameVirtualHostHandler nameVirtualHostHandler,
                                     final AccessLogCompletionListener accessLogCompletionListener,
-                                    final StatsdCompletionListener statsdCompletionListener,
-                                    final PingHandler pingHandler) {
+                                    final StatsdCompletionListener statsdCompletionListener) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
-        this.pingHandler = pingHandler;
-        nameVirtualHostHandler.addHost("__ping__", pingHandler);
     }
 
     @Bean

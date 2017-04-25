@@ -25,6 +25,7 @@ import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.cluster.ExternalData;
 import io.galeb.router.services.StatsdClient;
+import io.galeb.router.services.UpdateService;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import org.junit.Before;
@@ -48,6 +49,7 @@ public class RootHandlerTest {
     private final RootHandler rootHandler = new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
     private final ApplicationContext context = mock(ApplicationContext.class);
     private final ExternalDataService externalData = mock(ExternalDataService.class);
+    private final UpdateService updateService = new UpdateService(nameVirtualHostHandler, externalData);
 
     @Before
     public void setUp() {
@@ -75,7 +77,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(virtualhost, exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
-        rootHandler.forceVirtualhostUpdate(virtualhost);
+        updateService.forceVirtualhostUpdate(virtualhost);
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 
@@ -90,7 +92,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(virtualhost + "4", exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(5));
 
-        rootHandler.forceAllUpdate();
+        updateService.forceAllUpdate();
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 
@@ -101,7 +103,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(pingHost, exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(pingHost));
 
-        rootHandler.forceVirtualhostUpdate(pingHost);
+        updateService.forceVirtualhostUpdate(pingHost);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(pingHost));
     }
 
@@ -120,7 +122,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(virtualhost, ruleTargetHandler);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
-        rootHandler.forcePoolUpdate(poolName);
+        updateService.forcePoolUpdate(poolName);
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 
@@ -140,7 +142,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(virtualhost, ruleTargetHandler);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
 
-        rootHandler.forcePoolUpdate(poolName);
+        updateService.forcePoolUpdate(poolName);
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 }

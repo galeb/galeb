@@ -17,6 +17,8 @@
 package io.galeb.router.configurations;
 
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
+import io.galeb.router.handlers.PingHandler;
+import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +29,21 @@ import org.springframework.context.annotation.Configuration;
 public class NameVirtualHostHandlerConfiguration {
 
     private final HttpHandler nameVirtualHostDefaultHandler;
+    private final ExternalDataService data;
 
     @Autowired
-    public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler) {
+    public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler,
+                                               final ExternalDataService data) {
         this.nameVirtualHostDefaultHandler = nameVirtualHostDefaultHandler;
+        this.data = data;
     }
 
     @Bean
     NameVirtualHostHandler nameVirtualHostHandler() {
-        return new NameVirtualHostHandler().setDefaultHandler(nameVirtualHostDefaultHandler);
+        final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
+        final PingHandler pingHandler = new PingHandler(nameVirtualHostHandler, data);
+        nameVirtualHostHandler.addHost("__ping__", pingHandler).setDefaultHandler(nameVirtualHostDefaultHandler);
+        return nameVirtualHostHandler;
     }
 
 }

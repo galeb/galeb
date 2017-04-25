@@ -27,7 +27,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class RootHandler extends AbstractUpdater implements HttpHandler {
+public class RootHandler implements HttpHandler {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -41,7 +41,6 @@ public class RootHandler extends AbstractUpdater implements HttpHandler {
     public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,
                        final StatsdCompletionListener statsdCompletionListener) {
-        super(nameVirtualHostHandler);
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;

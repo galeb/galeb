@@ -87,7 +87,9 @@ public class SimulatedBackendService {
     }
 
     public void stop() {
-        undertow.stop();
+        if (undertow != null) {
+            undertow.stop();
+        }
         logger.info(this.getClass().getSimpleName() + " stopped");
     }
 }

@@ -86,7 +86,7 @@ public class EtcdConfigurationMock {
 
         EtcdNode allowNode = new EtcdNode();
         allowNode.setKey(allowKey);
-        allowNode.setValue("127.0.0.0/8,0:0:0:0:0:0:0:1/128");
+        allowNode.setValue("127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*");
         nodes.put(allowKey, allowNode);
 
         EtcdNode rulesNode = new EtcdNode();

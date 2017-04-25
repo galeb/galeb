@@ -101,6 +101,8 @@ public class StepDefs {
 
     @Given("^a (.+) host request to (.+) backend$")
     public void withHostRequester(String expression, String backendBehavior) throws Throwable {
+        response = null;
+        backendService.stop();
         backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
         this.headers.add("host", ("valid".equals(expression) ? "test.com" : expression));
     }
@@ -129,10 +131,10 @@ public class StepDefs {
         assertThat(response.getResponseBody(), equalTo(body));
     }
 
-    @Do("^has (\\d+) active connections$")
-    public void hasXActiveConnections(long count) {
+    @Do("^has (\\w* )(\\d+) active connections$")
+    public void hasXActiveConnections(String not, long count) {
         if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveConnections"), equalTo(count));
+            assertThat(jmxClientService.getValue("ActiveConnections"), "not".equals(not) ? not(equalTo(count)) : equalTo(count));
         }
     }
 
@@ -143,7 +145,7 @@ public class StepDefs {
         }
     }
 
-    @And("^has not (\\d+) active requests$")
+    @Do("^has not (\\d+) active requests$")
     public void hasNotActiveRequests(int count) throws Throwable {
         if (jmxClientService.isEnabled()) {
             assertThat(jmxClientService.getValue("ActiveRequests"), not(equalTo(count)));

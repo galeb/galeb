@@ -5,8 +5,8 @@ Feature: Request Support
     Given a valid host request to FASTTER backend
     When Do GET /
     Then the response status is 200
-    And has not 0 active connections
-    And has not 0 active requests
+    And jmx has ActiveConnections
+    And jmx has ActiveRequests
 
   Scenario: Sending GET to / with invalid host header
     Given a invalid host request to FASTTER backend

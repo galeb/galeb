@@ -17,7 +17,6 @@
 
 package io.galeb.router.tests.cucumber;
 
-import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
 import io.galeb.core.configuration.SystemEnvs;
@@ -131,24 +130,17 @@ public class StepDefs {
         assertThat(response.getResponseBody(), equalTo(body));
     }
 
-    @Do("^has (\\w* )(\\d+) active connections$")
-    public void hasXActiveConnections(String not, long count) {
+    @Do("^jmx has ActiveConnections$")
+    public void jmxHasActiveConnections() {
         if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveConnections"), "not ".equals(not) ? not(equalTo(count)) : equalTo(count));
+            assertThat(jmxClientService.getValue("ActiveConnections"), notNullValue());
         }
     }
 
-    @Do("^has (\\d+) active requests")
-    public void hasXActiveRequests(long count) {
+    @Do("^jmx has ActiveRequests$")
+    public void jmxHasActiveRequests() {
         if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveRequests"), equalTo(count));
-        }
-    }
-
-    @Do("^has not (\\d+) active requests$")
-    public void hasNotActiveRequests(int count) throws Throwable {
-        if (jmxClientService.isEnabled()) {
-            assertThat(jmxClientService.getValue("ActiveRequests"), not(equalTo(count)));
+            assertThat(jmxClientService.getValue("ActiveRequests"), notNullValue());
         }
     }
 }

@@ -32,19 +32,22 @@ public class RootHandlerConfiguration {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     @Autowired
     public RootHandlerConfiguration(final NameVirtualHostHandler nameVirtualHostHandler,
                                     final AccessLogCompletionListener accessLogCompletionListener,
-                                    final StatsdCompletionListener statsdCompletionListener) {
+                                    final StatsdCompletionListener statsdCompletionListener,
+                                    final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
+        this.localHolderData = localHolderData;
     }
 
     @Bean
     public RootHandler rootHandler() {
-        return new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
+        return new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener, localHolderData);
     }
 
 }

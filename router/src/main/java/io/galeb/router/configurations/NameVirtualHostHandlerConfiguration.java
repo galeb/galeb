@@ -31,21 +31,24 @@ public class NameVirtualHostHandlerConfiguration {
 
     private final HttpHandler nameVirtualHostDefaultHandler;
     private final ExternalDataService data;
+    private final ManagerClient managerClient;
     private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     @Autowired
     public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler,
                                                final ExternalDataService data,
+                                               final ManagerClient managerClient,
                                                final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.nameVirtualHostDefaultHandler = nameVirtualHostDefaultHandler;
         this.data = data;
+        this.managerClient = managerClient;
         this.localHolderData = localHolderData;
     }
 
     @Bean
     NameVirtualHostHandler nameVirtualHostHandler() {
         final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
-        final PingHandler pingHandler = new PingHandler(nameVirtualHostHandler, data, localHolderData);
+        final PingHandler pingHandler = new PingHandler(nameVirtualHostHandler, data, managerClient, localHolderData);
         nameVirtualHostHandler.addHost("__ping__", pingHandler).setDefaultHandler(nameVirtualHostDefaultHandler);
         return nameVirtualHostHandler;
     }

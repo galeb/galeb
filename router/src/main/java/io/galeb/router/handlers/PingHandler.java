@@ -16,6 +16,7 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.services.UpdateService;
@@ -49,9 +50,10 @@ public class PingHandler implements HttpHandler {
 
     public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final ExternalDataService data,
+                       final ManagerClient managerClient,
                        final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.localHolderData = localHolderData;
-        this.updateService = new UpdateService(nameVirtualHostHandler, data);
+        this.updateService = new UpdateService(nameVirtualHostHandler, data, managerClient, localHolderData);
         this.data = data;
     }
 

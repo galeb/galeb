@@ -18,15 +18,11 @@ package io.galeb.router.tests.handlers;
 
 import io.galeb.core.entity.Pool;
 import io.galeb.core.rest.ManagerClient;
-import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
-import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PoolHandler;
-import io.galeb.router.handlers.RootHandler;
 import io.galeb.router.handlers.RuleTargetHandler;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.kv.ExternalData;
-import io.galeb.router.services.StatsdClient;
 import io.galeb.router.services.UpdateService;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;

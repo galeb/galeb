@@ -18,7 +18,6 @@ package io.galeb.router.handlers;
 
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.services.ExternalDataService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -63,6 +62,6 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     }
 
     private boolean exist(String hostName) {
-        return managerClient.virtualhostFindByName(hostName) != null;
+        return managerClient.getVirtualhostByName(hostName) != null;
     }
 }

@@ -43,7 +43,7 @@ public class RuleTargetHandler implements HttpHandler {
 
     public RuleTargetHandler(final ManagerClient managerClient, final String virtualHostName) {
         this.managerClient = managerClient;
-        this.virtualHost = managerClient.virtualhostFindByName(virtualHostName);
+        this.virtualHost = managerClient.getVirtualhostByName(virtualHostName);
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         final PathGlobHandler pathGlobHandler = new PathGlobHandler();
         this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
@@ -87,7 +87,7 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private void loadRules() {
-                Set<Rule> rules = managerClient.getRules(virtualHost.getId());
+                Set<Rule> rules = managerClient.getRulesByVirtualhost(virtualHost);
                 if (!rules.isEmpty()) {
                     for (Rule rule : rules) {
                         Integer order = rule.getRuleOrder();

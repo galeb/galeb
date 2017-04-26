@@ -18,7 +18,6 @@ package io.galeb.router.configurations;
 
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
-import io.galeb.router.services.ExternalDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

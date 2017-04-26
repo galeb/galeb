@@ -19,7 +19,6 @@ package io.galeb.router.handlers;
 import io.galeb.core.configuration.SystemEnvs;
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
-import io.galeb.core.entity.Target;
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
@@ -35,8 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.HashSet;
-import java.util.Set;
 
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
 
@@ -75,7 +72,7 @@ public class PoolHandler implements HttpHandler {
     }
 
     PoolHandler setPooId(Long poolId) {
-        Pool pool = managerClient.poolFindById(poolId);
+        pool = managerClient.getPoolById(poolId);
         return this;
     }
 
@@ -116,7 +113,7 @@ public class PoolHandler implements HttpHandler {
 
     private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
         if (pool != null) {
-            BalancePolicy hostSelectorName = managerClient.poolGetBalancePolicy(pool);
+            BalancePolicy hostSelectorName = managerClient.getBalancePolicyByPool(pool);
             if (hostSelectorName != null) {
                 return HostSelectorAlgorithm.valueOf(hostSelectorName.getName()).getHostSelector();
             }
@@ -125,17 +122,15 @@ public class PoolHandler implements HttpHandler {
     }
 
     private boolean addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
-        final Set<Target> targets = new HashSet<>();
         if (pool != null) {
-            targets.addAll(managerClient.getTargets(pool));
-            targets.forEach(target -> {
+            managerClient.getTargetsByPool(pool).forEach(target -> {
                 String value = target.getName();
                 URI uri = URI.create(target.getName());
                 proxyClient.addHost(uri);
                 logger.info("added target " + value);
             });
         }
-        return !targets.isEmpty();
+        return !proxyClient.isHostsEmpty();
     }
 
     private HttpHandler healthcheckPoolHandler() {

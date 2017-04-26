@@ -72,7 +72,7 @@ public class PingHandler implements HttpHandler {
     }
 
     private boolean isEmpty() {
-        return managerClient.virtualhostsIsEmpty();
+        return managerClient.isVirtualhostsEmpty();
     }
 
     private boolean isOutdated() {

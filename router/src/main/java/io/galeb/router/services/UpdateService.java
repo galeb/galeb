@@ -16,7 +16,13 @@
 
 package io.galeb.router.services;
 
+import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.Rule;
+import io.galeb.core.entity.Target;
+import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.client.ExtendedProxyClient;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.galeb.router.handlers.*;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -25,8 +31,11 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static io.galeb.router.services.ExternalDataService.*;
 
@@ -37,11 +46,18 @@ public class UpdateService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ExternalDataService data;
+    private final ManagerClient managerClient;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
     private final NameVirtualHostHandler nameVirtualHostHandler;
 
-    public UpdateService(final NameVirtualHostHandler nameVirtualHostHandler, final ExternalDataService externalData) {
+    public UpdateService(final NameVirtualHostHandler nameVirtualHostHandler,
+                         final ExternalDataService externalData,
+                         final ManagerClient managerClient,
+                         final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.data = externalData;
+        this.managerClient = managerClient;
+        this.localHolderData = localHolderData;
     }
 
     public void checkForceUpdateFlag() {
@@ -66,45 +82,44 @@ public class UpdateService {
                 .forEach(this::forcePoolUpdate);
     }
 
-    private boolean forceUpdateAll() {
+    public boolean forceUpdateAll() {
         if (data.exist(PREFIX_KEY + FORCE_UPDATE_FLAG)) {
-            this.forceAllUpdate();
+            nameVirtualHostHandler.getHosts().forEach((virtualhost, handler) -> forceVirtualhostUpdate(virtualhost));
             return true;
         }
         return false;
     }
 
-    private void cleanUpNameVirtualHostHandler(String virtualhost) {
-        final HttpHandler handler = nameVirtualHostHandler.getHosts().get(virtualhost);
-        if (handler instanceof RuleTargetHandler) {
-            HttpHandler ruleTargetNextHandler = ((RuleTargetHandler) handler).getNext();
-            if (ruleTargetNextHandler instanceof IPAddressAccessControlHandler) {
-                ruleTargetNextHandler = ((IPAddressAccessControlHandler)ruleTargetNextHandler).getNext();
-            }
-            if (ruleTargetNextHandler instanceof PathGlobHandler) {
-                cleanUpPathGlobHandler((PathGlobHandler) ruleTargetNextHandler);
-            }
-        }
-    }
+    public synchronized void forceVirtualhostUpdate(String virtualhostName) {
+        if ("__ping__".equals(virtualhostName)) return;
+        managerClient.getVirtualhostByName(virtualhostName, result -> {
+            final VirtualHost virtualHost = (VirtualHost) result;
+            localHolderData.removeVirtualhost(virtualhostName);
+            localHolderData.putVirtualhost(virtualhostName, virtualHost);
+            managerClient.getRulesByVirtualhost(virtualHost, resultRules -> {
+                @SuppressWarnings("unchecked")
+                Set<Rule> rules = (Set<Rule>) resultRules;
+                rules.forEach(rule -> {
+                    localHolderData.removeRule(rule.getId());
+                    localHolderData.putRule(rule.getId(), rule);
+                    Long poolId = rule.getPool().getId();
+                    managerClient.getPoolById(poolId, resultPool -> {
+                        Pool pool = (Pool) resultPool;
+                        localHolderData.removePool(poolId);
+                        localHolderData.putPool(poolId, pool);
+                        managerClient.getTargetsByPool(pool, resultTarget -> {
+                            @SuppressWarnings("unchecked")
+                            Stream<Target> targets = (Stream<Target>) resultTarget;
+                            targets.forEach(target -> {
+                                localHolderData.removeTarget(target.getId());
+                                localHolderData.putTarget(target.getId(), target);
+                            });
+                        });
+                    });
+                });
+            });
 
-    private void cleanUpPathGlobHandler(final PathGlobHandler pathGlobHandler) {
-        pathGlobHandler.getPaths().forEach((k, poolHandler) -> {
-            final ProxyHandler proxyHandler = ((PoolHandler) poolHandler).getProxyHandler();
-            if (proxyHandler != null) {
-                final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
-                proxyClient.removeAllHosts();
-            }
         });
-        pathGlobHandler.clear();
-    }
-
-    public synchronized void forceVirtualhostUpdate(String virtualhost) {
-        if ("__ping__".equals(virtualhost)) return;
-        if (nameVirtualHostHandler.getHosts().containsKey(virtualhost)) {
-            logger.warn("[" + virtualhost + "] FORCING UPDATE");
-            cleanUpNameVirtualHostHandler(virtualhost);
-            nameVirtualHostHandler.removeHost(virtualhost);
-        }
     }
 
     public synchronized void forcePoolUpdate(long poolId) {
@@ -136,7 +151,4 @@ public class UpdateService {
         forcePoolUpdateByPathGlobHandler(poolId, virtualhost, (PathGlobHandler) handler.getNext());
     }
 
-    public synchronized void forceAllUpdate() {
-        nameVirtualHostHandler.getHosts().forEach((virtualhost, handler) -> forceVirtualhostUpdate(virtualhost));
-    }
 }

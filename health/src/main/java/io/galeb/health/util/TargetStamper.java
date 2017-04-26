@@ -62,24 +62,4 @@ public class TargetStamper {
         managerClient.patch(targetUrl, body);
     }
 
-    private Map<String, String> hcPropsMap(String hcPath, String hcStatusCode, String hcBody, String hcHost) {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put(PROP_HEALTHCHECK_PATH, hcPath);
-        properties.put(PROP_HEALTHCHECK_HOST, hcHost);
-        properties.put(PROP_HEALTHCHECK_CODE, hcStatusCode);
-        properties.put(PROP_HEALTHCHECK_RETURN, hcBody);
-        return properties;
-    }
-
-    public Stream<Target> targetsByEnvName(String environmentName) {
-        return managerClient.targetsByEnvName(environmentName).map(target -> {
-                String hcPath = target.getParent().getProperties().get(PROP_HEALTHCHECK_PATH);
-                String hcStatusCode = target.getParent().getProperties().get(PROP_HEALTHCHECK_CODE);
-                String hcBody = target.getParent().getProperties().get(PROP_HEALTHCHECK_RETURN);
-                String hcHost = target.getParent().getProperties().get(PROP_HEALTHCHECK_HOST);
-                final Map<String, String> properties = hcPropsMap(hcPath, hcStatusCode, hcBody, hcHost);
-                target.getProperties().putAll(properties);
-                return target;
-        });
-    }
 }

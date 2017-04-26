@@ -24,6 +24,7 @@ import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
 import io.galeb.router.ResponseCodeOnError;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -48,13 +49,13 @@ public class PoolHandler implements HttpHandler {
     private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnvs.REWRITE_HOST_HEADER.getValue());
 
     private final HttpHandler defaultHandler;
-    private final ManagerClient managerClient;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     private ProxyHandler proxyHandler = null;
     private Pool pool = null;
 
-    public PoolHandler(final ManagerClient managerClient) {
-        this.managerClient = managerClient;
+    public PoolHandler(final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
+        this.localHolderData = localHolderData;
         this.defaultHandler = buildPoolHandler();
     }
 
@@ -71,8 +72,8 @@ public class PoolHandler implements HttpHandler {
         }
     }
 
-    PoolHandler setPooId(Long poolId) {
-        pool = managerClient.getPoolById(poolId);
+    PoolHandler setPooById(Long poolId) {
+        pool = localHolderData.getPoolById(poolId);
         return this;
     }
 
@@ -113,7 +114,7 @@ public class PoolHandler implements HttpHandler {
 
     private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
         if (pool != null) {
-            BalancePolicy hostSelectorName = managerClient.getBalancePolicyByPool(pool);
+            BalancePolicy hostSelectorName = localHolderData.getBalancePolicyByPool(pool);
             if (hostSelectorName != null) {
                 return HostSelectorAlgorithm.valueOf(hostSelectorName.getName()).getHostSelector();
             }
@@ -123,7 +124,7 @@ public class PoolHandler implements HttpHandler {
 
     private boolean addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
         if (pool != null) {
-            managerClient.getTargetsByPool(pool).forEach(target -> {
+            localHolderData.getTargetsByPool(pool).forEach(target -> {
                 String value = target.getName();
                 URI uri = URI.create(target.getName());
                 proxyClient.addHost(uri);

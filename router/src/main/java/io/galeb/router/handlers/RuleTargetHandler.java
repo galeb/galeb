@@ -23,6 +23,7 @@ import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.core.rest.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -36,14 +37,14 @@ public class RuleTargetHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final ManagerClient managerClient;
     private final VirtualHost virtualHost;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     private HttpHandler next = null;
 
-    public RuleTargetHandler(final ManagerClient managerClient, final String virtualHostName) {
-        this.managerClient = managerClient;
-        this.virtualHost = managerClient.getVirtualhostByName(virtualHostName);
+    public RuleTargetHandler(final LocalHolderDataConfiguration.LocalHolderData localHolderData, final String virtualHostName) {
+        this.localHolderData = localHolderData;
+        this.virtualHost = localHolderData.virtualHostByName(virtualHostName);
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         final PathGlobHandler pathGlobHandler = new PathGlobHandler();
         this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
@@ -87,7 +88,7 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private void loadRules() {
-                Set<Rule> rules = managerClient.getRulesByVirtualhost(virtualHost);
+                Set<Rule> rules = localHolderData.getRulesByVirtualhost(virtualHost);
                 if (!rules.isEmpty()) {
                     for (Rule rule : rules) {
                         Integer order = rule.getRuleOrder();
@@ -97,7 +98,7 @@ public class RuleTargetHandler implements HttpHandler {
                         logger.info("add rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
                         if (EnumRuleType.valueOf(type) == EnumRuleType.PATH) {
-                            final PoolHandler poolHandler = new PoolHandler(managerClient).setPooId(poolId);
+                            final PoolHandler poolHandler = new PoolHandler(localHolderData).setPooById(poolId);
                             pathGlobHandler.addPath(rule.getName(), order, poolHandler);
                         }
 

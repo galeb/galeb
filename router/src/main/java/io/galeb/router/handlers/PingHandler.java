@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.rest.ManagerClient;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.services.UpdateService;
 import io.undertow.server.HttpHandler;
@@ -45,12 +45,12 @@ public class PingHandler implements HttpHandler {
     private final ExecutorService executor = new ForkJoinPool();
     private final UpdateService updateService;
     private final ExternalDataService data;
-    private final ManagerClient managerClient;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final ExternalDataService data,
-                       final ManagerClient managerClient) {
-        this.managerClient = managerClient;
+                       final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
+        this.localHolderData = localHolderData;
         this.updateService = new UpdateService(nameVirtualHostHandler, data);
         this.data = data;
     }
@@ -72,7 +72,7 @@ public class PingHandler implements HttpHandler {
     }
 
     private boolean isEmpty() {
-        return managerClient.isVirtualhostsEmpty();
+        return localHolderData.isVirtualhostsEmpty();
     }
 
     private boolean isOutdated() {

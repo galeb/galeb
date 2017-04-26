@@ -30,9 +30,8 @@ public class HttpClientServiceConfigurationMock {
         return new HttpClientService() {
 
             @Override
-            public String getResponseBodyWithToken(String url, String token) {
+            public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {
                 // TODO: implementation
-                return null;
             }
 
             @Override

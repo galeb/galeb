@@ -69,7 +69,7 @@ public class Checker {
     @JmsListener(destination = "galeb-health", concurrency = "5-5", containerFactory = "containerFactory")
     public void check(Target target) throws ExecutionException, InterruptedException {
         LAST_CALL.set(System.currentTimeMillis());
-        final Map<String, String> properties = target.getProperties();
+        final Map<String, String> properties = target.getParent().getProperties();
         final AtomicReference<String> hcPath = new AtomicReference<>(properties.get(PROP_HEALTHCHECK_PATH));
         hcPath.compareAndSet(null,"/");
         final String hcStatusCode = properties.get(PROP_HEALTHCHECK_CODE);
@@ -80,7 +80,7 @@ public class Checker {
             hcHost = targetURI.getHost() + ":" + targetURI.getPort();
         }
         final String realHost = hcHost;
-        final String lastReason = properties.get(PROP_STATUS_DETAILED);
+        final String lastReason = target.getProperties().get(PROP_STATUS_DETAILED);
         long start = System.currentTimeMillis();
 
         RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(realHost);

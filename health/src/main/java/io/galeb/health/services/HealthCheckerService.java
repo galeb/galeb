@@ -17,15 +17,19 @@
 package io.galeb.health.services;
 
 import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.entity.Target;
+import io.galeb.core.rest.ManagerClient;
 import io.galeb.health.broker.Checker;
 import io.galeb.health.broker.Producer;
 import io.galeb.health.util.TargetStamper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static io.galeb.core.logger.ErrorLogger.logError;
@@ -33,17 +37,16 @@ import static io.galeb.core.logger.ErrorLogger.logError;
 @Service
 public class HealthCheckerService {
 
-    private final String environmentName = SystemEnvs.ENVIRONMENT_NAME.getValue();
-
     @SuppressWarnings("FieldCanBeLocal")
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Producer producer;
-    private final TargetStamper targetStamper;
+    private final ManagerClient managerClient;
 
-    HealthCheckerService(final Producer producer, final TargetStamper targetStamper) {
+    @Autowired
+    HealthCheckerService(final Producer producer, final ManagerClient managerClient) {
         this.producer = producer;
-        this.targetStamper = targetStamper;
+        this.managerClient = managerClient;
         logger.info(this.getClass().getSimpleName() + " started");
     }
 
@@ -55,14 +58,19 @@ public class HealthCheckerService {
         String id = UUID.randomUUID().toString();
         logger.info("Running scheduling " + id);
         try {
-            targetStamper.targetsByEnvName(environmentName).parallel().forEach(target -> {
-                try {
-                    target.getProperties().put("SCHEDULER_ID", id);
-                    producer.send(target);
-                } catch (Exception e) {
-                    logger.error(ExceptionUtils.getStackTrace(e));
-                }
-            });
+            ManagerClient.ResultCallBack resultCallBack = result -> {
+                @SuppressWarnings("unchecked")
+                Set<Target> targets = (Set<Target>) result;
+                targets.parallelStream().parallel().forEach(target -> {
+                    try {
+                        target.getProperties().put("SCHEDULER_ID", id);
+                        producer.send(target);
+                    } catch (Exception e) {
+                        logger.error(ExceptionUtils.getStackTrace(e));
+                    }
+                });
+            };
+            managerClient.getTargets(resultCallBack);
         } catch (Exception e) {
             logError(e, this.getClass());
         }

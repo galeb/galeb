@@ -16,10 +16,7 @@
 
 package io.galeb.core.services;
 
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.Realm;
-import org.asynchttpclient.RequestBuilder;
-import org.asynchttpclient.Response;
+import org.asynchttpclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -39,7 +36,6 @@ public class HttpClientService {
 
     public HttpClientService() {
         asyncHttpClient = asyncHttpClient(config()
-
                 .setFollowRedirect(false)
                 .setKeepAlive(true)
                 .setConnectTimeout(10000)
@@ -48,18 +44,26 @@ public class HttpClientService {
                 .setMaxConnectionsPerHost(100).build());
     }
 
-    public String getResponseBodyWithToken(String url, String token) {
+    public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                     .setHeader("x-auth-token", token);
-            Response response = asyncHttpClient.executeRequest(requestBuilder.build()).get();
-            return response.getResponseBody();
+            asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
+                @Override
+                public Response onCompleted(Response response) throws Exception {
+                    callBack.onCompleted(response.getResponseBody());
+                    return response;
+                }
+
+                @Override
+                public void onThrowable(Throwable t) {
+                    callBack.onCompleted(null);
+                    super.onThrowable(t);
+                }
+            });
         } catch (NullPointerException e) {
             logger.error("Token is NULL (auth problem?)");
-        } catch (ExecutionException | InterruptedException e) {
-            logError(e, this.getClass());
         }
-        return "";
     }
 
     public boolean patchResponse(String url, String body, String token) {
@@ -89,5 +93,9 @@ public class HttpClientService {
             logError(e, this.getClass());
         }
         return "";
+    }
+
+    public interface OnCompletedCallBack {
+        void onCompleted(String body);
     }
 }

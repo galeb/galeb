@@ -18,6 +18,7 @@ package io.galeb.router.tests.handlers;
 
 import io.galeb.core.entity.Pool;
 import io.galeb.core.rest.ManagerClient;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RuleTargetHandler;
@@ -43,9 +44,9 @@ public class RootHandlerTest {
     private final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
     private final ApplicationContext context = mock(ApplicationContext.class);
     private final ExternalDataService externalData = mock(ExternalDataService.class);
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData = mock(LocalHolderDataConfiguration.LocalHolderData.class);
     private final ManagerClient managerClient = mock(ManagerClient.class);
-    private final UpdateService updateService = new UpdateService(nameVirtualHostHandler, externalData);
-
+    private final UpdateService updateService = new UpdateService(nameVirtualHostHandler, externalData, managerClient, localHolderData);
     @Before
     public void setUp() {
         when(externalData.exist(anyString())).thenReturn(true);
@@ -62,7 +63,7 @@ public class RootHandlerTest {
                 }
             }
         });
-        when(context.getBean(anyString())).thenReturn(new PoolHandler(managerClient));
+        when(context.getBean(anyString())).thenReturn(new PoolHandler(localHolderData));
     }
 
     @Test
@@ -87,7 +88,7 @@ public class RootHandlerTest {
         nameVirtualHostHandler.addHost(virtualhost + "4", exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(5));
 
-        updateService.forceAllUpdate();
+        updateService.forceUpdateAll();
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 

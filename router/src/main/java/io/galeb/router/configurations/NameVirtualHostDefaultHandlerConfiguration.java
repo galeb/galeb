@@ -27,17 +27,17 @@ import org.springframework.context.annotation.Configuration;
 public class NameVirtualHostDefaultHandlerConfiguration {
 
     private final ApplicationContext context;
-    private final ManagerClient managerClient;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
     @Autowired
-    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context, ManagerClient managerClient) {
+    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context, LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.context = context;
-        this.managerClient = managerClient;
+        this.localHolderData = localHolderData;
     }
 
     @Bean
     public NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler() {
-        return new NameVirtualHostDefaultHandler(context, managerClient);
+        return new NameVirtualHostDefaultHandler(context, localHolderData);
     }
 
 }

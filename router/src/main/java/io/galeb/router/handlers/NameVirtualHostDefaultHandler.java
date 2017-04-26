@@ -16,8 +16,8 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.ResponseCodeOnError;
+import io.galeb.router.configurations.LocalHolderDataConfiguration;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -32,11 +32,11 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ApplicationContext context;
-    private final ManagerClient managerClient;
+    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
 
-    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ManagerClient managerClient) {
+    public NameVirtualHostDefaultHandler(final ApplicationContext context, final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
         this.context = context;
-        this.managerClient = managerClient;
+        this.localHolderData = localHolderData;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
         final NameVirtualHostHandler nameVirtualHostHandler = context.getBean(NameVirtualHostHandler.class);
         if (isValid(hostName, nameVirtualHostHandler)) {
             logger.info("adding " + hostName);
-            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(managerClient, hostName));
+            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(localHolderData, hostName));
             nameVirtualHostHandler.handleRequest(exchange);
         } else {
             ResponseCodeOnError.VIRTUALHOST_NOT_FOUND.getHandler().handleRequest(exchange);
@@ -62,6 +62,6 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     }
 
     private boolean exist(String hostName) {
-        return managerClient.getVirtualhostByName(hostName) != null;
+        return localHolderData.virtualHostByName(hostName) != null;
     }
 }

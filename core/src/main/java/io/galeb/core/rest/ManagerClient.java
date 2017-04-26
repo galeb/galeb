@@ -64,55 +64,28 @@ public class ManagerClient {
         this.token = null;
     }
 
-    public Stream<Target> targetsByEnvName(String environmentName) {
+    public void getEnvironmentId(String envName, final ResultCallBack resultCallBack) {
         if (renewToken()) {
-            long environmentId = getEnvironmentId(environmentName);
-            if (environmentId == -1) {
-                logger.error("Environment \"" +  environmentName + "\" NOT FOUND");
-                return Stream.empty();
-            }
-            String poolsUrl = managerUrl + "/environment/" + Math.toIntExact(environmentId) + "/pools";
-            String body = httpClientService.getResponseBodyWithToken(poolsUrl, token);
-            if (!"".equals(body)) {
-                Pools poolList = gson.fromJson(body, Pools.class);
-                return targetsByPoolList(poolList);
-            } else {
-                logger.error("httpClientService.getResponseBodyWithToken has return body empty");
-                resetToken();
-                return Stream.empty();
-            }
-        }
-        logger.error("Token is NULL (request problem?)");
-        return Stream.empty();
-    }
-
-    public Stream<Target> targetsByPoolList(Pools poolList) {
-        try {
-            return Arrays.stream(poolList._embedded.pool).parallel().map(this::getTargetsByPool).flatMap(s -> s.map(o -> (Target) o));
-        } catch (Exception e) {
-            logError(e, this.getClass());
-            return Stream.empty();
-        }
-    }
-
-    public long getEnvironmentId(String envName) {
-        if (renewToken()) {
-            String envFindByNameUrl = managerUrl + "/environment/search/findByName?name=" + envName;
-            String body = httpClientService.getResponseBodyWithToken(envFindByNameUrl, token);
-            EnvironmentFindByName environmentFindByName = gson.fromJson(body, EnvironmentFindByName.class);
-            try {
-                Environment environment = Arrays.stream(environmentFindByName._embedded.environment).findAny().orElse(null);
-                if (environment != null) {
-                    return environment.getId();
+            final HttpClientService.OnCompletedCallBack callback = body -> {
+                long result = -1L;
+                EnvironmentFindByName environmentFindByName = gson.fromJson(body, EnvironmentFindByName.class);
+                try {
+                    Environment environment = Arrays.stream(environmentFindByName._embedded.environment).findAny().orElse(null);
+                    if (environment != null) {
+                        result = environment.getId();
+                    }
+                } catch (NullPointerException e) {
+                    logError(e, this.getClass());
+                    resetToken();
                 }
-            } catch (NullPointerException e) {
-                logError(e, this.getClass());
-                resetToken();
-            }
+                resultCallBack.onResult(result);
+            };
+
+            String envFindByNameUrl = managerUrl + "/environment/search/findByName?name=" + envName;
+            httpClientService.getResponseBodyWithToken(envFindByNameUrl, token, callback);
         } else {
             logger.error("Token is NULL (request problem?)");
         }
-        return -1;
     }
 
     public void patch(String targetUrl, String body) {
@@ -138,111 +111,207 @@ public class ManagerClient {
         return true;
     }
 
-    public VirtualHost getVirtualhostByName(String virtualHostName) {
+    public void getVirtualhostByName(String virtualHostName, final ResultCallBack resultCallBack) {
         if (renewToken()) {
-            VirtualhostFindByName virtualhostFindByName = getVirtualhostFindByName(virtualHostName);
+            final ResultCallBack resultCallBackVirtualhostFindByName = result -> {
+                VirtualhostFindByName virtualhostFindByName = (VirtualhostFindByName) result;
+                try {
+                    VirtualHost virtualHost = Arrays.stream(virtualhostFindByName._embedded.virtualhost).findAny().orElse(null);
+                    if (virtualHost != null) {
+                        resultCallBack.onResult(virtualHost);
+                    }
+                } catch (NullPointerException e) {
+                    logError(e, this.getClass());
+                    resetToken();
+                    resultCallBack.onResult(null);
+                }
+            };
+            getVirtualhostFindByName(virtualHostName, resultCallBackVirtualhostFindByName);
+        }
+    }
+
+    private void getVirtualhostFindByName(String virtualHostName, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callback = body -> {
+            VirtualhostFindByName result = null;
             try {
-                VirtualHost virtualHost = Arrays.stream(virtualhostFindByName._embedded.virtualhost).findAny().orElse(null);
-                if (virtualHost != null) {
-                    return virtualHost;
+                result = gson.fromJson(body, VirtualhostFindByName.class);
+            } catch (Exception e) {
+                logError(e, this.getClass());
+                resetToken();
+            }
+            resultCallBack.onResult(result);
+        };
+        String virtualhostUrl = managerUrl + "/virtualhost/search/findByName?name=" + virtualHostName;
+        httpClientService.getResponseBodyWithToken(virtualhostUrl, token, callback);
+    }
+
+    public void getRulesByVirtualhost(final VirtualHost virtualHost, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callback = body -> {
+            Set<Rule> result = Collections.emptySet();
+            try {
+                Rules rules = gson.fromJson(body, Rules.class);
+                result = Arrays.stream(rules._embedded.rule).collect(Collectors.toSet());
+            } catch (Exception e) {
+                logError(e, this.getClass());
+                resetToken();
+            }
+            resultCallBack.onResult(result);
+        };
+
+        try {
+            String rulesUrl = managerUrl + "/virtualhost/" + Math.toIntExact(virtualHost.getId()) + "/rules";
+            httpClientService.getResponseBodyWithToken(rulesUrl, token, callback);
+        } catch (NullPointerException e) {
+            logError(e, this.getClass());
+            resetToken();
+        }
+    }
+
+    public void getPoolById(Long poolId, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callBack = body -> {
+            Pool result = null;
+            try {
+                result = gson.fromJson(body, Pool.class);
+            } catch (Exception e) {
+                logError(e, this.getClass());
+                resetToken();
+            }
+            resultCallBack.onResult(result);
+        };
+
+        String poolUrl = managerUrl + "/pool/" + Math.toIntExact(poolId);
+        try {
+            httpClientService.getResponseBodyWithToken(poolUrl, token, callBack);
+        } catch (NullPointerException e) {
+            logError(e, this.getClass());
+            resetToken();
+        }
+    }
+
+    public void getBalancePolicyByPool(Pool pool, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callback = body -> {
+            BalancePolicy result = null;
+            try {
+                result = gson.fromJson(body, BalancePolicy.class);
+            } catch (Exception e) {
+                logError(e,this.getClass());
+                resetToken();
+            }
+            resultCallBack.onResult(result);
+        };
+
+        final ResultCallBack resultCallBackPoolWithLinks = result -> {
+            PoolWithLinks poolWithLinks = (PoolWithLinks) result;
+            try {
+                if (poolWithLinks != null) {
+                    String balancePolicyLink = poolWithLinks._links.balancePolicy.href;
+                    httpClientService.getResponseBodyWithToken(balancePolicyLink, token, callback);
                 }
             } catch (NullPointerException e) {
                 logError(e, this.getClass());
                 resetToken();
             }
-        }
-        return null;
+        };
+
+        getPoolWithLinks(pool, resultCallBackPoolWithLinks);
     }
 
-    private VirtualhostFindByName getVirtualhostFindByName(String virtualHostName) {
-        String virtualhostUrl = managerUrl + "/virtualhost/search/findByName?name=" + virtualHostName;
-        String body = httpClientService.getResponseBodyWithToken(virtualhostUrl, token);
-        return gson.fromJson(body, VirtualhostFindByName.class);
-    }
-
-    public Set<Rule> getRulesByVirtualhost(VirtualHost virtualHost) {
-        String rulesUrl = managerUrl + "/virtualhost/" + Math.toIntExact(virtualHost.getId()) + "/rules";
-        try {
-            String body = httpClientService.getResponseBodyWithToken(rulesUrl, token);
-            Rules rules = gson.fromJson(body, Rules.class);
-            return Arrays.stream(rules._embedded.rule).collect(Collectors.toSet());
-        } catch (NullPointerException e) {
-            logError(e, this.getClass());
-            resetToken();
-        }
-        return Collections.emptySet();
-    }
-
-    public Pool getPoolById(Long poolId) {
-        String poolUrl = managerUrl + "/pool/" + Math.toIntExact(poolId);
-        try {
-            String body = httpClientService.getResponseBodyWithToken(poolUrl, token);
-            return gson.fromJson(body, Pool.class);
-        } catch (NullPointerException e) {
-            logError(e, this.getClass());
-            resetToken();
-        }
-        return null;
-    }
-
-    public BalancePolicy getBalancePolicyByPool(Pool pool) {
-        try {
-            PoolWithLinks poolWithLinks = getPoolWithLinks(pool);
-            if (poolWithLinks != null) {
-                String balancePolicyLink = poolWithLinks._links.balancePolicy.href;
-                String body = httpClientService.getResponseBodyWithToken(balancePolicyLink, token);
-                return gson.fromJson(body, BalancePolicy.class);
+    private void getPoolWithLinks(final Pool pool, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callBack = body -> {
+            PoolWithLinks result = null;
+            try {
+                result = gson.fromJson(body, PoolWithLinks.class);
+            } catch (NullPointerException e) {
+                logError(e, this.getClass());
+                resetToken();
             }
-        } catch (NullPointerException e) {
-            logError(e, this.getClass());
-            resetToken();
-        }
-        return null;
-    }
-
-    private PoolWithLinks getPoolWithLinks(Pool pool) {
+            resultCallBack.onResult(result);
+        };
         try {
             String poolUrl = managerUrl + "/pool/" + pool.getId();
-            String body = httpClientService.getResponseBodyWithToken(poolUrl, token);
-            return gson.fromJson(body, PoolWithLinks.class);
+            httpClientService.getResponseBodyWithToken(poolUrl, token, callBack);
         } catch (NullPointerException e) {
             logError(e, this.getClass());
             resetToken();
         }
-        return null;
     }
 
-    public Stream<Target> getTargetsByPool(Pool pool) {
-        PoolWithLinks poolWithLinks = getPoolWithLinks(pool);
-        try {
-            if (poolWithLinks != null) {
-                String targetsUrl = poolWithLinks._links.targets.href + "?size=99999999";
-                String bodyTargets = httpClientService.getResponseBodyWithToken(targetsUrl, token);
-                if (!"".equals(bodyTargets)) {
-                    final Targets targetList = gson.fromJson(bodyTargets, Targets.class);
-                    return Arrays.stream(targetList._embedded.target).map(target -> {
+    public void getTargetsByPool(final Pool pool, final ResultCallBack resultCallBack) {
+        final HttpClientService.OnCompletedCallBack callBack = body -> {
+            if (!"".equals(body)) {
+                Stream<Target> result;
+                try {
+                    final Targets targetList = gson.fromJson(body, Targets.class);
+                    result = Arrays.stream(targetList._embedded.target).map(target -> {
                         target.setParent(pool);
                         return target;
                     });
+                    resultCallBack.onResult(result);
+                } catch (NullPointerException e) {
+                    logError(e, this.getClass());
+                    resetToken();
+                    resultCallBack.onResult(Stream.empty());
                 }
             }
-        } catch (NullPointerException e) {
-            logError(e, this.getClass());
-            resetToken();
-        }
-        return Stream.empty();
+        };
+
+        final ResultCallBack resultCallBackPool = result -> {
+            PoolWithLinks poolWithLinks = (PoolWithLinks)result;
+            try {
+                if (poolWithLinks != null) {
+                    String targetsUrl = poolWithLinks._links.targets.href + "?size=99999999";
+                    httpClientService.getResponseBodyWithToken(targetsUrl, token, callBack);
+                }
+            } catch (NullPointerException e) {
+                logError(e, this.getClass());
+                resetToken();
+            }
+        };
+
+        getPoolWithLinks(pool, resultCallBackPool);
     }
 
-    public boolean isVirtualhostsEmpty() {
+    public void isVirtualhostsEmpty(final ResultCallBack resultCallBack) {
         String virtualhostsUrl = managerUrl + "/virtualhost";
+        HttpClientService.OnCompletedCallBack onCompletedCallBack = body -> {
+            try {
+                Virtualhosts virtualhosts = gson.fromJson(body, Virtualhosts.class);
+                Boolean result = virtualhosts._embedded.virtualhost.length == 0;
+                resultCallBack.onResult(result);
+            } catch (Exception e) {
+                logError(e, this.getClass());
+                resultCallBack.onResult(true);
+            }
+        };
         try {
-            String body = httpClientService.getResponseBodyWithToken(virtualhostsUrl, token);
-            Virtualhosts virtualhosts = gson.fromJson(body, Virtualhosts.class);
-            return virtualhosts._embedded.virtualhost.length == 0;
+            httpClientService.getResponseBodyWithToken(virtualhostsUrl, token, onCompletedCallBack);
         } catch (NullPointerException e) {
             logError(e, this.getClass());
             resetToken();
         }
-        return true;
+    }
+
+    public void getTargets(final ResultCallBack resultCallBack) {
+        HttpClientService.OnCompletedCallBack onCompletedCallBack = body -> {
+            Target[] result = new Target[0];
+            try {
+                Targets targets = gson.fromJson(body, Targets.class);
+                result = targets._embedded.target;
+            } catch (Exception e) {
+                logError(e, this.getClass());
+            }
+            resultCallBack.onResult(result);
+        };
+        try {
+            String targetsUrl = managerUrl + "/target";
+            httpClientService.getResponseBodyWithToken(targetsUrl, token, onCompletedCallBack);
+        } catch (NullPointerException e) {
+            logError(e, this.getClass());
+            resetToken();
+        }
+    }
+
+    public interface ResultCallBack {
+        void onResult(Object result);
     }
 }

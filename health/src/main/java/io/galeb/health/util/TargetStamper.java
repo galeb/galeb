@@ -16,15 +16,17 @@
 
 package io.galeb.health.util;
 
-import io.galeb.core.configuration.SystemEnvs;
+import com.google.gson.Gson;
 import io.galeb.core.entity.Target;
-import io.galeb.core.rest.ManagerClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
+import javax.jms.Message;
+
+import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Component
 public class TargetStamper {
@@ -35,6 +37,8 @@ public class TargetStamper {
         OK
     }
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public static final String PROP_HEALTHCHECK_RETURN = "hcBody";
     public static final String PROP_HEALTHCHECK_PATH   = "hcPath";
     public static final String PROP_HEALTHCHECK_HOST   = "hcHost";
@@ -42,24 +46,25 @@ public class TargetStamper {
     public static final String PROP_HEALTHY            = "healthy";
     public static final String PROP_STATUS_DETAILED    = "status_detailed";
 
-    private final String managerUrl = SystemEnvs.MANAGER_URL.getValue();
-
-    private final ManagerClient managerClient;
+    private final JmsTemplate jmsTemplate;
 
     @Autowired
-    public TargetStamper(final ManagerClient managerClient) {
-        this.managerClient = managerClient;
+    public TargetStamper(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
     }
 
-    public void patchTarget(Target target) {
-        String targetUrl = managerUrl + "/target/" + target.getId();
-        String healthy = target.getProperties().get(PROP_HEALTHY);
-        String statusDetailed = target.getProperties().get(PROP_STATUS_DETAILED);
-        healthy = healthy != null ? healthy : HcState.UNKNOWN.toString();
-        statusDetailed = statusDetailed != null ? statusDetailed : HcState.UNKNOWN.toString();
-        managerClient.renewToken();
-        String body = "{\"properties\": { \"" + PROP_HEALTHY + "\":\"" + healthy + "\",\"" + PROP_STATUS_DETAILED + "\":\"" + statusDetailed + "\" }}";
-        managerClient.patch(targetUrl, body);
+    public void stamp(Target target) {
+        String targetStr = new Gson().toJson(target, Target.class);
+        jmsTemplate.send("health-callback", session -> {
+            Message message = session.createObjectMessage(targetStr);
+            String uniqueId = "ID:" + target.getName() + "-" + System.currentTimeMillis();
+            message.setStringProperty("_HQ_DUPL_ID", uniqueId);
+            message.setJMSMessageID(uniqueId);
+            message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+
+            logger.info("JMSMessageID: " + uniqueId + " - Target " + target.getName());
+            return message;
+        });
     }
 
 }

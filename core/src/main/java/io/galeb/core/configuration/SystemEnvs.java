@@ -57,6 +57,11 @@ public enum SystemEnvs {
      */
     MANAGER_PASS        (System.getenv("MANAGER_PASS"),         "password"),
 
+    /**
+     *  Queuer CONN
+     */
+    QUEUE_CONN          (System.getenv("QUEUE_CONN"),           "tcp://localhost:61616?protocols=Core"),
+
 
     // HEALTHCHECKER
 

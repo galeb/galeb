@@ -16,11 +16,13 @@
 
 package io.galeb.core.services;
 
+import io.galeb.core.logger.ErrorLogger;
 import org.asynchttpclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import static io.galeb.core.logger.ErrorLogger.logError;
@@ -57,7 +59,11 @@ public class HttpClientService {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    callBack.onCompleted(null);
+                    try {
+                        callBack.onCompleted(null);
+                    } catch (IOException e) {
+                        ErrorLogger.logError(e, this.getClass());
+                    }
                     super.onThrowable(t);
                 }
             });
@@ -96,6 +102,6 @@ public class HttpClientService {
     }
 
     public interface OnCompletedCallBack {
-        void onCompleted(String body);
+        void onCompleted(String body) throws IOException;
     }
 }

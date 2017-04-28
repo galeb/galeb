@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.core.rest.structure;
 
-public enum EnumRuleType {
-    PATH("UrlPath"),
-    UNDEF("UNDEF");
+import io.galeb.core.entity.VirtualHost;
 
-
-    private final String ruleType;
-
-    EnumRuleType(String ruleType) {
-
-        this.ruleType = ruleType;
-    }
-
-    @Override
-    public String toString() {
-        return ruleType;
-    }
+public class VirtualhostWithLinks extends VirtualHost {
+    public VirtualhostLinks _links;
 }

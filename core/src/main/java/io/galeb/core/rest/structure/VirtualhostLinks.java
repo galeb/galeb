@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.core.rest.structure;
 
-public enum EnumRuleType {
-    PATH("UrlPath"),
-    UNDEF("UNDEF");
+import java.io.Serializable;
 
-
-    private final String ruleType;
-
-    EnumRuleType(String ruleType) {
-
-        this.ruleType = ruleType;
-    }
-
-    @Override
-    public String toString() {
-        return ruleType;
-    }
+public class VirtualhostLinks implements Serializable {
+    private static final long serialVersionUID = 1L;
+    public Href self;
+    public Href environment;
+    public Href project;
 }

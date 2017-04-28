@@ -18,12 +18,10 @@ package io.galeb.router.handlers;
 
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Rule;
-import io.galeb.core.entity.RuleType;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.rest.ManagerClient;
 import io.galeb.core.rest.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.configurations.LocalHolderDataConfiguration;
+import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -32,19 +30,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RuleTargetHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final AtomicBoolean firstLoad = new AtomicBoolean(true);
     private final VirtualHost virtualHost;
-    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
+    private final HttpHandler next;
 
-    private HttpHandler next = null;
-
-    public RuleTargetHandler(final LocalHolderDataConfiguration.LocalHolderData localHolderData, final String virtualHostName) {
-        this.localHolderData = localHolderData;
-        this.virtualHost = localHolderData.virtualHostByName(virtualHostName);
+    public RuleTargetHandler(final ManagerClientCache cache, final String virtualHostName) {
+        this.virtualHost = cache.get(virtualHostName);
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         final PathGlobHandler pathGlobHandler = new PathGlobHandler();
         this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
@@ -71,39 +68,32 @@ public class RuleTargetHandler implements HttpHandler {
                     loadRules();
                 }
                 if (!pathGlobHandler.getPaths().isEmpty()) {
-                    next.handleRequest(exchange);
+                    if (firstLoad.getAndSet(false)) {
+                        next.handleRequest(exchange);
+                    } else {
+                        ResponseCodeOnError.RULE_PATH_NOT_FOUND.getHandler().handleRequest(exchange);
+                    }
                 } else {
                     ResponseCodeOnError.RULES_EMPTY.getHandler().handleRequest(exchange);
                 }
             }
 
-            private String extractRuleType(Rule rule) {
-                RuleType ruleType = rule.getRuleType();
-                return ruleType.getName();
-            }
-
-            private Long extractPoolId(Rule rule) {
-                Pool pool = rule.getPool();
-                return pool.getId();
-            }
-
             private void loadRules() {
-                Set<Rule> rules = localHolderData.getRulesByVirtualhost(virtualHost);
+                Set<Rule> rules = virtualHost.getRules();
                 if (!rules.isEmpty()) {
                     for (Rule rule : rules) {
-                        Integer order = rule.getRuleOrder();
-                        String type = extractRuleType(rule);
-                        Long poolId = extractPoolId(rule);
+                        String order = Optional.ofNullable(rule.getProperties().get("order")).orElse(String.valueOf(Integer.MAX_VALUE));
+                        String type = rule.getRuleType().getName();
+                        Pool pool = rule.getPool();
+                        String path = rule.getProperties().get("match");
 
                         logger.info("add rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
-                        if (EnumRuleType.valueOf(type) == EnumRuleType.PATH) {
-                            final PoolHandler poolHandler = new PoolHandler(localHolderData).setPooById(poolId);
-                            pathGlobHandler.addPath(rule.getName(), order, poolHandler);
+                        if (EnumRuleType.PATH.toString().equals(type)) {
+                            final PoolHandler poolHandler = new PoolHandler(pool);
+                            pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
                         }
-
                     }
-
                 }
             }
         };

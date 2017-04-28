@@ -17,7 +17,7 @@
 package io.galeb.router.handlers;
 
 import io.galeb.core.rest.ManagerClient;
-import io.galeb.router.configurations.LocalHolderDataConfiguration;
+import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.services.ExternalDataService;
 import io.galeb.router.services.UpdateService;
 import io.undertow.server.HttpHandler;
@@ -40,20 +40,20 @@ public class PingHandler implements HttpHandler {
         WORKING
     }
 
-    private static final long OBSOLETE_TIME = 5000;
+    private static final long OBSOLETE_TIME = 10000;
 
     private final AtomicLong lastPing = new AtomicLong(0L);
     private final ExecutorService executor = new ForkJoinPool();
     private final UpdateService updateService;
     private final ExternalDataService data;
-    private final LocalHolderDataConfiguration.LocalHolderData localHolderData;
+    private final ManagerClientCache cache;
 
     public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final ExternalDataService data,
                        final ManagerClient managerClient,
-                       final LocalHolderDataConfiguration.LocalHolderData localHolderData) {
-        this.localHolderData = localHolderData;
-        this.updateService = new UpdateService(nameVirtualHostHandler, data, managerClient, localHolderData);
+                       final ManagerClientCache cache) {
+        this.cache = cache;
+        this.updateService = new UpdateService(nameVirtualHostHandler, managerClient, cache);
         this.data = data;
     }
 
@@ -63,7 +63,7 @@ public class PingHandler implements HttpHandler {
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
         exchange.getResponseSender().send(getStatusBody());
         exchange.endExchange();
-        executor.submit(updateService::checkForceUpdateFlag);
+        executor.submit(updateService::sync);
     }
 
     private String getStatusBody() {
@@ -74,7 +74,7 @@ public class PingHandler implements HttpHandler {
     }
 
     private boolean isEmpty() {
-        return localHolderData.isVirtualhostsEmpty();
+        return cache.isEmpty();
     }
 
     private boolean isOutdated() {

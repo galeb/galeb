@@ -79,6 +79,11 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private void loadRules() {
+                final Rule ruleDefault = virtualHost.getRuleDefault();
+                if (ruleDefault != null) {
+                    pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool()));
+                }
+
                 Set<Rule> rules = virtualHost.getRules();
                 if (!rules.isEmpty()) {
                     for (Rule rule : rules) {

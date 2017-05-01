@@ -35,7 +35,6 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;

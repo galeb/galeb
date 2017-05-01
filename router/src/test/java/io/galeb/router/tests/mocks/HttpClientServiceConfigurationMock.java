@@ -35,12 +35,6 @@ public class HttpClientServiceConfigurationMock {
             }
 
             @Override
-            public boolean patchResponse(String url, String body, String token) {
-                // TODO: implementation
-                return false;
-            }
-
-            @Override
             public String getResponseBodyWithAuth(String user, String pass, String url) {
                 // TODO: implementation
                 return null;

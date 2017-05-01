@@ -16,7 +16,10 @@
 
 package io.galeb.router.tests.handlers;
 
+import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.Project;
+import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -68,12 +71,15 @@ public class RootHandlerTest {
 
     @Test
     public void testForceVirtualhostUpdate() {
-        final String virtualhost = "test.com";
+        final String virtualhostName = "test.com";
+        final Environment environment = new Environment("test");
+        final Project project = new Project("test");
+        final VirtualHost virtualHost = new VirtualHost(virtualhostName, environment, project);
 
-        nameVirtualHostHandler.addHost(virtualhost, exchange -> {});
-        assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhost));
+        nameVirtualHostHandler.addHost(virtualhostName, exchange -> {});
+        assertThat(nameVirtualHostHandler.getHosts(), hasKey(virtualhostName));
 
-        updateService.updateCache(virtualhost);
+        updateService.updateCache(virtualHost);
         assertThat(nameVirtualHostHandler.getHosts().size(), equalTo(0));
     }
 
@@ -95,11 +101,14 @@ public class RootHandlerTest {
     @Test
     public void testIgnoreForceVirtualhostUpdateIfPingHost() {
         String pingHost = "__ping__";
+        final Environment environment = new Environment("test");
+        final Project project = new Project("test");
+        final VirtualHost virtualHostPing = new VirtualHost(pingHost, environment, project);
 
         nameVirtualHostHandler.addHost(pingHost, exchange -> {});
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(pingHost));
 
-        updateService.updateCache(pingHost);
+        updateService.updateCache(virtualHostPing);
         assertThat(nameVirtualHostHandler.getHosts(), hasKey(pingHost));
     }
 

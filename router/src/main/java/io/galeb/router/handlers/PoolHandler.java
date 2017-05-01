@@ -21,7 +21,7 @@ import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
-import io.galeb.router.client.hostselectors.HostSelectorAlgorithm;
+import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
@@ -36,7 +36,7 @@ import java.net.URI;
 
 import static io.galeb.core.rest.EnumHealthState.*;
 import static io.galeb.core.rest.EnumPropHealth.*;
-import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
+import static io.galeb.router.client.hostselectors.HostSelectorLookup.ROUNDROBIN;
 
 public class PoolHandler implements HttpHandler {
 
@@ -112,7 +112,7 @@ public class PoolHandler implements HttpHandler {
     private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
         BalancePolicy hostSelectorName = pool.getBalancePolicy();
         if (hostSelectorName != null) {
-            return HostSelectorAlgorithm.getHostSelector(hostSelectorName.getName());
+            return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
         }
         return ROUNDROBIN.getHostSelector();
     }

@@ -20,17 +20,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class HostSelectorAlgorithm {
-    public static final HostSelectorAlgorithm ROUNDROBIN       = new HostSelectorAlgorithm("RoundRobin",      RoundRobinHostSelector.class);
-    public static final HostSelectorAlgorithm STRICT_LEASTCONN = new HostSelectorAlgorithm("StrictLeastConn", StrictLeastConnHostSelector.class);
-    public static final HostSelectorAlgorithm LEASTCONN        = new HostSelectorAlgorithm("LeastConn",       LeastConnWithRRHostSelector.class);
-    public static final HostSelectorAlgorithm HASH_SOURCEIP    = new HostSelectorAlgorithm("HashSourceIp",    HashSourceIpHostSelector.class);
-    public static final HostSelectorAlgorithm HASH_URIPATH     = new HostSelectorAlgorithm("HashUriPath",     HashUriPathHostSelector.class);
+public class HostSelectorLookup {
+    public static final HostSelectorLookup ROUNDROBIN       = new HostSelectorLookup("RoundRobin",      RoundRobinHostSelector.class);
+    public static final HostSelectorLookup STRICT_LEASTCONN = new HostSelectorLookup("StrictLeastConn", StrictLeastConnHostSelector.class);
+    public static final HostSelectorLookup LEASTCONN        = new HostSelectorLookup("LeastConn",       LeastConnWithRRHostSelector.class);
+    public static final HostSelectorLookup HASH_SOURCEIP    = new HostSelectorLookup("HashSourceIp",    HashSourceIpHostSelector.class);
+    public static final HostSelectorLookup HASH_URIPATH     = new HostSelectorLookup("HashUriPath",     HashUriPathHostSelector.class);
 
     private final Class<? extends HostSelector> klazz;
     private static final Map<String, Class<? extends HostSelector>> hostSelectorMap = new HashMap<>();
 
-    private HostSelectorAlgorithm(String key, final Class<? extends HostSelector> klazz) {
+    private HostSelectorLookup(String key, final Class<? extends HostSelector> klazz) {
         this.klazz = klazz;
         hostSelectorMap.put(key, klazz);
     }

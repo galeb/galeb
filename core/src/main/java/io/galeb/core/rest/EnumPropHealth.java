@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
+package io.galeb.core.rest;
 
-import java.io.Serializable;
+public enum  EnumPropHealth {
 
-public class Rules implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public EmbeddedRuleWithLinks _embedded;
+    PROP_HEALTHCHECK_RETURN ("hcBody"),
+    PROP_HEALTHCHECK_PATH   ("hcPath"),
+    PROP_HEALTHCHECK_HOST   ("hcHost"),
+    PROP_HEALTHCHECK_CODE   ("hcStatusCode"),
+    PROP_HEALTHY            ("healthy"),
+    PROP_STATUS_DETAILED    ("status_detailed");
+
+    private final String prop;
+
+    EnumPropHealth(String prop) {
+        this.prop = prop;
+    }
+
+    public String value() {
+        return prop;
+    }
+
+    @Override
+    public String toString() {
+        return prop;
+    }
 }

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
+package io.galeb.core.rest;
 
-import java.io.Serializable;
-
-public class SelfWithTemplated implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public String href;
-    public boolean templated;
+public enum EnumHealthState {
+    FAIL,
+    UNKNOWN,
+    OK
 }

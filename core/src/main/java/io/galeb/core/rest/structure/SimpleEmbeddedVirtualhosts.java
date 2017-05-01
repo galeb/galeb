@@ -18,6 +18,9 @@ package io.galeb.core.rest.structure;
 
 import io.galeb.core.entity.VirtualHost;
 
-public class VirtualhostWithLinks extends VirtualHost {
-    public VirtualhostLinks _links;
+import java.io.Serializable;
+
+public class SimpleEmbeddedVirtualhosts implements Serializable {
+    private static final long serialVersionUID = 1L;
+    public VirtualHost[] s;
 }

@@ -18,7 +18,9 @@ package io.galeb.core.rest.structure;
 
 import java.io.Serializable;
 
-public class Virtualhosts implements Serializable {
+@SuppressWarnings("unused")
+public class VirtualhostsName implements Serializable {
     private static final long serialVersionUID = 1L;
-    public EmbeddedVirtualhosts _embedded;
+
+    public String[] virtualhosts;
 }

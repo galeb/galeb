@@ -39,6 +39,7 @@ public class HttpClientService {
     public HttpClientService() {
         asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
+                .setCompressionEnforced(true)
                 .setKeepAlive(true)
                 .setConnectTimeout(10000)
                 .setPooledConnectionIdleTimeout(10)
@@ -70,19 +71,6 @@ public class HttpClientService {
         } catch (NullPointerException e) {
             logger.error("Token is NULL (auth problem?)");
         }
-    }
-
-    public boolean patchResponse(String url, String body, String token) {
-            RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
-                    .setHeader("x-auth-token", token).setMethod("PATCH")
-                    .setBody(body);
-            try {
-                Response response = asyncHttpClient.executeRequest(requestBuilder.build()).get();
-                if (response.getStatusCode() < 400) return true;
-            } catch (InterruptedException | ExecutionException e) {
-                logError(e, this.getClass());
-            }
-            return false;
     }
 
     public String getResponseBodyWithAuth(String user, String pass, String url) {

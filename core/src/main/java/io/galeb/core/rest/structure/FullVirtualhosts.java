@@ -18,7 +18,7 @@ package io.galeb.core.rest.structure;
 
 import java.io.Serializable;
 
-public class LinksWithSelfWithTemplated implements Serializable {
+public class FullVirtualhosts implements Serializable {
     private static final long serialVersionUID = 1L;
-    public SelfWithTemplated self;
+    public SimpleEmbeddedVirtualhosts _embedded;
 }

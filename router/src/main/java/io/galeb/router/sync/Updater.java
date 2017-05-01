@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package io.galeb.router.services;
+package io.galeb.router.sync;
 
 import com.google.common.collect.Sets;
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.util.Cloner;
-import io.galeb.core.rest.ManagerClient;
-import io.galeb.core.rest.structure.FullVirtualhosts;
+import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -41,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class UpdateService {
+public class Updater {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ManagerClient managerClient;
@@ -55,9 +54,9 @@ public class UpdateService {
     private long lastDone = 0L;
     private int count = 0;
 
-    public UpdateService(final NameVirtualHostHandler nameVirtualHostHandler,
-                         final ManagerClient managerClient,
-                         final ManagerClientCache cache) {
+    public Updater(final NameVirtualHostHandler nameVirtualHostHandler,
+                   final ManagerClient managerClient,
+                   final ManagerClientCache cache) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.managerClient = managerClient;
         this.cache = cache;

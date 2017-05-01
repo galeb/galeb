@@ -17,9 +17,9 @@
 package io.galeb.health.services;
 
 import com.google.gson.Gson;
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.Target;
-import io.galeb.core.rest.EnumHealthState;
+import io.galeb.core.enums.EnumHealthState;
 import io.galeb.health.util.CallBackQueue;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.galeb.core.rest.EnumHealthState.*;
-import static io.galeb.core.rest.EnumPropHealth.*;
+import static io.galeb.core.enums.EnumHealthState.*;
+import static io.galeb.core.enums.EnumPropHealth.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 

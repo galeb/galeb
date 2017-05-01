@@ -18,20 +18,17 @@ package io.galeb.router.handlers;
 
 import com.google.gson.Gson;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.logger.ErrorLogger;
-import io.galeb.core.rest.ManagerClient;
+import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.services.UpdateService;
+import io.galeb.router.sync.Updater;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.util.Headers;
-import org.springframework.http.HttpStatus;
+import io.undertow.util.StatusCodes;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -53,7 +50,7 @@ public class PingHandler implements HttpHandler {
     private final Gson gson = new Gson();
     private final AtomicLong lastPing = new AtomicLong(0L);
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final UpdateService updateService;
+    private final Updater updater;
     private final ManagerClientCache cache;
     private Future<?> taskUpdate = null;
 
@@ -61,7 +58,7 @@ public class PingHandler implements HttpHandler {
                        final ManagerClient managerClient,
                        final ManagerClientCache cache) {
         this.cache = cache;
-        this.updateService = new UpdateService(nameVirtualHostHandler, managerClient, cache);
+        this.updater = new Updater(nameVirtualHostHandler, managerClient, cache);
     }
 
     @Override
@@ -74,9 +71,9 @@ public class PingHandler implements HttpHandler {
             exchange.getResponseSender().send(getStatusBody());
         }
         exchange.endExchange();
-        if (taskUpdate == null || updateService.isDone()) {
+        if (taskUpdate == null || updater.isDone()) {
             taskUpdate = null;
-            taskUpdate = executor.submit(updateService::sync);
+            taskUpdate = executor.submit(updater::sync);
         }
     }
 
@@ -94,7 +91,7 @@ public class PingHandler implements HttpHandler {
 
     private void showVirtualHostCached(final HttpServerExchange exchange) {
         VirtualHost virtualhost = cache.get(exchange.getRequestHeaders().get(HEADER_SHOW_CACHE).peekFirst());
-        exchange.setStatusCode(virtualhost != null ? HttpStatus.OK.value() : HttpStatus.NOT_FOUND.value());
+        exchange.setStatusCode(virtualhost != null ? StatusCodes.OK : StatusCodes.NOT_FOUND);
         exchange.getResponseSender().send(virtualhost != null ? gson.toJson(virtualhost) : "{}");
     }
 }

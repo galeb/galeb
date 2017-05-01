@@ -38,7 +38,7 @@ public class ManagerClientCacheConfiguration {
             return virtualHosts.get(hostName);
         }
 
-        public void put(String virtualhostName, final VirtualHost virtualHost) {
+        public synchronized void put(String virtualhostName, final VirtualHost virtualHost) {
             virtualHosts.put(virtualhostName, virtualHost);
         }
 
@@ -50,7 +50,7 @@ public class ManagerClientCacheConfiguration {
             return virtualHosts.containsKey(virtualhostName);
         }
 
-        public void remove(String virtualhostName) {
+        public synchronized void remove(String virtualhostName) {
             virtualHosts.remove(virtualhostName);
         }
 

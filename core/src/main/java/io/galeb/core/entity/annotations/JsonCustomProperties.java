@@ -1,4 +1,4 @@
-package io.galeb.core.annotations;
+package io.galeb.core.entity.annotations;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.annotation.JsonInclude;

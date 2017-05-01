@@ -17,13 +17,12 @@
 package io.galeb.router.kv;
 
 import com.google.gson.Gson;
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
+import io.netty.handler.codec.http.HttpMethod;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
-import org.springframework.http.HttpMethod;
-import org.zalando.boot.etcd.EtcdResponse;
 
 import java.util.concurrent.ExecutionException;
 

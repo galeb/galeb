@@ -18,12 +18,12 @@ package io.galeb.router.services;
 
 import io.galeb.router.kv.EtcdClient;
 import io.galeb.router.kv.EtcdExternalData;
+import io.galeb.router.kv.EtcdNode;
 import io.galeb.router.kv.ExternalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.zalando.boot.etcd.EtcdNode;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

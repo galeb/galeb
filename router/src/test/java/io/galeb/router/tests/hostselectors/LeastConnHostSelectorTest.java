@@ -17,7 +17,7 @@
 package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
-import io.galeb.router.client.hostselectors.LeastConnHostSelector;
+import io.galeb.router.client.hostselectors.StrictLeastConnHostSelector;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
 
 public class LeastConnHostSelectorTest extends AbstractHostSelectorTest {
 
-    private final LeastConnHostSelector leastConnHostSelector = new LeastConnHostSelector();
+    private final StrictLeastConnHostSelector leastConnHostSelector = new StrictLeastConnHostSelector();
 
     @Test
     public void testSelectHost() throws Exception {

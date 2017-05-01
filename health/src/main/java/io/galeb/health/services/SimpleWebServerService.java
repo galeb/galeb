@@ -16,7 +16,7 @@
 
 package io.galeb.health.services;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.util.Headers;

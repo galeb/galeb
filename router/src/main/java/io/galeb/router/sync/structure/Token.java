@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.router.sync.structure;
 
-public enum EnumRuleType {
-    PATH("UrlPath"),
-    UNDEF("UNDEF");
+import java.io.Serializable;
 
-
-    private final String ruleType;
-
-    EnumRuleType(String ruleType) {
-
-        this.ruleType = ruleType;
-    }
-
-    @Override
-    public String toString() {
-        return ruleType;
-    }
+public class Token implements Serializable {
+    private static final long serialVersionUID = 1L;
+    public Boolean admin;
+    public Boolean hasTeam;
+    public String account;
+    public String email;
+    public String token;
 }

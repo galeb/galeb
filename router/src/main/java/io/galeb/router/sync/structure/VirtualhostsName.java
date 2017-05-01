@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
+package io.galeb.router.sync.structure;
 
 import java.io.Serializable;
 
-public class Token implements Serializable {
+@SuppressWarnings("unused")
+public class VirtualhostsName implements Serializable {
     private static final long serialVersionUID = 1L;
-    public Boolean admin;
-    public Boolean hasTeam;
-    public String account;
-    public String email;
-    public String token;
+
+    public String[] virtualhosts;
 }

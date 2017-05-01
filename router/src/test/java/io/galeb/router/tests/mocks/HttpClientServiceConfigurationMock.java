@@ -16,7 +16,7 @@
 
 package io.galeb.router.tests.mocks;
 
-import io.galeb.core.services.HttpClientService;
+import io.galeb.router.sync.HttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -26,8 +26,8 @@ import org.springframework.context.annotation.Profile;
 public class HttpClientServiceConfigurationMock {
 
     @Bean
-    HttpClientService httpClientService() {
-        return new HttpClientService() {
+    HttpClient httpClientService() {
+        return new HttpClient() {
 
             @Override
             public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {

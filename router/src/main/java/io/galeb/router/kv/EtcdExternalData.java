@@ -16,8 +16,6 @@
 
 package io.galeb.router.kv;
 
-import org.zalando.boot.etcd.EtcdNode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

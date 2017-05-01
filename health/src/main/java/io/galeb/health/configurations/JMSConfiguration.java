@@ -16,7 +16,7 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.springframework.context.annotation.Bean;

@@ -18,17 +18,16 @@ package io.galeb.router.tests.mocks;
 
 import static org.mockito.Mockito.*;
 
-import io.galeb.core.rest.EnumRuleType;
+import io.galeb.core.enums.EnumRuleType;
 import io.galeb.router.kv.EtcdClient;
+import io.galeb.router.kv.EtcdNode;
+import io.galeb.router.kv.EtcdResponse;
 import io.galeb.router.services.ExternalDataService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.zalando.boot.etcd.EtcdException;
-import org.zalando.boot.etcd.EtcdNode;
-import org.zalando.boot.etcd.EtcdResponse;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -48,7 +47,7 @@ public class EtcdConfigurationMock {
     private final Map<String, EtcdNode> nodes = new HashMap<>();
 
     @Bean("etcdClient")
-    public EtcdClient etcdClient() throws EtcdException, ExecutionException, InterruptedException {
+    public EtcdClient etcdClient() throws ExecutionException, InterruptedException {
         logger.info("Using " + this.getClass().getSimpleName());
 
         String theVirtualhostKey = ExternalDataService.VIRTUALHOSTS_KEY + "/test.com";

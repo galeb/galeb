@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.router.sync;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.galeb.core.configuration.SystemEnv;
-import io.galeb.core.logger.ErrorLogger;
-import io.galeb.core.rest.structure.FullVirtualhosts;
-import io.galeb.core.rest.structure.Token;
-import io.galeb.core.services.HttpClientService;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.logutils.ErrorLogger;
+import io.galeb.router.sync.structure.FullVirtualhosts;
+import io.galeb.router.sync.structure.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static io.galeb.core.logger.ErrorLogger.logError;
+import static io.galeb.core.logutils.ErrorLogger.logError;
 
 @Component
 public class ManagerClient {
@@ -41,12 +40,12 @@ public class ManagerClient {
     private final String manageruser = SystemEnv.MANAGER_USER.getValue();
     private final String managerPass = SystemEnv.MANAGER_PASS.getValue();
     private final String tokenUrl = managerUrl + "/token";
-    private final HttpClientService httpClientService;
+    private final HttpClient httpClient;
     private String token = null;
 
     @Autowired
-    public ManagerClient(final HttpClientService httpClientService) {
-        this.httpClientService = httpClientService;
+    public ManagerClient(final HttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     public void resetToken() {
@@ -55,7 +54,7 @@ public class ManagerClient {
 
     public void getVirtualhosts(String envname, ResultCallBack resultCallBack) {
         if (renewToken()) {
-            HttpClientService.OnCompletedCallBack callback = body -> {
+            HttpClient.OnCompletedCallBack callback = body -> {
                 if (body != null) {
                     try {
                         FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
@@ -68,7 +67,7 @@ public class ManagerClient {
                     resultCallBack.onResult(null);
                 }
             };
-            httpClientService.getResponseBodyWithToken(managerUrl + "/virtualhostscached/" + envname, token, callback);
+            httpClient.getResponseBodyWithToken(managerUrl + "/virtualhostscached/" + envname, token, callback);
         } else {
             logger.error("Token is NULL (request problem?)");
         }
@@ -76,7 +75,7 @@ public class ManagerClient {
 
     public boolean renewToken() {
         if (token == null) {
-            String bodyToken = httpClientService.getResponseBodyWithAuth(manageruser, managerPass, tokenUrl);
+            String bodyToken = httpClient.getResponseBodyWithAuth(manageruser, managerPass, tokenUrl);
             if (!"".equals(bodyToken)) {
                 Token tokenObj = gson.fromJson(bodyToken, Token.class);
                 if (tokenObj != null) {

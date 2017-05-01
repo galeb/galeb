@@ -18,8 +18,8 @@ package io.galeb.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.galeb.core.annotations.JsonCustomProperties;
-import io.galeb.core.security.SpringSecurityAuditorAware;
+import io.galeb.core.entity.annotations.JsonCustomProperties;
+import io.galeb.core.entity.security.SpringSecurityAuditorAware;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.annotation.CreatedBy;

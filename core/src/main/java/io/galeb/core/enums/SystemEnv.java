@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.configuration;
+package io.galeb.core.enums;
 
 import io.galeb.core.so.Info;
 

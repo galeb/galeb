@@ -19,7 +19,7 @@ package io.galeb.router.tests.cucumber;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.Application;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;

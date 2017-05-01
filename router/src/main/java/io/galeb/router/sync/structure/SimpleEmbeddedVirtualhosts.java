@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.router.sync.structure;
 
-public enum EnumHealthState {
-    FAIL,
-    UNKNOWN,
-    OK
+import io.galeb.core.entity.VirtualHost;
+
+import java.io.Serializable;
+
+public class SimpleEmbeddedVirtualhosts implements Serializable {
+    private static final long serialVersionUID = 1L;
+    public VirtualHost[] s;
 }

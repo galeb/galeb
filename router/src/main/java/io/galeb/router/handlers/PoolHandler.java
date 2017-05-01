@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
-import static io.galeb.core.rest.EnumHealthState.*;
-import static io.galeb.core.rest.EnumPropHealth.*;
+import static io.galeb.core.enums.EnumHealthState.*;
+import static io.galeb.core.enums.EnumPropHealth.*;
 import static io.galeb.router.client.hostselectors.HostSelectorLookup.ROUNDROBIN;
 
 public class PoolHandler implements HttpHandler {

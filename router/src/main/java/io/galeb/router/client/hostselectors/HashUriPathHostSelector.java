@@ -16,7 +16,7 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
 import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;

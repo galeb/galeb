@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
+package io.galeb.core.enums;
 
-import java.io.Serializable;
-
-public class FullVirtualhosts implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public SimpleEmbeddedVirtualhosts _embedded;
+public enum EnumHealthState {
+    FAIL,
+    UNKNOWN,
+    OK
 }

@@ -1,7 +1,7 @@
 package io.galeb.router.configurations;
 
-import io.galeb.core.rest.ManagerClient;
-import io.galeb.core.services.HttpClientService;
+import io.galeb.router.sync.ManagerClient;
+import io.galeb.router.sync.HttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class ManagerClientConfiguration {
 
     @Bean
-    ManagerClient managerClient(HttpClientService httpClientService) {
+    ManagerClient managerClient(HttpClient httpClientService) {
         return new ManagerClient(httpClientService);
     }
 }

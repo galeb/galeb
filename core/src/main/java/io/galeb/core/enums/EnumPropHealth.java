@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest;
+package io.galeb.core.enums;
 
 public enum  EnumPropHealth {
 

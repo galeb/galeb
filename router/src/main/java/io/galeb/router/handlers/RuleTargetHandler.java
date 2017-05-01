@@ -19,7 +19,7 @@ package io.galeb.router.handlers;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.rest.EnumRuleType;
+import io.galeb.core.enums.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;

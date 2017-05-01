@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
-
-import io.galeb.core.entity.VirtualHost;
+package io.galeb.router.sync.structure;
 
 import java.io.Serializable;
 
-public class SimpleEmbeddedVirtualhosts implements Serializable {
+public class FullVirtualhosts implements Serializable {
     private static final long serialVersionUID = 1L;
-    public VirtualHost[] s;
+    public SimpleEmbeddedVirtualhosts _embedded;
 }

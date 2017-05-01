@@ -16,7 +16,7 @@
  *   limitations under the License.
  */
 
-package io.galeb.core.security;
+package io.galeb.core.entity.security;
 
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;

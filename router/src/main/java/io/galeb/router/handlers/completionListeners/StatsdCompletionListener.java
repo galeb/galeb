@@ -16,10 +16,10 @@
 
 package io.galeb.router.handlers.completionListeners;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.ClientStatisticsMarker;
 import io.galeb.router.client.hostselectors.HostSelector;
-import io.galeb.router.services.StatsdClient;
+import io.galeb.router.services.StatsdClientService;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -37,10 +37,10 @@ public class StatsdCompletionListener implements ExchangeCompletionListener, Pro
 
     private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnv.SEND_OPENCONN_COUNTER.getValue());
 
-    private final StatsdClient statsdClient;
+    private final StatsdClientService statsdClient;
 
     @Autowired
-    public StatsdCompletionListener(StatsdClient statsdClient) {
+    public StatsdCompletionListener(StatsdClientService statsdClient) {
         this.statsdClient = statsdClient;
     }
 

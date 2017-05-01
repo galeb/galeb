@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package io.galeb.core.services;
+package io.galeb.router.sync;
 
-import io.galeb.core.logger.ErrorLogger;
+import io.galeb.core.logutils.ErrorLogger;
 import org.asynchttpclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import static io.galeb.core.logger.ErrorLogger.logError;
+import static io.galeb.core.logutils.ErrorLogger.logError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
-@Service
-public class HttpClientService {
+public class HttpClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final AsyncHttpClient asyncHttpClient;
 
-    public HttpClientService() {
+    public HttpClient() {
         asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setCompressionEnforced(true)

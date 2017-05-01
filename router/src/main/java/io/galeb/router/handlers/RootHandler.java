@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;

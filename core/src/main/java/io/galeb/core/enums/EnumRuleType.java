@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package io.galeb.core.rest.structure;
+package io.galeb.core.enums;
 
-import java.io.Serializable;
+public enum EnumRuleType {
+    PATH("UrlPath"),
+    UNDEF("UNDEF");
 
-@SuppressWarnings("unused")
-public class VirtualhostsName implements Serializable {
-    private static final long serialVersionUID = 1L;
 
-    public String[] virtualhosts;
+    private final String ruleType;
+
+    EnumRuleType(String ruleType) {
+
+        this.ruleType = ruleType;
+    }
+
+    @Override
+    public String toString() {
+        return ruleType;
+    }
 }

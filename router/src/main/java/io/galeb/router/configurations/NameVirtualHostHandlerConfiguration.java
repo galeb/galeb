@@ -16,7 +16,7 @@
 
 package io.galeb.router.configurations;
 
-import io.galeb.core.rest.ManagerClient;
+import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
 import io.galeb.router.handlers.PingHandler;

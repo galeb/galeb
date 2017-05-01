@@ -17,13 +17,13 @@
 package io.galeb.router.services;
 
 import com.timgroup.statsd.NonBlockingStatsDClient;
-import io.galeb.core.configuration.SystemEnv;
+import io.galeb.core.enums.SystemEnv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StatsdClient {
+public class StatsdClientService {
 
     private static final String STATSD_PREFIX = SystemEnv.STATSD_PREFIX.getValue();
     private static final String STATSD_HOST   = SystemEnv.STATSD_HOST.getValue();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.logger;
+package io.galeb.core.logutils;
 
 import org.slf4j.LoggerFactory;
 

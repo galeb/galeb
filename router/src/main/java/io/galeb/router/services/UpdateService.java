@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 import io.galeb.core.configuration.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.entity.util.Cloner;
 import io.galeb.core.rest.ManagerClient;
 import io.galeb.core.rest.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
@@ -34,7 +35,9 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,7 +48,9 @@ public class UpdateService {
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
     private final NameVirtualHostHandler nameVirtualHostHandler;
-    private String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
+    private final Cloner cloner = new Cloner();
+
+    private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
 
     private boolean done = false;
     private long lastDone = 0L;
@@ -74,7 +79,18 @@ public class UpdateService {
             FullVirtualhosts virtualhostsFromManager = (FullVirtualhosts) result;
             List<VirtualHost> virtualhosts;
             if (virtualhostsFromManager != null) {
-                virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s).collect(Collectors.toList());
+                Set<VirtualHost> aliases = new HashSet<>();
+                virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
+                        .map(v -> {
+                            v.getAliases().forEach(aliasName -> {
+                                VirtualHost virtualHostAlias = cloner.copyVirtualHost(v);
+                                virtualHostAlias.setName(aliasName);
+                                aliases.add(virtualHostAlias);
+                            });
+                            return v;
+                        })
+                        .collect(Collectors.toList());
+                virtualhosts.addAll(aliases);
                 logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
                 cleanup(virtualhosts);
                 virtualhosts.forEach(this::updateCache);

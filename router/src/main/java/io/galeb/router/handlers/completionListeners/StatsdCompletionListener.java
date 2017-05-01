@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers.completionListeners;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.router.client.hostselectors.ClientStatisticsMarker;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.services.StatsdClient;
@@ -35,7 +35,7 @@ public class StatsdCompletionListener implements ExchangeCompletionListener, Pro
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnvs.SEND_OPENCONN_COUNTER.getValue());
+    private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnv.SEND_OPENCONN_COUNTER.getValue());
 
     private final StatsdClient statsdClient;
 

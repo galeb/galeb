@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
@@ -35,8 +35,8 @@ public class RootHandler implements HttpHandler {
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
 
-    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnvs.ENABLE_ACCESSLOG.getValue());
-    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnvs.ENABLE_STATSD.getValue());
+    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
+    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
 
     public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,

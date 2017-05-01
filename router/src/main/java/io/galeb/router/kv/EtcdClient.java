@@ -17,7 +17,7 @@
 package io.galeb.router.kv;
 
 import com.google.gson.Gson;
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Request;
 import org.asynchttpclient.RequestBuilder;
@@ -41,9 +41,9 @@ public class EtcdClient {
 
     public EtcdClient(String server) {
         this.server = server;
-        int timeout = Integer.parseInt(SystemEnvs.EXTERNALDATA_TIMEOUT.getValue());
-        int pooledConnectionIdleTimeout = Integer.parseInt(SystemEnvs.EXTERNALDATA_POOL.getValue());
-        int maxConnectionsPerHost = Integer.parseInt(SystemEnvs.EXTERNALDATA_MAXCONN.getValue());
+        int timeout = Integer.parseInt(SystemEnv.EXTERNALDATA_TIMEOUT.getValue());
+        int pooledConnectionIdleTimeout = Integer.parseInt(SystemEnv.EXTERNALDATA_POOL.getValue());
+        int maxConnectionsPerHost = Integer.parseInt(SystemEnv.EXTERNALDATA_MAXCONN.getValue());
         asyncHttpClient = asyncHttpClient(config()
                 .setIoThreadsCount(1)
                 .setSoReuseAddress(true)

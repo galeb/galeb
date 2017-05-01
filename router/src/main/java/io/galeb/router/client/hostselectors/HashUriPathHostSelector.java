@@ -16,7 +16,7 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
 import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 
 public class HashUriPathHostSelector extends ClientStatisticsMarker implements HashHostSelector {
 
-    private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnvs.HASH_ALGORITHM.getValue()));
-    private final int numReplicas = Integer.parseInt(SystemEnvs.HASH_NUM_REPLICAS.getValue());
+    private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnv.HASH_ALGORITHM.getValue()));
+    private final int numReplicas = Integer.parseInt(SystemEnv.HASH_NUM_REPLICAS.getValue());
     private final ConsistentHash<Integer> consistentHash = new ConsistentHash<>(hashAlgorithm, numReplicas, Collections.emptyList());
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 

@@ -16,7 +16,7 @@
 
 package io.galeb.router.configurations;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.router.kv.EtcdClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +33,7 @@ public class EtcdConfiguration {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private static final String ETCD_SERVER = SystemEnvs.ETCD_SERVER.getValue();
+    private static final String ETCD_SERVER = SystemEnv.ETCD_SERVER.getValue();
 
     @Bean
     public EtcdClient etcdClient() throws EtcdException, ExecutionException, InterruptedException {

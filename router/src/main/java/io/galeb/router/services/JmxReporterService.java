@@ -19,7 +19,7 @@ package io.galeb.router.services;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.undertow.Undertow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -56,7 +56,7 @@ public class JmxReporterService {
         register.register("BytesReceived", (Gauge<Long>) this::getBytesReceived);
         register.register("BytesSent", (Gauge<Long>) this::getBytesSent);
         final JmxReporter jmxReporter = JmxReporter.forRegistry(register).inDomain(MBEAN_DOMAIN).build();
-        if (Boolean.parseBoolean(SystemEnvs.ENABLE_UNDERTOW_JMX.getValue())) {
+        if (Boolean.parseBoolean(SystemEnv.ENABLE_UNDERTOW_JMX.getValue())) {
             jmxReporter.start();
         }
         return jmxReporter;

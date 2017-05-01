@@ -16,14 +16,14 @@
 
 package io.galeb.router.services;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.router.kv.ExternalData;
 
 import java.util.List;
 
 public interface ExternalDataService {
     String ROOT_KEY         = "/";
-    String PREFIX_KEY       = ROOT_KEY + SystemEnvs.CLUSTER_ID.getValue();
+    String PREFIX_KEY       = ROOT_KEY + SystemEnv.CLUSTER_ID.getValue();
     String VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
     String POOLS_KEY        = PREFIX_KEY + "/pools";
 

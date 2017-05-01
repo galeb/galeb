@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package io.galeb.router.services;
-
-import io.galeb.core.enums.SystemEnv;
-import io.galeb.router.kv.ExternalData;
+package io.galeb.router.discovery;
 
 import java.util.List;
 
 public interface ExternalDataService {
-    String ROOT_KEY         = "/";
-    String PREFIX_KEY       = ROOT_KEY + SystemEnv.CLUSTER_ID.getValue();
-    String VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
-    String POOLS_KEY        = PREFIX_KEY + "/pools";
 
     List<ExternalData> listFrom(String key);
 

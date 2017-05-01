@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.router.kv;
+package io.galeb.router.discovery.etcd;
 
 import java.util.Date;
 import java.util.List;

@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.galeb.router.configurations;
+package io.galeb.router.discovery.etcd;
 
 import io.galeb.core.enums.SystemEnv;
-import io.galeb.router.kv.EtcdClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;

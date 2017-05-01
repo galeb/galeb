@@ -19,10 +19,11 @@ package io.galeb.router.tests.mocks;
 import static org.mockito.Mockito.*;
 
 import io.galeb.core.enums.EnumRuleType;
-import io.galeb.router.kv.EtcdClient;
-import io.galeb.router.kv.EtcdNode;
-import io.galeb.router.kv.EtcdResponse;
-import io.galeb.router.services.ExternalDataService;
+import io.galeb.router.discovery.etcd.EtcdClient;
+import io.galeb.router.discovery.etcd.EtcdExternalDataService;
+import io.galeb.router.discovery.etcd.EtcdNode;
+import io.galeb.router.discovery.etcd.EtcdResponse;
+import io.galeb.router.discovery.ExternalDataService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;
@@ -50,14 +51,14 @@ public class EtcdConfigurationMock {
     public EtcdClient etcdClient() throws ExecutionException, InterruptedException {
         logger.info("Using " + this.getClass().getSimpleName());
 
-        String theVirtualhostKey = ExternalDataService.VIRTUALHOSTS_KEY + "/test.com";
+        String theVirtualhostKey = EtcdExternalDataService.VIRTUALHOSTS_KEY + "/test.com";
         String allowKey = theVirtualhostKey + "/allow";
         String rulesKey = theVirtualhostKey + "/rules";
         String theRuleKey = rulesKey + "/" + Base64.getEncoder().encodeToString("/".getBytes(Charset.defaultCharset()));
         String theOrderKey = theRuleKey + "/order";
         String theRuleTargetKey = theRuleKey + "/target";
         String theRuleTypeKey = theRuleKey + "/type";
-        String thePoolKey = ExternalDataService.POOLS_KEY + "/0";
+        String thePoolKey = EtcdExternalDataService.POOLS_KEY + "/0";
         String poolTargetsKey = thePoolKey + "/targets";
         String thePoolTargetKey = poolTargetsKey + "/0";
         String loadBalancePolicyKey = thePoolKey + "/loadbalance";
@@ -101,10 +102,10 @@ public class EtcdConfigurationMock {
         nodes.put(theVirtualhostKey, virtualhostNode);
 
         EtcdNode virtualhostsNode = new EtcdNode();
-        virtualhostsNode.setKey(ExternalDataService.VIRTUALHOSTS_KEY);
+        virtualhostsNode.setKey(EtcdExternalDataService.VIRTUALHOSTS_KEY);
         virtualhostsNode.setDir(true);
         virtualhostsNode.setNodes(Collections.singletonList(virtualhostNode));
-        nodes.put(ExternalDataService.VIRTUALHOSTS_KEY, virtualhostsNode);
+        nodes.put(EtcdExternalDataService.VIRTUALHOSTS_KEY, virtualhostsNode);
 
         EtcdNode poolTargetNode = new EtcdNode();
         poolTargetNode.setKey(thePoolTargetKey);
@@ -129,16 +130,16 @@ public class EtcdConfigurationMock {
         nodes.put(thePoolKey, poolNode);
 
         EtcdNode poolsNode = new EtcdNode();
-        poolsNode.setKey(ExternalDataService.POOLS_KEY);
+        poolsNode.setKey(EtcdExternalDataService.POOLS_KEY);
         poolsNode.setDir(true);
         poolsNode.setNodes(Collections.singletonList(poolNode));
-        nodes.put(ExternalDataService.POOLS_KEY, poolsNode);
+        nodes.put(EtcdExternalDataService.POOLS_KEY, poolsNode);
 
         EtcdNode rootNode = new EtcdNode();
-        rootNode.setKey(ExternalDataService.PREFIX_KEY);
+        rootNode.setKey(EtcdExternalDataService.PREFIX_KEY);
         rootNode.setDir(true);
         rootNode.setNodes(Arrays.asList(virtualhostsNode, poolsNode));
-        nodes.put(ExternalDataService.PREFIX_KEY, rootNode);
+        nodes.put(EtcdExternalDataService.PREFIX_KEY, rootNode);
 
         when(etcdClientMocked.get(anyString(), anyBoolean())).thenAnswer(invoc -> {
             String key = invoc.getArgumentAt(0, String.class);

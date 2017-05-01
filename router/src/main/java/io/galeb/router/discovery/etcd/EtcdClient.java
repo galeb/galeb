@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.router.kv;
+package io.galeb.router.discovery.etcd;
 
 import com.google.gson.Gson;
 import io.galeb.core.enums.SystemEnv;

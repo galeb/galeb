@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package io.galeb.router.services;
+package io.galeb.router.discovery.etcd;
 
-import io.galeb.router.kv.EtcdClient;
-import io.galeb.router.kv.EtcdExternalData;
-import io.galeb.router.kv.EtcdNode;
-import io.galeb.router.kv.ExternalData;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.router.discovery.ExternalData;
+import io.galeb.router.discovery.ExternalDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,11 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class EtcdExternalDataService implements ExternalDataService {
+
+    private static final String ROOT_KEY         = "/";
+    public static final String  PREFIX_KEY       = ROOT_KEY + SystemEnv.CLUSTER_ID.getValue();
+    public static final String  VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
+    public static final String  POOLS_KEY        = PREFIX_KEY + "/pools";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package io.galeb.router.kv;
+package io.galeb.router.discovery.etcd;
+
+import io.galeb.router.discovery.ExternalData;
 
 import java.util.ArrayList;
 import java.util.Collections;

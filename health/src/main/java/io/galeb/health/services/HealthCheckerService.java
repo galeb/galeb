@@ -17,9 +17,10 @@
 package io.galeb.health.services;
 
 import com.google.gson.Gson;
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.core.entity.Target;
-import io.galeb.health.util.TargetStamper;
+import io.galeb.core.rest.EnumHealthState;
+import io.galeb.health.util.CallBackQueue;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
@@ -33,30 +34,27 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.galeb.health.util.TargetStamper.HcState.*;
-import static io.galeb.health.util.TargetStamper.*;
+import static io.galeb.core.rest.EnumHealthState.*;
+import static io.galeb.core.rest.EnumPropHealth.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
 @Service
 public class HealthCheckerService {
 
-    public static final AtomicLong LAST_CALL = new AtomicLong(0L);
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final String connectionTimeout = SystemEnvs.TEST_CONN_TIMEOUT.getValue();
+    private final String connectionTimeout = SystemEnv.TEST_CONN_TIMEOUT.getValue();
 
-    private final TargetStamper targetStamper;
+    private final CallBackQueue callBackQueue;
 
     private final AsyncHttpClient asyncHttpClient;
 
     @Autowired
-    public HealthCheckerService(final TargetStamper targetStamper) {
-        this.targetStamper = targetStamper;
+    public HealthCheckerService(final CallBackQueue callBackQueue) {
+        this.callBackQueue = callBackQueue;
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
@@ -67,22 +65,21 @@ public class HealthCheckerService {
     }
 
     @SuppressWarnings("unused")
-    @JmsListener(destination = "galeb-health", concurrency = "5-5", containerFactory = "containerFactory")
+    @JmsListener(destination = "galeb-health", concurrency = "5-5")
     public void check(String targetStr) throws ExecutionException, InterruptedException {
         final Target target = new Gson().fromJson(targetStr, Target.class);
-        LAST_CALL.set(System.currentTimeMillis());
         final Map<String, String> properties = target.getParent().getProperties();
-        final AtomicReference<String> hcPath = new AtomicReference<>(properties.get(PROP_HEALTHCHECK_PATH));
+        final AtomicReference<String> hcPath = new AtomicReference<>(properties.get(PROP_HEALTHCHECK_PATH.toString()));
         hcPath.compareAndSet(null,"/");
-        final String hcStatusCode = properties.get(PROP_HEALTHCHECK_CODE);
-        final String hcBody = properties.get(PROP_HEALTHCHECK_RETURN);
-        String hcHost = properties.get(PROP_HEALTHCHECK_HOST);
+        final String hcStatusCode = properties.get(PROP_HEALTHCHECK_CODE.toString());
+        final String hcBody = properties.get(PROP_HEALTHCHECK_RETURN.toString());
+        String hcHost = properties.get(PROP_HEALTHCHECK_HOST.toString());
         if (hcHost == null) {
             URI targetURI = URI.create(target.getName());
             hcHost = targetURI.getHost() + ":" + targetURI.getPort();
         }
         final String realHost = hcHost;
-        final String lastReason = target.getProperties().get(PROP_STATUS_DETAILED);
+        final String lastReason = target.getProperties().get(PROP_STATUS_DETAILED.toString());
         long start = System.currentTimeMillis();
 
         RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(realHost);
@@ -122,15 +119,12 @@ public class HealthCheckerService {
                 return false;
             }
 
-            private void definePropertiesAndUpdate(TargetStamper.HcState state, String reason) {
+            private void definePropertiesAndUpdate(EnumHealthState state, String reason) {
                 String newHealthyState = state.toString();
 
-                target.getProperties().put(PROP_HEALTHY, newHealthyState);
-                target.getProperties().put(PROP_STATUS_DETAILED, reason);
-                String scheduleId = target.getProperties().get("SCHEDULER_ID");
-                target.getProperties().remove("SCHEDULER_ID");
-                String logMessage = "[schedId: " + scheduleId + "] "
-                        + "Test Params: { "
+                target.getProperties().put(PROP_HEALTHY.toString(), newHealthyState);
+                target.getProperties().put(PROP_STATUS_DETAILED.toString(), reason);
+                String logMessage = "Test Params: { "
                             + "ExpectedBody:\"" + hcBody + "\", "
                             + "ExpectedStatusCode:" + hcStatusCode + ", "
                             + "Host:\"" + realHost + "\", "
@@ -144,7 +138,7 @@ public class HealthCheckerService {
                     logger.warn(logMessage);
                 }
                 if (lastReason == null || !reason.equals(lastReason)) {
-                    targetStamper.stamp(target);
+                    callBackQueue.update(target);
                 }
             }
 

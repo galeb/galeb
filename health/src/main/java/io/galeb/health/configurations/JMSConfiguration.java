@@ -16,38 +16,54 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.connection.CachingConnectionFactory;
+import org.springframework.jms.core.JmsTemplate;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+
+import static org.springframework.jms.support.destination.JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT;
 
 @Configuration
 @EnableJms
 public class JMSConfiguration {
 
-    private static final String JMS_BROKER_URL = SystemEnvs.QUEUE_CONN.getValue();
+    private static final long   JMS_TIMEOUT = Long.parseLong(SystemEnv.JMS_TIMEOUT.getValue());
+    private static final String BROKER_CONN = SystemEnv.BROKER_CONN.getValue();
+    private static final String BROKER_USER = SystemEnv.BROKER_USER.getValue();
+    private static final String BROKER_PASS = SystemEnv.BROKER_PASS.getValue();
+    private static final boolean BROKER_HA  = Boolean.parseBoolean(SystemEnv.BROKER_HA.getValue());
 
-    private boolean enableHa = Boolean.parseBoolean(SystemEnvs.ENABLE_HA.getValue());
-
-    @Bean
-    public DefaultJmsListenerContainerFactory containerFactory(DefaultJmsListenerContainerFactoryConfigurer configurer) {
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(JMS_BROKER_URL);
-        connectionFactory.setUser("guest");
-        connectionFactory.setPassword("guest");
-        if (enableHa) {
+    @Bean(name="connectionFactory")
+    public CachingConnectionFactory cachingConnectionFactory() throws JMSException {
+        CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_CONN);
+        connectionFactory.setUser(BROKER_USER);
+        connectionFactory.setPassword(BROKER_PASS);
+        if (BROKER_HA) {
             connectionFactory.setConnectionLoadBalancingPolicyClassName(RoundRobinConnectionLoadBalancingPolicy.class.getName());
         }
-        CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(connectionFactory);
+        cachingConnectionFactory.setTargetConnectionFactory(connectionFactory);
         cachingConnectionFactory.setSessionCacheSize(100);
         cachingConnectionFactory.setCacheConsumers(true);
-        configurer.configure(factory, cachingConnectionFactory);
-        return factory;
+        cachingConnectionFactory.createConnection().start();
+        return cachingConnectionFactory;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory) {
+        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
+        jmsTemplate.setExplicitQosEnabled(true);
+        jmsTemplate.setDeliveryPersistent(false);
+        jmsTemplate.setReceiveTimeout(RECEIVE_TIMEOUT_NO_WAIT);
+        jmsTemplate.setTimeToLive(JMS_TIMEOUT);
+        return jmsTemplate;
     }
 
 }

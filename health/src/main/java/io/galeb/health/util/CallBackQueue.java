@@ -29,33 +29,22 @@ import javax.jms.Message;
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Component
-public class TargetStamper {
+public class CallBackQueue {
 
-    public enum HcState {
-        FAIL,
-        UNKNOWN,
-        OK
-    }
+    private static final String HEALTH_CALLBACK_QUEUE = "health-callback";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    public static final String PROP_HEALTHCHECK_RETURN = "hcBody";
-    public static final String PROP_HEALTHCHECK_PATH   = "hcPath";
-    public static final String PROP_HEALTHCHECK_HOST   = "hcHost";
-    public static final String PROP_HEALTHCHECK_CODE   = "hcStatusCode";
-    public static final String PROP_HEALTHY            = "healthy";
-    public static final String PROP_STATUS_DETAILED    = "status_detailed";
 
     private final JmsTemplate jmsTemplate;
 
     @Autowired
-    public TargetStamper(JmsTemplate jmsTemplate) {
+    public CallBackQueue(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void stamp(Target target) {
+    public void update(Target target) {
         String targetStr = new Gson().toJson(target, Target.class);
-        jmsTemplate.send("health-callback", session -> {
+        jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
             Message message = session.createObjectMessage(targetStr);
             String uniqueId = "ID:" + target.getName() + "-" + System.currentTimeMillis();
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);

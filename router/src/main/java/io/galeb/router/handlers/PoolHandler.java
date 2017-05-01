@@ -112,11 +112,7 @@ public class PoolHandler implements HttpHandler {
     private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
         BalancePolicy hostSelectorName = pool.getBalancePolicy();
         if (hostSelectorName != null) {
-            try {
-                return HostSelectorAlgorithm.valueOf(hostSelectorName.getName()).getHostSelector();
-            } catch (Exception e) {
-                return ROUNDROBIN.getHostSelector();
-            }
+            return HostSelectorAlgorithm.getHostSelector(hostSelectorName.getName());
         }
         return ROUNDROBIN.getHostSelector();
     }

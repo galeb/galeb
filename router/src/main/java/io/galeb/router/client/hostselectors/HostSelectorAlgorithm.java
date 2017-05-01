@@ -16,20 +16,32 @@
 
 package io.galeb.router.client.hostselectors;
 
-@SuppressWarnings("unused")
-public enum HostSelectorAlgorithm {
-    ROUNDROBIN       (RoundRobinHostSelector.class),
-    STRICT_LEASTCONN (LeastConnHostSelector.class),
-    LEASTCONN        (LeastConnWithRRHostSelector.class),
-    HASH_SOURCEIP    (HashSourceIpHostSelector.class),
-    HASH_URIPATH     (HashUriPathHostSelector.class);
+import java.util.HashMap;
+import java.util.Map;
 
-    private final Class klazz;
-    HostSelectorAlgorithm(final Class klazz) {
+@SuppressWarnings("unused")
+public class HostSelectorAlgorithm {
+    public static final HostSelectorAlgorithm ROUNDROBIN       = new HostSelectorAlgorithm("RoundRobin",      RoundRobinHostSelector.class);
+    public static final HostSelectorAlgorithm STRICT_LEASTCONN = new HostSelectorAlgorithm("StrictLeastConn", StrictLeastConnHostSelector.class);
+    public static final HostSelectorAlgorithm LEASTCONN        = new HostSelectorAlgorithm("LeastConn",       LeastConnWithRRHostSelector.class);
+    public static final HostSelectorAlgorithm HASH_SOURCEIP    = new HostSelectorAlgorithm("HashSourceIp",    HashSourceIpHostSelector.class);
+    public static final HostSelectorAlgorithm HASH_URIPATH     = new HostSelectorAlgorithm("HashUriPath",     HashUriPathHostSelector.class);
+
+    private final Class<? extends HostSelector> klazz;
+    private static final Map<String, Class<? extends HostSelector>> hostSelectorMap = new HashMap<>();
+
+    private HostSelectorAlgorithm(String key, final Class<? extends HostSelector> klazz) {
         this.klazz = klazz;
+        hostSelectorMap.put(key, klazz);
     }
 
     public HostSelector getHostSelector() throws IllegalAccessException, InstantiationException {
-        return (HostSelector) klazz.newInstance();
+        return klazz.newInstance();
+    }
+
+    public static HostSelector getHostSelector(String name) throws InstantiationException, IllegalAccessException {
+        Class<? extends HostSelector> hostSelectorClass = hostSelectorMap.get(name);
+        if (hostSelectorClass == null) return ROUNDROBIN.getHostSelector();
+        return hostSelectorClass.newInstance();
     }
 }

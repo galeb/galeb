@@ -22,7 +22,7 @@ import io.undertow.server.HttpServerExchange;
 import java.util.Comparator;
 import java.util.Map;
 
-public class LeastConnHostSelector extends ClientStatisticsMarker implements HostSelector {
+public class StrictLeastConnHostSelector extends ClientStatisticsMarker implements HostSelector {
 
     @Override
     public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {

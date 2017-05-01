@@ -87,7 +87,7 @@ public class RuleTargetHandler implements HttpHandler {
                         Pool pool = rule.getPool();
                         String path = rule.getProperties().get("match");
 
-                        logger.info("add rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
+                        logger.info("["+ virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
                         if (EnumRuleType.PATH.toString().equals(type)) {
                             final PoolHandler poolHandler = new PoolHandler(pool);

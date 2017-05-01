@@ -17,14 +17,16 @@
 package io.galeb.router.services;
 
 import com.google.common.collect.Sets;
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.rest.ManagerClient;
-import io.galeb.core.rest.structure.Virtualhosts;
+import io.galeb.core.rest.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.handlers.*;
+import io.galeb.router.handlers.PathGlobHandler;
+import io.galeb.router.handlers.PoolHandler;
+import io.galeb.router.handlers.RuleTargetHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,11 @@ public class UpdateService {
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
     private final NameVirtualHostHandler nameVirtualHostHandler;
+    private String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
+
+    private boolean done = false;
+    private long lastDone = 0L;
+    private int count = 0;
 
     public UpdateService(final NameVirtualHostHandler nameVirtualHostHandler,
                          final ManagerClient managerClient,
@@ -51,61 +59,74 @@ public class UpdateService {
         this.cache = cache;
     }
 
-    public void sync() {
-        managerClient.getVirtualhosts(result -> {
-            Virtualhosts virtualhostsFromManager = (Virtualhosts) result;
+    public synchronized boolean isDone() {
+        if (lastDone < System.currentTimeMillis() - 30000L) {
+            count = 0;
+            done = true;
+        }
+        return done;
+    }
+
+    public synchronized void sync() {
+        done = false;
+        lastDone = System.currentTimeMillis();
+        final ManagerClient.ResultCallBack resultCallBack = result -> {
+            FullVirtualhosts virtualhostsFromManager = (FullVirtualhosts) result;
+            List<VirtualHost> virtualhosts;
             if (virtualhostsFromManager != null) {
-                Set<String> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.virtualhost)
-                        .map(AbstractEntity::getName).collect(Collectors.toSet());
+                virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s).collect(Collectors.toList());
+                logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
                 cleanup(virtualhosts);
                 virtualhosts.forEach(this::updateCache);
+                logger.info("Processed " + count + " virtualhost(s): Done");
             } else {
                 logger.error("Virtualhosts Empty. Request problem?");
             }
-        });
+            count = 0;
+            done = true;
+        };
+        managerClient.getVirtualhosts(envName, resultCallBack);
     }
 
-    private void cleanup(final Set<String> virtualhosts) {
+    private void cleanup(final List<VirtualHost> virtualhosts) {
+        final Set<String> virtualhostSet = virtualhosts.stream().map(AbstractEntity::getName).collect(Collectors.toSet());
         synchronized (cache) {
-            Set<String> diff = Sets.difference(cache.getAll(), virtualhosts);
+            Set<String> diff = Sets.difference(cache.getAll(), virtualhostSet);
             diff.forEach(virtualhostName -> {
                 expireHandlers(virtualhostName);
                 cache.remove(virtualhostName);
-                logger.warn(virtualhostName + ": not exist. Removed");
+                logger.warn("Virtualhost " + virtualhostName + " not exist. Removed.");
             });
         }
-        Set<String> diff = Sets.difference(nameVirtualHostHandler.getHosts().keySet(), virtualhosts);
+        Set<String> diff = Sets.difference(nameVirtualHostHandler.getHosts().keySet(), virtualhostSet);
         diff.forEach(this::expireHandlers);
     }
 
-    public void updateCache(String virtualhostName) {
-        if ("__ping__".equals(virtualhostName)) return;
-        managerClient.getVirtualhost(virtualhostName, SystemEnvs.ENVIRONMENT_NAME.getValue(), result -> {
-            synchronized (cache) {
-                VirtualHost virtualHost = (VirtualHost) result;
-                if (virtualHost != null) {
-                    VirtualHost oldVirtualHost = cache.get(virtualhostName);
-                    if (oldVirtualHost != null) {
-                        String fullhash = oldVirtualHost.getProperties().get("fullhash");
-                        if (fullhash != null && fullhash.equals(virtualHost.getProperties().get("fullhash"))) {
-                            logger.info(virtualhostName + ": not changed.");
-                            return;
-                        }
-                    }
-                    cache.put(virtualhostName, virtualHost);
-                    expireHandlers(virtualhostName);
-                } else {
-                    expireHandlers(virtualhostName);
-                    cache.remove(virtualhostName);
+    public void updateCache(VirtualHost virtualHost) {
+        String virtualhostName = virtualHost.getName();
+        VirtualHost oldVirtualHost = cache.get(virtualhostName);
+        if (oldVirtualHost != null) {
+            String newFullHash = virtualHost.getProperties().get("fullhash");
+            String currentFullhash = oldVirtualHost.getProperties().get("fullhash");
+            if (currentFullhash != null && currentFullhash.equals(newFullHash)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Virtualhost " + virtualhostName + " not changed.");
                 }
+                count++;
+                return;
+            } else {
+                logger.warn("Virtualhost " + virtualhostName + " changed. Updating cache.");
             }
-        });
+        }
+        cache.put(virtualhostName, virtualHost);
+        expireHandlers(virtualhostName);
+        count++;
     }
 
     private void expireHandlers(String virtualhostName) {
         if ("__ping__".equals(virtualhostName)) return;
         if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
-            logger.warn("[" + virtualhostName + "] FORCING UPDATE");
+            logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
             cleanUpNameVirtualHostHandler(virtualhostName);
             nameVirtualHostHandler.removeHost(virtualhostName);
         }

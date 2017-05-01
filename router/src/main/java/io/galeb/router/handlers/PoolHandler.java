@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.configuration.SystemEnv;
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
+import static io.galeb.core.rest.EnumHealthState.*;
+import static io.galeb.core.rest.EnumPropHealth.*;
 import static io.galeb.router.client.hostselectors.HostSelectorAlgorithm.ROUNDROBIN;
 
 public class PoolHandler implements HttpHandler {
@@ -42,15 +44,16 @@ public class PoolHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final int maxRequestTime = Integer.parseInt(SystemEnvs.POOL_MAX_REQUEST_TIME.getValue());
-    private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnvs.REUSE_XFORWARDED.getValue());
-    private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnvs.REWRITE_HOST_HEADER.getValue());
+    private final int maxRequestTime = Integer.parseInt(SystemEnv.POOL_MAX_REQUEST_TIME.getValue());
+    private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
+    private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
 
     private final HttpHandler defaultHandler;
 
     private ProxyHandler proxyHandler = null;
 
     private final Pool pool;
+    private ExtendedLoadBalancingProxyClient proxyClient;
 
     public PoolHandler(final Pool pool) {
         this.pool = pool;
@@ -61,6 +64,10 @@ public class PoolHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (exchange.getRequestHeaders().contains(CHECK_RULE_HEADER)) {
             healthcheckPoolHandler().handleRequest(exchange);
+            return;
+        }
+        if (proxyClient != null && proxyClient.isHostsEmpty()) {
+            ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
         if (proxyHandler != null) {
@@ -84,15 +91,12 @@ public class PoolHandler implements HttpHandler {
                 logger.info("creating pool " + pool.getName());
                 HostSelector hostSelector = defineHostSelector();
                 logger.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
-                final ExtendedLoadBalancingProxyClient proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
+                proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
                                     exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
-                                .setTtl(Integer.parseInt(SystemEnvs.POOL_CONN_TTL.getValue()))
-                                .setConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_CONN_PER_THREAD.getValue()))
-                                .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnvs.POOL_SOFTMAXCONN.getValue()));
-                if (!addTargets(proxyClient)) {
-                    ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
-                    return;
-                }
+                                .setTtl(Integer.parseInt(SystemEnv.POOL_CONN_TTL.getValue()))
+                                .setConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_CONN_PER_THREAD.getValue()))
+                                .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_SOFTMAXCONN.getValue()));
+                addTargets(proxyClient);
                 proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
                 proxyHandler.handleRequest(exchange);
                 return;
@@ -106,29 +110,24 @@ public class PoolHandler implements HttpHandler {
     }
 
     private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
-        if (pool != null) {
-            BalancePolicy hostSelectorName = pool.getBalancePolicy();
-            if (hostSelectorName != null) {
-                try {
-                    return HostSelectorAlgorithm.valueOf(hostSelectorName.getName()).getHostSelector();
-                } catch (Exception e) {
-                    return HostSelectorAlgorithm.ROUNDROBIN.getHostSelector();
-                }
+        BalancePolicy hostSelectorName = pool.getBalancePolicy();
+        if (hostSelectorName != null) {
+            try {
+                return HostSelectorAlgorithm.valueOf(hostSelectorName.getName()).getHostSelector();
+            } catch (Exception e) {
+                return ROUNDROBIN.getHostSelector();
             }
         }
         return ROUNDROBIN.getHostSelector();
     }
 
-    private boolean addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
-        if (pool != null) {
-            pool.getTargets().forEach(target -> {
-                String value = target.getName();
-                URI uri = URI.create(target.getName());
-                proxyClient.addHost(uri);
-                logger.info("added target " + value);
-            });
-        }
-        return !proxyClient.isHostsEmpty();
+    private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
+        pool.getTargets().stream().filter(target -> OK.toString().equals(target.getProperties().get(PROP_HEALTHY.value()))).forEach(target -> {
+            String value = target.getName();
+            URI uri = URI.create(target.getName());
+            proxyClient.addHost(uri);
+            logger.info("[pool:" + pool.getName() + "] added Target " + value);
+        });
     }
 
     private HttpHandler healthcheckPoolHandler() {

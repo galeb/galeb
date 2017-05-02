@@ -20,16 +20,13 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.discovery.ExternalData;
 import io.galeb.router.discovery.ExternalDataService;
-import jnr.posix.POSIXFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sun.net.util.IPAddressUtil;
 
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;

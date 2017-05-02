@@ -120,6 +120,11 @@ public enum SystemEnv {
     ETCD_SERVER           ("ETCD_SERVER",           "http://127.0.0.1:2379"),
 
     /**
+     * Etcd register path (useful to discovery service)
+     */
+    ETCD_REGISTER_PATH    ("ETCD_REGISTER_PATH",    "/routers"),
+
+    /**
      * Statsd prefix.
      */
     STATSD_PREFIX         ("STATSD_PREFIX",         CLUSTER_ID.getValue()),
@@ -175,7 +180,7 @@ public enum SystemEnv {
     /**
      * The maximum number of connections that can be established to the target
      */
-    POOL_CONN_PER_THREAD  ("POOL_CONN_PER_THREAD",  2000),
+    POOL_MAXCONN          ("POOL_MAXCONN",          2000),
 
     /**
      * The maximum amount of time to allow the request to be processed
@@ -225,12 +230,12 @@ public enum SystemEnv {
     /**
      * External Data provider tcp max connections
      */
-    EXTERNALDATA_MAXCONN  ("EXTERNALDATA_MAXCONN",  1),
+    EXTERNALDATA_MAXCONN  ("EXTERNALDATA_MAXCONN",  10),
 
     /**
      * Extenal Data provider connections pool size
      */
-    EXTERNALDATA_POOL     ("EXTERNALDATA_POOL",     1),
+    EXTERNALDATA_POOL     ("EXTERNALDATA_POOL",     5),
 
     /**
      * External Data provider connection timeout

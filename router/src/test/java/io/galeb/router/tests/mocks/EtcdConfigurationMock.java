@@ -23,7 +23,6 @@ import io.galeb.router.discovery.etcd.EtcdClient;
 import io.galeb.router.discovery.etcd.EtcdExternalDataService;
 import io.galeb.router.discovery.etcd.EtcdNode;
 import io.galeb.router.discovery.etcd.EtcdResponse;
-import io.galeb.router.discovery.ExternalDataService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +48,7 @@ public class EtcdConfigurationMock {
 
     @Bean("etcdClient")
     public EtcdClient etcdClient() throws ExecutionException, InterruptedException {
-        logger.info("Using " + this.getClass().getSimpleName());
+        logger.warn("Using " + this.getClass().getSimpleName());
 
         String theVirtualhostKey = EtcdExternalDataService.VIRTUALHOSTS_KEY + "/test.com";
         String allowKey = theVirtualhostKey + "/allow";
@@ -147,6 +146,11 @@ public class EtcdConfigurationMock {
             etcResponse.setNode(nodes.get(key));
             return etcResponse;
         });
+
+        EtcdResponse anyEtcdResponse = new EtcdResponse();
+        anyEtcdResponse.setNode(new EtcdNode());
+        when(etcdClientMocked.put(any(EtcdNode.class))).thenReturn(anyEtcdResponse);
+        when(etcdClientMocked.get(anyString())).thenReturn(anyEtcdResponse);
 
         return etcdClientMocked;
     }

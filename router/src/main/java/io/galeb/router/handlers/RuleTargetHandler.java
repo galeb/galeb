@@ -21,7 +21,6 @@ import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
@@ -33,6 +32,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RuleTargetHandler implements HttpHandler {
+
+    public static final String RULE_ORDER  = "order";
+    public static final String RULE_MATCH  = "match";
+    public static final String IPACL_ALLOW = "allow";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -87,10 +90,10 @@ public class RuleTargetHandler implements HttpHandler {
                 Set<Rule> rules = virtualHost.getRules();
                 if (!rules.isEmpty()) {
                     for (Rule rule : rules) {
-                        String order = Optional.ofNullable(rule.getProperties().get("order")).orElse(String.valueOf(Integer.MAX_VALUE));
+                        String order = Optional.ofNullable(rule.getProperties().get(RULE_ORDER)).orElse(String.valueOf(Integer.MAX_VALUE));
                         String type = rule.getRuleType().getName();
                         Pool pool = rule.getPool();
-                        String path = rule.getProperties().get("match");
+                        String path = rule.getProperties().get(RULE_MATCH);
                         if (path != null) {
                             logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
@@ -108,13 +111,13 @@ public class RuleTargetHandler implements HttpHandler {
     }
 
     private boolean hasAcl() {
-        return virtualHost.getProperties().containsKey("allow");
+        return virtualHost.getProperties().containsKey(IPACL_ALLOW);
     }
 
     private HttpHandler loadAcl(PathGlobHandler pathGlobHandler) {
         final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(pathGlobHandler);
 
-        Arrays.asList(virtualHost.getProperties().get("allow").split(","))
+        Arrays.asList(virtualHost.getProperties().get(IPACL_ALLOW).split(","))
                 .forEach(ipAddressAccessControlHandler::addAllow);
         ipAddressAccessControlHandler.setDefaultAllow(false);
         return ipAddressAccessControlHandler;

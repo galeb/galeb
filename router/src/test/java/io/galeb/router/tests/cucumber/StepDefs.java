@@ -17,6 +17,8 @@
 
 package io.galeb.router.tests.cucumber;
 
+import cucumber.api.PendingException;
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
 import io.galeb.core.enums.SystemEnv;
@@ -142,5 +144,10 @@ public class StepDefs {
         if (jmxClientService.isEnabled()) {
             assertThat(jmxClientService.getValue("ActiveRequests"), notNullValue());
         }
+    }
+
+    @And("^wait (\\d+) ms$")
+    public void waitMs(long timeWait) throws Throwable {
+        Thread.sleep(timeWait);
     }
 }

@@ -45,6 +45,8 @@ import java.util.stream.Collectors;
 import static io.galeb.router.handlers.PoolHandler.PROP_DISCOVERED_MEMBERS_SIZE;
 
 public class Updater {
+    public static final String FULLHASH_PROP = "fullhash";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ManagerClient managerClient;
@@ -137,8 +139,8 @@ public class Updater {
         if (newDiscoveredMembersSize == discoveredMembersSize) {
             VirtualHost oldVirtualHost = cache.get(virtualhostName);
             if (oldVirtualHost != null) {
-                String newFullHash = virtualHost.getProperties().get("fullhash");
-                String currentFullhash = oldVirtualHost.getProperties().get("fullhash");
+                String newFullHash = virtualHost.getProperties().get(FULLHASH_PROP);
+                String currentFullhash = oldVirtualHost.getProperties().get(FULLHASH_PROP);
                 if (currentFullhash != null && currentFullhash.equals(newFullHash)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Virtualhost " + virtualhostName + " not changed.");

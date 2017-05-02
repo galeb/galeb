@@ -29,15 +29,22 @@ public class HostSelectorLookup {
     public static final HostSelectorLookup HASH_SOURCEIP    = new HostSelectorLookup("HashSourceIp",    HashSourceIpHostSelector.class);
     public static final HostSelectorLookup HASH_URIPATH     = new HostSelectorLookup("HashUriPath",     HashUriPathHostSelector.class);
 
+    private final String name;
     private final Class<? extends HostSelector> klazz;
 
-    private HostSelectorLookup(String key, final Class<? extends HostSelector> klazz) {
+    private HostSelectorLookup(String name, final Class<? extends HostSelector> klazz) {
+        this.name = name;
         this.klazz = klazz;
-        hostSelectorMap.put(key, klazz);
+        hostSelectorMap.put(name, klazz);
     }
 
     public HostSelector getHostSelector() throws IllegalAccessException, InstantiationException {
         return klazz.newInstance();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     public static HostSelector getHostSelector(String name) throws InstantiationException, IllegalAccessException {

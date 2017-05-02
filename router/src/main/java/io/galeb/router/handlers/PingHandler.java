@@ -87,7 +87,7 @@ public class PingHandler implements HttpHandler {
     }
 
     private String getStatusBody() {
-        return isEmpty() ? EMPTY.name() : (isOutdated() ? OUTDATED.name() : WORKING.name());
+        return isOutdated() ? OUTDATED.name() : (isEmpty() ? EMPTY.name() : WORKING.name());
     }
 
     private boolean isEmpty() {

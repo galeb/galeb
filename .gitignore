@@ -97,3 +97,6 @@ fabric.properties
 /.idea/
 vendor/cache/*
 *.rpm
+router/docs/html/*
+core/docs/html/*
+health/docs/html/*

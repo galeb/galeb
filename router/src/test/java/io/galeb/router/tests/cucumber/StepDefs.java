@@ -126,9 +126,9 @@ public class StepDefs {
         assertThat(response.getStatusCode(), is(status));
     }
 
-    @Do("^body is (.+)")
-    public void bodyIs(String body) throws Throwable {
-        assertThat(response.getResponseBody(), equalTo(body));
+    @Do("^body is (\\w* )?(.+)")
+    public void bodyIs(String inverter, String body) throws Throwable {
+        assertThat(response.getResponseBody(), inverter != null ? not(equalTo(body)) : equalTo(body));
     }
 
     @Do("^jmx has ActiveConnections$")

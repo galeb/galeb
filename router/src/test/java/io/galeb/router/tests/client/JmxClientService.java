@@ -16,9 +16,8 @@
 
 package io.galeb.router.tests.client;
 
+import io.galeb.core.so.Info;
 import io.galeb.router.services.JmxReporterService;
-import jnr.posix.POSIX;
-import jnr.posix.POSIXFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -46,17 +45,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class JmxClientService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    private final Info info = new Info();
     private final AtomicBoolean enabled = new AtomicBoolean(false);
 
     private MBeanServerConnection client;
 
     @PostConstruct
     public void start() throws Exception {
-        POSIX posix = POSIXFactory.getNativePOSIX();
-        int posixPid = posix.getpid();
         try {
-            String jmxUrl = ConnectorAddressLink.importFrom(posixPid);
+            String jmxUrl = ConnectorAddressLink.importFrom(Info.getPid());
             if (jmxUrl != null) {
                 final JMXServiceURL url = new JMXServiceURL(jmxUrl);
                 final JMXConnector jmxConn = JMXConnectorFactory.connect(url);

@@ -17,9 +17,10 @@
 
 package io.galeb.router.tests.cucumber;
 
+import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.Application;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
@@ -60,7 +61,7 @@ public class StepDefs {
 
     private Response response;
     private String method;
-    private Uri uri = Uri.create("http://127.0.0.1:" + SystemEnvs.ROUTER_PORT.getValue());
+    private Uri uri = Uri.create("http://127.0.0.1:" + SystemEnv.ROUTER_PORT.getValue());
     private final InetAddress address= InetAddress.getLocalHost();
     private final HttpHeaders headers = new DefaultHttpHeaders();
 
@@ -115,7 +116,7 @@ public class StepDefs {
 
     @Do("^Do (.+) (.+)$")
     public void sendMethodPath(String method, String path) throws Throwable {
-        this.uri = Uri.create("http://127.0.0.1:" + SystemEnvs.ROUTER_PORT.getValue() + path);
+        this.uri = Uri.create("http://127.0.0.1:" + SystemEnv.ROUTER_PORT.getValue() + path);
         this.method = method;
     }
 
@@ -142,5 +143,10 @@ public class StepDefs {
         if (jmxClientService.isEnabled()) {
             assertThat(jmxClientService.getValue("ActiveRequests"), notNullValue());
         }
+    }
+
+    @And("^wait (\\d+) ms$")
+    public void waitMs(long timeWait) throws Throwable {
+        Thread.sleep(timeWait);
     }
 }

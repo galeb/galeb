@@ -16,56 +16,133 @@
 
 package io.galeb.health.services;
 
-import io.galeb.core.configuration.SystemEnvs;
-import io.galeb.health.broker.Checker;
-import io.galeb.health.broker.Producer;
-import io.galeb.health.util.TargetStamper;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import com.google.gson.Gson;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.entity.Target;
+import io.galeb.core.enums.EnumHealthState;
+import io.galeb.health.util.CallBackQueue;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static io.galeb.core.logger.ErrorLogger.logError;
+import static io.galeb.core.enums.EnumHealthState.*;
+import static io.galeb.core.enums.EnumPropHealth.*;
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
 
 @Service
 public class HealthCheckerService {
 
-    private final String environmentName = SystemEnvs.ENVIRONMENT_NAME.getValue();
-
-    @SuppressWarnings("FieldCanBeLocal")
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Producer producer;
-    private final TargetStamper targetStamper;
+    private final String connectionTimeout = SystemEnv.TEST_CONN_TIMEOUT.getValue();
 
-    HealthCheckerService(final Producer producer, final TargetStamper targetStamper) {
-        this.producer = producer;
-        this.targetStamper = targetStamper;
-        logger.info(this.getClass().getSimpleName() + " started");
+    private final CallBackQueue callBackQueue;
+
+    private final AsyncHttpClient asyncHttpClient;
+
+    @Autowired
+    public HealthCheckerService(final CallBackQueue callBackQueue) {
+        this.callBackQueue = callBackQueue;
+        this.asyncHttpClient = asyncHttpClient(config()
+                .setFollowRedirect(false)
+                .setSoReuseAddress(true)
+                .setKeepAlive(false)
+                .setConnectTimeout(Integer.parseInt(connectionTimeout))
+                .setPooledConnectionIdleTimeout(1)
+                .setMaxConnectionsPerHost(1).build());
     }
 
-    @Scheduled(fixedRate = 10000)
-    public void getTargetsAndSendToQueue() {
-        if (Checker.LAST_CALL.get() + 5000L >= System.currentTimeMillis()) {
-            return;
+    @SuppressWarnings("unused")
+    @JmsListener(destination = "galeb-health", concurrency = "5-5")
+    public void check(String targetStr) throws ExecutionException, InterruptedException {
+        final Target target = new Gson().fromJson(targetStr, Target.class);
+        final Map<String, String> properties = target.getParent().getProperties();
+        final AtomicReference<String> hcPath = new AtomicReference<>(properties.get(PROP_HEALTHCHECK_PATH.toString()));
+        hcPath.compareAndSet(null,"/");
+        final String hcStatusCode = properties.get(PROP_HEALTHCHECK_CODE.toString());
+        final String hcBody = properties.get(PROP_HEALTHCHECK_RETURN.toString());
+        String hcHost = properties.get(PROP_HEALTHCHECK_HOST.toString());
+        if (hcHost == null) {
+            URI targetURI = URI.create(target.getName());
+            hcHost = targetURI.getHost() + ":" + targetURI.getPort();
         }
-        String id = UUID.randomUUID().toString();
-        logger.info("Running scheduling " + id);
-        try {
-            targetStamper.targetsByEnvName(environmentName).parallel().forEach(target -> {
-                try {
-                    target.getProperties().put("SCHEDULER_ID", id);
-                    producer.send(target);
-                } catch (Exception e) {
-                    logger.error(ExceptionUtils.getStackTrace(e));
+        final String realHost = hcHost;
+        final String lastReason = target.getProperties().get(PROP_STATUS_DETAILED.toString());
+        long start = System.currentTimeMillis();
+
+        RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(realHost);
+        asyncHttpClient.executeRequest(requestBuilder, new AsyncCompletionHandler<Response>() {
+            @Override
+            public Response onCompleted(Response response) throws Exception {
+                if (checkFailStatusCode(response)) return response;
+                if (checkFailBody(response)) return response;
+                definePropertiesAndUpdate(OK, OK.toString());
+                return response;
+            }
+
+            @Override
+            public void onThrowable(Throwable t) {
+                definePropertiesAndUpdate(UNKNOWN, t.getMessage());
+            }
+
+            private boolean checkFailBody(Response response) {
+                if (hcBody != null) {
+                    String body = response.getResponseBody();
+                    if (body != null && !body.isEmpty() && !body.contains(hcBody)) {
+                        definePropertiesAndUpdate(FAIL, "Body check FAIL");
+                        return true;
+                    }
                 }
-            });
-        } catch (Exception e) {
-            logError(e, this.getClass());
-        }
-        logger.info("Finished scheduling " + id);
+                return false;
+            }
+
+            private boolean checkFailStatusCode(Response response) {
+                if (hcStatusCode != null) {
+                    int statusCode = response.getStatusCode();
+                    if (statusCode != Integer.parseInt(hcStatusCode)) {
+                        definePropertiesAndUpdate(FAIL, "HTTP Status Code check FAIL");
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            private void definePropertiesAndUpdate(EnumHealthState state, String reason) {
+                String newHealthyState = state.toString();
+
+                target.getProperties().put(PROP_HEALTHY.toString(), newHealthyState);
+                target.getProperties().put(PROP_STATUS_DETAILED.toString(), reason);
+                String logMessage = "Test Params: { "
+                            + "ExpectedBody:\"" + hcBody + "\", "
+                            + "ExpectedStatusCode:" + hcStatusCode + ", "
+                            + "Host:\"" + realHost + "\", "
+                            + "FullUrl:\"" + target.getName() + hcPath.get() + "\", "
+                            + "ConnectionTimeout:" + connectionTimeout + "ms }, "
+                        + "Result: [ " + reason
+                            + " (request time: " + (System.currentTimeMillis() - start) + " ms) ]";
+                if (state.equals(OK)) {
+                    logger.info(logMessage);
+                } else {
+                    logger.warn(logMessage);
+                }
+                if (lastReason == null || !reason.equals(lastReason)) {
+                    callBackQueue.update(target);
+                }
+            }
+
+        });
     }
+
 }

@@ -37,13 +37,11 @@
         <commons-lang3.version>3.4</commons-lang3.version>
         <disruptor.version>3.3.6</disruptor.version>
         <metrics.version>3.2.2</metrics.version>
-        <slf4j.version>1.7.19</slf4j.version>
         <jodd.version>3.8.1</jodd.version>
         <guava.version>21.0</guava.version>
         <asynchttpclient.version>2.1.0-alpha8</asynchttpclient.version>
         <metrics.version>3.2.2</metrics.version>
         <gson.version>2.8.0</gson.version>
-        <artemis-jms-server.version>1.5.4</artemis-jms-server.version>
         <spring-jms.version>4.3.7.RELEASE</spring-jms.version>
         <undertow.version>1.4.13.Final</undertow.version>
 
@@ -52,6 +50,7 @@
         <commons-math3.version>3.6.1</commons-math3.version>
         <org.jacoco.agent.version>0.7.9</org.jacoco.agent.version>
         <simplejmx.version>1.15</simplejmx.version>
+        <system-rules.version>1.16.0</system-rules.version>
     </properties>
 
     <dependencies>
@@ -95,11 +94,6 @@
             <version>${org.apache.logging.log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.jodd</groupId>
             <artifactId>jodd-core</artifactId>
             <version>${jodd.version}</version>
@@ -139,11 +133,6 @@
             <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-server</artifactId>
-            <version>${artemis-jms-server.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
             <version>${spring-jms.version}</version>
@@ -163,7 +152,7 @@
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <version>1.16.0</version>
+            <version>${system-rules.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -210,6 +199,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!--suppress MavenModelInspection -->
                     <argLine>
                         ${surefireArgLine}
                         -server
@@ -237,6 +227,7 @@
                         -Dcom.sun.management.jmxremote=true
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
+                        -Dcom.sun.management.jmxremote.port=5001
                     </jvmArguments>
                 </configuration>
             </plugin>

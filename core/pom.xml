@@ -16,37 +16,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
 
-        <spring-context.version>4.3.6.RELEASE</spring-context.version>
-        <async-http-client.version>2.1.0-alpha8</async-http-client.version>
-        <jackson-annotations.version>2.8.0</jackson-annotations.version>
         <commons-logging.version>1.2</commons-logging.version>
-        <spring-data-commons.version>1.13.0.RELEASE</spring-data-commons.version>
-        <spring-security-core.version>3.2.8.RELEASE</spring-security-core.version>
+        <jnr-posix.version>3.0.38</jnr-posix.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring-context.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.asynchttpclient</groupId>
-            <artifactId>async-http-client</artifactId>
-            <version>${async-http-client.version}</version>
+            <groupId>com.github.jnr</groupId>
+            <artifactId>jnr-posix</artifactId>
+            <version>${jnr-posix.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson-annotations.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
@@ -56,7 +38,6 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>${spring-data-commons.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -65,7 +46,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${spring-security-core.version}</version>
         </dependency>
     </dependencies>
 

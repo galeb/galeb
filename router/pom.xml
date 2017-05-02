@@ -35,18 +35,15 @@
         <jmx.port>5000</jmx.port>
 
         <undertow.version>1.4.13.Final</undertow.version>
-        <zalando-boot-etcd.version>2.3</zalando-boot-etcd.version>
         <org.apache.logging.log4j.version>2.8.1</org.apache.logging.log4j.version>
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <disruptor.version>3.3.6</disruptor.version>
         <metrics.version>3.2.2</metrics.version>
-        <slf4j.version>1.7.19</slf4j.version>
         <jodd.version>3.8.1</jodd.version>
         <guava.version>21.0</guava.version>
         <asynchttpclient.version>2.1.0-alpha8</asynchttpclient.version>
         <metrics.version>3.2.2</metrics.version>
-        <jnr-posix.version>3.0.38</jnr-posix.version>
 
         <info-cukes.version>1.2.4</info-cukes.version>
         <mockito.version>1.10.19</mockito.version>
@@ -97,11 +94,6 @@
             <version>${org.apache.logging.log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
             <version>${undertow.version}</version>
@@ -110,11 +102,6 @@
             <groupId>org.jodd</groupId>
             <artifactId>jodd-core</artifactId>
             <version>${jodd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.zalando</groupId>
-            <artifactId>zalando-boot-etcd</artifactId>
-            <version>${zalando-boot-etcd.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -150,11 +137,6 @@
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>${metrics.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.jnr</groupId>
-            <artifactId>jnr-posix</artifactId>
-            <version>${jnr-posix.version}</version>
         </dependency>
 
         <!--  tests -->
@@ -213,6 +195,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!--suppress MavenModelInspection -->
                     <argLine>
                         ${surefireArgLine}
                         -server

@@ -16,20 +16,28 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.router.services.ExternalDataService;
-import io.galeb.router.services.UpdateService;
+import com.google.gson.Gson;
+import io.galeb.core.entity.VirtualHost;
+import io.galeb.router.discovery.ExternalDataService;
+import io.galeb.router.sync.ManagerClient;
+import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
+import io.galeb.router.sync.Updater;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.util.Headers;
+import io.undertow.util.StatusCodes;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.galeb.router.handlers.PingHandler.HealthcheckBody.*;
 
 public class PingHandler implements HttpHandler {
+
+    private static final String HEADER_SHOW_CACHE = "X-Galeb-Show-Cache";
 
     enum HealthcheckBody {
         FAIL,
@@ -38,40 +46,61 @@ public class PingHandler implements HttpHandler {
         WORKING
     }
 
-    private static final long OBSOLETE_TIME = 5000;
+    private static final long OBSOLETE_TIME = 10000;
 
+    private final Gson gson = new Gson();
     private final AtomicLong lastPing = new AtomicLong(0L);
-    private final ExecutorService executor = new ForkJoinPool();
-    private final UpdateService updateService;
-    private final ExternalDataService data;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Updater updater;
+    private final ManagerClientCache cache;
+    private final ExternalDataService externalDataService;
+
+    private Future<?> taskUpdate = null;
 
     public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
-                       final ExternalDataService data) {
-        this.updateService = new UpdateService(nameVirtualHostHandler, data);
-        this.data = data;
+                       final ManagerClient managerClient,
+                       final ManagerClientCache cache,
+                       final ExternalDataService externalDataService) {
+        this.cache = cache;
+        this.externalDataService = externalDataService;
+        this.updater = new Updater(nameVirtualHostHandler, managerClient, cache, externalDataService);
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-        exchange.getResponseSender().send(getStatusBody());
+        if (exchange.getRequestHeaders().contains(HEADER_SHOW_CACHE)) {
+            showVirtualHostCached(exchange);
+        } else {
+            String statusBody = getStatusBody();
+            exchange.getResponseSender().send(statusBody);
+            if (WORKING.name().equals(statusBody)) {
+                externalDataService.register();
+            }
+        }
         exchange.endExchange();
-        executor.submit(updateService::checkForceUpdateFlag);
+        if (taskUpdate == null || updater.isDone()) {
+            taskUpdate = null;
+            taskUpdate = executor.submit(updater::sync);
+        }
     }
 
     private String getStatusBody() {
-        return !data.exist(ExternalDataService.PREFIX_KEY) ? FAIL.name() :
-                (isEmpty() ? EMPTY.name() :
-                        (isOutdated() ? OUTDATED.name() :
-                                WORKING.name()));
+        return isOutdated() ? OUTDATED.name() : (isEmpty() ? EMPTY.name() : WORKING.name());
     }
 
     private boolean isEmpty() {
-        return data.listFrom(ExternalDataService.VIRTUALHOSTS_KEY).isEmpty();
+        return cache.isEmpty();
     }
 
     private boolean isOutdated() {
         return lastPing.getAndSet(System.currentTimeMillis()) < System.currentTimeMillis() - OBSOLETE_TIME;
+    }
+
+    private void showVirtualHostCached(final HttpServerExchange exchange) {
+        VirtualHost virtualhost = cache.get(exchange.getRequestHeaders().get(HEADER_SHOW_CACHE).peekFirst());
+        exchange.setStatusCode(virtualhost != null ? StatusCodes.OK : StatusCodes.NOT_FOUND);
+        exchange.getResponseSender().send(virtualhost != null ? gson.toJson(virtualhost) : "{}");
     }
 }

@@ -16,8 +16,8 @@
 
 package io.galeb.router.configurations;
 
+import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
-import io.galeb.router.services.ExternalDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -27,17 +27,18 @@ import org.springframework.context.annotation.Configuration;
 public class NameVirtualHostDefaultHandlerConfiguration {
 
     private final ApplicationContext context;
-    private final ExternalDataService data;
+    private final ManagerClientCache cache;
 
     @Autowired
-    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context, final ExternalDataService externalData) {
+    public NameVirtualHostDefaultHandlerConfiguration(final ApplicationContext context,
+                                                      final ManagerClientCache cache) {
         this.context = context;
-        this.data = externalData;
+        this.cache = cache;
     }
 
     @Bean
     public NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler() {
-        return new NameVirtualHostDefaultHandler(context, data);
+        return new NameVirtualHostDefaultHandler(context, cache);
     }
 
 }

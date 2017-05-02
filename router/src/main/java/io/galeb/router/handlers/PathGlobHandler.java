@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -69,7 +70,7 @@ public class PathGlobHandler implements HttpHandler {
                             logger.error("Handler is null");
                         }
                     } catch (Exception e) {
-                        logger.error(e.getMessage());
+                        ErrorLogger.logError(e, this.getClass());
                     }
                 }
             }

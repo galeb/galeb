@@ -16,11 +16,12 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
 import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderValues;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -30,11 +31,11 @@ import java.util.stream.Collectors;
 
 public class HashSourceIpHostSelector extends ClientStatisticsMarker implements HashHostSelector {
 
-    private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnvs.HASH_ALGORITHM.getValue()));
-    private final int numReplicas = Integer.parseInt(SystemEnvs.HASH_NUM_REPLICAS.getValue());
+    private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnv.HASH_ALGORITHM.getValue()));
+    private final int numReplicas = Integer.parseInt(SystemEnv.HASH_NUM_REPLICAS.getValue());
     private final ConsistentHash<Integer> consistentHash = new ConsistentHash<>(hashAlgorithm, numReplicas, Collections.emptyList());
     private final AtomicBoolean initialized = new AtomicBoolean(false);
-    private final boolean ignoreXForwardedFor = Boolean.parseBoolean(SystemEnvs.IGNORE_XFORWARDED_FOR.getValue());
+    private final boolean ignoreXForwardedFor = Boolean.parseBoolean(SystemEnv.IGNORE_XFORWARDED_FOR.getValue());
 
     @Override
     public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {
@@ -62,18 +63,20 @@ public class HashSourceIpHostSelector extends ClientStatisticsMarker implements 
         if (ignoreXForwardedFor) {
             aSourceIP = exchange.getSourceAddress().getHostString();
         } else {
-            aSourceIP = exchange.getRequestHeaders().getFirst(httpHeaderXrealIp);
-            if (aSourceIP!=null) {
+            final HeaderValues headerXrealIp = exchange.getRequestHeaders().get(httpHeaderXrealIp);
+            aSourceIP = headerXrealIp != null ? headerXrealIp.peekFirst() : null;
+            if (aSourceIP != null) {
                 return aSourceIP;
             }
-            aSourceIP = exchange.getRequestHeaders().getFirst(httpHeaderXForwardedFor);
-            if (aSourceIP!=null) {
+            final HeaderValues headerXForwardedFor = exchange.getRequestHeaders().get(httpHeaderXForwardedFor);
+            aSourceIP = headerXForwardedFor != null ? headerXForwardedFor.peekFirst() : null;
+            if (aSourceIP != null) {
                 return aSourceIP.contains(",") ? aSourceIP.split(",")[0] : aSourceIP;
             }
             aSourceIP = exchange.getSourceAddress().getHostString();
         }
 
-        return aSourceIP!=null ? aSourceIP : defaultSourceIp;
+        return aSourceIP != null ? aSourceIP : defaultSourceIp;
     }
 
     // Test only

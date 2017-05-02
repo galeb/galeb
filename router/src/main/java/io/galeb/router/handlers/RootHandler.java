@@ -16,7 +16,7 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.configuration.SystemEnvs;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
@@ -35,8 +35,8 @@ public class RootHandler implements HttpHandler {
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
 
-    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnvs.ENABLE_ACCESSLOG.getValue());
-    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnvs.ENABLE_STATSD.getValue());
+    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
+    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
 
     public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,
@@ -48,15 +48,16 @@ public class RootHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        if (enableAccessLog) exchange.addExchangeCompleteListener(accessLogCompletionListener);
+        if (enableStatsd) exchange.addExchangeCompleteListener(statsdCompletionListener);
         try {
-            if (enableAccessLog) exchange.addExchangeCompleteListener(accessLogCompletionListener);
-            if (enableStatsd) exchange.addExchangeCompleteListener(statsdCompletionListener);
-
             nameVirtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
             ResponseCodeOnError.ROOT_HANDLER_FAILED.getHandler().handleRequest(exchange);
         }
     }
+
+
 
 }

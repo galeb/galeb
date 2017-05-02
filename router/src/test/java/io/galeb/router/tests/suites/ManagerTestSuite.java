@@ -19,7 +19,6 @@ package io.galeb.router.tests.suites;
 
 import io.galeb.router.tests.client.ExtendedLoadBalancingProxyClientTest;
 import io.galeb.router.tests.cucumber.CucumberTest;
-import io.galeb.router.tests.handlers.RootHandlerTest;
 import io.galeb.router.tests.hostselectors.HashSourceIpHostSelectorTest;
 import io.galeb.router.tests.hostselectors.HashUriPathHostSelectorTest;
 import io.galeb.router.tests.hostselectors.LeastConnHostSelectorTest;
@@ -35,7 +34,6 @@ import org.junit.runners.Suite;
         RoundRobinHostSelectorTest.class,
         HashUriPathHostSelectorTest.class,
         HashSourceIpHostSelectorTest.class,
-        RootHandlerTest.class,
         ExtendedLoadBalancingProxyClientTest.class,
         CucumberTest.class
 })

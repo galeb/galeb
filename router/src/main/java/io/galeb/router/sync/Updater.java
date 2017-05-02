@@ -17,10 +17,12 @@
 package io.galeb.router.sync;
 
 import com.google.common.collect.Sets;
+import io.galeb.core.entity.Rule;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.util.Cloner;
+import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
@@ -40,15 +42,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.galeb.router.handlers.PoolHandler.PROP_DISCOVERED_MEMBERS_SIZE;
+
 public class Updater {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
+    private final ExternalDataService externalDataService;
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final Cloner cloner = new Cloner();
 
     private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
+
+    private int discoveredMembersSize = 1;
+    private int newDiscoveredMembersSize = 1;
 
     private boolean done = false;
     private long lastDone = 0L;
@@ -56,10 +64,12 @@ public class Updater {
 
     public Updater(final NameVirtualHostHandler nameVirtualHostHandler,
                    final ManagerClient managerClient,
-                   final ManagerClientCache cache) {
+                   final ManagerClientCache cache,
+                   final ExternalDataService externalDataService) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.managerClient = managerClient;
         this.cache = cache;
+        this.externalDataService = externalDataService;
     }
 
     public synchronized boolean isDone() {
@@ -71,6 +81,7 @@ public class Updater {
     }
 
     public synchronized void sync() {
+        newDiscoveredMembersSize = Math.max(externalDataService.members().size(), 1);
         done = false;
         lastDone = System.currentTimeMillis();
         final ManagerClient.ResultCallBack resultCallBack = result -> {
@@ -98,6 +109,11 @@ public class Updater {
             }
             count = 0;
             done = true;
+            if (discoveredMembersSize != newDiscoveredMembersSize) {
+                logger.warn("DiscoveredMembersSize changed from " + discoveredMembersSize + " to "
+                        + newDiscoveredMembersSize + ". Expiring ALL handlers");
+            }
+            discoveredMembersSize = newDiscoveredMembersSize;
         };
         managerClient.getVirtualhosts(envName, resultCallBack);
     }
@@ -116,25 +132,39 @@ public class Updater {
         diff.forEach(this::expireHandlers);
     }
 
-    public void updateCache(VirtualHost virtualHost) {
+    private void updateCache(VirtualHost virtualHost) {
         String virtualhostName = virtualHost.getName();
-        VirtualHost oldVirtualHost = cache.get(virtualhostName);
-        if (oldVirtualHost != null) {
-            String newFullHash = virtualHost.getProperties().get("fullhash");
-            String currentFullhash = oldVirtualHost.getProperties().get("fullhash");
-            if (currentFullhash != null && currentFullhash.equals(newFullHash)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Virtualhost " + virtualhostName + " not changed.");
+        if (newDiscoveredMembersSize == discoveredMembersSize) {
+            VirtualHost oldVirtualHost = cache.get(virtualhostName);
+            if (oldVirtualHost != null) {
+                String newFullHash = virtualHost.getProperties().get("fullhash");
+                String currentFullhash = oldVirtualHost.getProperties().get("fullhash");
+                if (currentFullhash != null && currentFullhash.equals(newFullHash)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Virtualhost " + virtualhostName + " not changed.");
+                    }
+                    count++;
+                    return;
+                } else {
+                    logger.warn("Virtualhost " + virtualhostName + " changed. Updating cache.");
                 }
-                count++;
-                return;
-            } else {
-                logger.warn("Virtualhost " + virtualhostName + " changed. Updating cache.");
             }
         }
+        applyPropDiscoveryMembersSize(virtualHost);
         cache.put(virtualhostName, virtualHost);
         expireHandlers(virtualhostName);
         count++;
+    }
+
+    private void applyPropDiscoveryMembersSize(final VirtualHost virtualHost) {
+        applyPropDiscoveryMembersSize(virtualHost.getRuleDefault());
+        virtualHost.getRules().forEach(this::applyPropDiscoveryMembersSize);
+    }
+
+    private void applyPropDiscoveryMembersSize(final Rule rule) {
+        if (rule != null) {
+            rule.getPool().getProperties().put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(newDiscoveredMembersSize));
+        }
     }
 
     private void expireHandlers(String virtualhostName) {

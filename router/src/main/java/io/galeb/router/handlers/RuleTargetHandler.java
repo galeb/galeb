@@ -40,8 +40,8 @@ public class RuleTargetHandler implements HttpHandler {
     private final VirtualHost virtualHost;
     private final HttpHandler next;
 
-    public RuleTargetHandler(final ManagerClientCache cache, final String virtualHostName) {
-        this.virtualHost = cache.get(virtualHostName);
+    public RuleTargetHandler(final VirtualHost virtualHost) {
+        this.virtualHost = virtualHost;
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         final PathGlobHandler pathGlobHandler = new PathGlobHandler();
         this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
@@ -91,12 +91,15 @@ public class RuleTargetHandler implements HttpHandler {
                         String type = rule.getRuleType().getName();
                         Pool pool = rule.getPool();
                         String path = rule.getProperties().get("match");
+                        if (path != null) {
+                            logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
-                        logger.info("["+ virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
-
-                        if (EnumRuleType.PATH.toString().equals(type)) {
-                            final PoolHandler poolHandler = new PoolHandler(pool);
-                            pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
+                            if (EnumRuleType.PATH.toString().equals(type)) {
+                                final PoolHandler poolHandler = new PoolHandler(pool);
+                                pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
+                            }
+                        } else {
+                            logger.warn("[" + virtualHost.getName() + "] Rule " + rule.getName() + " ignored. properties.match IS NULL");
                         }
                     }
                 }

@@ -18,6 +18,7 @@ package io.galeb.router.handlers;
 
 import com.google.gson.Gson;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.sync.Updater;
@@ -52,13 +53,17 @@ public class PingHandler implements HttpHandler {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Updater updater;
     private final ManagerClientCache cache;
+    private final ExternalDataService externalDataService;
+
     private Future<?> taskUpdate = null;
 
     public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final ManagerClient managerClient,
-                       final ManagerClientCache cache) {
+                       final ManagerClientCache cache,
+                       final ExternalDataService externalDataService) {
         this.cache = cache;
-        this.updater = new Updater(nameVirtualHostHandler, managerClient, cache);
+        this.externalDataService = externalDataService;
+        this.updater = new Updater(nameVirtualHostHandler, managerClient, cache, externalDataService);
     }
 
     @Override
@@ -68,7 +73,11 @@ public class PingHandler implements HttpHandler {
         if (exchange.getRequestHeaders().contains(HEADER_SHOW_CACHE)) {
             showVirtualHostCached(exchange);
         } else {
-            exchange.getResponseSender().send(getStatusBody());
+            String statusBody = getStatusBody();
+            exchange.getResponseSender().send(statusBody);
+            if (WORKING.name().equals(statusBody)) {
+                externalDataService.register();
+            }
         }
         exchange.endExchange();
         if (taskUpdate == null || updater.isDone()) {

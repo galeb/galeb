@@ -23,9 +23,11 @@ import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.ResponseCodeOnError;
+import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.proxy.ExclusivityChecker;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -33,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import static io.galeb.core.enums.EnumHealthState.*;
 import static io.galeb.core.enums.EnumPropHealth.*;
@@ -40,7 +44,11 @@ import static io.galeb.router.client.hostselectors.HostSelectorLookup.ROUNDROBIN
 
 public class PoolHandler implements HttpHandler {
 
-    private static final String CHECK_RULE_HEADER = "X-Check-Pool";
+    private static final String CHECK_RULE_HEADER  = "X-Check-Pool";
+    private static final String X_POOL_NAME_HEADER = "X-Pool-Name";
+
+    public static final String PROP_CONN_PER_THREAD         = "connPerThread";
+    public static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -51,9 +59,9 @@ public class PoolHandler implements HttpHandler {
     private final HttpHandler defaultHandler;
 
     private ProxyHandler proxyHandler = null;
+    private ExtendedLoadBalancingProxyClient proxyClient;
 
     private final Pool pool;
-    private ExtendedLoadBalancingProxyClient proxyClient;
 
     public PoolHandler(final Pool pool) {
         this.pool = pool;
@@ -89,13 +97,7 @@ public class PoolHandler implements HttpHandler {
         return exchange -> {
             if (pool != null) {
                 logger.info("creating pool " + pool.getName());
-                HostSelector hostSelector = defineHostSelector();
-                logger.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
-                proxyClient = new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(),
-                                    exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE), hostSelector)
-                                .setTtl(Integer.parseInt(SystemEnv.POOL_CONN_TTL.getValue()))
-                                .setConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_CONN_PER_THREAD.getValue()))
-                                .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_SOFTMAXCONN.getValue()));
+                proxyClient = getProxyClient();
                 addTargets(proxyClient);
                 proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
                 proxyHandler.handleRequest(exchange);
@@ -105,16 +107,43 @@ public class PoolHandler implements HttpHandler {
         };
     }
 
+    private ExtendedLoadBalancingProxyClient getProxyClient() {
+        final HostSelector hostSelector = defineHostSelector();
+        logger.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
+
+        final ExclusivityChecker exclusivityChecker = exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE);
+        return new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(), exclusivityChecker, hostSelector)
+                        .setTtl(Integer.parseInt(SystemEnv.POOL_CONN_TTL.getValue()))
+                        .setConnectionsPerThread(getConnPerThread())
+                        .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_SOFTMAXCONN.getValue()));
+    }
+
+    private int getConnPerThread() {
+        int poolMaxConn = Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
+        int connPerThread = poolMaxConn / Integer.parseInt(SystemEnv.IO_THREADS.getValue());
+        String propConnPerThread = pool.getProperties().get(PROP_CONN_PER_THREAD);
+        if (propConnPerThread != null) {
+            try {
+                connPerThread = Integer.parseInt(propConnPerThread);
+            } catch (NumberFormatException ignore) {}
+        }
+        float discoveryMembersSize = Float.parseFloat(pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE));
+        connPerThread = Math.round((float) connPerThread / discoveryMembersSize);
+        return connPerThread;
+    }
+
     private HttpHandler badGatewayHandler() {
         return exchange -> exchange.setStatusCode(502);
     }
 
-    private HostSelector defineHostSelector() throws InstantiationException, IllegalAccessException {
+    private HostSelector defineHostSelector() {
         BalancePolicy hostSelectorName = pool.getBalancePolicy();
         if (hostSelectorName != null) {
-            return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
+            try {
+                return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
+            } catch (InstantiationException | IllegalAccessException ignore) {}
         }
-        return ROUNDROBIN.getHostSelector();
+        return new RoundRobinHostSelector();
     }
 
     private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
@@ -131,7 +160,7 @@ public class PoolHandler implements HttpHandler {
             logger.warn("detected header " + CHECK_RULE_HEADER);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-            exchange.getResponseHeaders().put(HttpString.tryFromString("X-Pool-Name"), pool.getName());
+            exchange.getResponseHeaders().put(HttpString.tryFromString(X_POOL_NAME_HEADER), pool.getName());
             exchange.getResponseSender().send("POOL_REACHABLE");
         };
     }

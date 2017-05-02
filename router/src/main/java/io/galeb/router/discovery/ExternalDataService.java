@@ -16,6 +16,7 @@
 
 package io.galeb.router.discovery;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface ExternalDataService {
@@ -35,4 +36,10 @@ public interface ExternalDataService {
     ExternalData node(String key, boolean recursive, ExternalData.Generic def);
 
     boolean exist(String key);
+
+    void register();
+
+    default List<String> members() {
+        return Collections.singletonList("myself");
+    };
 }

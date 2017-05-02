@@ -54,10 +54,24 @@ public class EtcdClient {
                 .setMaxConnectionsPerHost(maxConnectionsPerHost).build());
     }
 
+    public EtcdResponse get(String key) throws ExecutionException, InterruptedException {
+        return get(key, false);
+    }
+
     public EtcdResponse get(String key, boolean recursive) throws ExecutionException, InterruptedException {
         final RequestBuilder requestBuilder = new RequestBuilder();
         final Request request = requestBuilder.setMethod(HttpMethod.GET.toString()).setUrl(server + ETCD_ROOT_PATH + key).build();
         final Response response = asyncHttpClient.executeRequest(request).get();
+        final String body = response.getResponseBody();
+        return gson.fromJson(body, EtcdResponse.class);
+    }
+
+    public EtcdResponse put(EtcdNode node) throws ExecutionException, InterruptedException {
+        String key = node.getKey();
+        Long ttl = node.getTtl();
+        String queryTtl = ttl != null && ttl > 0L ? "?ttl=" + ttl : "";
+        String bodyRequest = gson.toJson(node);
+        final Response response = asyncHttpClient.preparePut(server + ETCD_ROOT_PATH + key + queryTtl).setBody(bodyRequest).execute().get();
         final String body = response.getResponseBody();
         return gson.fromJson(body, EtcdResponse.class);
     }

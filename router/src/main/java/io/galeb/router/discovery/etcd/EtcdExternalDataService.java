@@ -17,18 +17,34 @@
 package io.galeb.router.discovery.etcd;
 
 import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.discovery.ExternalData;
 import io.galeb.router.discovery.ExternalDataService;
+import jnr.posix.POSIXFactory;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.net.util.IPAddressUtil;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class EtcdExternalDataService implements ExternalDataService {
+
+    private static final long REGISTER_TTL = 30L; // seconds
 
     private static final String ROOT_KEY         = "/";
     public static final String  PREFIX_KEY       = ROOT_KEY + SystemEnv.CLUSTER_ID.getValue();
@@ -90,11 +106,71 @@ public class EtcdExternalDataService implements ExternalDataService {
     @Override
     public synchronized boolean exist(String key) {
         try {
-            final EtcdNode node = client.get(key, false).getNode();
+            final EtcdNode node = client.get(key).getNode();
             return node != null && (node.getValue() != null || node.isDir());
         } catch (ExecutionException | InterruptedException e) {
             return false;
         }
     }
 
+    public void put(EtcdNode node) {
+        try {
+            client.put(node);
+        } catch (ExecutionException | InterruptedException e) {
+            ErrorLogger.logError(e, this.getClass());
+        }
+    }
+
+    @Override
+    public void register() {
+        final List<String> ipList = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
+            while (ifs.hasMoreElements()) {
+                NetworkInterface localInterface = ifs.nextElement();
+                if (!localInterface.isLoopback() && localInterface.isUp()) {
+                    Enumeration<InetAddress> ips = localInterface.getInetAddresses();
+                    while (ips.hasMoreElements()) {
+                        InetAddress ipaddress = ips.nextElement();
+                        if (ipaddress instanceof Inet4Address) {
+                            ipList.add(ipaddress.getHostAddress());
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+        }
+        String ip = String.join("-", ipList);
+        if (ip == null || "".equals(ip)) {
+            ip = "undef-" + System.currentTimeMillis();
+        }
+        String ketDiscoveryService = SystemEnv.ETCD_REGISTER_PATH.getValue() + "/" + ip.replaceAll("[:%]", "");
+        EtcdNode node = new EtcdNode();
+        node.setKey(ketDiscoveryService);
+        node.setTtl(REGISTER_TTL);
+        node.setValue(String.valueOf(System.currentTimeMillis()));
+        try {
+            client.put(node);
+        } catch (ExecutionException | InterruptedException e) {
+            ErrorLogger.logError(e, this.getClass());
+        }
+    }
+
+    @Override
+    public List<String> members() {
+        try {
+            EtcdResponse etcdResponse = client.get(SystemEnv.ETCD_REGISTER_PATH.getValue());
+            EtcdNode node = Optional.ofNullable(etcdResponse.getNode()).orElse(new EtcdNode());
+            if (node.isDir()) {
+                return Optional.ofNullable(node.getNodes()).orElse(Collections.emptyList()).stream().map(EtcdNode::getKey)
+                        .collect(Collectors.toList());
+            }
+            return Collections.singletonList("myself");
+        } catch (ExecutionException | InterruptedException e) {
+            ErrorLogger.logError(e, this.getClass());
+            return Collections.singletonList("myself");
+        }
+    }
 }

@@ -21,6 +21,8 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class HostSelectorLookup {
+    private static final Map<String, Class<? extends HostSelector>> hostSelectorMap = new HashMap<>();
+
     public static final HostSelectorLookup ROUNDROBIN       = new HostSelectorLookup("RoundRobin",      RoundRobinHostSelector.class);
     public static final HostSelectorLookup STRICT_LEASTCONN = new HostSelectorLookup("StrictLeastConn", StrictLeastConnHostSelector.class);
     public static final HostSelectorLookup LEASTCONN        = new HostSelectorLookup("LeastConn",       LeastConnWithRRHostSelector.class);
@@ -28,7 +30,6 @@ public class HostSelectorLookup {
     public static final HostSelectorLookup HASH_URIPATH     = new HostSelectorLookup("HashUriPath",     HashUriPathHostSelector.class);
 
     private final Class<? extends HostSelector> klazz;
-    private static final Map<String, Class<? extends HostSelector>> hostSelectorMap = new HashMap<>();
 
     private HostSelectorLookup(String key, final Class<? extends HostSelector> klazz) {
         this.klazz = klazz;

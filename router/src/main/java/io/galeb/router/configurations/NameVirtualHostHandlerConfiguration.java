@@ -16,6 +16,7 @@
 
 package io.galeb.router.configurations;
 
+import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
@@ -32,20 +33,23 @@ public class NameVirtualHostHandlerConfiguration {
     private final HttpHandler nameVirtualHostDefaultHandler;
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
+    private final ExternalDataService externalDataService;
 
     @Autowired
     public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler,
                                                final ManagerClient managerClient,
-                                               final ManagerClientCache cache) {
+                                               final ManagerClientCache cache,
+                                               final ExternalDataService externalDataService) {
         this.nameVirtualHostDefaultHandler = nameVirtualHostDefaultHandler;
         this.managerClient = managerClient;
         this.cache = cache;
+        this.externalDataService = externalDataService;
     }
 
     @Bean
     NameVirtualHostHandler nameVirtualHostHandler() {
         final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
-        final PingHandler pingHandler = new PingHandler(nameVirtualHostHandler, managerClient, cache);
+        final PingHandler pingHandler = new PingHandler(nameVirtualHostHandler, managerClient, cache, externalDataService);
         nameVirtualHostHandler.addHost("__ping__", pingHandler).setDefaultHandler(nameVirtualHostDefaultHandler);
         return nameVirtualHostHandler;
     }

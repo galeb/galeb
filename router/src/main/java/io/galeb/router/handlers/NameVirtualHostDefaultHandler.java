@@ -16,6 +16,7 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.entity.VirtualHost;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
@@ -44,7 +45,8 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
         final NameVirtualHostHandler nameVirtualHostHandler = context.getBean(NameVirtualHostHandler.class);
         if (isValid(hostName, nameVirtualHostHandler)) {
             logger.info("adding " + hostName);
-            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(cache, hostName));
+            final VirtualHost virtualHost = cache.get(hostName);
+            nameVirtualHostHandler.addHost(hostName, new RuleTargetHandler(virtualHost));
             nameVirtualHostHandler.handleRequest(exchange);
         } else {
             ResponseCodeOnError.VIRTUALHOST_NOT_FOUND.getHandler().handleRequest(exchange);

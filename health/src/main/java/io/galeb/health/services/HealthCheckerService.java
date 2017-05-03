@@ -68,6 +68,7 @@ public class HealthCheckerService {
     @JmsListener(destination = "galeb-health", concurrency = "5-5")
     public void check(String targetStr) throws ExecutionException, InterruptedException {
         final Target target = new Gson().fromJson(targetStr, Target.class);
+        final String poolName = target.getParent().getName();
         final Map<String, String> properties = target.getParent().getProperties();
         final AtomicReference<String> hcPath = new AtomicReference<>(properties.get(PROP_HEALTHCHECK_PATH.toString()));
         hcPath.compareAndSet(null,"/");
@@ -124,7 +125,8 @@ public class HealthCheckerService {
 
                 target.getProperties().put(PROP_HEALTHY.toString(), newHealthyState);
                 target.getProperties().put(PROP_STATUS_DETAILED.toString(), reason);
-                String logMessage = "Test Params: { "
+                String logMessage = "Pool " + poolName + " -> "
+                        + "Test Params: { "
                             + "ExpectedBody:\"" + hcBody + "\", "
                             + "ExpectedStatusCode:" + hcStatusCode + ", "
                             + "Host:\"" + realHost + "\", "

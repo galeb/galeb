@@ -43,11 +43,8 @@ public class EtcdExternalDataService implements ExternalDataService {
 
     private static final long REGISTER_TTL = 30L; // seconds
 
-    private static final String ROOT_KEY         = "/";
-    public static final String  PREFIX_KEY       = ROOT_KEY + SystemEnv.CLUSTER_ID.getValue();
-    public static final String  VIRTUALHOSTS_KEY = PREFIX_KEY + "/virtualhosts";
-    public static final String  POOLS_KEY        = PREFIX_KEY + "/pools";
-
+    private final String registerRootPath = SystemEnv.ETCD_REGISTER_PATH.getValue();
+    private final String environment = SystemEnv.ENVIRONMENT_NAME.getValue();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final EtcdClient client;
@@ -143,7 +140,7 @@ public class EtcdExternalDataService implements ExternalDataService {
         if (ip == null || "".equals(ip)) {
             ip = "undef-" + System.currentTimeMillis();
         }
-        String ketDiscoveryService = SystemEnv.ETCD_REGISTER_PATH.getValue() + "/" + ip.replaceAll("[:%]", "");
+        String ketDiscoveryService = registerRootPath + "/" + environment + "/" + ip.replaceAll("[:%]", "");
         EtcdNode node = new EtcdNode();
         node.setKey(ketDiscoveryService);
         node.setTtl(REGISTER_TTL);

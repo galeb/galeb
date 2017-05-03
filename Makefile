@@ -32,3 +32,9 @@ dist: galeb-next
             -p ../../galeb-$$service-${VERSION}-1.el6.noarch.rpm *jar wrapper && \
         cd -; \
     done
+
+doc:
+	cd core/docs && rm -rf html && doxygen Doxyfile && \
+	cd ../../health/docs && rm -rf html && doxygen Doxyfile && \
+	cd ../../router/docs && rm -rf html && doxygen Doxyfile && \
+  cd ../..

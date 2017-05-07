@@ -23,7 +23,6 @@ import io.galeb.core.enums.EnumRuleType;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -35,35 +34,30 @@ public class RuleTargetHandler implements HttpHandler {
 
     public static final String RULE_ORDER  = "order";
     public static final String RULE_MATCH  = "match";
-    public static final String IPACL_ALLOW = "allow";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final AtomicBoolean firstLoad = new AtomicBoolean(true);
     private final VirtualHost virtualHost;
-    private final HttpHandler next;
+    private final PathGlobHandler pathGlobHandler;
 
     public RuleTargetHandler(final VirtualHost virtualHost) {
         this.virtualHost = virtualHost;
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
-        final PathGlobHandler pathGlobHandler = new PathGlobHandler();
-        this.next = hasAcl() ? loadAcl(pathGlobHandler) : pathGlobHandler;
-        pathGlobHandler.setDefaultHandler(loadRulesHandler(next));
+        this.pathGlobHandler = new PathGlobHandler().setDefaultHandler(loadRulesHandler());
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        next.handleRequest(exchange);
+        pathGlobHandler.handleRequest(exchange);
     }
 
-    public HttpHandler getNext() {
-        return next;
+    public PathGlobHandler getPathGlobHandler() {
+        return pathGlobHandler;
     }
 
-    private HttpHandler loadRulesHandler(HttpHandler next) {
+    private HttpHandler loadRulesHandler() {
         return new HttpHandler() {
-
-            final PathGlobHandler pathGlobHandler = next instanceof PathGlobHandler ? (PathGlobHandler) next : (PathGlobHandler) ((IPAddressAccessControlHandler) next).getNext();
 
             @Override
             public synchronized void handleRequest(HttpServerExchange exchange) throws Exception {
@@ -72,7 +66,7 @@ public class RuleTargetHandler implements HttpHandler {
                 }
                 if (!pathGlobHandler.getPaths().isEmpty()) {
                     if (firstLoad.getAndSet(false)) {
-                        next.handleRequest(exchange);
+                        pathGlobHandler.handleRequest(exchange);
                     } else {
                         ResponseCodeOnError.RULE_PATH_NOT_FOUND.getHandler().handleRequest(exchange);
                     }
@@ -87,39 +81,24 @@ public class RuleTargetHandler implements HttpHandler {
                     pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool()));
                 }
 
-                Set<Rule> rules = virtualHost.getRules();
-                if (!rules.isEmpty()) {
-                    for (Rule rule : rules) {
-                        String order = Optional.ofNullable(rule.getProperties().get(RULE_ORDER)).orElse(String.valueOf(Integer.MAX_VALUE));
-                        String type = rule.getRuleType().getName();
-                        Pool pool = rule.getPool();
-                        String path = rule.getProperties().get(RULE_MATCH);
-                        if (path != null) {
-                            logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
+                virtualHost.getRules().forEach(rule -> {
+                    String order = Optional.ofNullable(rule.getProperties().get(RULE_ORDER)).orElse(String.valueOf(Integer.MAX_VALUE));
+                    String type = rule.getRuleType().getName();
+                    Pool pool = rule.getPool();
+                    String path = rule.getProperties().get(RULE_MATCH);
+                    if (path != null) {
+                        logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
-                            if (EnumRuleType.PATH.toString().equals(type)) {
-                                final PoolHandler poolHandler = new PoolHandler(pool);
-                                pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
-                            }
-                        } else {
-                            logger.warn("[" + virtualHost.getName() + "] Rule " + rule.getName() + " ignored. properties.match IS NULL");
+                        if (EnumRuleType.PATH.toString().equals(type)) {
+                            final PoolHandler poolHandler = new PoolHandler(pool);
+                            pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
                         }
+                    } else {
+                        logger.warn("[" + virtualHost.getName() + "] Rule " + rule.getName() + " ignored. properties.match IS NULL");
                     }
-                }
+                });
             }
         };
     }
 
-    private boolean hasAcl() {
-        return virtualHost.getProperties().containsKey(IPACL_ALLOW);
-    }
-
-    private HttpHandler loadAcl(PathGlobHandler pathGlobHandler) {
-        final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(pathGlobHandler);
-
-        Arrays.asList(virtualHost.getProperties().get(IPACL_ALLOW).split(","))
-                .forEach(ipAddressAccessControlHandler::addAllow);
-        ipAddressAccessControlHandler.setDefaultAllow(false);
-        return ipAddressAccessControlHandler;
-    }
 }

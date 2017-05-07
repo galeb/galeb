@@ -88,20 +88,8 @@ public class Updater {
         lastDone = System.currentTimeMillis();
         final ManagerClient.ResultCallBack resultCallBack = result -> {
             FullVirtualhosts virtualhostsFromManager = (FullVirtualhosts) result;
-            List<VirtualHost> virtualhosts;
             if (virtualhostsFromManager != null) {
-                Set<VirtualHost> aliases = new HashSet<>();
-                virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
-                        .map(v -> {
-                            v.getAliases().forEach(aliasName -> {
-                                VirtualHost virtualHostAlias = cloner.copyVirtualHost(v);
-                                virtualHostAlias.setName(aliasName);
-                                aliases.add(virtualHostAlias);
-                            });
-                            return v;
-                        })
-                        .collect(Collectors.toList());
-                virtualhosts.addAll(aliases);
+                final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                 logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
                 cleanup(virtualhosts);
                 virtualhosts.forEach(this::updateCache);
@@ -118,6 +106,22 @@ public class Updater {
             discoveredMembersSize = newDiscoveredMembersSize;
         };
         managerClient.getVirtualhosts(envName, resultCallBack);
+    }
+
+    private List<VirtualHost> processVirtualhostsAndAliases(final FullVirtualhosts virtualhostsFromManager) {
+        final Set<VirtualHost> aliases = new HashSet<>();
+        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
+                .map(v -> {
+                    v.getAliases().forEach(aliasName -> {
+                        VirtualHost virtualHostAlias = cloner.copyVirtualHost(v);
+                        virtualHostAlias.setName(aliasName);
+                        aliases.add(virtualHostAlias);
+                    });
+                    return v;
+                })
+                .collect(Collectors.toList());
+        virtualhosts.addAll(aliases);
+        return virtualhosts;
     }
 
     private void cleanup(final List<VirtualHost> virtualhosts) {
@@ -180,14 +184,15 @@ public class Updater {
 
     private void cleanUpNameVirtualHostHandler(String virtualhost) {
         final HttpHandler handler = nameVirtualHostHandler.getHosts().get(virtualhost);
+        RuleTargetHandler ruleTargetHandler = null;
         if (handler instanceof RuleTargetHandler) {
-            HttpHandler ruleTargetNextHandler = ((RuleTargetHandler) handler).getNext();
-            if (ruleTargetNextHandler instanceof IPAddressAccessControlHandler) {
-                ruleTargetNextHandler = ((IPAddressAccessControlHandler)ruleTargetNextHandler).getNext();
-            }
-            if (ruleTargetNextHandler instanceof PathGlobHandler) {
-                cleanUpPathGlobHandler((PathGlobHandler) ruleTargetNextHandler);
-            }
+            ruleTargetHandler = (RuleTargetHandler)handler;
+        }
+        if (handler instanceof IPAddressAccessControlHandler) {
+            ruleTargetHandler = (RuleTargetHandler) ((IPAddressAccessControlHandler) handler).getNext();
+        }
+        if (ruleTargetHandler != null) {
+            cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
         }
     }
 

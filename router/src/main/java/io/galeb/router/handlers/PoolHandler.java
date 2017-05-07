@@ -144,7 +144,7 @@ public class PoolHandler implements HttpHandler {
     }
 
     private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
-        pool.getTargets().stream().filter(target -> OK.toString().equals(target.getProperties().get(PROP_HEALTHY.value()))).forEach(target -> {
+        pool.getTargets().stream().forEach(target -> {
             String value = target.getName();
             URI uri = URI.create(target.getName());
             proxyClient.addHost(uri);

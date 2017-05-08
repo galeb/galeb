@@ -245,7 +245,7 @@ public enum SystemEnv {
     /**
      * Enable JMX reporter (Undertow front-end metrics)
      */
-    ENABLE_UNDERTOW_JMX   ("EXTERNALDATA_TIMEOUT",  Boolean.TRUE);
+    ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE);
 
     /**
      * Gets SystemEnv value.

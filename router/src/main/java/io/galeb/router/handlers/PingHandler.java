@@ -68,34 +68,36 @@ public class PingHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        boolean hasNoUpdate = exchange.getQueryParameters().containsKey("noupdate");
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
         if (exchange.getRequestHeaders().contains(HEADER_SHOW_CACHE)) {
             showVirtualHostCached(exchange);
         } else {
-            String statusBody = getStatusBody();
+            String statusBody = getStatusBody(hasNoUpdate);
             exchange.getResponseSender().send(statusBody);
             if (WORKING.name().equals(statusBody)) {
                 externalDataService.register();
             }
         }
         exchange.endExchange();
-        if (taskUpdate == null || updater.isDone()) {
+        if (!hasNoUpdate && (taskUpdate == null || updater.isDone() || taskUpdate.isCancelled())) {
             taskUpdate = null;
             taskUpdate = executor.submit(updater::sync);
         }
     }
 
-    private String getStatusBody() {
-        return isOutdated() ? OUTDATED.name() : (isEmpty() ? EMPTY.name() : WORKING.name());
+    private String getStatusBody(boolean hasNoUpdate) {
+        return isOutdated(hasNoUpdate) ? OUTDATED.name() : (isEmpty() ? EMPTY.name() : WORKING.name());
     }
 
     private boolean isEmpty() {
         return cache.isEmpty();
     }
 
-    private boolean isOutdated() {
-        return lastPing.getAndSet(System.currentTimeMillis()) < System.currentTimeMillis() - OBSOLETE_TIME;
+    private boolean isOutdated(boolean hasNoUpdate) {
+        long currentObsoleteTime = System.currentTimeMillis() - OBSOLETE_TIME;
+        return hasNoUpdate ? lastPing.get() < currentObsoleteTime : lastPing.getAndSet(System.currentTimeMillis()) < currentObsoleteTime;
     }
 
     private void showVirtualHostCached(final HttpServerExchange exchange) {

@@ -29,7 +29,7 @@ dist: galeb-next
             -m '<galeb@corp.globo.com>' \
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
-            -p ../../galeb-$$service-${VERSION}-1.el6.noarch.rpm *jar wrapper && \
+            -f -p ../../galeb-$$service-${VERSION}-1.el7.noarch.rpm *jar wrapper && \
         cd -; \
     done
 

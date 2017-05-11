@@ -16,12 +16,9 @@
 
 package io.galeb.router.configurations;
 
-import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
 import io.galeb.router.handlers.PingHandler;
 import io.galeb.router.handlers.ShowVirtualHostCachedHandler;
-import io.galeb.router.services.UpdaterService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,26 +29,21 @@ import org.springframework.context.annotation.Configuration;
 public class NameVirtualHostHandlerConfiguration {
 
     private final HttpHandler nameVirtualHostDefaultHandler;
-    private final ManagerClientCache cache;
-    private final ExternalDataService externalDataService;
-    private final UpdaterService updaterService;
+    private final PingHandler pingHandler;
+    private final ShowVirtualHostCachedHandler showVirtualHostCachedHandler;
 
     @Autowired
     public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler,
-                                               final ManagerClientCache cache,
-                                               final ExternalDataService externalDataService,
-                                               final UpdaterService updaterService) {
+                                               final ShowVirtualHostCachedHandler showVirtualHostCachedHandler,
+                                               final PingHandler pingHandler) {
         this.nameVirtualHostDefaultHandler = nameVirtualHostDefaultHandler;
-        this.cache = cache;
-        this.externalDataService = externalDataService;
-        this.updaterService = updaterService;
+        this.showVirtualHostCachedHandler = showVirtualHostCachedHandler;
+        this.pingHandler = pingHandler;
     }
 
     @Bean
     NameVirtualHostHandler nameVirtualHostHandler() {
         final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
-        final PingHandler pingHandler = new PingHandler(cache, externalDataService, updaterService);
-        final ShowVirtualHostCachedHandler showVirtualHostCachedHandler = new ShowVirtualHostCachedHandler(cache);
         nameVirtualHostHandler.setDefaultHandler(nameVirtualHostDefaultHandler);
         nameVirtualHostHandler.addHost("__ping__", pingHandler);
         nameVirtualHostHandler.addHost("__cache__", showVirtualHostCachedHandler);

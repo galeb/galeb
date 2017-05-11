@@ -22,11 +22,15 @@ import io.galeb.router.services.UpdaterService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.galeb.router.handlers.PingHandler.HealthcheckBody.*;
 
+@Component
 public class PingHandler implements HttpHandler {
 
     enum HealthcheckBody {
@@ -43,9 +47,10 @@ public class PingHandler implements HttpHandler {
     private final ExternalDataService externalDataService;
     private final UpdaterService updaterService;
 
+    @Autowired
     public PingHandler(final ManagerClientCache cache,
                        final ExternalDataService externalDataService,
-                       final UpdaterService updaterService) {
+                       @Lazy UpdaterService updaterService) {
         this.cache = cache;
         this.externalDataService = externalDataService;
         this.updaterService = updaterService;

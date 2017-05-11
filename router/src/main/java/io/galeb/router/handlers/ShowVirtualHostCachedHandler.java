@@ -22,7 +22,10 @@ import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerCli
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.StatusCodes;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ShowVirtualHostCachedHandler implements HttpHandler {
 
     private static final String HEADER_SHOW_CACHE = "X-Galeb-Show-Cache";
@@ -30,6 +33,7 @@ public class ShowVirtualHostCachedHandler implements HttpHandler {
     private final Gson gson = new Gson();
     private final ManagerClientCache cache;
 
+    @Autowired
     public ShowVirtualHostCachedHandler(final ManagerClientCache cache) {
         this.cache = cache;
     }

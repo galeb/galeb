@@ -170,7 +170,7 @@ public class Updater {
     }
 
     private void expireHandlers(String virtualhostName) {
-        if ("__ping__".equals(virtualhostName)) return;
+        if ("__ping__".equals(virtualhostName) || "__cache__".equals(virtualhostName)) return;
         if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
             logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
             cleanUpNameVirtualHostHandler(virtualhostName);

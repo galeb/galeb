@@ -9,7 +9,7 @@ Feature: Internal healthcheck support
     When Do GET /
     Then the response status is 200
     And body is not OUTDATED
-    And wait 1000 ms
+    And wait 5000 ms
     And a __ping__ host request to FASTTER backend
     When Do GET /
     Then the response status is 200

@@ -21,9 +21,6 @@ import org.asynchttpclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-
 import static io.galeb.core.logutils.ErrorLogger.logError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -58,16 +55,16 @@ public class HttpClient {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    try {
-                        callBack.onCompleted(null);
-                    } catch (IOException e) {
-                        ErrorLogger.logError(e, this.getClass());
-                    }
+                    callBack.onCompleted(null);
                     super.onThrowable(t);
                 }
             });
         } catch (NullPointerException e) {
             logger.error("Token is NULL (auth problem?)");
+            callBack.onCompleted(null);
+        } catch (Exception e) {
+            ErrorLogger.logError(e, this.getClass());
+            callBack.onCompleted(null);
         }
     }
 
@@ -81,13 +78,13 @@ public class HttpClient {
                 return "";
             }
             return response.getResponseBody();
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (Exception e) {
             logError(e, this.getClass());
         }
         return "";
     }
 
     public interface OnCompletedCallBack {
-        void onCompleted(String body) throws IOException;
+        void onCompleted(String body);
     }
 }

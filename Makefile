@@ -1,4 +1,7 @@
-VERSION=4.0.0
+VERSION=4.0.1
+
+deploy-snapshot:
+	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
 
 galeb-next: clean
 	mvn package -DskipTests

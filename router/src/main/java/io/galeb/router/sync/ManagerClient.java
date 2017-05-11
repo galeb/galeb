@@ -19,7 +19,6 @@ package io.galeb.router.sync;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.enums.SystemEnv;
-import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.sync.structure.Token;
 import org.slf4j.Logger;
@@ -60,7 +59,7 @@ public class ManagerClient {
                         FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
                         resultCallBack.onResult(virtualhosts);
                     } catch (Exception e) {
-                        ErrorLogger.logError(e, this.getClass());
+                        logError(e, this.getClass());
                         resultCallBack.onResult(null);
                     }
                 } else {
@@ -77,11 +76,16 @@ public class ManagerClient {
         if (token == null) {
             String bodyToken = httpClient.getResponseBodyWithAuth(manageruser, managerPass, tokenUrl);
             if (!"".equals(bodyToken)) {
-                Token tokenObj = gson.fromJson(bodyToken, Token.class);
-                if (tokenObj != null) {
-                    token = tokenObj.token;
-                } else {
-                    logError(new RuntimeException("renewToken problem"), this.getClass());
+                try {
+                    Token tokenObj = gson.fromJson(bodyToken, Token.class);
+                    if (tokenObj != null) {
+                        token = tokenObj.token;
+                    } else {
+                        logError(new RuntimeException("renewToken problem"), this.getClass());
+                        return false;
+                    }
+                } catch (Exception e) {
+                    logError(e, this.getClass());
                     return false;
                 }
             }

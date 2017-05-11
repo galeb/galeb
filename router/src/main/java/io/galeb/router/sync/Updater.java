@@ -40,12 +40,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static io.galeb.router.handlers.PoolHandler.PROP_DISCOVERED_MEMBERS_SIZE;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
+    public static final long   WAIT_TIMEOUT  = 10000; // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -60,8 +62,6 @@ public class Updater {
     private int discoveredMembersSize = 1;
     private int newDiscoveredMembersSize = 1;
 
-    private boolean done = false;
-    private long lastDone = 0L;
     private int count = 0;
 
     public Updater(final NameVirtualHostHandler nameVirtualHostHandler,
@@ -74,18 +74,9 @@ public class Updater {
         this.externalDataService = externalDataService;
     }
 
-    public synchronized boolean isDone() {
-        if (lastDone < System.currentTimeMillis() - 30000L) {
-            count = 0;
-            done = true;
-        }
-        return done;
-    }
-
-    public synchronized void sync() {
+    public void sync() {
         newDiscoveredMembersSize = Math.max(externalDataService.members().size(), 1);
-        done = false;
-        lastDone = System.currentTimeMillis();
+        AtomicBoolean wait = new AtomicBoolean(true);
         final ManagerClient.ResultCallBack resultCallBack = result -> {
             FullVirtualhosts virtualhostsFromManager = (FullVirtualhosts) result;
             if (virtualhostsFromManager != null) {
@@ -98,14 +89,19 @@ public class Updater {
                 logger.error("Virtualhosts Empty. Request problem?");
             }
             count = 0;
-            done = true;
             if (discoveredMembersSize != newDiscoveredMembersSize) {
                 logger.warn("DiscoveredMembersSize changed from " + discoveredMembersSize + " to "
                         + newDiscoveredMembersSize + ". Expiring ALL handlers");
             }
             discoveredMembersSize = newDiscoveredMembersSize;
+            wait.set(false);
         };
         managerClient.getVirtualhosts(envName, resultCallBack);
+        // force wait
+        long currentWaitTimeOut = System.currentTimeMillis();
+        while (wait.get()) {
+            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) break;
+        }
     }
 
     private List<VirtualHost> processVirtualhostsAndAliases(final FullVirtualhosts virtualhostsFromManager) {

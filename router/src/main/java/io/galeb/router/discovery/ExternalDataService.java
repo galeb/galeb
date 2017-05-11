@@ -41,5 +41,5 @@ public interface ExternalDataService {
 
     default List<String> members() {
         return Collections.singletonList("myself");
-    };
+    }
 }

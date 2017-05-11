@@ -39,7 +39,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,36 +66,34 @@ public class HttpClientConfigurationMock {
             @Override
             public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {
                 if (url != null && url.startsWith(SystemEnv.MANAGER_URL.getValue() + "/virtualhostscached/")) {
-                    try {
-                        Environment environment = new Environment("desenv");
-                        Project project = new Project("projectX");
-                        VirtualHost virtuahost = new VirtualHost("test.com", environment, project);
-                        Map<String, String> virtualhostProperties = new HashMap<>();
-                        virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*");
-                        virtualhostProperties.put(FULLHASH_PROP, "xxxxxxxxxx");
-                        virtuahost.setProperties(virtualhostProperties);
-                        RuleType ruleType = new RuleType(EnumRuleType.PATH.toString());
-                        Pool pool = new Pool("pool_test");
-                        Target target = new Target("http://127.0.0.1:8080");
-                        Map<String, String> targetProperties = new HashMap<>();
-                        targetProperties.put(PROP_HEALTHY.value(), OK.toString());
-                        target.setProperties(targetProperties);
-                        pool.setTargets(Collections.singleton(target));
-                        BalancePolicyType balancePolicyTypeRR = new BalancePolicyType(HostSelectorLookup.ROUNDROBIN.toString());
-                        BalancePolicy balancePolicyRR = new BalancePolicy(HostSelectorLookup.ROUNDROBIN.toString(), balancePolicyTypeRR);
-                        pool.setBalancePolicy(balancePolicyRR);
-                        Rule rule = new Rule("rule_test", ruleType, pool);
-                        Map<String, String> ruleProperties = new HashMap<>();
-                        ruleProperties.put(RULE_MATCH, "/");
-                        ruleProperties.put(RULE_ORDER, "0");
-                        rule.setProperties(ruleProperties);
-                        virtuahost.setRules(Collections.singleton(rule));
-                        FullVirtualhosts virtualhostsFromManager = new FullVirtualhosts();
-                        virtualhostsFromManager._embedded = new SimpleEmbeddedVirtualhosts();
-                        virtualhostsFromManager._embedded.s = new VirtualHost[1];
-                        virtualhostsFromManager._embedded.s[0] = virtuahost;
-                        callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
-                    } catch (IOException ignore) {}
+                    Environment environment = new Environment("desenv");
+                    Project project = new Project("projectX");
+                    VirtualHost virtuahost = new VirtualHost("test.com", environment, project);
+                    Map<String, String> virtualhostProperties = new HashMap<>();
+                    virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*");
+                    virtualhostProperties.put(FULLHASH_PROP, "xxxxxxxxxx");
+                    virtuahost.setProperties(virtualhostProperties);
+                    RuleType ruleType = new RuleType(EnumRuleType.PATH.toString());
+                    Pool pool = new Pool("pool_test");
+                    Target target = new Target("http://127.0.0.1:8080");
+                    Map<String, String> targetProperties = new HashMap<>();
+                    targetProperties.put(PROP_HEALTHY.value(), OK.toString());
+                    target.setProperties(targetProperties);
+                    pool.setTargets(Collections.singleton(target));
+                    BalancePolicyType balancePolicyTypeRR = new BalancePolicyType(HostSelectorLookup.ROUNDROBIN.toString());
+                    BalancePolicy balancePolicyRR = new BalancePolicy(HostSelectorLookup.ROUNDROBIN.toString(), balancePolicyTypeRR);
+                    pool.setBalancePolicy(balancePolicyRR);
+                    Rule rule = new Rule("rule_test", ruleType, pool);
+                    Map<String, String> ruleProperties = new HashMap<>();
+                    ruleProperties.put(RULE_MATCH, "/");
+                    ruleProperties.put(RULE_ORDER, "0");
+                    rule.setProperties(ruleProperties);
+                    virtuahost.setRules(Collections.singleton(rule));
+                    FullVirtualhosts virtualhostsFromManager = new FullVirtualhosts();
+                    virtualhostsFromManager._embedded = new SimpleEmbeddedVirtualhosts();
+                    virtualhostsFromManager._embedded.s = new VirtualHost[1];
+                    virtualhostsFromManager._embedded.s[0] = virtuahost;
+                    callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
                 }
             }
 

@@ -60,9 +60,7 @@ public class JmxClientService {
                 client = jmxConn.getMBeanServerConnection();
                 enabled.set(true);
             }
-        } catch (Exception ignore) {
-            //
-        }
+        } catch (Exception ignore) {}
     }
 
     public Long getValue(String name) {

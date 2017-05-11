@@ -16,28 +16,18 @@
 
 package io.galeb.router.handlers;
 
-import com.google.gson.Gson;
-import io.galeb.core.entity.VirtualHost;
-import io.galeb.router.discovery.ExternalDataService;
-import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.sync.Updater;
+import io.galeb.router.discovery.ExternalDataService;
+import io.galeb.router.services.UpdaterService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.util.Headers;
-import io.undertow.util.StatusCodes;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static io.galeb.router.handlers.PingHandler.HealthcheckBody.*;
 
 public class PingHandler implements HttpHandler {
-
-    private static final String HEADER_SHOW_CACHE = "X-Galeb-Show-Cache";
 
     enum HealthcheckBody {
         FAIL,
@@ -48,22 +38,17 @@ public class PingHandler implements HttpHandler {
 
     private static final long OBSOLETE_TIME = 10000;
 
-    private final Gson gson = new Gson();
     private final AtomicLong lastPing = new AtomicLong(0L);
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Updater updater;
     private final ManagerClientCache cache;
     private final ExternalDataService externalDataService;
+    private final UpdaterService updaterService;
 
-    private Future<?> taskUpdate = null;
-
-    public PingHandler(final NameVirtualHostHandler nameVirtualHostHandler,
-                       final ManagerClient managerClient,
-                       final ManagerClientCache cache,
-                       final ExternalDataService externalDataService) {
+    public PingHandler(final ManagerClientCache cache,
+                       final ExternalDataService externalDataService,
+                       final UpdaterService updaterService) {
         this.cache = cache;
         this.externalDataService = externalDataService;
-        this.updater = new Updater(nameVirtualHostHandler, managerClient, cache, externalDataService);
+        this.updaterService = updaterService;
     }
 
     @Override
@@ -71,20 +56,15 @@ public class PingHandler implements HttpHandler {
         boolean hasNoUpdate = exchange.getQueryParameters().containsKey("noupdate");
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-        if (exchange.getRequestHeaders().contains(HEADER_SHOW_CACHE)) {
-            showVirtualHostCached(exchange);
-        } else {
-            String statusBody = getStatusBody(hasNoUpdate);
-            exchange.getResponseSender().send(statusBody);
-            if (WORKING.name().equals(statusBody)) {
-                externalDataService.register();
-            }
+        String statusBody = getStatusBody(hasNoUpdate);
+        exchange.getResponseSender().send(statusBody);
+        if (WORKING.name().equals(statusBody)) {
+            externalDataService.register();
+        }
+        if (!hasNoUpdate) {
+            updaterService.sched();
         }
         exchange.endExchange();
-        if (!hasNoUpdate && (taskUpdate == null || updater.isDone() || taskUpdate.isCancelled())) {
-            taskUpdate = null;
-            taskUpdate = executor.submit(updater::sync);
-        }
     }
 
     private String getStatusBody(boolean hasNoUpdate) {
@@ -100,9 +80,4 @@ public class PingHandler implements HttpHandler {
         return hasNoUpdate ? lastPing.get() < currentObsoleteTime : lastPing.getAndSet(System.currentTimeMillis()) < currentObsoleteTime;
     }
 
-    private void showVirtualHostCached(final HttpServerExchange exchange) {
-        VirtualHost virtualhost = cache.get(exchange.getRequestHeaders().get(HEADER_SHOW_CACHE).peekFirst());
-        exchange.setStatusCode(virtualhost != null ? StatusCodes.OK : StatusCodes.NOT_FOUND);
-        exchange.getResponseSender().send(virtualhost != null ? gson.toJson(virtualhost) : "{}");
-    }
 }

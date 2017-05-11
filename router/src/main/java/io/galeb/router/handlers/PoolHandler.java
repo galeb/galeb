@@ -36,9 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
-import static io.galeb.core.enums.EnumHealthState.*;
-import static io.galeb.core.enums.EnumPropHealth.*;
-
 public class PoolHandler implements HttpHandler {
 
     private static final String CHECK_RULE_HEADER  = "X-Check-Pool";

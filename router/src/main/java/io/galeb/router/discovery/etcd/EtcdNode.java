@@ -97,7 +97,7 @@ public class EtcdNode {
     }
 
     public void setExpiration(Date expiration) {
-        this.expiration = expiration;
+        this.expiration = new Date(expiration.getTime());
     }
 
     public List<EtcdNode> getNodes() {

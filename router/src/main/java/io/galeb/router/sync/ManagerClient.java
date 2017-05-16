@@ -51,22 +51,26 @@ public class ManagerClient {
         this.token = null;
     }
 
-    public void getVirtualhosts(String envname, ResultCallBack resultCallBack) {
+    public void getVirtualhosts(String envname, String etag, ResultCallBack resultCallBack) {
         if (renewToken()) {
             HttpClient.OnCompletedCallBack callback = body -> {
                 if (body != null) {
-                    try {
-                        FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
-                        resultCallBack.onResult(virtualhosts);
-                    } catch (Exception e) {
-                        logError(e, this.getClass());
-                        resultCallBack.onResult(null);
+                    if (HttpClient.NOT_MODIFIED.equals(body)) {
+                        resultCallBack.onResult(HttpClient.NOT_MODIFIED);
+                    } else {
+                        try {
+                            FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
+                            resultCallBack.onResult(virtualhosts);
+                        } catch (Exception e) {
+                            logError(e, this.getClass());
+                            resultCallBack.onResult(null);
+                        }
                     }
                 } else {
                     resultCallBack.onResult(null);
                 }
             };
-            httpClient.getResponseBodyWithToken(managerUrl + "/virtualhostscached/" + envname, token, callback);
+            httpClient.getResponseBodyWithToken(managerUrl + "/virtualhostscached/" + envname, token, etag, callback);
         } else {
             logger.error("Token is NULL (request problem?)");
         }

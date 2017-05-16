@@ -17,11 +17,19 @@
 package io.galeb.router.configurations;
 
 import io.galeb.core.entity.*;
+import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import static io.galeb.router.sync.Updater.FULLHASH_PROP;
 
 @Configuration
 public class ManagerClientCacheConfiguration {
@@ -33,6 +41,7 @@ public class ManagerClientCacheConfiguration {
 
     public static class ManagerClientCache {
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
+        private HashAlgorithm sha256 = new HashAlgorithm(HashAlgorithm.HashType.SHA256);
 
         public VirtualHost get(String hostName) {
             return virtualHosts.get(hostName);
@@ -56,6 +65,22 @@ public class ManagerClientCacheConfiguration {
 
         public Set<String> getAll() {
             return virtualHosts.keySet();
+        }
+
+        public synchronized String etag() {
+            String key = virtualHosts.entrySet().stream().map(this::getFullHash)
+                                     .sorted()
+                                     .distinct()
+                                     .collect(Collectors.joining());
+            return sha256.hash(key).asString();
+        }
+
+        private String getFullHash(Map.Entry<String, VirtualHost> e) {
+            return Optional.ofNullable(e.getValue().getProperties().get(FULLHASH_PROP)).orElse("");
+        }
+
+        public List<VirtualHost> values() {
+            return new ArrayList<>(virtualHosts.values());
         }
     }
 }

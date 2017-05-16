@@ -133,7 +133,7 @@ public class EtcdExternalDataService implements ExternalDataService {
                     }
                 }
             }
-        } catch (SocketException e) {
+        } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         }
         String ip = String.join("-", ipList);
@@ -147,7 +147,7 @@ public class EtcdExternalDataService implements ExternalDataService {
         node.setValue(String.valueOf(System.currentTimeMillis()));
         try {
             client.put(node);
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (Exception e) {
             ErrorLogger.logError(e, this.getClass());
         }
     }

@@ -22,6 +22,7 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.util.Cloner;
+import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
@@ -75,32 +76,49 @@ public class Updater {
     }
 
     public void sync() {
+        externalDataService.register();
         newDiscoveredMembersSize = Math.max(externalDataService.members().size(), 1);
         AtomicBoolean wait = new AtomicBoolean(true);
         final ManagerClient.ResultCallBack resultCallBack = result -> {
-            FullVirtualhosts virtualhostsFromManager = (FullVirtualhosts) result;
-            if (virtualhostsFromManager != null) {
-                final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
-                logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
-                cleanup(virtualhosts);
-                virtualhosts.forEach(this::updateCache);
-                logger.info("Processed " + count + " virtualhost(s): Done");
+            if (result instanceof String && HttpClient.NOT_MODIFIED.equals(result)) {
+                logger.info("Environment " + envName + ": " + result);
+                if (newDiscoveredMembersSize != discoveredMembersSize) {
+                    cache.values().forEach(virtualHost -> {
+                        applyPropDiscoveryMembersSize(virtualHost);
+                        cache.put(virtualHost.getName(), virtualHost);
+                    });
+                }
             } else {
-                logger.error("Virtualhosts Empty. Request problem?");
+                FullVirtualhosts virtualhostsFromManager = result instanceof FullVirtualhosts ? (FullVirtualhosts) result : null;
+                if (virtualhostsFromManager != null) {
+                    final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
+                    logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
+                    cleanup(virtualhosts);
+                    virtualhosts.forEach(this::updateCache);
+                    logger.info("Processed " + count + " virtualhost(s): Done");
+                } else {
+                    logger.error("Virtualhosts Empty. Request problem?");
+                }
             }
             count = 0;
             if (discoveredMembersSize != newDiscoveredMembersSize) {
                 logger.warn("DiscoveredMembersSize changed from " + discoveredMembersSize + " to "
                         + newDiscoveredMembersSize + ". Expiring ALL handlers");
+                discoveredMembersSize = newDiscoveredMembersSize;
             }
-            discoveredMembersSize = newDiscoveredMembersSize;
             wait.set(false);
         };
-        managerClient.getVirtualhosts(envName, resultCallBack);
+        String etag = cache.etag();
+        managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();
         while (wait.get()) {
             if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) break;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                ErrorLogger.logError(e, this.getClass());
+            }
         }
     }
 

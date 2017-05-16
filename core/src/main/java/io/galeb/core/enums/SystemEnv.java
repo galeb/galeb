@@ -61,7 +61,7 @@ public enum SystemEnv {
     /**
      * Broker Url Connection
      */
-    BROKER_CONN           ("BROKER_CONN",           "tcp://localhost:61616?protocols=Core"),
+    BROKER_CONN           ("BROKER_CONN",           "tcp://localhost:61616?blockOnDurableSend=false&consumerWindowSize=0&protocols=Core"),
 
     /**
      * Broker user

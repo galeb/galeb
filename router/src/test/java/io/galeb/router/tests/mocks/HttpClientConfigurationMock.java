@@ -64,7 +64,7 @@ public class HttpClientConfigurationMock {
         return new HttpClient() {
 
             @Override
-            public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {
+            public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
                 if (url != null && url.startsWith(SystemEnv.MANAGER_URL.getValue() + "/virtualhostscached/")) {
                     Environment environment = new Environment("desenv");
                     Project project = new Project("projectX");

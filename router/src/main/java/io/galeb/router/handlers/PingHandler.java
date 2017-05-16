@@ -44,15 +44,12 @@ public class PingHandler implements HttpHandler {
 
     private final AtomicLong lastPing = new AtomicLong(0L);
     private final ManagerClientCache cache;
-    private final ExternalDataService externalDataService;
     private final UpdaterService updaterService;
 
     @Autowired
     public PingHandler(final ManagerClientCache cache,
-                       final ExternalDataService externalDataService,
                        @Lazy UpdaterService updaterService) {
         this.cache = cache;
-        this.externalDataService = externalDataService;
         this.updaterService = updaterService;
     }
 
@@ -63,9 +60,6 @@ public class PingHandler implements HttpHandler {
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
         String statusBody = getStatusBody(hasNoUpdate);
         exchange.getResponseSender().send(statusBody);
-        if (WORKING.name().equals(statusBody)) {
-            externalDataService.register();
-        }
         if (!hasNoUpdate) {
             updaterService.sched();
         }

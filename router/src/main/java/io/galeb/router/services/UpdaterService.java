@@ -41,7 +41,7 @@ public class UpdaterService {
         updater = new Updater(nameVirtualHostHandler, managerClient, cache, externalDataService);
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 5000)
     public void execute() {
         if (executeSync.getAndSet(false)) {
             updater.sync();

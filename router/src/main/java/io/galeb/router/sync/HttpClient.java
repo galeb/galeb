@@ -27,6 +27,8 @@ import static org.asynchttpclient.Dsl.config;
 
 public class HttpClient {
 
+    public static final String NOT_MODIFIED = "NOT_MODIFIED";
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final AsyncHttpClient asyncHttpClient;
@@ -42,14 +44,19 @@ public class HttpClient {
                 .setMaxConnectionsPerHost(100).build());
     }
 
-    public void getResponseBodyWithToken(String url, String token, OnCompletedCallBack callBack) {
+    public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
+                    .setHeader("If-None-Match", etag)
                     .setHeader("x-auth-token", token);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
                 public Response onCompleted(Response response) throws Exception {
-                    callBack.onCompleted(response.getResponseBody());
+                    if (response.getStatusCode() == 304) {
+                        callBack.onCompleted(NOT_MODIFIED);
+                    } else {
+                        callBack.onCompleted(response.getResponseBody());
+                    }
                     return response;
                 }
 

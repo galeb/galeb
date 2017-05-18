@@ -17,7 +17,6 @@
 package io.galeb.router.services;
 
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.sync.Updater;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -36,9 +35,8 @@ public class UpdaterService {
     @Autowired
     public UpdaterService(final ManagerClient managerClient,
                           final ManagerClientCache cache,
-                          final ExternalDataService externalDataService,
                           final NameVirtualHostHandler nameVirtualHostHandler) {
-        updater = new Updater(nameVirtualHostHandler, managerClient, cache, externalDataService);
+        updater = new Updater(nameVirtualHostHandler, managerClient, cache);
     }
 
     @Scheduled(fixedDelay = 5000)

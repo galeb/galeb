@@ -121,7 +121,7 @@ public class PoolHandler implements HttpHandler {
                 connPerThread = Integer.parseInt(propConnPerThread);
             } catch (NumberFormatException ignore) {}
         }
-        float discoveryMembersSize = Float.parseFloat(pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE));
+        float discoveryMembersSize = Math.max(Float.parseFloat(pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE)), 1.0f);
         connPerThread = Math.round((float) connPerThread / discoveryMembersSize);
         return connPerThread;
     }

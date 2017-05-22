@@ -62,11 +62,13 @@ public class ManagerClient {
                             FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
                             resultCallBack.onResult(virtualhosts);
                         } catch (Exception e) {
+                            resetToken();
                             logError(e, this.getClass());
                             resultCallBack.onResult(null);
                         }
                     }
                 } else {
+                    resetToken();
                     resultCallBack.onResult(null);
                 }
             };

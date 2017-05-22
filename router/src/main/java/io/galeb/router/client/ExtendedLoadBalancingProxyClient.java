@@ -286,7 +286,9 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
                 } else if (available == FULL && full == null) {
                     full = selected;
                 } else if ((available == PROBLEM || available == FULL_QUEUE) && problem == null) {
-                    logger.warn("Host " + selected.getUri().toString() + " ignored: PROBLEM (scheduled to retry after " + problemServerRetry + " seconds)");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Host " + selected.getUri().toString() + " ignored: PROBLEM (scheduled to retry after " + problemServerRetry + " seconds)");
+                    }
                     problem = selected;
                 }
             }

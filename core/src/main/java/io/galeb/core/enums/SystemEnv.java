@@ -29,9 +29,9 @@ public enum SystemEnv {
     // COMMON
 
     /**
-     * Cluster ID (same as Farm ID).
+     * Group ID (same as color and/or cluster_id, if applicable).
      */
-    CLUSTER_ID            ("CLUSTER_ID",            "GALEB"),
+    GROUP_ID              ("GROUP_ID",              "UNDEF"),
 
     /**
      * Syslog server host.
@@ -43,20 +43,23 @@ public enum SystemEnv {
      */
     SYSLOG_PORT           ("SYSLOG_PORT",           514),
 
-    /**
-     * Galeb Manager URL
-     */
-    MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
+
+    // HEALTHCHECKER
 
     /**
-     * Galeb Manager user
+     * Service healthchecker port.
      */
-    MANAGER_USER          ("MANAGER_USER",          "user"),
+    HEALTH_PORT           ("HEALTH_PORT",           7000),
 
     /**
-     * Galeb Manager password
+     * AMQP Queue name
      */
-    MANAGER_PASS          ("MANAGER_PASS",          "password"),
+    QUEUE_NAME            ("QUEUE_NAME",            "galeb-health"),
+
+    /**
+     * Tester request timeout (ms)
+     */
+    TEST_CONN_TIMEOUT     ("TEST_CONN_TIMEOUT",     2000),
 
     /**
      * Broker Url Connection
@@ -84,24 +87,6 @@ public enum SystemEnv {
     JMS_TIMEOUT           ("JMS_TIMEOUT",           30000),
 
 
-    // HEALTHCHECKER
-
-    /**
-     * Service healthchecker port.
-     */
-    HEALTH_PORT           ("HEALTH_PORT",           7000),
-
-    /**
-     * AMQP Queue name
-     */
-    QUEUE_NAME            ("QUEUE_NAME",            "galeb-health"),
-
-    /**
-     * Tester request timeout (ms)
-     */
-    TEST_CONN_TIMEOUT     ("TEST_CONN_TIMEOUT",     2000),
-
-
     // ROUTER
 
     /**
@@ -112,7 +97,22 @@ public enum SystemEnv {
     /**
      * Galeb Manager Farm -> Environment Name
      */
-    ENVIRONMENT_NAME     ("ENVIRONMENT_NAME",       ""),
+    ENVIRONMENT_NAME      ("ENVIRONMENT_NAME",       ""),
+
+    /**
+     * Galeb Manager URL
+     */
+    MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
+
+    /**
+     * Galeb Manager user
+     */
+    MANAGER_USER          ("MANAGER_USER",          "user"),
+
+    /**
+     * Galeb Manager password
+     */
+    MANAGER_PASS          ("MANAGER_PASS",          "password"),
 
     /**
      * Etcd API full url (schema+host:port).
@@ -127,7 +127,7 @@ public enum SystemEnv {
     /**
      * Statsd prefix.
      */
-    STATSD_PREFIX         ("STATSD_PREFIX",         CLUSTER_ID.getValue()),
+    STATSD_PREFIX         ("STATSD_PREFIX",         "galeb"),
 
     /**
      * Statsd server host.

@@ -1,4 +1,4 @@
-VERSION=4.0.2
+VERSION=4.0.3
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local

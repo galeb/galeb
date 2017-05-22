@@ -17,7 +17,6 @@
 package io.galeb.router.handlers;
 
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.discovery.ExternalDataService;
 import io.galeb.router.services.UpdaterService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;

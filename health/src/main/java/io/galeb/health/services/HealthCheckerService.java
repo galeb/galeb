@@ -41,15 +41,18 @@ import static io.galeb.core.enums.EnumPropHealth.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
+@SuppressWarnings("FieldCanBeLocal")
 @Service
 public class HealthCheckerService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final String connectionTimeout = SystemEnv.TEST_CONN_TIMEOUT.getValue();
+    private final boolean keepAlive                   = Boolean.parseBoolean(SystemEnv.TEST_KEEPALIVE.getValue());
+    private final int     connectionTimeout           = Integer.parseInt(SystemEnv.TEST_CONN_TIMEOUT.getValue());
+    private final int     pooledConnectionIdleTimeout = Integer.parseInt(SystemEnv.TEST_POOLED_IDLE_TIMEOUT.getValue());
+    private final int     maxConnectionsPerHost       = Integer.parseInt(SystemEnv.TEST_MAXCONN_PER_HOST.getValue());
 
     private final CallBackQueue callBackQueue;
-
     private final AsyncHttpClient asyncHttpClient;
 
     @Autowired
@@ -58,10 +61,10 @@ public class HealthCheckerService {
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
-                .setKeepAlive(false)
-                .setConnectTimeout(Integer.parseInt(connectionTimeout))
-                .setPooledConnectionIdleTimeout(1)
-                .setMaxConnectionsPerHost(1).build());
+                .setKeepAlive(keepAlive)
+                .setConnectTimeout(connectionTimeout)
+                .setPooledConnectionIdleTimeout(pooledConnectionIdleTimeout)
+                .setMaxConnectionsPerHost(maxConnectionsPerHost).build());
     }
 
     @SuppressWarnings("unused")

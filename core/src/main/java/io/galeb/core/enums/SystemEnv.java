@@ -49,42 +49,57 @@ public enum SystemEnv {
     /**
      * Service healthchecker port.
      */
-    HEALTH_PORT           ("HEALTH_PORT",           7000),
+    HEALTH_PORT              ("HEALTH_PORT",               7000),
 
     /**
      * AMQP Queue name
      */
-    QUEUE_NAME            ("QUEUE_NAME",            "galeb-health"),
+    QUEUE_NAME               ("QUEUE_NAME",               "galeb-health"),
 
     /**
      * Tester request timeout (ms)
      */
-    TEST_CONN_TIMEOUT     ("TEST_CONN_TIMEOUT",     2000),
+    TEST_CONN_TIMEOUT        ("TEST_CONN_TIMEOUT",        2000),
+
+    /**
+     * Tester request timeout (ms)
+     */
+    TEST_KEEPALIVE           ("TEST_KEEPALIVE",           true),
+
+    /**
+     * Tester pooled connection idle timeout (ms)
+     */
+    TEST_POOLED_IDLE_TIMEOUT ("TEST_POOLED_IDLE_TIMEOUT", 5),
+
+    /**
+     * Tester max conn per host
+     */
+    TEST_MAXCONN_PER_HOST    ("TEST_MAXCONN_PER_HOST",    100),
 
     /**
      * Broker Url Connection
      */
-    BROKER_CONN           ("BROKER_CONN",           "tcp://localhost:61616?blockOnDurableSend=false&consumerWindowSize=0&protocols=Core"),
+    BROKER_CONN              ("BROKER_CONN",              "tcp://localhost:61616?blockOnDurableSend=false&consumerWindowSize=0&protocols=Core"),
 
     /**
      * Broker user
      */
-    BROKER_USER           ("BROKER_USER",           "guest"),
+    BROKER_USER              ("BROKER_USER",              "guest"),
 
     /**
      * Broker password
      */
-    BROKER_PASS           ("BROKER_PASS",           "guest"),
+    BROKER_PASS              ("BROKER_PASS",              "guest"),
 
     /**
      * Enable JMS HA
      */
-    BROKER_HA             ("BROKER_HA",             Boolean.FALSE),
+    BROKER_HA                ("BROKER_HA",                Boolean.FALSE),
 
     /**
      * Set message's lifetime (in milliseconds) of the message when sending.
      */
-    JMS_TIMEOUT           ("JMS_TIMEOUT",           30000),
+    JMS_TIMEOUT              ("JMS_TIMEOUT",              30000),
 
 
     // ROUTER

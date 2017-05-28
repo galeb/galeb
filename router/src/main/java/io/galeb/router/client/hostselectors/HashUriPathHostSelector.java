@@ -16,34 +16,19 @@
 
 package io.galeb.router.client.hostselectors;
 
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
-import io.galeb.router.client.hostselectors.consistenthash.ConsistentHash;
-import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
 import io.undertow.server.HttpServerExchange;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import java.nio.charset.Charset;
 
-public class HashUriPathHostSelector extends ClientStatisticsMarker implements HashHostSelector {
+import static com.google.common.hash.Hashing.consistentHash;
+import static com.google.common.hash.Hashing.sipHash24;
 
-    private final HashAlgorithm hashAlgorithm = new HashAlgorithm(HashAlgorithm.HashType.valueOf(SystemEnv.HASH_ALGORITHM.getValue()));
-    private final int numReplicas = Integer.parseInt(SystemEnv.HASH_NUM_REPLICAS.getValue());
-    private final ConsistentHash<Integer> consistentHash = new ConsistentHash<>(hashAlgorithm, numReplicas, Collections.emptyList());
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+public class HashUriPathHostSelector extends ClientStatisticsMarker implements HostSelector {
 
     @Override
     public int selectHost(final Host[] availableHosts, final HttpServerExchange exchange) {
-        if (!initialized.getAndSet(true)) {
-            final LinkedHashSet<Integer> listPos = convertToMapStream(availableHosts)
-                                                    .map(Map.Entry::getKey)
-                                                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            consistentHash.rebuild(hashAlgorithm, numReplicas, listPos);
-        }
-        int pos = consistentHash.get(getKey(exchange));
+        int pos = consistentHash(sipHash24().hashString(getKey(exchange), Charset.defaultCharset()), availableHosts.length);
         stamp(availableHosts[pos], exchange);
         return pos;
     }
@@ -52,9 +37,4 @@ public class HashUriPathHostSelector extends ClientStatisticsMarker implements H
         return exchange.getRelativePath();
     }
 
-    // Test only
-    @Override
-    public synchronized void reset() {
-        initialized.set(false);
-    }
 }

@@ -17,10 +17,10 @@
 package io.galeb.router.configurations;
 
 import io.galeb.core.entity.*;
-import io.galeb.router.client.hostselectors.consistenthash.HashAlgorithm;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static com.google.common.hash.Hashing.sha256;
 import static io.galeb.router.sync.Updater.FULLHASH_PROP;
 
 @Configuration
@@ -41,7 +42,6 @@ public class ManagerClientCacheConfiguration {
 
     public static class ManagerClientCache {
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
-        private HashAlgorithm sha256 = new HashAlgorithm(HashAlgorithm.HashType.SHA256);
 
         public VirtualHost get(String hostName) {
             return virtualHosts.get(hostName);
@@ -72,7 +72,7 @@ public class ManagerClientCacheConfiguration {
                                      .sorted()
                                      .distinct()
                                      .collect(Collectors.joining());
-            return sha256.hash(key).asString();
+            return sha256().newHasher().putString(key, Charset.defaultCharset()).hash().toString();
         }
 
         private String getFullHash(Map.Entry<String, VirtualHost> e) {

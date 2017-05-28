@@ -233,16 +233,6 @@ public enum SystemEnv {
     IGNORE_XFORWARDED_FOR ("IGNORE_XFORWARDED_FOR", Boolean.FALSE),
 
     /**
-     * Consistent Hash number of replicas (HashHostSelector exclusive use).
-     */
-    HASH_NUM_REPLICAS     ("HASH_NUM_REPLICAS",     100),
-
-    /**
-     * Consistent Hash Algorithm (HashHostSelector exclusive use).
-     */
-    HASH_ALGORITHM        ("HASH_ALGORITHM",        "MURMUR3_32"),
-
-    /**
      * External Data provider tcp max connections
      */
     EXTERNALDATA_MAXCONN  ("EXTERNALDATA_MAXCONN",  10),

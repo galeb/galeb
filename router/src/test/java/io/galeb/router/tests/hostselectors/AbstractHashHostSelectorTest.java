@@ -17,7 +17,6 @@
 package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
-import io.galeb.router.client.hostselectors.HashHostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -36,7 +35,7 @@ import static org.junit.Assert.assertThat;
 
 abstract class AbstractHashHostSelectorTest extends AbstractHostSelectorTest {
 
-    void doRandomTest(double errorPercentMax, double limitOfNotHitsPercent, int numPopulation, HashHostSelector hashHostSelector) {
+    void doRandomTest(double errorPercentMax, double limitOfNotHitsPercent, int numPopulation) {
         final HttpServerExchange exchange = new HttpServerExchange(null);
         final Host[] newHosts = numPopulation < hosts.length ? Arrays.copyOf(hosts, numPopulation) : hosts;
         final Map<Integer, String> remains = IntStream.rangeClosed(0, newHosts.length - 1).boxed().collect(Collectors.toMap(x -> x, x -> ""));
@@ -55,8 +54,6 @@ abstract class AbstractHashHostSelectorTest extends AbstractHostSelectorTest {
             mapOfResults.entrySet().stream().mapToDouble(Map.Entry::getValue).forEach(statisticsOfResults::addValue);
             double errorPercent = (statisticsOfResults.getStandardDeviation() / numPopulation) * 100;
             assertThat(errorPercent, lessThan(errorPercentMax));
-
-            hashHostSelector.reset();
         }
         final List<Integer> listOfNotHit = remains.entrySet().stream().map(Map.Entry::getKey).collect(toList());
         assertThat(listOfNotHit.size(), lessThanOrEqualTo((int) (newHosts.length * (limitOfNotHitsPercent / 100))));

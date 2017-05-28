@@ -18,6 +18,7 @@ package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.HashUriPathHostSelector;
+import io.galeb.router.client.hostselectors.HostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.junit.Test;
 
@@ -25,14 +26,14 @@ import java.util.UUID;
 
 public class HashUriPathHostSelectorTest extends AbstractHashHostSelectorTest {
 
-    private final HashUriPathHostSelector hashUriPathHostSelector = new HashUriPathHostSelector();
+    private final HostSelector hashUriPathHostSelector = new HashUriPathHostSelector();
 
     @Test
     public void testSelectHost() throws Exception {
         double errorPercentMax = 10.0;
         double limitOfNotHitsPercent = 5.0;
         int numPopulation = 20;
-        doRandomTest(errorPercentMax, limitOfNotHitsPercent, numPopulation, hashUriPathHostSelector);
+        doRandomTest(errorPercentMax, limitOfNotHitsPercent, numPopulation);
     }
 
     @Override

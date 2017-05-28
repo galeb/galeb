@@ -18,6 +18,7 @@ package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
 import io.galeb.router.client.hostselectors.HashSourceIpHostSelector;
+import io.galeb.router.client.hostselectors.HostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.junit.Test;
 
@@ -25,14 +26,14 @@ import java.net.InetSocketAddress;
 
 public class HashSourceIpHostSelectorTest extends AbstractHashHostSelectorTest {
 
-    private final HashSourceIpHostSelector hashSourceIpHostSelector = new HashSourceIpHostSelector();
+    private final HostSelector hashSourceIpHostSelector = new HashSourceIpHostSelector();
 
     @Test
     public void testSelectHost() throws Exception {
         double errorPercentMax = 1.0;
         double limitOfNotHitsPercent = 5.0;
         int numPopulation = 1000;
-        doRandomTest(errorPercentMax, limitOfNotHitsPercent, numPopulation, hashSourceIpHostSelector);
+        doRandomTest(errorPercentMax, limitOfNotHitsPercent, numPopulation);
     }
 
     @Override

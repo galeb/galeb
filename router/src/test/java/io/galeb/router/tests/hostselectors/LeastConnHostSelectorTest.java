@@ -17,6 +17,8 @@
 package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.client.hostselectors.StrictLeastConnHostSelector;
 import org.junit.Test;
 
@@ -24,15 +26,18 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+import static io.galeb.router.client.hostselectors.HostSelectorLookup.STRICT_LEASTCONN;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class LeastConnHostSelectorTest extends AbstractHostSelectorTest {
 
-    private final StrictLeastConnHostSelector leastConnHostSelector = new StrictLeastConnHostSelector();
+    private final HostSelector leastConnHostSelector = HostSelectorLookup.getHostSelector(getName(StrictLeastConnHostSelector.class));
 
     @Test
     public void testSelectHost() throws Exception {
+        assertThat(leastConnHostSelector, instanceOf(StrictLeastConnHostSelector.class));
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
             int hostsLength = new Random().nextInt(NUM_HOSTS);
             IntStream.range(0, hostsLength - 1).forEach(x -> {

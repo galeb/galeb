@@ -138,15 +138,13 @@ public class PoolHandler implements HttpHandler {
     private HostSelector defineHostSelector() {
         BalancePolicy hostSelectorName = pool.getBalancePolicy();
         if (hostSelectorName != null) {
-            try {
-                return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
-            } catch (InstantiationException | IllegalAccessException ignore) {}
+            return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
         }
         return new RoundRobinHostSelector();
     }
 
     private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
-        pool.getTargets().stream().forEach(target -> {
+        pool.getTargets().forEach(target -> {
             String value = target.getName();
             URI uri = URI.create(target.getName());
             proxyClient.addHost(uri);

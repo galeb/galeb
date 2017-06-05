@@ -18,6 +18,7 @@ package io.galeb.router.tests.client;
 
 import io.galeb.core.so.Info;
 import io.galeb.router.services.JmxReporterService;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -51,7 +52,7 @@ public class JmxClientService {
     private MBeanServerConnection client;
 
     @PostConstruct
-    public void start() throws Exception {
+    public void start() {
         try {
             String jmxUrl = ConnectorAddressLink.importFrom(Info.getPid());
             if (jmxUrl != null) {
@@ -60,7 +61,11 @@ public class JmxClientService {
                 client = jmxConn.getMBeanServerConnection();
                 enabled.set(true);
             }
-        } catch (Exception ignore) {}
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(ExceptionUtils.getStackTrace(e));
+            }
+        }
     }
 
     public Long getValue(String name) {

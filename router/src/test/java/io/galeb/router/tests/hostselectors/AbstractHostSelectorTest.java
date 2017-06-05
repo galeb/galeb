@@ -17,6 +17,7 @@
 package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
+import io.galeb.router.client.hostselectors.HostSelector;
 import io.undertow.server.HttpServerExchange;
 import org.junit.Before;
 import org.mockito.Mockito;
@@ -42,6 +43,10 @@ public abstract class AbstractHostSelectorTest {
             when(host.getOpenConnection()).thenReturn(x);
             hosts[x] = host;
         }
+    }
+
+    String getName(Class<? extends HostSelector> klazz) {
+        return klazz.getSimpleName().replaceAll("HostSelector", "");
     }
 
 }

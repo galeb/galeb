@@ -16,6 +16,11 @@
 
 package io.galeb.router.client.hostselectors;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +34,8 @@ public class HostSelectorLookup {
     public static final HostSelectorLookup HASH_SOURCEIP    = new HostSelectorLookup("HashSourceIp",    HashSourceIpHostSelector.class);
     public static final HostSelectorLookup HASH_URIPATH     = new HostSelectorLookup("HashUriPath",     HashUriPathHostSelector.class);
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostSelectorLookup.class);
+
     private final String name;
     private final Class<? extends HostSelector> klazz;
 
@@ -38,8 +45,8 @@ public class HostSelectorLookup {
         hostSelectorMap.put(name, klazz);
     }
 
-    public HostSelector getHostSelector() throws IllegalAccessException, InstantiationException {
-        return klazz.newInstance();
+    public HostSelector getHostSelector() throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        return klazz.getDeclaredConstructor().newInstance();
     }
 
     @Override
@@ -47,9 +54,21 @@ public class HostSelectorLookup {
         return name;
     }
 
-    public static HostSelector getHostSelector(String name) throws InstantiationException, IllegalAccessException {
+    public static HostSelector getHostSelector(String name) {
         Class<? extends HostSelector> hostSelectorClass = hostSelectorMap.get(name);
-        if (hostSelectorClass == null) return ROUNDROBIN.getHostSelector();
-        return hostSelectorClass.newInstance();
+        if (hostSelectorClass == null) {
+            LOGGER.warn("HostSelector " + name + " not found. Using default.");
+            return defaultHostSelector();
+        }
+        try {
+            return hostSelectorClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            LOGGER.error(ExceptionUtils.getStackTrace(e));
+            return defaultHostSelector();
+        }
+    }
+
+    private static HostSelector defaultHostSelector() {
+        return new RoundRobinHostSelector();
     }
 }

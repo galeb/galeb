@@ -16,20 +16,24 @@
 
 package io.galeb.router.tests.hostselectors;
 
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
 import org.junit.Test;
 
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class RoundRobinHostSelectorTest extends AbstractHostSelectorTest {
 
-    private final RoundRobinHostSelector roundRobinHostSelector = new RoundRobinHostSelector();
+    private final HostSelector roundRobinHostSelector = HostSelectorLookup.getHostSelector(getName(RoundRobinHostSelector.class));
 
     @Test
     public void testSelectHost() throws Exception {
+        assertThat(roundRobinHostSelector, instanceOf(RoundRobinHostSelector.class));
         int loopFactor = 100;
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
             int loopLimit = (int) (NUM_HOSTS * Math.random() * loopFactor);
@@ -37,7 +41,7 @@ public class RoundRobinHostSelectorTest extends AbstractHostSelectorTest {
                 long result = roundRobinHostSelector.selectHost(hosts, commonExchange);
                 assertThat(result, equalTo((long) x % NUM_HOSTS));
             });
-            roundRobinHostSelector.reset();
+            ((RoundRobinHostSelector)roundRobinHostSelector).reset();
         }
     }
 } 

@@ -44,7 +44,6 @@ import org.xnio.ssl.XnioSsl;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -336,10 +335,12 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         Arrays.sort(newHosts, Host::compareTo);
     }
 
+    @Override
     public boolean isHostsEmpty() {
         return hosts.length == 0;
     }
 
+    @Override
     public synchronized void removeAllHosts() {
         Arrays.stream(hosts).map(Host::getUri).forEach(this::removeHost);
     }

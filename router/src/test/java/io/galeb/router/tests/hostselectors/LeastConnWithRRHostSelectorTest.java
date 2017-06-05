@@ -17,6 +17,8 @@
 package io.galeb.router.tests.hostselectors;
 
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.client.hostselectors.LeastConnWithRRHostSelector;
 import org.junit.Test;
 
@@ -25,23 +27,25 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class LeastConnWithRRHostSelectorTest extends AbstractHostSelectorTest {
 
-    private final LeastConnWithRRHostSelector leastConnWithRRHostSelector = new LeastConnWithRRHostSelector();
+    private final HostSelector leastConnWithRRHostSelector = HostSelectorLookup.getHostSelector("LeastConn");
 
     @Test
     public void testSelectHost() throws Exception {
+        assertThat(leastConnWithRRHostSelector, instanceOf(LeastConnWithRRHostSelector.class));
         for (int retry = 1; retry <= NUM_RETRIES; retry++) {
             int hostsLength = new Random().nextInt(NUM_HOSTS);
-            final long limit = (int) Math.ceil((float) hostsLength * leastConnWithRRHostSelector.getCuttingLine());
+            final long limit = (int) Math.ceil((float) hostsLength * ((LeastConnWithRRHostSelector)leastConnWithRRHostSelector).getCuttingLine());
             IntStream.range(0, hostsLength - 1).forEach(x -> {
                 final Host[] newHosts = Arrays.copyOf(hosts, hostsLength);
                 long result = leastConnWithRRHostSelector.selectHost(newHosts, commonExchange);
                 assertThat(result, equalTo(x % limit));
             });
-            leastConnWithRRHostSelector.reset();
+            ((LeastConnWithRRHostSelector)leastConnWithRRHostSelector).reset();
         }
     }
 } 

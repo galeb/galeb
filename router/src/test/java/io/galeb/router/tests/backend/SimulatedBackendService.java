@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 @Service
 public class SimulatedBackendService {
@@ -37,7 +38,7 @@ public class SimulatedBackendService {
         FAST(exchange -> exchange.getResponseSender().send("A")),
         SLOW(exchange -> { Thread.sleep(5000); ResponseCodeHandler.HANDLE_200.handleRequest(exchange);}),
         HUGE(exchange -> {
-            final byte[] bytes = "A".getBytes();
+            final byte[] bytes = "A".getBytes(Charset.defaultCharset());
             int count = 1024 * 1024 * 100; // 100Mb
             final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bytes.length * count);
             while (byteBuffer.hasRemaining()) byteBuffer.put(bytes);
@@ -45,11 +46,11 @@ public class SimulatedBackendService {
         });
 
         private final HttpHandler handler;
-        HttpHandler getHandler() {
+        final HttpHandler getHandler() {
             return handler;
         }
 
-        ResponseBehavior(HttpHandler handler) {
+        ResponseBehavior(final HttpHandler handler) {
             this.handler = handler;
         }
     }

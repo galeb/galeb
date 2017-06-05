@@ -53,6 +53,7 @@ public class HttpClient {
                 .setMaxConnectionsPerHost(100).build());
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)

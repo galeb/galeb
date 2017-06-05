@@ -67,7 +67,7 @@ public class HealthCheckerService {
                 .setMaxConnectionsPerHost(maxConnectionsPerHost).build());
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"FutureReturnValueIgnored", "unused"})
     @JmsListener(destination = "galeb-health", concurrency = "5-5")
     public void check(String targetStr) throws ExecutionException, InterruptedException {
         final Target target = new Gson().fromJson(targetStr, Target.class);

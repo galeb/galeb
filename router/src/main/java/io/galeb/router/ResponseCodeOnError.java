@@ -39,8 +39,8 @@ public enum ResponseCodeOnError {
         public static final HttpString X_GALEB_ERROR = tryFromString("X-Galeb-Error");
     }
 
-    private String message;
-    private int statusCode;
+    private final String message;
+    private final int statusCode;
 
     ResponseCodeOnError(final String message, final int statusCode) {
         this.message = message;

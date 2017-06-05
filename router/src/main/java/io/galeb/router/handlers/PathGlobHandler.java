@@ -20,10 +20,13 @@
  */
 package io.galeb.router.handlers;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
@@ -85,7 +88,7 @@ public class PathGlobHandler implements HttpHandler {
     }
 
     public synchronized boolean contains(final String path) {
-        return paths.containsKey(new PathOrdered(path, 0));
+        return paths.entrySet().stream().anyMatch(e -> e.getKey().getPath().equals(path));
     }
 
     public synchronized boolean addPath(final String path, int order, final HttpHandler handler) {
@@ -93,7 +96,12 @@ public class PathGlobHandler implements HttpHandler {
     }
 
     public synchronized boolean removePath(final String path) {
-        return paths.remove(new PathOrdered(path, 0)) == null;
+        final List<PathOrdered> listOfpaths = paths.entrySet().stream()
+                .map(Map.Entry::getKey)
+                .filter(p -> p.getPath().equals(path))
+                .collect(Collectors.toList());
+        listOfpaths.forEach(paths::remove);
+        return !listOfpaths.isEmpty();
     }
 
     public PathGlobHandler setDefaultHandler(HttpHandler defaultHandler) {
@@ -141,8 +149,14 @@ public class PathGlobHandler implements HttpHandler {
 
         @Override
         public int compareTo(final PathOrdered other) {
-            if (other == null) return 1;
-            return this.order < other.order ? -1 : this.order > other.order ? 1 : 0;
+            if (other == null) return -1;
+            return this.internalId().compareTo(other.internalId());
+        }
+
+        private String internalId() {
+            int maskSize = (int) Math.pow(Integer.MAX_VALUE, 0.1) + 10;
+            final String orderFormated = String.format("%0" + maskSize + "d", order);
+            return orderFormated + path;
         }
     }
 }

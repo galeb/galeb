@@ -85,6 +85,7 @@ public class Target extends AbstractEntity<Target> implements WithFarmID<Target>
         return this;
     }
 
+    @Override
     public Pool getParent() {
         return parent;
     }

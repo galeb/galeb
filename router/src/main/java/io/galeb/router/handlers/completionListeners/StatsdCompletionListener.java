@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StatsdCompletionListener implements ExchangeCompletionListener, ProcessorLocalStatusCode {
+public class StatsdCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final String UNDEF = "UNDEF";
 
@@ -50,7 +50,7 @@ public class StatsdCompletionListener implements ExchangeCompletionListener, Pro
             String virtualhost = exchange.getHostName();
             virtualhost = virtualhost != null ? virtualhost : UNDEF;
             String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
-            targetUri = targetUri != null ? targetUri : virtualhost + "__" + UNDEF;
+            targetUri = targetUri != null ? targetUri : virtualhost + "__" + extractUpstreamField(exchange.getResponseHeaders(), targetUri);
             final boolean targetIsUndef = UNDEF.equals(targetUri);
 
             final Integer statusCode = exchange.getStatusCode();

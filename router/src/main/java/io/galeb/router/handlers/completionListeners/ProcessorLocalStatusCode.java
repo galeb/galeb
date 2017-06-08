@@ -48,16 +48,18 @@ abstract class ProcessorLocalStatusCode {
             statusLogged = StatusCodes.BAD_GATEWAY + OFFSET_LOCAL_ERROR;
 
         } else if (backend == null) {
-
             statusLogged = statusCode + OFFSET_LOCAL_ERROR;
-
         }
 
         return statusLogged;
     }
 
     String extractUpstreamField(final HeaderMap responseHeaders, String tempRealDest) {
-        final String headerGalebError = responseHeaders != null ? responseHeaders.getFirst(X_GALEB_ERROR) : null;
-        return tempRealDest != null ? tempRealDest : (headerGalebError != null ? headerGalebError : UNKNOWN_TARGET);
+        String upstreamField = tempRealDest;
+        if (upstreamField == null) {
+            final String headerGalebError = responseHeaders != null ? responseHeaders.getFirst(X_GALEB_ERROR) : null;
+            upstreamField = headerGalebError != null ? headerGalebError : UNKNOWN_TARGET;
+        }
+        return upstreamField;
     }
 }

@@ -1,4 +1,4 @@
-VERSION=4.0.5
+VERSION=4.0.6
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
@@ -18,8 +18,11 @@ dist: galeb-next
 	type fpm > /dev/null 2>&1 && \
     for service in router health; do \
         cd $$service/target && \
+        echo "#version ${VERSION}" > VERSION && \
+        git show --summary >> VERSION && \
         cp -a ../../wrapper . && \
         cp ../wrapper.conf wrapper/conf/ && \
+        cp galeb-$$service-${VERSION}-SNAPSHOT.jar galeb-$$service.jar && \
         cp -a ../initscript wrapper/bin/ && \
         fpm -s dir \
             -t rpm \
@@ -32,7 +35,7 @@ dist: galeb-next
             -m '<galeb@corp.globo.com>' \
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
-            -f -p ../../galeb-$$service-${VERSION}-1.el7.noarch.rpm *jar wrapper && \
+            -f -p ../../galeb-$$service-${VERSION}-1.el7.noarch.rpm galeb-$$service.jar wrapper VERSION && \
         cd -; \
     done
 

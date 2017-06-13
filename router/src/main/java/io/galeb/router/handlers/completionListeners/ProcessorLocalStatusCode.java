@@ -17,22 +17,27 @@
 package io.galeb.router.handlers.completionListeners;
 
 import io.undertow.attribute.ResponseTimeAttribute;
+import io.undertow.util.HeaderMap;
 import io.undertow.util.StatusCodes;
 
 import java.util.concurrent.TimeUnit;
 
-interface ProcessorLocalStatusCode {
+import static io.galeb.router.ResponseCodeOnError.Header.X_GALEB_ERROR;
 
-    ResponseTimeAttribute responseTimeAttribute = new ResponseTimeAttribute(TimeUnit.MILLISECONDS);
+abstract class ProcessorLocalStatusCode {
 
-    int OFFSET_LOCAL_ERROR = 400;
-    int NOT_MODIFIED       = 0;
+    static final int NOT_MODIFIED = 0;
 
-    default int getFakeStatusCode(final String backend,
-                                  int statusCode,
-                                  long responseBytesSent,
-                                  Integer responseTime,
-                                  int maxRequestTime) {
+    private static final String UNKNOWN_TARGET  = "UNKNOWN";
+    private static final int OFFSET_LOCAL_ERROR = 400;
+
+    final ResponseTimeAttribute responseTimeAttribute = new ResponseTimeAttribute(TimeUnit.MILLISECONDS);
+
+    int getFakeStatusCode(final String backend,
+                          int statusCode,
+                          long responseBytesSent,
+                          Integer responseTime,
+                          int maxRequestTime) {
         int statusLogged = NOT_MODIFIED;
         if (responseTime != null &&
                 statusCode == StatusCodes.OK &&
@@ -43,11 +48,18 @@ interface ProcessorLocalStatusCode {
             statusLogged = StatusCodes.BAD_GATEWAY + OFFSET_LOCAL_ERROR;
 
         } else if (backend == null) {
-
             statusLogged = statusCode + OFFSET_LOCAL_ERROR;
-
         }
 
         return statusLogged;
+    }
+
+    String extractUpstreamField(final HeaderMap responseHeaders, String tempRealDest) {
+        String upstreamField = tempRealDest;
+        if (upstreamField == null) {
+            final String headerGalebError = responseHeaders != null ? responseHeaders.getFirst(X_GALEB_ERROR) : null;
+            upstreamField = headerGalebError != null ? headerGalebError : UNKNOWN_TARGET;
+        }
+        return upstreamField;
     }
 }

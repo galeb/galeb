@@ -22,6 +22,7 @@ import io.undertow.attribute.ExchangeAttributes;
 import io.undertow.attribute.SubstituteEmptyWrapper;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,11 +31,12 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.galeb.router.ResponseCodeOnError.Header.X_GALEB_ERROR;
+
 @Component
-public class AccessLogCompletionListener implements ExchangeCompletionListener, ProcessorLocalStatusCode {
+public class AccessLogCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final int MAX_REQUEST_TIME = Integer.MAX_VALUE - 1;
-    private static final String UNKNOWN = "UNKNOWN";
     private static final String REAL_DEST = "#REAL_DEST#";
     private static final String LOGPATTERN = "%a\t%v\t%r\t-\t-\tLocal:\t%s\t*-\t%B\t%D\tProxy:\t" +
                                              REAL_DEST +
@@ -48,7 +50,7 @@ public class AccessLogCompletionListener implements ExchangeCompletionListener, 
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
             final String tempRealDest = exchange.getAttachment(HostSelector.REAL_DEST);
-            String realDest = tempRealDest != null ? tempRealDest : UNKNOWN;
+            String realDest = extractUpstreamField(exchange.getResponseHeaders(), tempRealDest);
             String message = tokens.readAttribute(exchange);
             int realStatus = exchange.getStatusCode();
             long responseBytesSent = exchange.getResponseBytesSent();

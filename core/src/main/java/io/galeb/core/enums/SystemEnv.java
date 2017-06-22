@@ -120,16 +120,6 @@ public enum SystemEnv {
     MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
 
     /**
-     * Galeb Manager user
-     */
-    MANAGER_USER          ("MANAGER_USER",          "user"),
-
-    /**
-     * Galeb Manager password
-     */
-    MANAGER_PASS          ("MANAGER_PASS",          "password"),
-
-    /**
      * Etcd API full url (schema+host:port).
      */
     ETCD_SERVER           ("ETCD_SERVER",           "http://127.0.0.1:2379"),

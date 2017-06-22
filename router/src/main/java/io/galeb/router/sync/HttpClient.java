@@ -54,13 +54,12 @@ public class HttpClient {
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
-    public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
+    public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                     .setHeader("If-None-Match", etag)
                     .setHeader("X-Galeb-GroupID", SystemEnv.GROUP_ID.getValue())
-                    .setHeader("X-Galeb-LocalIP", localIpsEncoded())
-                    .setHeader("x-auth-token", token);
+                    .setHeader("X-Galeb-LocalIP", localIpsEncoded());
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
                 public Response onCompleted(Response response) throws Exception {
@@ -85,22 +84,6 @@ public class HttpClient {
             ErrorLogger.logError(e, this.getClass());
             callBack.onCompleted(null);
         }
-    }
-
-    public String getResponseBodyWithAuth(String user, String pass, String url) {
-        RequestBuilder requestTokenBuilder = new RequestBuilder().setUrl(url)
-                .setRealm(new Realm.Builder(user, pass).setScheme(Realm.AuthScheme.BASIC).build());
-        try {
-            Response response = asyncHttpClient.executeRequest(requestTokenBuilder).get();
-            if (response.getStatusCode() == 401) {
-                LOGGER.error("401 Unauthorized: \"" + user + "\" auth failed");
-                return "";
-            }
-            return response.getResponseBody();
-        } catch (Exception e) {
-            logError(e, this.getClass());
-        }
-        return "";
     }
 
     public static String localIpsEncoded() {

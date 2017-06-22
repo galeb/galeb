@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.sync.structure.FullVirtualhosts;
-import io.galeb.router.sync.structure.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,67 +35,32 @@ public class ManagerClient {
     private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
 
     private final String managerUrl = SystemEnv.MANAGER_URL.getValue();
-    private final String manageruser = SystemEnv.MANAGER_USER.getValue();
-    private final String managerPass = SystemEnv.MANAGER_PASS.getValue();
-    private final String tokenUrl = managerUrl + "/token";
     private final HttpClient httpClient;
-    private String token = null;
 
     @Autowired
     public ManagerClient(final HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    public void resetToken() {
-        this.token = null;
-    }
-
     public void getVirtualhosts(String envname, String etag, ResultCallBack resultCallBack) {
-        if (renewToken()) {
-            HttpClient.OnCompletedCallBack callback = body -> {
-                if (body != null) {
-                    if (HttpClient.NOT_MODIFIED.equals(body)) {
-                        resultCallBack.onResult(HttpClient.NOT_MODIFIED);
-                    } else {
-                        try {
-                            FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
-                            resultCallBack.onResult(virtualhosts);
-                        } catch (Exception e) {
-                            resetToken();
-                            logError(e, this.getClass());
-                            resultCallBack.onResult(null);
-                        }
-                    }
+        HttpClient.OnCompletedCallBack callback = body -> {
+            if (body != null) {
+                if (HttpClient.NOT_MODIFIED.equals(body)) {
+                    resultCallBack.onResult(HttpClient.NOT_MODIFIED);
                 } else {
-                    resetToken();
-                    resultCallBack.onResult(null);
-                }
-            };
-            httpClient.getResponseBodyWithToken(managerUrl + "/virtualhostscached/" + envname, token, etag, callback);
-        } else {
-            logger.error("Token is NULL (request problem?)");
-        }
-    }
-
-    public boolean renewToken() {
-        if (token == null) {
-            String bodyToken = httpClient.getResponseBodyWithAuth(manageruser, managerPass, tokenUrl);
-            if (!"".equals(bodyToken)) {
-                try {
-                    Token tokenObj = gson.fromJson(bodyToken, Token.class);
-                    if (tokenObj != null) {
-                        token = tokenObj.token;
-                    } else {
-                        logError(new RuntimeException("renewToken problem"), this.getClass());
-                        return false;
+                    try {
+                        FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
+                        resultCallBack.onResult(virtualhosts);
+                    } catch (Exception e) {
+                        logError(e, this.getClass());
+                        resultCallBack.onResult(null);
                     }
-                } catch (Exception e) {
-                    logError(e, this.getClass());
-                    return false;
                 }
+            } else {
+                resultCallBack.onResult(null);
             }
-        }
-        return true;
+        };
+        httpClient.getResponseBody(managerUrl + "/virtualhostscached/" + envname, etag, callback);
     }
 
     public interface ResultCallBack {

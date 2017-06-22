@@ -64,7 +64,7 @@ public class HttpClientConfigurationMock {
         return new HttpClient() {
 
             @Override
-            public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
+            public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
                 if (url != null && url.startsWith(SystemEnv.MANAGER_URL.getValue() + "/virtualhostscached/")) {
                     Environment environment = new Environment("desenv");
                     Project project = new Project("projectX");
@@ -95,13 +95,6 @@ public class HttpClientConfigurationMock {
                     virtualhostsFromManager._embedded.s[0] = virtuahost;
                     callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
                 }
-            }
-
-            @Override
-            public String getResponseBodyWithAuth(String user, String pass, String url) {
-                Token token = new Token();
-                token.token = UUID.randomUUID().toString();
-                return new Gson().toJson(token);
             }
         };
     }

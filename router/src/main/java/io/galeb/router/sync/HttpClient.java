@@ -18,6 +18,7 @@ package io.galeb.router.sync;
 
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
+import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.*;
 import org.slf4j.Logger;
@@ -30,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import static io.galeb.core.logutils.ErrorLogger.logError;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
@@ -57,9 +57,7 @@ public class HttpClient {
     public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
-                    .setHeader("If-None-Match", etag)
-                    .setHeader("X-Galeb-GroupID", SystemEnv.GROUP_ID.getValue())
-                    .setHeader("X-Galeb-LocalIP", localIpsEncoded());
+                    .setHeader(Headers.IF_NONE_MATCH, etag);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
                 public Response onCompleted(Response response) throws Exception {
@@ -111,6 +109,27 @@ public class HttpClient {
             ip = "undef-" + System.currentTimeMillis();
         }
         return ip.replaceAll("[:%]", "");
+    }
+
+    public void head(String url, String etag) {
+        RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
+                .setMethod(HttpMethod.HEAD.name())
+                .setHeader(Headers.IF_NONE_MATCH, etag)
+                .setHeader(Headers.X_GALEB_GROUP_ID, SystemEnv.GROUP_ID.getValue())
+                .setHeader(Headers.X_GALEB_ENVIRONMENT, SystemEnv.ENVIRONMENT_NAME.getValue())
+                .setHeader(Headers.X_GALEB_LOCAL_IP, localIpsEncoded());
+        asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
+            @Override
+            public String onCompleted(Response response) throws Exception {
+                LOGGER.info("");
+                return "";
+            }
+
+            @Override
+            public void onThrowable(Throwable t) {
+                LOGGER.error(ExceptionUtils.getStackTrace(t));
+            }
+        });
     }
 
     public interface OnCompletedCallBack {

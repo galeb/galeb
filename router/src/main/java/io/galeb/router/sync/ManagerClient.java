@@ -63,6 +63,10 @@ public class ManagerClient {
         httpClient.getResponseBody(managerUrl + "/virtualhostscached/" + envname, etag, callback);
     }
 
+    public void register(String etag) {
+        httpClient.head(managerUrl + "/routers", etag);
+    }
+
     public interface ResultCallBack {
         void onResult(Object result);
     }

@@ -39,8 +39,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -83,12 +85,17 @@ public class HttpClientConfigurationMock {
                     BalancePolicyType balancePolicyTypeRR = new BalancePolicyType(HostSelectorLookup.ROUNDROBIN.toString());
                     BalancePolicy balancePolicyRR = new BalancePolicy(HostSelectorLookup.ROUNDROBIN.toString(), balancePolicyTypeRR);
                     pool.setBalancePolicy(balancePolicyRR);
-                    Rule rule = new Rule("rule_test", ruleType, pool);
+                    Rule rule_slash = new Rule("rule_test_slash", ruleType, pool);
                     Map<String, String> ruleProperties = new HashMap<>();
                     ruleProperties.put(RULE_MATCH, "/");
-                    ruleProperties.put(RULE_ORDER, "0");
-                    rule.setProperties(ruleProperties);
-                    virtuahost.setRules(Collections.singleton(rule));
+                    ruleProperties.put(RULE_ORDER, Integer.toString(Integer.MAX_VALUE - 1));
+                    rule_slash.setProperties(ruleProperties);
+                    Rule other_rule = new Rule("other_rule", ruleType, pool);
+                    Map<String, String> otherRuleProperties = new HashMap<>();
+                    otherRuleProperties.put(RULE_MATCH, "/search");
+                    otherRuleProperties.put(RULE_ORDER, "0");
+                    other_rule.setProperties(otherRuleProperties);
+                    virtuahost.setRules(new HashSet<>(Arrays.asList(rule_slash, other_rule)));
                     FullVirtualhosts virtualhostsFromManager = new FullVirtualhosts();
                     virtualhostsFromManager._embedded = new SimpleEmbeddedVirtualhosts();
                     virtualhostsFromManager._embedded.s = new VirtualHost[1];

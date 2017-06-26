@@ -159,6 +159,14 @@ public class Updater {
         }
     }
 
+    private void cleanPoolHandler(final PoolHandler poolHandler) {
+        final ProxyHandler proxyHandler = poolHandler.getProxyHandler();
+        if (proxyHandler != null) {
+            final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
+            proxyClient.removeAllHosts();
+        }
+    }
+
     private void cleanUpNameVirtualHostHandler(String virtualhost) {
         final HttpHandler handler = nameVirtualHostHandler.getHosts().get(virtualhost);
         RuleTargetHandler ruleTargetHandler = null;
@@ -169,17 +177,18 @@ public class Updater {
             ruleTargetHandler = (RuleTargetHandler) ((IPAddressAccessControlHandler) handler).getNext();
         }
         if (ruleTargetHandler != null) {
-            cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+            final PoolHandler poolHandler = ruleTargetHandler.getPoolHandler();
+            if (poolHandler != null) {
+                cleanPoolHandler(poolHandler);
+            } else {
+                cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+            }
         }
     }
 
     private void cleanUpPathGlobHandler(final PathGlobHandler pathGlobHandler) {
         pathGlobHandler.getPaths().forEach((k, poolHandler) -> {
-            final ProxyHandler proxyHandler = ((PoolHandler) poolHandler).getProxyHandler();
-            if (proxyHandler != null) {
-                final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
-                proxyClient.removeAllHosts();
-            }
+            cleanPoolHandler((PoolHandler) poolHandler);
         });
         pathGlobHandler.clear();
     }

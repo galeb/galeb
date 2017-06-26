@@ -121,7 +121,9 @@ public class HttpClient {
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override
             public String onCompleted(Response response) throws Exception {
-                LOGGER.info("");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("head onCompleted done");
+                }
                 return "";
             }
 

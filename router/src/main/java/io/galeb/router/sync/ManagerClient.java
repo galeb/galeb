@@ -64,7 +64,7 @@ public class ManagerClient {
     }
 
     public void register(String etag) {
-        httpClient.head(managerUrl + "/routers", etag);
+        httpClient.post(managerUrl + "/routers", etag);
     }
 
     public interface ResultCallBack {

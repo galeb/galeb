@@ -111,18 +111,21 @@ public class HttpClient {
         return ip.replaceAll("[:%]", "");
     }
 
-    public void head(String url, String etag) {
+    public void post(String url, String etag) {
+        String env = SystemEnv.ENVIRONMENT_NAME.getValue();
+        String groupId = SystemEnv.GROUP_ID.getValue();
         RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
-                .setMethod(HttpMethod.HEAD.name())
+                .setMethod(HttpMethod.POST.name())
                 .setHeader(Headers.IF_NONE_MATCH, etag)
-                .setHeader(Headers.X_GALEB_GROUP_ID, SystemEnv.GROUP_ID.getValue())
-                .setHeader(Headers.X_GALEB_ENVIRONMENT, SystemEnv.ENVIRONMENT_NAME.getValue())
-                .setHeader(Headers.X_GALEB_LOCAL_IP, localIpsEncoded());
+                .setHeader(Headers.X_GALEB_GROUP_ID, groupId)
+                .setHeader(Headers.X_GALEB_ENVIRONMENT, env)
+                .setHeader(Headers.X_GALEB_LOCAL_IP, localIpsEncoded())
+                .setBody("{\"router\":{\"group_id\":\"" + groupId + "\",\"env\":\"" + env + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override
             public String onCompleted(Response response) throws Exception {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("head onCompleted done");
+                    LOGGER.debug("post onCompleted done");
                 }
                 return "";
             }

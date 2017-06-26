@@ -86,6 +86,7 @@ public class Updater {
             wait.set(false);
         };
         String etag = cache.etag();
+        managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();

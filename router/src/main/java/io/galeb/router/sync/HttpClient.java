@@ -40,6 +40,9 @@ public class HttpClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpClient.class);
 
+    private static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue();
+    private static final String GROUP_ID = SystemEnv.GROUP_ID.getValue();
+
     private final AsyncHttpClient asyncHttpClient;
 
     public HttpClient() {
@@ -57,6 +60,7 @@ public class HttpClient {
     public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
+                    .setHeader(Headers.X_GALEB_GROUP_ID, GROUP_ID)
                     .setHeader(Headers.IF_NONE_MATCH, etag);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
@@ -112,15 +116,13 @@ public class HttpClient {
     }
 
     public void post(String url, String etag) {
-        String env = SystemEnv.ENVIRONMENT_NAME.getValue();
-        String groupId = SystemEnv.GROUP_ID.getValue();
         RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                 .setMethod(HttpMethod.POST.name())
                 .setHeader(Headers.IF_NONE_MATCH, etag)
-                .setHeader(Headers.X_GALEB_GROUP_ID, groupId)
-                .setHeader(Headers.X_GALEB_ENVIRONMENT, env)
+                .setHeader(Headers.X_GALEB_GROUP_ID, GROUP_ID)
+                .setHeader(Headers.X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
                 .setHeader(Headers.X_GALEB_LOCAL_IP, localIpsEncoded())
-                .setBody("{\"router\":{\"group_id\":\"" + groupId + "\",\"env\":\"" + env + "\",\"etag\":\"" + etag + "\"}}");
+                .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override
             public String onCompleted(Response response) throws Exception {

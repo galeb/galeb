@@ -143,7 +143,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> implements Ser
     }
 
     public Date getCreatedAt() {
-        return new Date(createdAt.getTime());
+        return createdAt != null ? new Date(createdAt.getTime()) : null;
     }
 
     public String getLastModifiedBy() {
@@ -151,7 +151,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> implements Ser
     }
 
     public Date getLastModifiedAt() {
-        return new Date(lastModifiedAt.getTime());
+        return lastModifiedAt != null ? new Date(lastModifiedAt.getTime()) : null;
     }
 
     public Long getVersion() {

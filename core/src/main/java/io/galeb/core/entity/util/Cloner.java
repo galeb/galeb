@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class Cloner {
 
-    public VirtualHost copyVirtualHost(final VirtualHost virtualHost) {
+    public static VirtualHost copyVirtualHost(final VirtualHost virtualHost) {
         final Environment enviroment = getEnvironment(virtualHost);
         final Project project = getProject(virtualHost);
         final Rule virtualHostRuleDefault = virtualHost.getRuleDefault();
@@ -80,7 +80,7 @@ public class Cloner {
         return virtualHostCopy;
     }
 
-    public Project getProject(VirtualHost virtualHost) {
+    public static Project getProject(VirtualHost virtualHost) {
         return new Project(virtualHost.getProject().getName()) {
             @Override
             public long getId() {
@@ -114,7 +114,7 @@ public class Cloner {
         };
     }
 
-    public Environment getEnvironment(VirtualHost virtualHost) {
+    public static Environment getEnvironment(VirtualHost virtualHost) {
         return new Environment(virtualHost.getEnvironment().getName()) {
             @Override
             public long getId() {
@@ -148,7 +148,7 @@ public class Cloner {
         };
     }
 
-    public Rule copyRule(final Rule rule, final Pool pool, final VirtualHost virtualhost) {
+    public static Rule copyRule(final Rule rule, final Pool pool, final VirtualHost virtualhost) {
         final RuleType ruleType = new RuleType(rule.getRuleType().getName()){
             @Override
             public long getId() {
@@ -214,13 +214,13 @@ public class Cloner {
         return ruleCopy;
     }
 
-    private Set<Rule> copyRules(final VirtualHost virtualHost) {
+    private static Set<Rule> copyRules(final VirtualHost virtualHost) {
         return virtualHost.getRules().stream()
                 .map(rule -> copyRule(rule, copyPool(rule.getPool()), virtualHost))
                 .collect(Collectors.toSet());
     }
 
-    public Set<Target> copyTargets(final Pool pool) {
+    public static Set<Target> copyTargets(final Pool pool) {
         return pool.getTargets().stream().map(target -> {
             Target targetCopy = new Target(target.getName()) {
                 @Override
@@ -254,7 +254,7 @@ public class Cloner {
         }).collect(Collectors.toSet());
     }
 
-    public Pool copyPool(final Pool pool) {
+    public static Pool copyPool(final Pool pool) {
         final Pool poolCopy = new Pool(pool.getName()) {
             @Override
             public long getId() {

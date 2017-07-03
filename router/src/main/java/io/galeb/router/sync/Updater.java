@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
+    public static final String ALIAS_OF = "alias_of";
     public static final long   WAIT_TIMEOUT  = 10000; // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -51,7 +52,6 @@ public class Updater {
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
     private final NameVirtualHostHandler nameVirtualHostHandler;
-    private final Cloner cloner = new Cloner();
 
     private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
 
@@ -105,8 +105,9 @@ public class Updater {
         final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
                 .map(v -> {
                     v.getAliases().forEach(aliasName -> {
-                        VirtualHost virtualHostAlias = cloner.copyVirtualHost(v);
+                        VirtualHost virtualHostAlias = Cloner.copyVirtualHost(v);
                         virtualHostAlias.setName(aliasName);
+                        virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
                         aliases.add(virtualHostAlias);
                     });
                     return v;

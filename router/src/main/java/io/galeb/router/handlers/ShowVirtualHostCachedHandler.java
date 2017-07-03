@@ -17,6 +17,7 @@
 package io.galeb.router.handlers;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
@@ -25,12 +26,15 @@ import io.undertow.util.StatusCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_SHOW_CACHE;
+
 @Component
 public class ShowVirtualHostCachedHandler implements HttpHandler {
 
-    private static final String HEADER_SHOW_CACHE = "X-Galeb-Show-Cache";
-
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().serializeNulls().create();
     private final ManagerClientCache cache;
 
     @Autowired
@@ -40,11 +44,24 @@ public class ShowVirtualHostCachedHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (exchange.getRequestHeaders().contains(HEADER_SHOW_CACHE)) {
-            String virtualhostStr = exchange.getRequestHeaders().getFirst(HEADER_SHOW_CACHE);
+        final String etag = cache.etag();
+        if (exchange.getRequestHeaders().contains(X_GALEB_SHOW_CACHE)) {
+            String virtualhostStr = exchange.getRequestHeaders().getFirst(X_GALEB_SHOW_CACHE);
             VirtualHost virtualhost = cache.get(virtualhostStr);
-            exchange.setStatusCode(virtualhost != null ? StatusCodes.OK : StatusCodes.NOT_FOUND);
-            exchange.getResponseSender().send(virtualhost != null ? gson.toJson(virtualhost) : "{}");
+            if (virtualhost != null) {
+                virtualhost.getEnvironment().getProperties().put("fullhash", etag);
+                exchange.setStatusCode(StatusCodes.OK);
+                exchange.getResponseSender().send(gson.toJson(virtualhost, VirtualHost.class));
+            } else {
+                exchange.setStatusCode(StatusCodes.NOT_FOUND);
+                exchange.getResponseSender().send("{}");
+            }
+        } else {
+            Map<String, Object> jsonMap = new HashMap<>();
+            jsonMap.put("last_hash", cache.etag());
+            jsonMap.put("virtualhosts", cache.values());
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseSender().send(gson.toJson(jsonMap));
         }
         exchange.endExchange();
     }

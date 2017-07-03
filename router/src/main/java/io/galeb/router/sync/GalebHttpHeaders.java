@@ -16,10 +16,11 @@
 
 package io.galeb.router.sync;
 
-public enum Headers {
+public enum GalebHttpHeaders {
     ;
-    public static final String X_GALEB_GROUP_ID    = "X-Galeb-GroupID";
-    public static final String X_GALEB_ENVIRONMENT = "X-Galeb-Environment";
-    public static final String X_GALEB_LOCAL_IP    = "X-Galeb-LocalIP";
-    public static final String IF_NONE_MATCH       = "If-None-Match";
+    private static final String PREFIX = "X-Galeb-";
+
+    public static final String X_GALEB_GROUP_ID    = PREFIX + "GroupID";
+    public static final String X_GALEB_ENVIRONMENT = PREFIX + "Environment";
+    public static final String X_GALEB_LOCAL_IP    = PREFIX + "LocalIP";
 }

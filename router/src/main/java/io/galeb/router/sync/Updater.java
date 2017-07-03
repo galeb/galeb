@@ -17,10 +17,11 @@
 package io.galeb.router.sync;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.entity.util.Cloner;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
@@ -48,6 +49,7 @@ public class Updater {
     public static final long   WAIT_TIMEOUT  = 10000; // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
@@ -105,7 +107,7 @@ public class Updater {
         final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
                 .map(v -> {
                     v.getAliases().forEach(aliasName -> {
-                        VirtualHost virtualHostAlias = Cloner.copyVirtualHost(v);
+                        VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
                         virtualHostAlias.setName(aliasName);
                         virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
                         aliases.add(virtualHostAlias);

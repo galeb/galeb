@@ -16,8 +16,18 @@
 
 package io.galeb.core.entity;
 
-public interface WithParent<T extends AbstractEntity<?>> {
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-    T getParent();
+public abstract class AbstractEntitySyncronizable {
 
+    @JsonIgnore
+    public String getEnvName() { return "NULL"; }
+
+    protected AbstractEntity.EntityStatus getDynamicStatus() {
+        return AbstractEntity.EntityStatus.OK;
+    }
+
+    protected Farm getFakeFarm() {
+        return new Farm().setName("fake").setAutoReload(false);
+    }
 }

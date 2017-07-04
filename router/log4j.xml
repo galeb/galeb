@@ -5,7 +5,7 @@
     <Property name="hostname">${env:HOSTNAME}</Property>
     <Property name="syslog_host">${env:SYSLOG_HOST}</Property>
     <Property name="syslog_port">${env:SYSLOG_PORT}</Property>
-    <Property name="tags">${env:GROUP_ID},${env:ENVIRONMENT_NAME}</Property>
+    <Property name="tags">GALEB,${env:GROUP_ID},${env:ENVIRONMENT_NAME}</Property>
   </Properties>
   <Appenders>
     <Socket name="SyslogAccess" host="${syslog_host}" port="${syslog_port}" protocol="UDP">

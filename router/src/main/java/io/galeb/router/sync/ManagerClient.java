@@ -78,7 +78,7 @@ public class ManagerClient {
     }
 
     @SuppressWarnings("unused")
-    public class Virtualhosts implements Serializable {
+    public static class Virtualhosts implements Serializable {
         private static final long serialVersionUID = 1L;
         public VirtualHost[] virtualHosts;
     }

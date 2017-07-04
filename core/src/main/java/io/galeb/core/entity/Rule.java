@@ -1,19 +1,17 @@
 /*
- *   Galeb - Load Balance as a Service Plataform
+ * Copyright (c) 2014-2017 Globo.com - ATeam
+ * All rights reserved.
  *
- *   Copyright (C) 2014-2015 Globo.com
+ * This source is subject to the Apache License, Version 2.0.
+ * Please see the LICENSE file for more information.
  *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
+ * Authors: See AUTHORS file
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package io.galeb.core.entity;
@@ -53,8 +51,8 @@ public class Rule extends AbstractEntity<Rule> implements WithFarmID<Rule>, With
     private RuleType ruleType;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_rule_parent")),
-    inverseJoinColumns=@JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name="FK_parent_rule")))
+    @JoinTable(joinColumns=@JoinColumn(name = "rule_id", nullable = true, foreignKey = @ForeignKey(name="FK_rule_parent")),
+    inverseJoinColumns=@JoinColumn(name = "parent_id", nullable = true, foreignKey = @ForeignKey(name="FK_parent_rule")))
     private final Set<VirtualHost> parents = new HashSet<>();
 
     @ManyToOne
@@ -181,6 +179,23 @@ public class Rule extends AbstractEntity<Rule> implements WithFarmID<Rule>, With
             this.global = global;
         }
         return this;
+    }
+
+    @Override
+    public EntityStatus getStatus() {
+        return super.getDynamicStatus();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getEnvName() {
+        return getPool().getEnvName();
+    }
+
+    @Override
+    @JsonIgnore
+    public Farm getFarm() {
+        return getFakeFarm();
     }
 
 }

@@ -31,9 +31,6 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.sync.HttpClient;
 import io.galeb.router.sync.ManagerClient;
-import io.galeb.router.sync.structure.FullVirtualhosts;
-import io.galeb.router.sync.structure.SimpleEmbeddedVirtualhosts;
-import io.galeb.router.sync.structure.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -45,7 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 
 import static io.galeb.core.enums.EnumHealthState.OK;
 import static io.galeb.core.enums.EnumPropHealth.PROP_HEALTHY;

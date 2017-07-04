@@ -30,9 +30,7 @@ import io.galeb.core.enums.EnumRuleType;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.sync.HttpClient;
-import io.galeb.router.sync.structure.FullVirtualhosts;
-import io.galeb.router.sync.structure.SimpleEmbeddedVirtualhosts;
-import io.galeb.router.sync.structure.Token;
+import io.galeb.router.sync.ManagerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -44,7 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 
 import static io.galeb.core.enums.EnumHealthState.OK;
 import static io.galeb.core.enums.EnumPropHealth.PROP_HEALTHY;
@@ -96,12 +93,16 @@ public class HttpClientConfigurationMock {
                     otherRuleProperties.put(RULE_ORDER, "0");
                     other_rule.setProperties(otherRuleProperties);
                     virtuahost.setRules(new HashSet<>(Arrays.asList(rule_slash, other_rule)));
-                    FullVirtualhosts virtualhostsFromManager = new FullVirtualhosts();
-                    virtualhostsFromManager._embedded = new SimpleEmbeddedVirtualhosts();
-                    virtualhostsFromManager._embedded.s = new VirtualHost[1];
-                    virtualhostsFromManager._embedded.s[0] = virtuahost;
+                    ManagerClient.Virtualhosts virtualhostsFromManager = new ManagerClient.Virtualhosts();
+                    virtualhostsFromManager.virtualhosts = new VirtualHost[1];
+                    virtualhostsFromManager.virtualhosts[0] = virtuahost;
                     callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
                 }
+            }
+
+            @Override
+            public void post(String url, String etag) {
+                logger.info("sending POST to Manager (ignored) with etag " + etag);
             }
         };
     }

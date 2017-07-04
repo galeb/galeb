@@ -23,7 +23,6 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.logutils.ErrorLogger;
-import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -45,11 +44,15 @@ import java.util.stream.Collectors;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
-    public static final String ALIAS_OF = "alias_of";
+    public static final String ALIAS_OF      = "alias_of";
     public static final long   WAIT_TIMEOUT  = 10000; // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final Gson gson = new GsonBuilder().serializeNulls().create();
+    private final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .setLenient()
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            .create();
 
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
@@ -73,7 +76,7 @@ public class Updater {
             if (result instanceof String && HttpClient.NOT_MODIFIED.equals(result)) {
                 logger.info("Environment " + envName + ": " + result);
             } else {
-                FullVirtualhosts virtualhostsFromManager = result instanceof FullVirtualhosts ? (FullVirtualhosts) result : null;
+                ManagerClient.Virtualhosts virtualhostsFromManager = result instanceof ManagerClient.Virtualhosts ? (ManagerClient.Virtualhosts) result : null;
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
@@ -102,9 +105,9 @@ public class Updater {
         }
     }
 
-    private List<VirtualHost> processVirtualhostsAndAliases(final FullVirtualhosts virtualhostsFromManager) {
+    private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
         final Set<VirtualHost> aliases = new HashSet<>();
-        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
+        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts)
                 .map(v -> {
                     v.getAliases().forEach(aliasName -> {
                         VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);

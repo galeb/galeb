@@ -109,7 +109,6 @@ public class Updater {
         final Set<VirtualHost> aliases = new HashSet<>();
         final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts)
                 .map(v -> {
-                    logger.warn(gson.toJson(v));
                     v.getAliases().forEach(aliasName -> {
                         VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
                         virtualHostAlias.setName(aliasName);

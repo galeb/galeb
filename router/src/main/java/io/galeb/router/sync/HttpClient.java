@@ -90,7 +90,7 @@ public class HttpClient {
         }
     }
 
-    public static String localIpsEncoded() {
+    private static String localIpsEncoded() {
         final List<String> ipList = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();

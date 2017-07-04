@@ -37,8 +37,7 @@ public class ManagerClient {
     private final Gson gson = new GsonBuilder()
             .setLenient()
             .serializeNulls()
-            .setExclusionStrategies(new AnnotationsExclusionStrategy())
-            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z").create();
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
 
     private final String managerUrl = SystemEnv.MANAGER_URL.getValue();
     private final HttpClient httpClient;
@@ -80,7 +79,7 @@ public class ManagerClient {
     @SuppressWarnings("unused")
     public static class Virtualhosts implements Serializable {
         private static final long serialVersionUID = 1L;
-        public VirtualHost[] virtualHosts;
+        public VirtualHost[] virtualhosts;
     }
 
 }

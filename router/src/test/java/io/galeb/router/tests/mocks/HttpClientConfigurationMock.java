@@ -94,10 +94,15 @@ public class HttpClientConfigurationMock {
                     other_rule.setProperties(otherRuleProperties);
                     virtuahost.setRules(new HashSet<>(Arrays.asList(rule_slash, other_rule)));
                     ManagerClient.Virtualhosts virtualhostsFromManager = new ManagerClient.Virtualhosts();
-                    virtualhostsFromManager.virtualHosts = new VirtualHost[1];
-                    virtualhostsFromManager.virtualHosts[0] = virtuahost;
+                    virtualhostsFromManager.virtualhosts = new VirtualHost[1];
+                    virtualhostsFromManager.virtualhosts[0] = virtuahost;
                     callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
                 }
+            }
+
+            @Override
+            public void post(String url, String etag) {
+                logger.info("sending POST to Manager (ignored) with etag " + etag);
             }
         };
     }

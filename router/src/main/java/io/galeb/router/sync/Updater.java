@@ -51,7 +51,7 @@ public class Updater {
     private final Gson gson = new GsonBuilder()
             .serializeNulls()
             .setLenient()
-            .setExclusionStrategies(new AnnotationsExclusionStrategy())
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             .create();
 
     private final ManagerClient managerClient;
@@ -107,8 +107,9 @@ public class Updater {
 
     private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
         final Set<VirtualHost> aliases = new HashSet<>();
-        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualHosts)
+        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts)
                 .map(v -> {
+                    logger.warn(gson.toJson(v));
                     v.getAliases().forEach(aliasName -> {
                         VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
                         virtualHostAlias.setName(aliasName);

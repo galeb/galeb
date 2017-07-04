@@ -16,8 +16,6 @@
 
 package io.galeb.router.sync;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.VirtualHost;
@@ -26,10 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import java.io.Serializable;
 
@@ -89,20 +83,4 @@ public class ManagerClient {
         public VirtualHost[] virtualHosts;
     }
 
-    private class AnnotationsExclusionStrategy implements ExclusionStrategy {
-
-        @Override
-        public boolean shouldSkipField(FieldAttributes f) {
-            return f.getAnnotation(ManyToOne.class)  != null ||
-                   f.getAnnotation(OneToMany.class)  != null ||
-                   f.getAnnotation(ManyToMany.class) != null;
-        }
-
-        @Override
-        public boolean shouldSkipClass(Class<?> clazz) {
-            return clazz.getAnnotation(ManyToOne.class)  != null ||
-                   clazz.getAnnotation(OneToMany.class)  != null ||
-                   clazz.getAnnotation(ManyToMany.class) != null;
-        }
-    }
 }

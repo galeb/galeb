@@ -16,11 +16,11 @@
 
 package io.galeb.router.configurations;
 
+import com.google.common.base.Charsets;
 import io.galeb.core.entity.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +42,14 @@ public class ManagerClientCacheConfiguration {
 
     public static class ManagerClientCache {
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
+        private String envHash = null;
 
         public VirtualHost get(String hostName) {
             return virtualHosts.get(hostName);
         }
 
         public synchronized void put(String virtualhostName, final VirtualHost virtualHost) {
+            envHash = null;
             virtualHosts.put(virtualhostName, virtualHost);
         }
 
@@ -60,6 +62,7 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized void remove(String virtualhostName) {
+            envHash = null;
             virtualHosts.remove(virtualhostName);
         }
 
@@ -68,15 +71,19 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized String etag() {
-            String key = virtualHosts.entrySet().stream().map(this::getFullHash)
-                                     .sorted()
-                                     .distinct()
-                                     .collect(Collectors.joining());
-            return sha256().newHasher().putString(key, Charset.defaultCharset()).hash().toString();
+            if (envHash == null) {
+                envHash = sha256().hashString(
+                                    virtualHosts.entrySet().stream().map(this::getFullHash)
+                                            .sorted()
+                                            .distinct()
+                                            .collect(Collectors.joining()),
+                                    Charsets.UTF_8).toString();
+            }
+            return envHash;
         }
 
-        private String getFullHash(Map.Entry<String, VirtualHost> e) {
-            return Optional.ofNullable(e.getValue().getProperties().get(FULLHASH_PROP)).orElse("");
+        private String getFullHash(Map.Entry<String, VirtualHost> virtualHostEntry) {
+            return Optional.ofNullable(virtualHostEntry.getValue().getProperties().get(FULLHASH_PROP)).orElse("");
         }
 
         public List<VirtualHost> values() {

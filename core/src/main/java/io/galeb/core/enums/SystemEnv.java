@@ -120,16 +120,6 @@ public enum SystemEnv {
     MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
 
     /**
-     * Galeb Manager user
-     */
-    MANAGER_USER          ("MANAGER_USER",          "user"),
-
-    /**
-     * Galeb Manager password
-     */
-    MANAGER_PASS          ("MANAGER_PASS",          "password"),
-
-    /**
      * Etcd API full url (schema+host:port).
      */
     ETCD_SERVER           ("ETCD_SERVER",           "http://127.0.0.1:2379"),
@@ -201,6 +191,11 @@ public enum SystemEnv {
      * The maximum amount of time to allow the request to be processed
      */
     POOL_MAX_REQUEST_TIME ("POOL_MAX_REQUEST_TIME", -1),
+
+    /**
+     *  The frontend Max Connections
+     */
+    FE_MAXCONN            ("FE_MAXCONN",              20000),
 
     /**
      * Enable AccessLog (http response register)

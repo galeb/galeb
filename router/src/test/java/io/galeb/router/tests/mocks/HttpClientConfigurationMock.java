@@ -30,19 +30,18 @@ import io.galeb.core.enums.EnumRuleType;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.sync.HttpClient;
-import io.galeb.router.sync.structure.FullVirtualhosts;
-import io.galeb.router.sync.structure.SimpleEmbeddedVirtualhosts;
-import io.galeb.router.sync.structure.Token;
+import io.galeb.router.sync.ManagerClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 
 import static io.galeb.core.enums.EnumHealthState.OK;
 import static io.galeb.core.enums.EnumPropHealth.PROP_HEALTHY;
@@ -64,7 +63,7 @@ public class HttpClientConfigurationMock {
         return new HttpClient() {
 
             @Override
-            public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
+            public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
                 if (url != null && url.startsWith(SystemEnv.MANAGER_URL.getValue() + "/virtualhostscached/")) {
                     Environment environment = new Environment("desenv");
                     Project project = new Project("projectX");
@@ -83,25 +82,27 @@ public class HttpClientConfigurationMock {
                     BalancePolicyType balancePolicyTypeRR = new BalancePolicyType(HostSelectorLookup.ROUNDROBIN.toString());
                     BalancePolicy balancePolicyRR = new BalancePolicy(HostSelectorLookup.ROUNDROBIN.toString(), balancePolicyTypeRR);
                     pool.setBalancePolicy(balancePolicyRR);
-                    Rule rule = new Rule("rule_test", ruleType, pool);
+                    Rule rule_slash = new Rule("rule_test_slash", ruleType, pool);
                     Map<String, String> ruleProperties = new HashMap<>();
                     ruleProperties.put(RULE_MATCH, "/");
-                    ruleProperties.put(RULE_ORDER, "0");
-                    rule.setProperties(ruleProperties);
-                    virtuahost.setRules(Collections.singleton(rule));
-                    FullVirtualhosts virtualhostsFromManager = new FullVirtualhosts();
-                    virtualhostsFromManager._embedded = new SimpleEmbeddedVirtualhosts();
-                    virtualhostsFromManager._embedded.s = new VirtualHost[1];
-                    virtualhostsFromManager._embedded.s[0] = virtuahost;
+                    ruleProperties.put(RULE_ORDER, Integer.toString(Integer.MAX_VALUE - 1));
+                    rule_slash.setProperties(ruleProperties);
+                    Rule other_rule = new Rule("other_rule", ruleType, pool);
+                    Map<String, String> otherRuleProperties = new HashMap<>();
+                    otherRuleProperties.put(RULE_MATCH, "/search");
+                    otherRuleProperties.put(RULE_ORDER, "0");
+                    other_rule.setProperties(otherRuleProperties);
+                    virtuahost.setRules(new HashSet<>(Arrays.asList(rule_slash, other_rule)));
+                    ManagerClient.Virtualhosts virtualhostsFromManager = new ManagerClient.Virtualhosts();
+                    virtualhostsFromManager.virtualhosts = new VirtualHost[1];
+                    virtualhostsFromManager.virtualhosts[0] = virtuahost;
                     callBack.onCompleted(new Gson().toJson(virtualhostsFromManager));
                 }
             }
 
             @Override
-            public String getResponseBodyWithAuth(String user, String pass, String url) {
-                Token token = new Token();
-                token.token = UUID.randomUUID().toString();
-                return new Gson().toJson(token);
+            public void post(String url, String etag) {
+                logger.info("sending POST to Manager (ignored) with etag " + etag);
             }
         };
     }

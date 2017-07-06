@@ -47,7 +47,7 @@ import java.util.Map;
 
 @MappedSuperclass
 @JsonCustomProperties
-public abstract class AbstractEntity<T extends AbstractEntity<?>> implements Serializable {
+public abstract class AbstractEntity<T extends AbstractEntity<?>> extends AbstractEntitySyncronizable implements Serializable {
 
     private static final long serialVersionUID = 4521414292400791447L;
 
@@ -143,7 +143,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> implements Ser
     }
 
     public Date getCreatedAt() {
-        return new Date(createdAt.getTime());
+        return createdAt != null ? new Date(createdAt.getTime()) : null;
     }
 
     public String getLastModifiedBy() {
@@ -151,7 +151,7 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> implements Ser
     }
 
     public Date getLastModifiedAt() {
-        return new Date(lastModifiedAt.getTime());
+        return lastModifiedAt != null ? new Date(lastModifiedAt.getTime()) : null;
     }
 
     public Long getVersion() {

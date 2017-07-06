@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RuleTargetHandler implements HttpHandler {
@@ -40,6 +40,7 @@ public class RuleTargetHandler implements HttpHandler {
     private final AtomicBoolean firstLoad = new AtomicBoolean(true);
     private final VirtualHost virtualHost;
     private final PathGlobHandler pathGlobHandler;
+    private PoolHandler poolHandler = null;
 
     public RuleTargetHandler(final VirtualHost virtualHost) {
         this.virtualHost = virtualHost;
@@ -49,7 +50,15 @@ public class RuleTargetHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        pathGlobHandler.handleRequest(exchange);
+        if (poolHandler != null) {
+            poolHandler.handleRequest(exchange);
+        } else {
+            pathGlobHandler.handleRequest(exchange);
+        }
+    }
+
+    public PoolHandler getPoolHandler() {
+        return poolHandler;
     }
 
     public PathGlobHandler getPathGlobHandler() {
@@ -64,6 +73,10 @@ public class RuleTargetHandler implements HttpHandler {
                 if (pathGlobHandler.getPaths().isEmpty()) {
                     loadRules();
                 }
+                if (poolHandler != null) {
+                    poolHandler.handleRequest(exchange);
+                    return;
+                }
                 if (!pathGlobHandler.getPaths().isEmpty()) {
                     if (firstLoad.getAndSet(false)) {
                         pathGlobHandler.handleRequest(exchange);
@@ -76,6 +89,15 @@ public class RuleTargetHandler implements HttpHandler {
             }
 
             private void loadRules() {
+                final Rule ruleSlashOnly;
+                if (virtualHost.getRules().size() == 1 &&
+                        (ruleSlashOnly = virtualHost.getRules().stream().findAny().orElse(null)) != null &&
+                        EnumRuleType.PATH.toString().equals(ruleSlashOnly.getRuleType().getName()) &&
+                        ruleSlashOnly.getProperties().get(RULE_MATCH).equals("/")) {
+                    poolHandler = new PoolHandler(ruleSlashOnly.getPool());
+                    return;
+                }
+
                 final Rule ruleDefault = virtualHost.getRuleDefault();
                 if (ruleDefault != null) {
                     pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool()));

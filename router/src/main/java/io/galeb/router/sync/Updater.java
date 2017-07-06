@@ -17,12 +17,12 @@
 package io.galeb.router.sync;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.entity.util.Cloner;
 import io.galeb.core.logutils.ErrorLogger;
-import io.galeb.router.sync.structure.FullVirtualhosts;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -44,14 +44,19 @@ import java.util.stream.Collectors;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
+    public static final String ALIAS_OF      = "alias_of";
     public static final long   WAIT_TIMEOUT  = 10000; // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .setLenient()
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            .create();
 
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
     private final NameVirtualHostHandler nameVirtualHostHandler;
-    private final Cloner cloner = new Cloner();
 
     private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
 
@@ -71,7 +76,7 @@ public class Updater {
             if (result instanceof String && HttpClient.NOT_MODIFIED.equals(result)) {
                 logger.info("Environment " + envName + ": " + result);
             } else {
-                FullVirtualhosts virtualhostsFromManager = result instanceof FullVirtualhosts ? (FullVirtualhosts) result : null;
+                ManagerClient.Virtualhosts virtualhostsFromManager = result instanceof ManagerClient.Virtualhosts ? (ManagerClient.Virtualhosts) result : null;
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
@@ -86,6 +91,7 @@ public class Updater {
             wait.set(false);
         };
         String etag = cache.etag();
+        managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();
@@ -99,13 +105,14 @@ public class Updater {
         }
     }
 
-    private List<VirtualHost> processVirtualhostsAndAliases(final FullVirtualhosts virtualhostsFromManager) {
+    private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
         final Set<VirtualHost> aliases = new HashSet<>();
-        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager._embedded.s)
+        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts)
                 .map(v -> {
                     v.getAliases().forEach(aliasName -> {
-                        VirtualHost virtualHostAlias = cloner.copyVirtualHost(v);
+                        VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
                         virtualHostAlias.setName(aliasName);
+                        virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
                         aliases.add(virtualHostAlias);
                     });
                     return v;
@@ -159,6 +166,14 @@ public class Updater {
         }
     }
 
+    private void cleanPoolHandler(final PoolHandler poolHandler) {
+        final ProxyHandler proxyHandler = poolHandler.getProxyHandler();
+        if (proxyHandler != null) {
+            final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
+            proxyClient.removeAllHosts();
+        }
+    }
+
     private void cleanUpNameVirtualHostHandler(String virtualhost) {
         final HttpHandler handler = nameVirtualHostHandler.getHosts().get(virtualhost);
         RuleTargetHandler ruleTargetHandler = null;
@@ -169,17 +184,18 @@ public class Updater {
             ruleTargetHandler = (RuleTargetHandler) ((IPAddressAccessControlHandler) handler).getNext();
         }
         if (ruleTargetHandler != null) {
-            cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+            final PoolHandler poolHandler = ruleTargetHandler.getPoolHandler();
+            if (poolHandler != null) {
+                cleanPoolHandler(poolHandler);
+            } else {
+                cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+            }
         }
     }
 
     private void cleanUpPathGlobHandler(final PathGlobHandler pathGlobHandler) {
         pathGlobHandler.getPaths().forEach((k, poolHandler) -> {
-            final ProxyHandler proxyHandler = ((PoolHandler) poolHandler).getProxyHandler();
-            if (proxyHandler != null) {
-                final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
-                proxyClient.removeAllHosts();
-            }
+            cleanPoolHandler((PoolHandler) poolHandler);
         });
         pathGlobHandler.clear();
     }

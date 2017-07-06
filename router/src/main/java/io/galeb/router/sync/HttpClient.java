@@ -18,6 +18,7 @@ package io.galeb.router.sync;
 
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
+import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.*;
 import org.slf4j.Logger;
@@ -30,7 +31,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import static io.galeb.core.logutils.ErrorLogger.logError;
+import static io.galeb.router.sync.GalebHttpHeaders.*;
+import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
@@ -39,6 +41,9 @@ public class HttpClient {
     public static final String NOT_MODIFIED = "NOT_MODIFIED";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpClient.class);
+
+    private static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue();
+    private static final String GROUP_ID = SystemEnv.GROUP_ID.getValue();
 
     private final AsyncHttpClient asyncHttpClient;
 
@@ -54,13 +59,11 @@ public class HttpClient {
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
-    public void getResponseBodyWithToken(String url, String token, String etag, OnCompletedCallBack callBack) {
+    public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
-                    .setHeader("If-None-Match", etag)
-                    .setHeader("X-Galeb-GroupID", SystemEnv.GROUP_ID.getValue())
-                    .setHeader("X-Galeb-LocalIP", localIpsEncoded())
-                    .setHeader("x-auth-token", token);
+                    .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
+                    .setHeader(IF_NONE_MATCH_STRING, etag);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
                 public Response onCompleted(Response response) throws Exception {
@@ -87,23 +90,7 @@ public class HttpClient {
         }
     }
 
-    public String getResponseBodyWithAuth(String user, String pass, String url) {
-        RequestBuilder requestTokenBuilder = new RequestBuilder().setUrl(url)
-                .setRealm(new Realm.Builder(user, pass).setScheme(Realm.AuthScheme.BASIC).build());
-        try {
-            Response response = asyncHttpClient.executeRequest(requestTokenBuilder).get();
-            if (response.getStatusCode() == 401) {
-                LOGGER.error("401 Unauthorized: \"" + user + "\" auth failed");
-                return "";
-            }
-            return response.getResponseBody();
-        } catch (Exception e) {
-            logError(e, this.getClass());
-        }
-        return "";
-    }
-
-    public static String localIpsEncoded() {
+    private static String localIpsEncoded() {
         final List<String> ipList = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
@@ -128,6 +115,30 @@ public class HttpClient {
             ip = "undef-" + System.currentTimeMillis();
         }
         return ip.replaceAll("[:%]", "");
+    }
+
+    public void post(String url, String etag) {
+        RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
+                .setMethod(HttpMethod.POST.name())
+                .setHeader(IF_NONE_MATCH_STRING, etag)
+                .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
+                .setHeader(X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
+                .setHeader(X_GALEB_LOCAL_IP, localIpsEncoded())
+                .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
+        asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
+            @Override
+            public String onCompleted(Response response) throws Exception {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("post onCompleted done");
+                }
+                return "";
+            }
+
+            @Override
+            public void onThrowable(Throwable t) {
+                LOGGER.error(ExceptionUtils.getStackTrace(t));
+            }
+        });
     }
 
     public interface OnCompletedCallBack {

@@ -1,4 +1,4 @@
-RPM_VER=4.0.6
+RPM_VER=4.0.7
 VERSION=${RPM_VER}
 RELEASE=1
 
@@ -27,9 +27,10 @@ dist: galeb-next
         git show --summary >> VERSION && \
         cp -av ../../../wrapper . && \
         cp -av ../../../confd/confd-0.11.0-linux-amd64 confd && \
+        cp -av ../../confd ../conf/confd || true  && \
         cp -v ../../wrapper.conf ../conf/ && \
         [ -f ../../log4j.xml ] && cp -v ../../log4j.xml ../conf/ || true && \
-        [ -f ../../sysctl.sh ] && cp -av ../../sysctl.sh . || true  && \
+        cp -av ../../scripts ../ || true  && \
         cp -v ../galeb-$$service-${VERSION}-SNAPSHOT.jar galeb-$$service.jar && \
         cp -av ../../initscript wrapper/bin/ && \
         cd .. && \
@@ -45,7 +46,7 @@ dist: galeb-next
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
             --rpm-attr 775,daemon,daemon:/opt/logs/galeb/$$service \
-            -f -p ../../galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs && \
+            -f -p ../../galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
         cd $$old; \
     done
 

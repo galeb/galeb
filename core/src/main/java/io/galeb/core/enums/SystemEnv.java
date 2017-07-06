@@ -193,6 +193,11 @@ public enum SystemEnv {
     POOL_MAX_REQUEST_TIME ("POOL_MAX_REQUEST_TIME", -1),
 
     /**
+     *  The frontend Max Connections
+     */
+    FE_MAXCONN            ("FE_MAXCONN",              20000),
+
+    /**
      * Enable AccessLog (http response register)
      */
     ENABLE_ACCESSLOG      ("ENABLE_ACCESSLOG",      Boolean.TRUE),

@@ -51,10 +51,8 @@ public class PoolHandler implements HttpHandler {
     private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
     private final String  requestIDHeader = SystemEnv.REQUESTID_HEADER.getValue();
 
-
-    private final HttpHandler defaultHandler;
-
     private ProxyHandler proxyHandler = null;
+    private HttpHandler nextHandler = null;
     private RequestIDHandler requestIDHandler = null;
     private ExtendedLoadBalancingProxyClient proxyClient;
 
@@ -62,10 +60,12 @@ public class PoolHandler implements HttpHandler {
 
     public PoolHandler(final Pool pool) {
         this.pool = pool;
-        this.defaultHandler = buildPoolHandler();
         if (!"".equals(requestIDHeader)) {
-            this.requestIDHandler = new RequestIDHandler(requestIDHeader);
+            this.requestIDHandler = new RequestIDHandler(requestIDHeader, buildPoolHandler());
+            this.nextHandler = this.requestIDHandler;
+            return;
         }
+        this.nextHandler = buildPoolHandler();
     }
 
     @Override
@@ -78,14 +78,7 @@ public class PoolHandler implements HttpHandler {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
-        if (requestIDHandler != null) {
-            requestIDHandler.handleRequest(exchange);
-        }
-        if (proxyHandler != null) {
-            proxyHandler.handleRequest(exchange);
-        } else {
-            defaultHandler.handleRequest(exchange);
-        }
+        this.nextHandler.handleRequest(exchange);
     }
 
     public Pool getPool() {
@@ -103,7 +96,12 @@ public class PoolHandler implements HttpHandler {
                 proxyClient = getProxyClient();
                 addTargets(proxyClient);
                 proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
-                proxyHandler.handleRequest(exchange);
+                if (this.requestIDHandler != null) {
+                    this.requestIDHandler.setNext(proxyHandler);
+                } else {
+                    this.nextHandler = proxyHandler;
+                }
+                this.nextHandler.handleRequest(exchange);
                 return;
             }
             ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);

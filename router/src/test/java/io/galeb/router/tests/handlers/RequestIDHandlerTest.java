@@ -43,7 +43,7 @@ public class RequestIDHandlerTest {
     private final Log logger = LogFactory.getLog(this.getClass());
     @Test
     public void checkHeader() {
-        RequestIDHandler requestIDHandler = new RequestIDHandler("X-RID");
+        RequestIDHandler requestIDHandler = new RequestIDHandler("X-RID", null);
 
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {

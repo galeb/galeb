@@ -26,9 +26,11 @@ import java.util.UUID;
 public class RequestIDHandler implements HttpHandler {
 
     private final HttpString requestIDHeader;
+    private HttpHandler next;
 
-    public RequestIDHandler(final String requestIDHeader) {
+    public RequestIDHandler(final String requestIDHeader, HttpHandler next) {
         this.requestIDHeader = new HttpString(requestIDHeader);
+        this.next = next;
     }
 
     @Override
@@ -36,6 +38,12 @@ public class RequestIDHandler implements HttpHandler {
         if (!exchange.getRequestHeaders().contains(requestIDHeader)) {
             exchange.getRequestHeaders().add(requestIDHeader, UUID.randomUUID().toString());
         }
+        if (next != null) {
+            next.handleRequest(exchange);
+        }
     }
 
+    public void setNext(HttpHandler next) {
+        this.next = next;
+    }
 }

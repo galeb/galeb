@@ -63,7 +63,7 @@ public class PoolHandler implements HttpHandler {
     public PoolHandler(final Pool pool) {
         this.pool = pool;
         this.defaultHandler = buildPoolHandler();
-        if (!requestIDHeader.equals("")) {
+        if (!"".equals(requestIDHeader)) {
             this.requestIDHandler = new RequestIDHandler(requestIDHeader);
         }
     }

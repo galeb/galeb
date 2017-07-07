@@ -23,6 +23,7 @@ import io.galeb.core.enums.EnumHealthState;
 import io.galeb.health.util.CallBackQueue;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
 import org.slf4j.Logger;
@@ -88,6 +89,11 @@ public class HealthCheckerService {
 
         RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath.get()).setVirtualHost(realHost);
         asyncHttpClient.executeRequest(requestBuilder, new AsyncCompletionHandler<Response>() {
+            @Override
+            public State onBodyPartReceived(HttpResponseBodyPart content) throws Exception {
+                return State.ABORT;
+            }
+
             @Override
             public Response onCompleted(Response response) throws Exception {
                 if (checkFailStatusCode(response)) return response;

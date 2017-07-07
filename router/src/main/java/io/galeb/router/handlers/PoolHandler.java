@@ -49,10 +49,13 @@ public class PoolHandler implements HttpHandler {
     private final int maxRequestTime = Integer.parseInt(SystemEnv.POOL_MAX_REQUEST_TIME.getValue());
     private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
     private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
+    private final String  requestIDHeader = SystemEnv.REQUESTID_HEADER.getValue();
+
 
     private final HttpHandler defaultHandler;
 
     private ProxyHandler proxyHandler = null;
+    private RequestIDHandler requestIDHandler = null;
     private ExtendedLoadBalancingProxyClient proxyClient;
 
     private final Pool pool;
@@ -60,6 +63,9 @@ public class PoolHandler implements HttpHandler {
     public PoolHandler(final Pool pool) {
         this.pool = pool;
         this.defaultHandler = buildPoolHandler();
+        if (!requestIDHeader.equals("")) {
+            this.requestIDHandler = new RequestIDHandler(requestIDHeader);
+        }
     }
 
     @Override
@@ -71,6 +77,9 @@ public class PoolHandler implements HttpHandler {
         if (proxyClient != null && proxyClient.isHostsEmpty()) {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
+        }
+        if (requestIDHandler != null) {
+            requestIDHandler.handleRequest(exchange);
         }
         if (proxyHandler != null) {
             proxyHandler.handleRequest(exchange);

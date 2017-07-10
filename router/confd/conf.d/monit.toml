@@ -1,5 +1,0 @@
-[monit]
-src = "monit_common.conf.tmpl"
-dest = "/opt/monit/monit.conf"
-owner = "root"
-mode = "0644"

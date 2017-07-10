@@ -9,7 +9,7 @@
     <parent>
         <artifactId>galeb-next</artifactId>
         <groupId>io.galeb</groupId>
-        <version>4.0.8rc0-SNAPSHOT</version>
+        <version>4.0.8-SNAPSHOT</version>
     </parent>
 
     <properties>

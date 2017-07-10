@@ -14,15 +14,40 @@
  * limitations under the License.
  */
 
-package io.galeb.router.sync.structure;
+package io.galeb.core.entity;
+
+import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
 
-public class Token implements Serializable {
+public class LockStatus implements Serializable {
+
     private static final long serialVersionUID = 1L;
-    public Boolean admin;
-    public Boolean hasTeam;
-    public String account;
-    public String email;
-    public String token;
+
+    @Expose
+    private String name;
+    @Expose
+    private Date lastModifiedAt;
+    @Expose
+    private boolean hasLock;
+    @Expose
+    private Map<String, Integer> counterDownLatch;
+
+    public String getName() {
+        return name;
+    }
+
+    public Date getLastModifiedAt() {
+        return new Date(lastModifiedAt.getTime());
+    }
+
+    public boolean isHasLock() {
+        return hasLock;
+    }
+
+    public LockStatus() {
+    }
+
 }

@@ -18,12 +18,14 @@ package io.galeb.router.sync;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.SystemEnv;
-import io.galeb.router.sync.structure.FullVirtualhosts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.Serializable;
 
 import static io.galeb.core.logutils.ErrorLogger.logError;
 
@@ -32,7 +34,10 @@ public class ManagerClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
+    private final Gson gson = new GsonBuilder()
+            .setLenient()
+            .serializeNulls()
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
 
     private final String managerUrl = SystemEnv.MANAGER_URL.getValue();
     private final HttpClient httpClient;
@@ -49,7 +54,7 @@ public class ManagerClient {
                     resultCallBack.onResult(HttpClient.NOT_MODIFIED);
                 } else {
                     try {
-                        FullVirtualhosts virtualhosts = gson.fromJson(body, FullVirtualhosts.class);
+                        Virtualhosts virtualhosts = gson.fromJson(body, Virtualhosts.class);
                         resultCallBack.onResult(virtualhosts);
                     } catch (Exception e) {
                         logError(e, this.getClass());
@@ -70,4 +75,11 @@ public class ManagerClient {
     public interface ResultCallBack {
         void onResult(Object result);
     }
+
+    @SuppressWarnings("unused")
+    public static class Virtualhosts implements Serializable {
+        private static final long serialVersionUID = 1L;
+        public VirtualHost[] virtualhosts;
+    }
+
 }

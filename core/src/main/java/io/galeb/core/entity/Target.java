@@ -122,4 +122,20 @@ public class Target extends AbstractEntity<Target> implements WithFarmID<Target>
         return this;
     }
 
+    @Override
+    public EntityStatus getStatus() {
+        return super.getDynamicStatus();
+    }
+
+    @Override
+    @JsonIgnore
+    public String getEnvName() {
+        return getEnvironment().getName();
+    }
+
+    @Override
+    @JsonIgnore
+    public Farm getFarm() {
+        return getFakeFarm();
+    }
 }

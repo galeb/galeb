@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package io.galeb.router.sync.structure;
+package io.galeb.core.entity;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class FullVirtualhosts implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public SimpleEmbeddedVirtualhosts _embedded;
+public abstract class AbstractEntitySyncronizable {
+
+    @JsonIgnore
+    public String getEnvName() { return "NULL"; }
+
+    protected AbstractEntity.EntityStatus getDynamicStatus() {
+        return AbstractEntity.EntityStatus.OK;
+    }
+
+    protected Farm getFakeFarm() {
+        return new Farm().setName("fake").setAutoReload(false);
+    }
 }

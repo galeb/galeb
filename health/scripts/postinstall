@@ -1,0 +1,4 @@
+#!/bin/bash
+chmod 777 -R /opt/galeb/health/logs || true
+mkdir -p /opt/logs/galeb || true
+ln -sf /opt/galeb/health/logs /opt/logs/galeb/health

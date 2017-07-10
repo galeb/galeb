@@ -45,7 +45,7 @@ dist: galeb-next
             -m '<galeb@corp.globo.com>' \
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
-            --rpm-attr 775,daemon,daemon:/opt/logs/galeb/$$service \
+            --after-install scripts/postinstall \
             -f -p ../../galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
         cd $$old; \
     done

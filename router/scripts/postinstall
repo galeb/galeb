@@ -1,0 +1,4 @@
+#!/bin/bash
+chmod 777 -R /opt/galeb/router/logs || true
+mkdir -p /opt/logs/galeb || true
+ln -sf /opt/galeb/router/logs /opt/logs/galeb/router

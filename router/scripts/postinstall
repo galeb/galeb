@@ -2,3 +2,5 @@
 chmod 777 -R /opt/galeb/router/logs || true
 mkdir -p /opt/logs/galeb || true
 ln -sf /opt/galeb/router/logs /opt/logs/galeb/router
+ln -sf /opt/galeb/router/lib/wrapper/bin/initscript /etc/init.d/galeb-router
+/usr/bin/systemctl enable galeb-router || true

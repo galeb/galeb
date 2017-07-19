@@ -23,6 +23,7 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.logutils.ErrorLogger;
+import io.galeb.router.VirtualHostsNotExpired;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -158,7 +159,7 @@ public class Updater {
     }
 
     private void expireHandlers(String virtualhostName) {
-        if ("__ping__".equals(virtualhostName) || "__cache__".equals(virtualhostName)) return;
+        if (Arrays.stream(VirtualHostsNotExpired.values()).anyMatch(s -> s.getHost().equals(virtualhostName))) return;
         if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
             logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
             cleanUpNameVirtualHostHandler(virtualhostName);

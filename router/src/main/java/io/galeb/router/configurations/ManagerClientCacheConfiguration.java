@@ -43,6 +43,7 @@ public class ManagerClientCacheConfiguration {
     public static class ManagerClientCache {
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
         private String envHash = null;
+        private Long timeETag = null;
 
         public VirtualHost get(String hostName) {
             return virtualHosts.get(hostName);
@@ -78,8 +79,13 @@ public class ManagerClientCacheConfiguration {
                                             .distinct()
                                             .collect(Collectors.joining()),
                                     Charsets.UTF_8).toString();
+                timeETag = System.currentTimeMillis();
             }
             return envHash;
+        }
+
+        public Long getTimeETag() {
+            return timeETag;
         }
 
         private String getFullHash(Map.Entry<String, VirtualHost> virtualHostEntry) {

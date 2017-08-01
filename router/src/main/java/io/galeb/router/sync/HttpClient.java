@@ -117,13 +117,14 @@ public class HttpClient {
         return ip.replaceAll("[:%]", "");
     }
 
-    public void post(String url, String etag) {
+    public void post(String url, String etag, Long timeETag) {
         RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                 .setMethod(HttpMethod.POST.name())
                 .setHeader(IF_NONE_MATCH_STRING, etag)
                 .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
                 .setHeader(X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
                 .setHeader(X_GALEB_LOCAL_IP, localIpsEncoded())
+                .setHeader(X_GALEB_TIME_ETAG, timeETag)
                 .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override

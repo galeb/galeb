@@ -55,6 +55,8 @@ public class HealthCheckerService {
     private final CallBackQueue callBackQueue;
     private final AsyncHttpClient asyncHttpClient;
 
+    private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
+
     @Autowired
     public HealthCheckerService(final CallBackQueue callBackQueue) {
         this.callBackQueue = callBackQueue;
@@ -64,7 +66,8 @@ public class HealthCheckerService {
                 .setKeepAlive(keepAlive)
                 .setConnectTimeout(connectionTimeout)
                 .setPooledConnectionIdleTimeout(pooledConnectionIdleTimeout)
-                .setMaxConnectionsPerHost(maxConnectionsPerHost).build());
+                .setMaxConnectionsPerHost(maxConnectionsPerHost)
+                .setUserAgent(HEALTHCHECKER_USERAGENT).build());
     }
 
     @SuppressWarnings({"FutureReturnValueIgnored", "unused"})

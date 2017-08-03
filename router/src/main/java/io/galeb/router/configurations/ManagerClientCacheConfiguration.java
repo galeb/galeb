@@ -16,20 +16,14 @@
 
 package io.galeb.router.configurations;
 
-import com.google.common.base.Charsets;
 import io.galeb.core.entity.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import static com.google.common.hash.Hashing.sha256;
 import static io.galeb.router.sync.Updater.FULLHASH_PROP;
 
 @Configuration
@@ -49,7 +43,7 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized void put(String virtualhostName, final VirtualHost virtualHost) {
-            envHash = null;
+            envHash = virtualHost.getEnvironment().getProperties().get(FULLHASH_PROP);
             virtualHosts.put(virtualhostName, virtualHost);
         }
 
@@ -62,7 +56,6 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized void remove(String virtualhostName) {
-            envHash = null;
             virtualHosts.remove(virtualhostName);
         }
 
@@ -71,19 +64,7 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized String etag() {
-            if (envHash == null) {
-                envHash = sha256().hashString(
-                                    virtualHosts.entrySet().stream().map(this::getFullHash)
-                                            .sorted()
-                                            .distinct()
-                                            .collect(Collectors.joining()),
-                                    Charsets.UTF_8).toString();
-            }
-            return envHash;
-        }
-
-        private String getFullHash(Map.Entry<String, VirtualHost> virtualHostEntry) {
-            return Optional.ofNullable(virtualHostEntry.getValue().getProperties().get(FULLHASH_PROP)).orElse("");
+            return envHash == null ? "EMPTY" : envHash;
         }
 
         public List<VirtualHost> values() {

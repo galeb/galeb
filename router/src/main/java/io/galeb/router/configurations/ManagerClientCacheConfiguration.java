@@ -19,6 +19,7 @@ package io.galeb.router.configurations;
 import io.galeb.core.entity.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,11 @@ public class ManagerClientCacheConfiguration {
     }
 
     public static class ManagerClientCache {
+
+        public static final String EMPTY = "EMPTY";
+
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
+
         private String envHash = null;
 
         public VirtualHost get(String hostName) {
@@ -64,11 +69,21 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized String etag() {
-            return envHash == null ? "EMPTY" : envHash;
+            return envHash == null ? EMPTY : envHash;
+        }
+
+        public synchronized void updateEtag(String newHash) {
+            Assert.notNull(newHash, "Update Etag not possible: new Hash IS NULL");
+            if (!newHash.equals(this.envHash)) this.envHash = newHash;
         }
 
         public List<VirtualHost> values() {
             return new ArrayList<>(virtualHosts.values());
+        }
+
+        public synchronized void clear() {
+            envHash = null;
+            virtualHosts.clear();
         }
     }
 }

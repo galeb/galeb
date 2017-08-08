@@ -81,6 +81,7 @@ public class Updater {
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
+                    updateEtagIfNecessary(virtualhosts);
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
                     logger.info("Processed " + count + " virtualhost(s): Done");
@@ -104,6 +105,16 @@ public class Updater {
                 ErrorLogger.logError(e, this.getClass());
             }
         }
+    }
+
+    private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {
+        final String etag;
+        if (!virtualhosts.isEmpty()) {
+            etag = virtualhosts.get(0).getEnvironment().getProperties().get(FULLHASH_PROP);
+        } else {
+            etag = ManagerClientCache.EMPTY;
+        }
+        cache.updateEtag(etag);
     }
 
     private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {

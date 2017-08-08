@@ -43,9 +43,10 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized void put(String virtualhostName, final VirtualHost virtualHost) {
-            envHash = virtualHost.getEnvironment().getProperties().get(FULLHASH_PROP);
             virtualHosts.put(virtualhostName, virtualHost);
         }
+
+        public void setEtag(String etag) {envHash = etag;}
 
         public boolean isEmpty() {
             return virtualHosts.isEmpty();

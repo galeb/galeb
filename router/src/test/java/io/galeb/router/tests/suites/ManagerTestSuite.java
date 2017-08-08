@@ -17,6 +17,7 @@
 
 package io.galeb.router.tests.suites;
 
+import io.galeb.router.tests.cache.ManagerClientCacheTest;
 import io.galeb.router.tests.client.ExtendedLoadBalancingProxyClientTest;
 import io.galeb.router.tests.cucumber.CucumberTest;
 import io.galeb.router.tests.handlers.PathGlobHandlerTest;
@@ -39,6 +40,7 @@ import org.junit.runners.Suite;
         ExtendedLoadBalancingProxyClientTest.class,
         GuavaConsistentHashTest.class,
         PathGlobHandlerTest.class,
+        ManagerClientCacheTest.class,
         CucumberTest.class
 })
 public class ManagerTestSuite {

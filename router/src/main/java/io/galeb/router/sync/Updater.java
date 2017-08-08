@@ -83,6 +83,7 @@ public class Updater {
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
+                    cache.setEtag(virtualhosts.stream().findAny().get().getEnvironment().getProperties().get(FULLHASH_PROP));
                     logger.info("Processed " + count + " virtualhost(s): Done");
                 } else {
                     logger.error("Virtualhosts Empty. Request problem?");

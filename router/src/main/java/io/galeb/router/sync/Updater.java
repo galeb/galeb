@@ -19,11 +19,13 @@ package io.galeb.router.sync;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.galeb.core.entity.Pool;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.VirtualHostsNotExpired;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -36,12 +38,12 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static io.galeb.router.handlers.PoolHandler.PROP_CONN_PER_THREAD;
+import static io.galeb.router.handlers.PoolHandler.PROP_DISCOVERED_MEMBERS_SIZE;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
@@ -81,7 +83,7 @@ public class Updater {
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
-                    updateEtagIfNecessary(virtualhosts);
+                    updateEtagAndNumRoutersIfNecessary(virtualhosts);
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
                     logger.info("Processed " + count + " virtualhost(s): Done");
@@ -107,14 +109,29 @@ public class Updater {
         }
     }
 
-    private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {
+    private void updateEtagAndNumRoutersIfNecessary(final List<VirtualHost> virtualhosts) {
         final String etag;
+        final int numRouters;
         if (!virtualhosts.isEmpty()) {
-            etag = virtualhosts.get(0).getEnvironment().getProperties().get(FULLHASH_PROP);
+            final VirtualHost virtualhost = virtualhosts.get(0);
+            etag = virtualhost.getEnvironment().getProperties().get(FULLHASH_PROP);
+            numRouters = virtualhost.getRules().stream()
+                            .mapToInt(rule -> {
+                                final Pool pool = rule.getPool();
+                                if (pool != null) {
+                                    final String membersSizeProp = pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE);
+                                    return Integer.parseInt(Optional.ofNullable(membersSizeProp).orElse("1"));
+                                } else {
+                                    return  1;
+                                }
+                            })
+                            .max().orElse(1);
         } else {
             etag = ManagerClientCache.EMPTY;
+            numRouters = 1;
         }
         cache.updateEtag(etag);
+        updateConnectionsPerThread(numRouters);
     }
 
     private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
@@ -169,25 +186,12 @@ public class Updater {
         count++;
     }
 
-    private void expireHandlers(String virtualhostName) {
-        if (Arrays.stream(VirtualHostsNotExpired.values()).anyMatch(s -> s.getHost().equals(virtualhostName))) return;
-        if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
-            logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
-            cleanUpNameVirtualHostHandler(virtualhostName);
-            nameVirtualHostHandler.removeHost(virtualhostName);
-        }
+    private HttpHandler getHostHandler(final String virtualhostName) {
+        if (Arrays.stream(VirtualHostsNotExpired.values()).anyMatch(s -> s.getHost().equals(virtualhostName))) return null;
+        return nameVirtualHostHandler.getHosts().get(virtualhostName);
     }
 
-    private void cleanPoolHandler(final PoolHandler poolHandler) {
-        final ProxyHandler proxyHandler = poolHandler.getProxyHandler();
-        if (proxyHandler != null) {
-            final ExtendedProxyClient proxyClient = (ExtendedProxyClient) proxyHandler.getProxyClient();
-            proxyClient.removeAllHosts();
-        }
-    }
-
-    private void cleanUpNameVirtualHostHandler(String virtualhost) {
-        final HttpHandler handler = nameVirtualHostHandler.getHosts().get(virtualhost);
+    private RuleTargetHandler getRuleTargetHandler(final HttpHandler handler) {
         RuleTargetHandler ruleTargetHandler = null;
         if (handler instanceof RuleTargetHandler) {
             ruleTargetHandler = (RuleTargetHandler)handler;
@@ -195,21 +199,85 @@ public class Updater {
         if (handler instanceof IPAddressAccessControlHandler) {
             ruleTargetHandler = (RuleTargetHandler) ((IPAddressAccessControlHandler) handler).getNext();
         }
+        return ruleTargetHandler;
+    }
+
+    private List<PoolHandler> getPoolHandlers(final RuleTargetHandler ruleTargetHandler) {
+        final List<PoolHandler> poolHandlers = new ArrayList<>();
         if (ruleTargetHandler != null) {
-            final PoolHandler poolHandler = ruleTargetHandler.getPoolHandler();
-            if (poolHandler != null) {
-                cleanPoolHandler(poolHandler);
+            poolHandlers.add(ruleTargetHandler.getPoolHandler());
+            final PathGlobHandler pathGlobHandler = ruleTargetHandler.getPathGlobHandler();
+            pathGlobHandler.getPaths().forEach((k, poolHandler) -> poolHandlers.add((PoolHandler) poolHandler));
+        }
+        return poolHandlers;
+    }
+
+    private ExtendedLoadBalancingProxyClient getExtendedProxyClient(final PoolHandler poolHandler) {
+        if (poolHandler != null) {
+            final ProxyHandler proxyHandler = poolHandler.getProxyHandler();
+            if (proxyHandler != null) {
+                return (ExtendedLoadBalancingProxyClient) proxyHandler.getProxyClient();
             } else {
-                cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+                return null;
             }
+        }
+        return null;
+    }
+
+    private void updateConnectionsPerThread(int numRouters) {
+        nameVirtualHostHandler.getHosts().forEach((String key, HttpHandler value) -> {
+            final HttpHandler hostHandler = getHostHandler(key);
+            if (hostHandler != null) {
+                final RuleTargetHandler ruleTargetHandler = getRuleTargetHandler(hostHandler);
+                if (ruleTargetHandler != null) {
+                    getPoolHandlers(ruleTargetHandler).forEach(p -> {
+                        final Pool pool = p.getPool();
+                        final ExtendedLoadBalancingProxyClient proxyClient = getExtendedProxyClient(p);
+                        int connPerThread = connPerThread(numRouters, pool);
+                        proxyClient.setConnectionsPerThread(connPerThread);
+                    });
+                }
+            }
+        });
+    }
+
+    private int connPerThread(int numRouters, final Pool pool) {
+        int poolMaxConn = Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
+        int connPerThread = poolMaxConn / Integer.parseInt(SystemEnv.IO_THREADS.getValue());
+        String propConnPerThread = pool.getProperties().get(PROP_CONN_PER_THREAD);
+        if (propConnPerThread != null) {
+            try {
+                connPerThread = Integer.parseInt(propConnPerThread);
+            } catch (NumberFormatException ignore) {}
+        }
+        float discoveryMembersSize = Math.max((float) numRouters, 1.0f);
+        connPerThread = Math.round((float) connPerThread / discoveryMembersSize);
+        return connPerThread;
+    }
+
+    private void expireHandlers(final String virtualhostName) {
+        final HttpHandler hostHandler = getHostHandler(virtualhostName);
+        if (hostHandler != null) {
+            cleanUpNameVirtualHostHandler(hostHandler);
+            nameVirtualHostHandler.removeHost(virtualhostName);
         }
     }
 
+    private void cleanPoolHandler(final PoolHandler poolHandler) {
+        final ExtendedProxyClient proxyClient = getExtendedProxyClient(poolHandler);
+        if (proxyClient != null) {
+            proxyClient.removeAllHosts();
+        }
+    }
+
+    private void cleanUpNameVirtualHostHandler(final HttpHandler handler) {
+        final RuleTargetHandler ruleTargetHandler = getRuleTargetHandler(handler);
+        getPoolHandlers(ruleTargetHandler).forEach(this::cleanPoolHandler);
+        cleanUpPathGlobHandler(ruleTargetHandler.getPathGlobHandler());
+    }
+
     private void cleanUpPathGlobHandler(final PathGlobHandler pathGlobHandler) {
-        pathGlobHandler.getPaths().forEach((k, poolHandler) -> {
-            cleanPoolHandler((PoolHandler) poolHandler);
-        });
-        pathGlobHandler.clear();
+        if (pathGlobHandler != null) pathGlobHandler.clear();
     }
 
 }

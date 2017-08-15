@@ -18,10 +18,10 @@
   <Loggers>
     <Logger name="org.xnio.listener" level="FATAL" additivity="false"/>
     <Logger name="io.undertow.request" level="FATAL" additivity="false"/>
-    <Logger name="io.galeb.router.handlers.completionListeners.AccessLogCompletionListener" level="debug" additivity="false">
+    <Logger name="io.galeb.router.handlers.completionListeners.AccessLogCompletionListener" level="INFO" additivity="false">
       <AppenderRef ref="SyslogAccess" level="${env:LOGLEVEL}"/>
     </Logger>
-    <Root level="trace">
+    <Root level="INFO">
       <AppenderRef ref="SyslogApp" level="${env:LOGLEVEL}"/>
     </Root>
   </Loggers>

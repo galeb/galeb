@@ -41,6 +41,7 @@ import org.junit.runners.Suite;
         ExtendedLoadBalancingProxyClientTest.class,
         GuavaConsistentHashTest.class,
         PathGlobHandlerTest.class,
+        RequestIDHandlerTest.class,
         ManagerClientCacheTest.class,
         RequestIDHandlerTest.class,
         CucumberTest.class

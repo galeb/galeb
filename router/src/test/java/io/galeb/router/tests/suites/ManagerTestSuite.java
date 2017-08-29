@@ -43,7 +43,6 @@ import org.junit.runners.Suite;
         PathGlobHandlerTest.class,
         RequestIDHandlerTest.class,
         ManagerClientCacheTest.class,
-        RequestIDHandlerTest.class,
         CucumberTest.class
 })
 public class ManagerTestSuite {

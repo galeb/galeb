@@ -16,34 +16,38 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 
 import java.util.UUID;
 
-
 public class RequestIDHandler implements HttpHandler {
 
-    private final HttpString requestIDHeader;
-    private HttpHandler next;
+    private final HttpString requestIdHeader = getRequestId();
 
-    public RequestIDHandler(final String requestIDHeader, HttpHandler next) {
-        this.requestIDHeader = new HttpString(requestIDHeader);
-        this.next = next;
+    private HttpHandler next = null;
+
+    private static HttpString getRequestId() {
+        return HttpString.tryFromString(System.getProperty("REQUEST_ID", SystemEnv.REQUESTID_HEADER.getValue()));
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (!exchange.getRequestHeaders().contains(requestIDHeader)) {
-            exchange.getRequestHeaders().add(requestIDHeader, UUID.randomUUID().toString());
+        if (requestIdHeader != null && !exchange.getRequestHeaders().contains(requestIdHeader)) {
+            exchange.getRequestHeaders().add(requestIdHeader, UUID.randomUUID().toString());
         }
         if (next != null) {
             next.handleRequest(exchange);
+        } else {
+            if (exchange.getRequestURI() != null) ResponseCodeOnError.PROXY_HANDLER_NULL.getHandler().handleRequest(exchange);
         }
     }
 
-    public void setNext(HttpHandler next) {
+    public RequestIDHandler setNext(HttpHandler next) {
         this.next = next;
+        return this;
     }
 }

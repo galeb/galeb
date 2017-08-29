@@ -28,6 +28,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.when;
 
 import io.galeb.router.handlers.RequestIDHandler;
 import io.undertow.server.HttpServerExchange;
@@ -40,11 +41,14 @@ import org.junit.Test;
 
 public class RequestIDHandlerTest {
 
+    static {
+        System.setProperty("REQUEST_ID", "X-RID");
+    }
+
     private final Log logger = LogFactory.getLog(this.getClass());
     @Test
     public void checkHeader() {
-        RequestIDHandler requestIDHandler = new RequestIDHandler("X-RID", null);
-
+        RequestIDHandler requestIDHandler = new RequestIDHandler();
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {
             HttpServerExchange exchange = new HttpServerExchange(serverConnection);

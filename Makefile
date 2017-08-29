@@ -5,7 +5,7 @@ RELEASE=1
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
 
-galeb-next: clean
+galeb: clean
 	mvn package -DskipTests
 
 test:
@@ -16,7 +16,7 @@ clean:
 	rm -f galeb-router-${RPM_VER}-1.el7.noarch.rpm
 	rm -f galeb-health-${RPM_VER}-1.el7.noarch.rpm
 
-dist: galeb-next
+dist: galeb
 	type fpm > /dev/null 2>&1 && \
     for service in router health ; do \
         old=$$(pwd) && \

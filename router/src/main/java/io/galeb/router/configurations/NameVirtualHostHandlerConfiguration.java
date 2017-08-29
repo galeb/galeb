@@ -16,6 +16,8 @@
 
 package io.galeb.router.configurations;
 
+import io.galeb.router.VirtualHostsNotExpired;
+import io.galeb.router.handlers.InfoHandler;
 import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
 import io.galeb.router.handlers.PingHandler;
 import io.galeb.router.handlers.ShowVirtualHostCachedHandler;
@@ -31,22 +33,26 @@ public class NameVirtualHostHandlerConfiguration {
     private final HttpHandler nameVirtualHostDefaultHandler;
     private final PingHandler pingHandler;
     private final ShowVirtualHostCachedHandler showVirtualHostCachedHandler;
+    private final InfoHandler infoHandler;
 
     @Autowired
     public NameVirtualHostHandlerConfiguration(final NameVirtualHostDefaultHandler nameVirtualHostDefaultHandler,
                                                final ShowVirtualHostCachedHandler showVirtualHostCachedHandler,
-                                               final PingHandler pingHandler) {
+                                               final PingHandler pingHandler,
+                                               final InfoHandler infoHandler) {
         this.nameVirtualHostDefaultHandler = nameVirtualHostDefaultHandler;
         this.showVirtualHostCachedHandler = showVirtualHostCachedHandler;
         this.pingHandler = pingHandler;
+        this.infoHandler = infoHandler;
     }
 
     @Bean
     NameVirtualHostHandler nameVirtualHostHandler() {
         final NameVirtualHostHandler nameVirtualHostHandler = new NameVirtualHostHandler();
         nameVirtualHostHandler.setDefaultHandler(nameVirtualHostDefaultHandler);
-        nameVirtualHostHandler.addHost("__ping__", pingHandler);
-        nameVirtualHostHandler.addHost("__cache__", showVirtualHostCachedHandler);
+        nameVirtualHostHandler.addHost(VirtualHostsNotExpired.PING.getHost(), pingHandler);
+        nameVirtualHostHandler.addHost(VirtualHostsNotExpired.CACHE.getHost(), showVirtualHostCachedHandler);
+        nameVirtualHostHandler.addHost(VirtualHostsNotExpired.INFO.getHost(), infoHandler);
         return nameVirtualHostHandler;
     }
 

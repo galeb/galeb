@@ -9,19 +9,19 @@
   </Properties>
   <Appenders>
     <Socket name="SyslogAccess" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: %m\ttags: ${tags},ACCESS%n"/>
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: %m\ttags: ${tags},ROUTER,ACCESS%n"/>
     </Socket>
     <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %enc{%m} %exception\ttags: ${tags},APP%n"/>
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %enc{%m} %exception\ttags: ${tags},ROUTER,APP%n"/>
     </Socket>
   </Appenders>
   <Loggers>
     <Logger name="org.xnio.listener" level="FATAL" additivity="false"/>
     <Logger name="io.undertow.request" level="FATAL" additivity="false"/>
-    <Logger name="io.galeb.router.handlers.completionListeners.AccessLogCompletionListener" level="debug" additivity="false">
+    <Logger name="io.galeb.router.handlers.completionListeners.AccessLogCompletionListener" level="INFO" additivity="false">
       <AppenderRef ref="SyslogAccess" level="${env:LOGLEVEL}"/>
     </Logger>
-    <Root level="trace">
+    <Root level="INFO">
       <AppenderRef ref="SyslogApp" level="${env:LOGLEVEL}"/>
     </Root>
   </Loggers>

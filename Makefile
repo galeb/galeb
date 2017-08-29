@@ -1,6 +1,6 @@
-RPM_VER=4.0.8
-VERSION=${RPM_VER}rc0
-RELEASE=0rc0
+RPM_VER=4.0.14
+VERSION=${RPM_VER}
+RELEASE=1
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
@@ -45,7 +45,7 @@ dist: galeb-next
             -m '<galeb@corp.globo.com>' \
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
-            --rpm-attr 775,daemon,daemon:/opt/logs/galeb/$$service \
+            --after-install scripts/postinstall \
             -f -p ../../galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
         cd $$old; \
     done

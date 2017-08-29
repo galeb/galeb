@@ -104,6 +104,7 @@ public class StepDefs {
         response = null;
         backendService.stop();
         backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
+        this.headers.remove("host");
         this.headers.add("host", ("valid".equals(expression) ? "test.com" : expression));
     }
 

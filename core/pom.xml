@@ -7,7 +7,7 @@
     <version>${parent.version}</version>
 
     <parent>
-        <artifactId>galeb-next</artifactId>
+        <artifactId>galeb-parent</artifactId>
         <groupId>io.galeb</groupId>
         <version>4.0.14-SNAPSHOT</version>
     </parent>

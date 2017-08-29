@@ -2,11 +2,11 @@ GALEB 4
 
 1. Using Makefile
 
-1.1. Building docs
+1.1. Building docs (requires Doxygen)
 
 # make doc
 
-1.2. Building rpm
+1.2. Building RH7/EL7 rpm (requires FPM)
 
 # make dist
 
@@ -22,10 +22,10 @@ GALEB 4
 # export MANAGER_URL=http://manager.localhost:8000
 # export GROUP_ID=blue
 # export ENVIRONMENT_NAME=desenv
-# cd router && mvn clean package -DskipTests spring-boot:run
+# cd router && mvn spring-boot:run
 
 3.2. Running health
 
 # export BROKER_CONN="tcp://broker.localhost:61616?blockOnDurableSend=false&consumerWindowSize=0&protocols=Core"
-# cd health && mvn clean package -DskipTests spring-boot:run
+# cd health && mvn spring-boot:run
 

@@ -64,7 +64,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final String message =
                     remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto +
                     TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
-                    TAB + "-" + TAB + "-" + TAB + "Local:" + TAB + statusCode + TAB + "*-" +
+                    TAB + "Local:" + TAB + statusCode + TAB + "*-" +
                     TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
                     TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
                     TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +

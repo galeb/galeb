@@ -26,12 +26,12 @@ import java.util.UUID;
 
 public class RequestIDHandler implements HttpHandler {
 
-    private final HttpString requestIdHeader = getRequestId();
+    private final HttpString requestIdHeader = requestIdHeader();
 
     private HttpHandler next = null;
 
-    private static HttpString getRequestId() {
-        return HttpString.tryFromString(System.getProperty("REQUEST_ID", SystemEnv.REQUESTID_HEADER.getValue()));
+    public static HttpString requestIdHeader() {
+        return HttpString.tryFromString(System.getProperty("REQUESTID_HEADER", SystemEnv.REQUESTID_HEADER.getValue()));
     }
 
     @Override

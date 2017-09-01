@@ -42,7 +42,7 @@ import org.junit.Test;
 public class RequestIDHandlerTest {
 
     static {
-        System.setProperty("REQUEST_ID", "X-RID");
+        System.setProperty("REQUESTID_HEADER", "X-RID");
     }
 
     private final Log logger = LogFactory.getLog(this.getClass());

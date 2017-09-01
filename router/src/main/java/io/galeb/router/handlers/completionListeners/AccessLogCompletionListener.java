@@ -16,56 +16,66 @@
 
 package io.galeb.router.handlers.completionListeners;
 
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelector;
-import io.undertow.attribute.ExchangeAttribute;
-import io.undertow.attribute.ExchangeAttributes;
-import io.undertow.attribute.SubstituteEmptyWrapper;
+import io.galeb.router.handlers.RequestIDHandler;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.HeaderMap;
+import io.undertow.util.Headers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static io.galeb.router.ResponseCodeOnError.Header.X_GALEB_ERROR;
+import static io.undertow.attribute.ExchangeAttributes.*;
 
 @Component
 public class AccessLogCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final int MAX_REQUEST_TIME = Integer.MAX_VALUE - 1;
-    private static final String REAL_DEST = "#REAL_DEST#";
-    private static final String LOGPATTERN = "%a\t%v\t%r\t-\t-\tLocal:\t%s\t*-\t%B\t%D\tProxy:\t" +
-                                             REAL_DEST +
-                                             "\t%s\t-\t%b\t-\t-\tAgent:\t%{i,User-Agent}\tFwd:\t%{i,X-Forwarded-For}";
+    private static final String REQUESTID_HEADER = SystemEnv.REQUESTID_HEADER.getValue();
+    private static final String TAGS = "GALEB," + SystemEnv.GROUP_ID.getValue() + "," + SystemEnv.ENVIRONMENT_NAME.getValue() + ",ROUTER,ACCESS";
+    private static final String TAB = "\t";
 
     private final Log logger = LogFactory.getLog(this.getClass());
-
-    private final ExchangeAttribute tokens = ExchangeAttributes.parser(getClass().getClassLoader(), new SubstituteEmptyWrapper("-")).parse(LOGPATTERN);
 
     @Override
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
-            final String tempRealDest = exchange.getAttachment(HostSelector.REAL_DEST);
-            String realDest = extractUpstreamField(exchange.getResponseHeaders(), tempRealDest);
-            String message = tokens.readAttribute(exchange);
-            int realStatus = exchange.getStatusCode();
-            long responseBytesSent = exchange.getResponseBytesSent();
-            final Integer responseTime = Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange)));
-            int fakeStatusCode = getFakeStatusCode(tempRealDest, realStatus, responseBytesSent, responseTime, MAX_REQUEST_TIME);
-            if (fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED) {
-                message = message.replaceAll("^(.*Local:\t)\\d{3}(\t.*Proxy:\t.*\t)\\d{3}(\t.*)$",
-                        "$1" + String.valueOf(fakeStatusCode) + "$2" + String.valueOf(fakeStatusCode) + "$3");
-            }
-            Pattern compile = Pattern.compile("([^\\t]*\\t[^\\t]*\\t)([^\\t]+)(\\t.*)$");
-            Matcher match = compile.matcher(message);
-            if (match.find()) {
-                message = match.group(1) + match.group(2).replace(" ", "\t") + match.group(3);
-            }
-            logger.info(message.replaceAll(REAL_DEST, realDest));
+            final String remoteAddr = remoteIp().readAttribute(exchange); // %a
+            final String host = localServerName().readAttribute(exchange); // %v
+            final String requestElements[] = requestList().readAttribute(exchange).split(" "); // %r
+            final String method = exchange.getRequestMethod().toString();
+            final String requestUri = exchange.getRequestURI();
+            final String proto = exchange.getProtocol().toString();
+            final String refer = requestElements.length > 2 ? requestElements[2] : null;
+            final String xMobileGroup = requestElements.length > 3 ? requestElements[3] : null;
+            final int originalStatusCode = Integer.parseInt(responseCode().readAttribute(exchange)); // %s
+            final long responseBytesSent = exchange.getResponseBytesSent();
+            final String bytesSent = Long.toString(responseBytesSent); // %B
+            final String bytesSentOrDash = responseBytesSent == 0L ? "-" : bytesSent; // %b
+            final Integer responseTime = Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange))); // %D
+            final String realDestAttached = exchange.getAttachment(HostSelector.REAL_DEST);
+            final String realDest = extractUpstreamField(exchange.getResponseHeaders(), realDestAttached);
+            final String userAgent = requestHeader(Headers.USER_AGENT).readAttribute(exchange); // %{i,User-Agent}
+            final String requestId = !"".equals(REQUESTID_HEADER) ? requestHeader(RequestIDHandler.requestIdHeader()).readAttribute(exchange) : null; // %{i,?REQUEST_ID?}
+            final String xForwardedFor = requestHeader(Headers.X_FORWARDED_FOR).readAttribute(exchange); // %{i,X-Forwarded-For}
+
+            final int fakeStatusCode = getFakeStatusCode(realDestAttached, originalStatusCode, responseBytesSent, responseTime, MAX_REQUEST_TIME);
+            final int statusCode = fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
+
+            final String message =
+                    remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto + TAB + refer + xMobileGroup +
+                    TAB + "-" + TAB + "-" + TAB + "Local:" + TAB + statusCode + TAB + "*-" +
+                    TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
+                    TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
+                    TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
+                    (!"".equals(REQUESTID_HEADER) && requestId != null ? TAB + requestId : "") +
+                    TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
+                    TAB + TAGS;
+
+            logger.info(message);
+
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         } finally {

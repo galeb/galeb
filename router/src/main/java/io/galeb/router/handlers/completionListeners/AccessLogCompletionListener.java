@@ -48,8 +48,8 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final String method = exchange.getRequestMethod().toString();
             final String requestUri = exchange.getRequestURI();
             final String proto = exchange.getProtocol().toString();
-            final String refer = requestElements.length > 2 ? requestElements[2] : null;
-            final String xMobileGroup = requestElements.length > 3 ? requestElements[3] : null;
+            final String refer = requestElements.length > 3 ? requestElements[3] : null;
+            final String xMobileGroup = requestElements.length > 4 ? requestElements[4] : null;
             final int originalStatusCode = Integer.parseInt(responseCode().readAttribute(exchange)); // %s
             final long responseBytesSent = exchange.getResponseBytesSent();
             final String bytesSent = Long.toString(responseBytesSent); // %B
@@ -65,14 +65,14 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final int statusCode = fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
 
             final String message =
-                    remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto + TAB + refer + xMobileGroup +
-                    TAB + "-" + TAB + "-" + TAB + "Local:" + TAB + statusCode + TAB + "*-" +
+                    remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto +
+                    TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
+                    TAB + "Local:" + TAB + statusCode + TAB + "*-" +
                     TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
                     TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
                     TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
-                    (!"".equals(REQUESTID_HEADER) && requestId != null ? TAB + requestId : "") +
                     TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
-                    TAB + TAGS;
+                    TAB + "tags: " + TAGS;
 
             logger.info(message);
 

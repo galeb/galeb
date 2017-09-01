@@ -31,6 +31,8 @@ import static io.undertow.attribute.ExchangeAttributes.*;
 @Component
 public class AccessLogCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
+    private static final boolean ACCESSLOG_JSON = Boolean.valueOf(SystemEnv.ACCESSLOG_JSON.getValue());
+
     private static final int MAX_REQUEST_TIME = Integer.MAX_VALUE - 1;
     private static final String TAGS = "GALEB," + SystemEnv.GROUP_ID.getValue() + "," + SystemEnv.ENVIRONMENT_NAME.getValue() + ",ROUTER,ACCESS";
     private static final String TAB = "\t";
@@ -61,17 +63,46 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final int fakeStatusCode = getFakeStatusCode(realDestAttached, originalStatusCode, responseBytesSent, responseTime, MAX_REQUEST_TIME);
             final int statusCode = fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
 
-            final String message =
-                    remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto +
-                    TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
-                    TAB + "Local:" + TAB + statusCode + TAB + "*-" +
-                    TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
-                    TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
-                    TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
-                    TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
-                    TAB + "tags: " + TAGS;
+            if (ACCESSLOG_JSON) {
+                final String json =
+                        "{" +
+                                "\"remote_addr\":\"" + remoteAddr + "\"," +
+                                "\"host\":\"" + host + "\"," +
+                                "\"method\":\"" + method + "\"," +
+                                "\"request_uri\":\"" + requestUri + "\"," +
+                                "\"server_protocol\":\"" + proto + "\"," +
+                                "\"http_referer\":\"" + refer + "\"," +
+                                "\"http_x_mobile_group\":\"" + xMobileGroup + "\"," +
+                                "\"status\":\"" + statusCode + "\"," +
+                                "\"connection\":\"*-\"," +
+                                "\"body_bytes_sent\":\"" + bytesSent + "\"," +
+                                "\"request_time\":\"" + responseTime + "\"," +
+                                "\"upstream_addr\":\"" + realDest + "\"," +
+                                "\"upstream_status\":\"" + statusCode + "\"," +
+                                "\"upstream_cache_status\":\"-\"," +
+                                "\"upstream_response_length\":\"" + bytesSent + "\"," +
+                                "\"upstream_response_time\":\"-\"," +
+                                "\"uri\":\"-\"," +
+                                "\"http_user_agent\":\"" + (userAgent != null ? userAgent : "-") + "\"," +
+                                "\"http_x_forwarded_for\":\"" + (xForwardedFor != null ? xForwardedFor : "-") + "\"," +
+                                "\"tags\":\"" + TAGS + "\"," +
+                                "\"level\":\"info\"" +
+                                "}";
+                logger.info(json);
 
-            logger.info(message);
+            } else {
+                final String message =
+                        remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto +
+                                TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
+                                TAB + "Local:" + TAB + statusCode + TAB + "*-" +
+                                TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
+                                TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
+                                TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
+                                TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
+                                TAB + "tags: " + TAGS;
+
+                logger.info(message);
+            }
 
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));

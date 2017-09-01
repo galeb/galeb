@@ -203,6 +203,11 @@ public enum SystemEnv {
     ENABLE_ACCESSLOG      ("ENABLE_ACCESSLOG",      Boolean.TRUE),
 
     /**
+     * AccessLog (JSON Layout)
+     */
+    ACCESSLOG_JSON("ACCESSLOG_JSON", Boolean.FALSE),
+
+    /**
      * Enable send metrics to statsd server. See STATSD_HOST and STATSD_PORT.
      */
     ENABLE_STATSD         ("ENABLE_STATSD",         Boolean.TRUE),

@@ -71,6 +71,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
                     TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
                     TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
                     TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
+                    (requestId != null ? TAB + requestId : "") +
                     TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
                     TAB + "tags: " + TAGS;
 

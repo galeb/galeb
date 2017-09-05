@@ -223,6 +223,11 @@ public enum SystemEnv {
     REWRITE_HOST_HEADER   ("REWRITE_HOST_HEADER",   Boolean.FALSE),
 
     /**
+     * Request header to store a UUIDv4 representing the current request, if not already set.
+     */
+    REQUESTID_HEADER      ("REQUESTID_HEADER",      ""),
+
+    /**
      * HashSourceIpHostSelector exclusive use. Dont uses Header X-FORWARDED-FOR as Hash key.
      */
     IGNORE_XFORWARDED_FOR ("IGNORE_XFORWARDED_FOR", Boolean.FALSE),

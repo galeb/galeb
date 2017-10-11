@@ -63,6 +63,21 @@ public class RequestIDHandlerTest {
         }
     }
 
+    @Test
+    public void checkHeaderIgnoreCase() {
+        System.setProperty("REQUESTID_HEADER", "X-RID");
+
+        RequestIDHandler requestIDHandler = new RequestIDHandler();
+        ServerConnection serverConnection = mock(ServerConnection.class);
+        try {
+            HttpServerExchange exchange = new HttpServerExchange(serverConnection);
+            requestIDHandler.handleRequest(exchange);
+            assertThat(exchange.getRequestHeaders().get("x-rid"), Matchers.notNullValue());
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
     private void assertWithHeaderPreExisting(RequestIDHandler requestIDHandler, ServerConnection serverConnection) throws AssertionError {
         HttpServerExchange exchangeWithHeader = newExchangeWithHeader(serverConnection);
         try {

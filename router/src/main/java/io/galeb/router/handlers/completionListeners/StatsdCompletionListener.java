@@ -31,10 +31,16 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
+import static io.galeb.router.handlers.PoolHandler.POOL_NAME;
+
 @Component
 public class StatsdCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final String UNDEF = "UNDEF";
+
+    private static final String VH_PREFIX   = "VH_";
+    private static final String ENV_PREFIX  = "ENV_";
+    private static final String POOL_PREFIX = "POOL_";
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -52,6 +58,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     @Override
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
+            String poolName = exchange.getAttachment(POOL_NAME);
             String virtualhost = exchange.getHostName();
             virtualhost = virtualhost != null ? virtualhost : UNDEF;
             String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
@@ -61,14 +68,18 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer statusCode = exchange.getStatusCode();
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
-            final String statsdKeyFull = cleanUpKey(virtualhost) + "." + cleanUpKey(targetUri);
-            final String statsdKeyVirtualHost = cleanUpKey(virtualhost);
-            final String statsdKeyEnvironmentName = "_" + ENVIRONMENT_NAME;
+            final String statsdKeyFull = cleanUpKey(VH_PREFIX + virtualhost) + "." + cleanUpKey(targetUri);
+            final String statsdKeyVirtualHost = cleanUpKey(VH_PREFIX + virtualhost);
+            final String statsdKeyEnvironmentName = ENV_PREFIX + ENVIRONMENT_NAME;
 
             Set<String> keys = new HashSet<>();
             keys.add(statsdKeyFull);
             keys.add(statsdKeyVirtualHost);
             keys.add(statsdKeyEnvironmentName);
+            if (poolName != null) {
+                final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
+                keys.add(statsdKeyPool);
+            }
 
             sendStatusCodeCount(keys, statusCode, targetIsUndef);
             sendHttpMethodCount(keys, method);

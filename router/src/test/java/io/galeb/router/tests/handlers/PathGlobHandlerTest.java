@@ -41,25 +41,25 @@ public class PathGlobHandlerTest {
 
     @Test
     public void pathOrderedTest() {
-        PathGlobHandler.PathOrdered pathOrdered1 = new PathGlobHandler.PathOrdered("x", 0);
+        PathGlobHandler.PathOrdered pathOrdered1 = new PathGlobHandler.PathOrdered("x", "y", 0);
         assertThat(pathOrdered1.compareTo(null), is(-1));
 
-        PathGlobHandler.PathOrdered pathOrdered2 = new PathGlobHandler.PathOrdered("x", 0);
+        PathGlobHandler.PathOrdered pathOrdered2 = new PathGlobHandler.PathOrdered("x", "y",0);
 
         assertThat(pathOrdered1.equals(pathOrdered2), is(true));
 
-        PathGlobHandler.PathOrdered pathOrdered3 = new PathGlobHandler.PathOrdered("y", 0);
+        PathGlobHandler.PathOrdered pathOrdered3 = new PathGlobHandler.PathOrdered("y", "y",0);
 
         assertThat(pathOrdered1.equals(pathOrdered3), is(false));
         assertThat(pathOrdered1.compareTo(pathOrdered3), is(-1));
 
-        PathGlobHandler.PathOrdered pathOrdered4 = new PathGlobHandler.PathOrdered("x", 1);
+        PathGlobHandler.PathOrdered pathOrdered4 = new PathGlobHandler.PathOrdered("x", "y",1);
 
         assertThat(pathOrdered1.equals(pathOrdered4), is(true));
         assertThat(pathOrdered1.compareTo(pathOrdered4), is(-1));
         assertThat(pathOrdered4.compareTo(pathOrdered1), is(1));
 
-        PathGlobHandler.PathOrdered pathOrdered5 = new PathGlobHandler.PathOrdered("y", 1);
+        PathGlobHandler.PathOrdered pathOrdered5 = new PathGlobHandler.PathOrdered("y", "y",1);
 
         assertThat(pathOrdered5.equals(pathOrdered4), is(false));
         assertThat(pathOrdered1.compareTo(pathOrdered5), is(-1));
@@ -70,11 +70,11 @@ public class PathGlobHandlerTest {
     public void addRemoveTest() {
         PathGlobHandler pathGlobHandler = new PathGlobHandler();
 
-        pathGlobHandler.addPath("x", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("x", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("y", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("z", 1, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("w", 1, ResponseCodeHandler.HANDLE_200);
+        pathGlobHandler.addPath("x", "y", 0, ResponseCodeHandler.HANDLE_200);
+        pathGlobHandler.addPath("x", "y", 0, ResponseCodeHandler.HANDLE_200);
+        pathGlobHandler.addPath("y", "y", 0, ResponseCodeHandler.HANDLE_200);
+        pathGlobHandler.addPath("z", "y", 1, ResponseCodeHandler.HANDLE_200);
+        pathGlobHandler.addPath("w", "y", 1, ResponseCodeHandler.HANDLE_200);
 
         try {
             assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(4));
@@ -83,17 +83,17 @@ public class PathGlobHandlerTest {
             pathGlobHandler.removePath("x");
             assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(3));
             assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("y", 0),
-                    new PathGlobHandler.PathOrdered("w", 1),
-                    new PathGlobHandler.PathOrdered("z", 1))
+                    new PathGlobHandler.PathOrdered("y", "y", 0),
+                    new PathGlobHandler.PathOrdered("w", "y", 1),
+                    new PathGlobHandler.PathOrdered("z", "y", 1))
             );
 
             assertThat(pathGlobHandler.contains("z"), is(true));
             pathGlobHandler.removePath("z");
             assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(2));
             assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("y", 0),
-                    new PathGlobHandler.PathOrdered("w", 1)
+                    new PathGlobHandler.PathOrdered("y", "y", 0),
+                    new PathGlobHandler.PathOrdered("w", "y", 1)
                     )
             );
 
@@ -101,13 +101,13 @@ public class PathGlobHandlerTest {
             pathGlobHandler.removePath("y");
             assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(1));
             assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("w", 1))
+                    new PathGlobHandler.PathOrdered("w", "y", 1))
             );
 
             pathGlobHandler.removePath("k");
             assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(1));
             assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("w", 1))
+                    new PathGlobHandler.PathOrdered("w", "y", 1))
             );
 
             assertThat(pathGlobHandler.contains("w"), is(true));
@@ -129,18 +129,18 @@ public class PathGlobHandlerTest {
         PathGlobHandler pathGlobHandler = new PathGlobHandler();
         pathGlobHandler.setDefaultHandler(defaultHandler);
 
-        pathGlobHandler.addPath("/x", 0, exchange -> result.set("x"));
-        pathGlobHandler.addPath("/y", 0, exchange -> result.set("y"));
-        pathGlobHandler.addPath("/z", 0, exchange -> result.set("z"));
-        pathGlobHandler.addPath("/w", 0, exchange -> result.set("w"));
-        pathGlobHandler.addPath("/1", 1, exchange -> result.set("1"));
-        pathGlobHandler.addPath("/2", 2, exchange -> result.set("2"));
-        pathGlobHandler.addPath("/3", 3, exchange -> result.set("3"));
-        pathGlobHandler.addPath("/4", 4, exchange -> result.set("4"));
-        pathGlobHandler.addPath("/5*", 4, exchange -> result.set("5"));
-        pathGlobHandler.addPath("/6/*", Integer.MAX_VALUE - 1, exchange -> result.set("6"));
-        pathGlobHandler.addPath("/7/*.json", Integer.MAX_VALUE - 1, exchange -> result.set("7"));
-        pathGlobHandler.addPath("/", Integer.MAX_VALUE, exchange -> result.set("slash"));
+        pathGlobHandler.addPath("/x", "y", 0, exchange -> result.set("x"));
+        pathGlobHandler.addPath("/y", "y", 0, exchange -> result.set("y"));
+        pathGlobHandler.addPath("/z", "y", 0, exchange -> result.set("z"));
+        pathGlobHandler.addPath("/w", "y", 0, exchange -> result.set("w"));
+        pathGlobHandler.addPath("/1", "y", 1, exchange -> result.set("1"));
+        pathGlobHandler.addPath("/2", "y", 2, exchange -> result.set("2"));
+        pathGlobHandler.addPath("/3", "y", 3, exchange -> result.set("3"));
+        pathGlobHandler.addPath("/4", "y", 4, exchange -> result.set("4"));
+        pathGlobHandler.addPath("/5*", "y", 4, exchange -> result.set("5"));
+        pathGlobHandler.addPath("/6/*", "y", Integer.MAX_VALUE - 1, exchange -> result.set("6"));
+        pathGlobHandler.addPath("/7/*.json", "y", Integer.MAX_VALUE - 1, exchange -> result.set("7"));
+        pathGlobHandler.addPath("/", "y", Integer.MAX_VALUE, exchange -> result.set("slash"));
 
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {

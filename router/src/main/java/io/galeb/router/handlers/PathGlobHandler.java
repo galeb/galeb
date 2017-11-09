@@ -32,6 +32,7 @@ import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import jodd.util.Wildcard;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class PathGlobHandler implements HttpHandler {
     private final ConcurrentMap<PathOrdered, HttpHandler> paths = new ConcurrentSkipListMap<>();
 
     private HttpHandler defaultHandler = ResponseCodeOnError.RULE_PATH_NOT_FOUND.getHandler();
+
+    public static final AttachmentKey<String> RULE_NAME = AttachmentKey.create(String.class);
 
     private HttpHandler pathGlobHandlerCheck() {
         return exchange -> {
@@ -68,6 +71,7 @@ public class PathGlobHandler implements HttpHandler {
                 if (hit.get()) {
                     try {
                         if (handler != null) {
+                            exchange.putAttachment(RULE_NAME, key.getName());
                             handler.handleRequest(exchange);
                         } else {
                             logger.error("Handler is null");
@@ -91,8 +95,8 @@ public class PathGlobHandler implements HttpHandler {
         return paths.entrySet().stream().anyMatch(e -> e.getKey().getPath().equals(path));
     }
 
-    public synchronized boolean addPath(final String path, int order, final HttpHandler handler) {
-        return paths.put(new PathOrdered(path.endsWith("/") && !path.contains("*")? path + "*" : path, order), handler) == null;
+    public synchronized boolean addPath(final String path, final String name, int order, final HttpHandler handler) {
+        return paths.put(new PathOrdered(path.endsWith("/") && !path.contains("*")? path + "*" : path, name, order), handler) == null;
     }
 
     public synchronized boolean removePath(final String path) {
@@ -119,15 +123,21 @@ public class PathGlobHandler implements HttpHandler {
 
     public static class PathOrdered implements Comparable<PathOrdered> {
         private final String path;
+        private final String name;
         private final int order;
 
-        public PathOrdered(String path, int order) {
+        public PathOrdered(String path, String name, int order) {
             this.path = path;
+            this.name = name;
             this.order = order;
         }
 
         public String getPath() {
             return path;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public int getOrder() {

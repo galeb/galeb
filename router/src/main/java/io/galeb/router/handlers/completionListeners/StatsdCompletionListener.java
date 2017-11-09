@@ -59,7 +59,6 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
             String poolName = exchange.getAttachment(POOL_NAME);
-            poolName = poolName != null ? poolName : UNDEF;
             String virtualhost = exchange.getHostName();
             virtualhost = virtualhost != null ? virtualhost : UNDEF;
             String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
@@ -70,15 +69,17 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
             final String statsdKeyFull = cleanUpKey(VH_PREFIX + virtualhost) + "." + cleanUpKey(targetUri);
-            final String statsdKeyVirtualHost = cleanUpKey(virtualhost);
+            final String statsdKeyVirtualHost = cleanUpKey(VH_PREFIX + virtualhost);
             final String statsdKeyEnvironmentName = ENV_PREFIX + ENVIRONMENT_NAME;
-            final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
 
             Set<String> keys = new HashSet<>();
             keys.add(statsdKeyFull);
             keys.add(statsdKeyVirtualHost);
             keys.add(statsdKeyEnvironmentName);
-            keys.add(statsdKeyPool);
+            if (poolName != null) {
+                final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
+                keys.add(statsdKeyPool);
+            }
 
             sendStatusCodeCount(keys, statusCode, targetIsUndef);
             sendHttpMethodCount(keys, method);

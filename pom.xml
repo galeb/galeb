@@ -21,7 +21,7 @@
 
   <groupId>io.galeb</groupId>
   <artifactId>galeb-parent</artifactId>
-  <version>4.0.17-SNAPSHOT</version>
+  <version>4.0.18-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <parent>

@@ -78,7 +78,9 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             keys.add(statsdKeyEnvironmentName);
             if (poolName != null) {
                 final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
+                final String statsdKeyPoolTarget = cleanUpKey(POOL_PREFIX + poolName + "." + cleanUpKey(targetUri));
                 keys.add(statsdKeyPool);
+                keys.add(statsdKeyPoolTarget);
             }
 
             sendStatusCodeCount(keys, statusCode, targetIsUndef);

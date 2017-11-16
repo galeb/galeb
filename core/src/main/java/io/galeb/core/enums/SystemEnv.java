@@ -120,14 +120,14 @@ public enum SystemEnv {
     MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
 
     /**
-     * Etcd API full url (schema+host:port).
+     * Galeb Manager Map Path
      */
-    ETCD_SERVER           ("ETCD_SERVER",           "http://127.0.0.1:2379"),
+    MANAGER_MAP_PATH      ("MANAGER_MAP_PATH",      "/virtualhostscached/"),
 
     /**
-     * Etcd register path (useful to discovery service)
+     * Galeb Manager Routers Path
      */
-    ETCD_REGISTER_PATH    ("ETCD_REGISTER_PATH",    "/routers"),
+    MANAGER_ROUTERS_PATH  ("MANAGER_ROUTERS_PATH",  "/routers"),
 
     /**
      * Statsd prefix.

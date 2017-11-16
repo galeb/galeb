@@ -122,12 +122,12 @@ public enum SystemEnv {
     /**
      * Galeb Manager Map Path
      */
-    MANAGER_MAP_PATH("MANAGER_MAP_PATH", "/virtualhostscached/"),
+    MANAGER_MAP_PATH      ("MANAGER_MAP_PATH",      "/virtualhostscached/"),
 
     /**
      * Galeb Manager Routers Path
      */
-    MANAGER_ROUTERS_PATH("MANAGER_ROUTERS_PATH", "/routers"),
+    MANAGER_ROUTERS_PATH  ("MANAGER_ROUTERS_PATH",  "/routers"),
 
     /**
      * Statsd prefix.

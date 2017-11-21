@@ -79,8 +79,12 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             if (poolName != null) {
                 final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
                 final String statsdKeyPoolTarget = cleanUpKey(POOL_PREFIX + poolName + "." + cleanUpKey(targetUri));
+                final String statsdKeyVirtualHostPool = cleanUpKey(statsdKeyVirtualHost + "." + poolName);
+                final String statsdKeyVirtualHostPoolTarget = cleanUpKey(statsdKeyVirtualHost + "." + poolName + "." + cleanUpKey(targetUri));
                 keys.add(statsdKeyPool);
                 keys.add(statsdKeyPoolTarget);
+                keys.add(statsdKeyVirtualHostPool);
+                keys.add(statsdKeyVirtualHostPoolTarget);
             }
 
             sendStatusCodeCount(keys, statusCode, targetIsUndef);
@@ -89,9 +93,10 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
             if (sendOpenconnCounter) {
                 final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
-                String statsdKeyEnvironmentNameFull = statsdKeyEnvironmentName + "." + cleanUpKey(targetUri);
+                final String statsdKeyEnvironmentNameFull = statsdKeyEnvironmentName + "." + virtualhost;
                 Set<String> keysToConnCount = new HashSet<>();
                 keysToConnCount.add(statsdKeyFull);
+                keysToConnCount.add(statsdKeyEnvironmentName);
                 keysToConnCount.add(statsdKeyEnvironmentNameFull);
                 sendActiveConnCount(keysToConnCount, clientOpenConnection, targetIsUndef);
             }

@@ -89,7 +89,11 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
             if (sendOpenconnCounter) {
                 final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
-                sendActiveConnCount(statsdKeyFull, clientOpenConnection, targetIsUndef);
+                String statsdKeyEnvironmentNameFull = statsdKeyEnvironmentName + "." + cleanUpKey(targetUri);
+                Set<String> keysToConnCount = new HashSet<>();
+                keysToConnCount.add(statsdKeyFull);
+                keysToConnCount.add(statsdKeyEnvironmentNameFull);
+                sendActiveConnCount(keysToConnCount, clientOpenConnection, targetIsUndef);
             }
 
         } catch (Exception e) {
@@ -104,10 +108,9 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
         keys.stream().forEach(key -> statsdClient.incr(key + ".httpCode" + realStatusCode));
     }
 
-    private void sendActiveConnCount(String key, Integer clientOpenConnection, boolean targetIsUndef) {
+    private void sendActiveConnCount(Set<String> keys, Integer clientOpenConnection, boolean targetIsUndef) {
         int conn = (clientOpenConnection != null && !targetIsUndef) ? clientOpenConnection : 0;
-        String fullKey = key + ".activeConns";
-        statsdClient.gauge(fullKey, conn);
+        keys.stream().forEach(key -> statsdClient.gauge(key + ".activeConns", conn));
     }
 
     private void sendHttpMethodCount(Set<String> keys, String method) {

@@ -21,20 +21,15 @@ jobs:
                   echo $GALEB_VERSION | tee /tmp/galeb_version
 
             - run:
-                name: Get dependencies
+                name: Build package
                 command: |
                   export GALEB_VERSION=$(cat /tmp/galeb_version)
-                  echo $GALEB_VERSION
-                  mvn dependency:go-offline
+                  mvn package
 
             - save_cache:
                 paths:
                     - ~/.m2
                 key: circleci-galeb-{{ checksum "pom.xml" }}
-
-            - run:
-                name: Build package
-                command: mvn package
 
             - deploy:
                 name: Push release

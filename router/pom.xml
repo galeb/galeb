@@ -44,7 +44,7 @@
             </property>
           </activation>
           <properties>
-            <galeb.version>4.0.18</galeb.version>
+            <galeb.version>0.0.0</galeb.version>
           </properties>
         </profile>
     </profiles>

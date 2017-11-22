@@ -21,12 +21,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>galeb-router</artifactId>
-    <version>${parent.version}</version>
 
     <parent>
         <artifactId>galeb-parent</artifactId>
         <groupId>io.galeb</groupId>
-        <version>4.0.18-SNAPSHOT</version>
+        <version>${galeb.version}</version>
     </parent>
 
     <properties>

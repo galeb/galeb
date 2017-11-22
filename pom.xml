@@ -21,8 +21,33 @@
 
   <groupId>io.galeb</groupId>
   <artifactId>galeb-parent</artifactId>
-  <version>4.0.18-SNAPSHOT</version>
+  <version>${galeb.version}-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <profiles>
+    <profile>
+      <id>version-defined</id>
+      <activation>
+        <property>
+          <name>env.GALEB_VERSION</name>
+        </property>
+      </activation>
+      <properties>
+        <galeb.version>${env.GALEB_VERSION}</galeb.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>version-undefined</id>
+      <activation>
+        <property>
+          <name>!env.GALEB_VERSION</name>
+        </property>
+      </activation>
+      <properties>
+        <galeb.version>4.0.18</galeb.version>
+      </properties>
+    </profile>
+  </profiles>
 
   <parent>
     <groupId>org.springframework.boot</groupId>

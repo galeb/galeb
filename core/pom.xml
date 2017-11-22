@@ -4,12 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>galeb-core</artifactId>
-    <version>${parent.version}</version>
 
     <parent>
         <artifactId>galeb-parent</artifactId>
         <groupId>io.galeb</groupId>
-        <version>4.0.18-SNAPSHOT</version>
+        <version>${galeb.version}</version>
     </parent>
 
     <properties>

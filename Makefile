@@ -1,6 +1,6 @@
-RPM_VER=4.0.18
+RPM_VER=$(GALEB_VERSION)
 VERSION=${RPM_VER}
-RELEASE=1
+RELEASE=$(shell date +%y%m%d%H%M)
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
@@ -13,8 +13,8 @@ test:
 
 clean:
 	mvn clean
-	rm -f galeb-router-${RPM_VER}-1.el7.noarch.rpm
-	rm -f galeb-health-${RPM_VER}-1.el7.noarch.rpm
+	rm -f galeb-router-${RPM_VER}-${RELEASE}.el7.noarch.rpm
+	rm -f galeb-health-${RPM_VER}-${RELEASE}.el7.noarch.rpm
 
 dist: galeb
 	type fpm > /dev/null 2>&1 && \
@@ -46,7 +46,7 @@ dist: galeb
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \
             --after-install scripts/postinstall \
-            -f -p ../../galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
+            -f -p ../../dists/galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
         cd $$old; \
     done
 

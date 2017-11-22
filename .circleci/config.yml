@@ -35,6 +35,8 @@ jobs:
                 name: Push release
                 command: |
                     #if [ "${CIRCLE_BRANCH}" == "master" || "${CIRCLE_BRANCH}" == "develop" ]; then
+                      yum install -y ruby-devel gcc make rpm-build rubygems
+                      gem install --no-ri --no-rdoc fpm
                       repo='galeb/galeb4'
                       export GALEB_VERSION=$(cat /tmp/galeb_version)
                       echo $GALEB_VERSION

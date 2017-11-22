@@ -13,8 +13,8 @@ test:
 
 clean:
 	mvn clean
-	rm -f galeb-router-${RPM_VER}-${RELEASE}.el7.noarch.rpm
-	rm -f galeb-health-${RPM_VER}-${RELEASE}.el7.noarch.rpm
+	rm -f dists/galeb-router-${RPM_VER}-*.el7.noarch.rpm
+	rm -f dists/galeb-health-${RPM_VER}-*.el7.noarch.rpm
 
 dist: galeb
 	type fpm > /dev/null 2>&1 && \

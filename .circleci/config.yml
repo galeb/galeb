@@ -13,11 +13,17 @@ jobs:
                 key: circleci-galeb-{{ checksum "pom.xml" }}
 
             - run:
-                name: Get dependencies
+                name: Define Galeb version
                 command: |
                   repo='galeb/galeb4'
                   last=$(curl -s https://api.github.com/repos/$repo/releases/latest | jq -r .tag_name | sed 's/v.\+\..\+\.//')
                   export GALEB_VERSION=4.0.$[last + 1]
+                  cat $GALEB_VERSION > /tmp/galeb_version
+
+            - run:
+                name: Get dependencies
+                command: |
+                  export GALEB_VERSION=$(cat /tmp/galeb_version)
                   mvn dependency:go-offline
 
             - save_cache:
@@ -34,8 +40,7 @@ jobs:
                 command: |
                     //if [ "${CIRCLE_BRANCH}" == "master" || "${CIRCLE_BRANCH}" == "develop" ]; then
                       repo='galeb/galeb4'
-                      last=$(curl -s https://api.github.com/repos/$repo/releases/latest | jq -r .tag_name | sed 's/v.\+\..\+\.//')
-                      export GALEB_VERSION=4.0.$[last + 1]
+                      export GALEB_VERSION=$(cat /tmp/galeb_version)
                       make galeb dist
                       upload=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'"}' https://api.github.com/repos/$repo/releases | jq -r .upload_url | sed 's/{.*//')
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do

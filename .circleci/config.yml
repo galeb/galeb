@@ -18,8 +18,7 @@ jobs:
                   repo='galeb/galeb4'
                   last=$(curl -s https://api.github.com/repos/$repo/releases/latest | jq -r .tag_name | sed 's/v.\+\..\+\.//')
                   export GALEB_VERSION=4.0.$[last + 1]
-                  cat $GALEB_VERSION > /tmp/galeb_version
-                  echo $GALEB_VERSION
+                  echo $GALEB_VERSION | tee /tmp/galeb_version
 
             - run:
                 name: Get dependencies

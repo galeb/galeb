@@ -18,6 +18,7 @@ package io.galeb.router.handlers.completionListeners;
 
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.handlers.RequestIDHandler;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -34,6 +35,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
     private static final boolean ACCESSLOG_JSON = Boolean.valueOf(SystemEnv.ACCESSLOG_JSON.getValue());
 
     private static final int MAX_REQUEST_TIME = Integer.MAX_VALUE - 1;
+    private static final String REQUESTID_HEADER = SystemEnv.REQUESTID_HEADER.getValue();
     private static final String TAGS = "GALEB," + SystemEnv.GROUP_ID.getValue() + "," + SystemEnv.ENVIRONMENT_NAME.getValue() + ",ROUTER,ACCESS";
     private static final String TAB = "\t";
 
@@ -58,6 +60,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final String realDestAttached = exchange.getAttachment(HostSelector.REAL_DEST);
             final String realDest = extractUpstreamField(exchange.getResponseHeaders(), realDestAttached);
             final String userAgent = requestHeader(Headers.USER_AGENT).readAttribute(exchange); // %{i,User-Agent}
+            final String requestId = !"".equals(REQUESTID_HEADER) ? requestHeader(RequestIDHandler.requestIdHeader()).readAttribute(exchange) : null; // %{i,?REQUEST_ID?}
             final String xForwardedFor = requestHeader(Headers.X_FORWARDED_FOR).readAttribute(exchange); // %{i,X-Forwarded-For}
 
             final int fakeStatusCode = getFakeStatusCode(realDestAttached, originalStatusCode, responseBytesSent, responseTime, MAX_REQUEST_TIME);
@@ -84,6 +87,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
                                 "\"upstream_response_time\":\"-\"," +
                                 "\"uri\":\"-\"," +
                                 "\"http_user_agent\":\"" + (userAgent != null ? userAgent : "-") + "\"," +
+                                (requestId != null ? "\"request_id\":\"" + requestId + "\"," : "") +
                                 "\"http_x_forwarded_for\":\"" + (xForwardedFor != null ? xForwardedFor : "-") + "\"," +
                                 "\"tags\":\"" + TAGS + "\"," +
                                 "\"level\":\"info\"" +
@@ -93,13 +97,14 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             } else {
                 final String message =
                         remoteAddr + TAB + host + TAB + method + TAB + requestUri + TAB + proto +
-                                TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
-                                TAB + "Local:" + TAB + statusCode + TAB + "*-" +
-                                TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
-                                TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
-                                TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
-                                TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
-                                TAB + "tags: " + TAGS;
+                        TAB + (refer != null ? refer : "-") + TAB + (xMobileGroup != null ? xMobileGroup : "-") +
+                        TAB + "Local:" + TAB + statusCode + TAB + "*-" +
+                        TAB + bytesSent + TAB + responseTime + TAB + "Proxy:" + TAB + realDest +
+                        TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
+                        TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
+                        (requestId != null ? TAB + requestId : "") +
+                        TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
+                        TAB + "tags: " + TAGS;
 
                 logger.info(message);
             }

@@ -37,11 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static io.galeb.core.enums.EnumHealthState.OK;
 import static io.galeb.core.enums.EnumPropHealth.PROP_HEALTHY;
@@ -66,10 +62,11 @@ public class HttpClientConfigurationMock {
             public void getResponseBody(String url, String etag, OnCompletedCallBack callBack) {
                 if (url != null && url.startsWith(SystemEnv.MANAGER_URL.getValue() + "/virtualhostscached/")) {
                     Environment environment = new Environment("desenv");
+                    environment.getProperties().put(FULLHASH_PROP, UUID.randomUUID().toString());
                     Project project = new Project("projectX");
                     VirtualHost virtuahost = new VirtualHost("test.com", environment, project);
                     Map<String, String> virtualhostProperties = new HashMap<>();
-                    virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*");
+                    virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*,172.*.*.*");
                     virtualhostProperties.put(FULLHASH_PROP, "xxxxxxxxxx");
                     virtuahost.setProperties(virtualhostProperties);
                     RuleType ruleType = new RuleType(EnumRuleType.PATH.toString());

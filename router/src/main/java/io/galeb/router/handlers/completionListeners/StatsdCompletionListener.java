@@ -28,14 +28,25 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static io.galeb.router.handlers.PoolHandler.POOL_NAME;
+
 @Component
 public class StatsdCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {
 
     private static final String UNDEF = "UNDEF";
 
+    private static final String VH_PREFIX   = "VH_";
+    private static final String ENV_PREFIX  = "ENV_";
+    private static final String POOL_PREFIX = "POOL_";
+
     private final Log logger = LogFactory.getLog(this.getClass());
 
     private final boolean sendOpenconnCounter = Boolean.parseBoolean(SystemEnv.SEND_OPENCONN_COUNTER.getValue());
+
+    private static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue().replaceAll("-","_").toLowerCase();
 
     private final StatsdClientService statsdClient;
 
@@ -47,6 +58,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     @Override
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
+            String poolName = exchange.getAttachment(POOL_NAME);
             String virtualhost = exchange.getHostName();
             virtualhost = virtualhost != null ? virtualhost : UNDEF;
             String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
@@ -56,15 +68,37 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer statusCode = exchange.getStatusCode();
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
-            final String key = cleanUpKey(virtualhost) + "." + cleanUpKey(targetUri);
+            final String statsdKeyFull = cleanUpKey(VH_PREFIX + virtualhost) + "." + cleanUpKey(targetUri);
+            final String statsdKeyVirtualHost = cleanUpKey(VH_PREFIX + virtualhost);
+            final String statsdKeyEnvironmentName = ENV_PREFIX + ENVIRONMENT_NAME;
 
-            sendStatusCodeCount(key, statusCode, targetIsUndef);
-            sendHttpMethodCount(key, method);
-            sendResponseTime(key, responseTime, targetIsUndef);
+            Set<String> keys = new HashSet<>();
+            keys.add(statsdKeyFull);
+            keys.add(statsdKeyVirtualHost);
+            keys.add(statsdKeyEnvironmentName);
+            if (poolName != null) {
+                final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
+                final String statsdKeyPoolTarget = cleanUpKey(POOL_PREFIX + poolName + "." + cleanUpKey(targetUri));
+                final String statsdKeyVirtualHostPool = cleanUpKey(statsdKeyVirtualHost + "." + poolName);
+                final String statsdKeyVirtualHostPoolTarget = cleanUpKey(statsdKeyVirtualHost + "." + poolName + "." + cleanUpKey(targetUri));
+                keys.add(statsdKeyPool);
+                keys.add(statsdKeyPoolTarget);
+                keys.add(statsdKeyVirtualHostPool);
+                keys.add(statsdKeyVirtualHostPoolTarget);
+            }
+
+            sendStatusCodeCount(keys, statusCode, targetIsUndef);
+            sendHttpMethodCount(keys, method);
+            sendResponseTime(keys, responseTime, targetIsUndef);
 
             if (sendOpenconnCounter) {
                 final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
-                sendActiveConnCount(key, clientOpenConnection, targetIsUndef);
+                final String statsdKeyEnvironmentNameFull = statsdKeyEnvironmentName + "." + virtualhost;
+                Set<String> keysToConnCount = new HashSet<>();
+                keysToConnCount.add(statsdKeyFull);
+                keysToConnCount.add(statsdKeyEnvironmentName);
+                keysToConnCount.add(statsdKeyEnvironmentNameFull);
+                sendActiveConnCount(keysToConnCount, clientOpenConnection, targetIsUndef);
             }
 
         } catch (Exception e) {
@@ -74,27 +108,23 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
         }
     }
 
-    private void sendStatusCodeCount(String key, Integer statusCode, boolean targetIsUndef) {
+    private void sendStatusCodeCount(Set<String> keys, Integer statusCode, boolean targetIsUndef) {
         int realStatusCode = targetIsUndef ? 503 : statusCode;
-        String fullKey = key + ".status." + realStatusCode;
-        statsdClient.incr(fullKey);
+        keys.stream().forEach(key -> statsdClient.incr(key + ".httpCode" + realStatusCode));
     }
 
-    private void sendActiveConnCount(String key, Integer clientOpenConnection, boolean targetIsUndef) {
+    private void sendActiveConnCount(Set<String> keys, Integer clientOpenConnection, boolean targetIsUndef) {
         int conn = (clientOpenConnection != null && !targetIsUndef) ? clientOpenConnection : 0;
-        String fullKey = key + ".activeConns";
-        statsdClient.gauge(fullKey, conn);
+        keys.stream().forEach(key -> statsdClient.gauge(key + ".activeConns", conn));
     }
 
-    private void sendHttpMethodCount(String key, String method) {
-        String fullKey = key + ".method." + method;
-        statsdClient.count(fullKey, 1);
+    private void sendHttpMethodCount(Set<String> keys, String method) {
+        keys.stream().forEach(key -> statsdClient.count(key + ".httpMethod." + method, 1));
     }
 
-    private void sendResponseTime(String key, long requestTime, boolean targetIsUndef) {
+    private void sendResponseTime(Set<String> keys, long requestTime, boolean targetIsUndef) {
         long realRequestTime = targetIsUndef ? 0 : requestTime;
-        String fullKey = key + ".responseTime";
-        statsdClient.timing(fullKey, realRequestTime);
+        keys.stream().forEach(key -> statsdClient.timing(key + ".requestTime", realRequestTime));
     }
 
     private int getResponseTime(HttpServerExchange exchange) {

@@ -120,14 +120,14 @@ public enum SystemEnv {
     MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),
 
     /**
-     * Etcd API full url (schema+host:port).
+     * Galeb Manager Map Path
      */
-    ETCD_SERVER           ("ETCD_SERVER",           "http://127.0.0.1:2379"),
+    MANAGER_MAP_PATH      ("MANAGER_MAP_PATH",      "/virtualhostscached/"),
 
     /**
-     * Etcd register path (useful to discovery service)
+     * Galeb Manager Routers Path
      */
-    ETCD_REGISTER_PATH    ("ETCD_REGISTER_PATH",    "/routers"),
+    MANAGER_ROUTERS_PATH  ("MANAGER_ROUTERS_PATH",  "/routers"),
 
     /**
      * Statsd prefix.
@@ -221,6 +221,11 @@ public enum SystemEnv {
      * Should the HOST header be rewritten to use the target host of the call.
      */
     REWRITE_HOST_HEADER   ("REWRITE_HOST_HEADER",   Boolean.FALSE),
+
+    /**
+     * Request header to store a UUIDv4 representing the current request, if not already set.
+     */
+    REQUESTID_HEADER      ("REQUESTID_HEADER",      ""),
 
     /**
      * HashSourceIpHostSelector exclusive use. Dont uses Header X-FORWARDED-FOR as Hash key.

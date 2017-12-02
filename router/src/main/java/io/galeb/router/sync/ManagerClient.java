@@ -65,11 +65,11 @@ public class ManagerClient {
                 resultCallBack.onResult(null);
             }
         };
-        httpClient.getResponseBody(managerUrl + "/virtualhostscached/" + envname, etag, callback);
+        httpClient.getResponseBody(managerUrl + SystemEnv.MANAGER_MAP_PATH.getValue() + envname, etag, callback);
     }
 
     public void register(String etag) {
-        httpClient.post(managerUrl + "/routers", etag);
+        httpClient.post(managerUrl + SystemEnv.MANAGER_ROUTERS_PATH.getValue(), etag);
     }
 
     public interface ResultCallBack {

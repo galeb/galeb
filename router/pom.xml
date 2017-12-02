@@ -20,13 +20,39 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>io.galeb</groupId>
     <artifactId>galeb-router</artifactId>
-    <version>${parent.version}</version>
+    <version>${galeb.version}-SNAPSHOT</version>
+
+    <profiles>
+        <profile>
+          <id>version-defined</id>
+          <activation>
+            <property>
+              <name>env.GALEB_VERSION</name>
+            </property>
+          </activation>
+          <properties>
+            <galeb.version>${env.GALEB_VERSION}</galeb.version>
+          </properties>
+        </profile>
+        <profile>
+          <id>version-undefined</id>
+          <activation>
+            <property>
+              <name>!env.GALEB_VERSION</name>
+            </property>
+          </activation>
+          <properties>
+            <galeb.version>0.0.0</galeb.version>
+          </properties>
+        </profile>
+    </profiles>
 
     <parent>
-        <artifactId>galeb-parent</artifactId>
-        <groupId>io.galeb</groupId>
-        <version>4.0.15-SNAPSHOT</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-parent</artifactId>
+      <version>1.5.2.RELEASE</version>
     </parent>
 
     <properties>
@@ -198,6 +224,15 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -341,6 +376,20 @@
                         </reports>
                     </reportSet>
                 </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <formats>
+                        <format>xml</format>
+                    </formats>
+                    <instrumentation>
+                        <ignoreTrivial>true</ignoreTrivial>
+                    </instrumentation>
+                    <check/>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

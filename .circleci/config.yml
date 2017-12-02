@@ -44,5 +44,6 @@ jobs:
                       upload=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'"}' https://api.github.com/repos/$repo/releases | jq -r .upload_url | sed 's/{.*//')
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do
                         curl -s -H "Authorization: token $GITHUB_TOKEN" -XPOST -H'content-type: application/x-redhat-package-manager' --data-binary @$pkg ${upload}?name=${pkg}
+                        curl -v -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/noarch/
                       done; cd - > /dev/null
                     fi

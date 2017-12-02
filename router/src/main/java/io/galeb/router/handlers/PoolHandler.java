@@ -24,11 +24,13 @@ import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
+import io.undertow.attribute.ExchangeAttribute;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.proxy.ExclusivityChecker;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import org.slf4j.Logger;
@@ -37,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 
 public class PoolHandler implements HttpHandler {
+
+    public static final AttachmentKey<String> POOL_NAME = AttachmentKey.create(String.class);
 
     private static final String CHECK_RULE_HEADER  = "X-Check-Pool";
     private static final String X_POOL_NAME_HEADER = "X-Pool-Name";
@@ -49,7 +53,7 @@ public class PoolHandler implements HttpHandler {
     private final int maxRequestTime = Integer.parseInt(SystemEnv.POOL_MAX_REQUEST_TIME.getValue());
     private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
     private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
-
+    private final RequestIDHandler requestIDHandler = new RequestIDHandler();
     private final HttpHandler defaultHandler;
 
     private ProxyHandler proxyHandler = null;
@@ -64,6 +68,7 @@ public class PoolHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        exchange.putAttachment(POOL_NAME, pool.getName());
         if (exchange.getRequestHeaders().contains(CHECK_RULE_HEADER)) {
             healthcheckPoolHandler().handleRequest(exchange);
             return;
@@ -72,11 +77,7 @@ public class PoolHandler implements HttpHandler {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
-        if (proxyHandler != null) {
-            proxyHandler.handleRequest(exchange);
-        } else {
-            defaultHandler.handleRequest(exchange);
-        }
+        requestIDHandler.setNext(proxyHandler != null ? proxyHandler : defaultHandler).handleRequest(exchange);
     }
 
     public Pool getPool() {

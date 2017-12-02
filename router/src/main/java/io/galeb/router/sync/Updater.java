@@ -23,6 +23,7 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.logutils.ErrorLogger;
+import io.galeb.router.VirtualHostsNotExpired;
 import io.galeb.router.client.ExtendedProxyClient;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.PathGlobHandler;
@@ -80,6 +81,7 @@ public class Updater {
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
+                    updateEtagIfNecessary(virtualhosts);
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
                     logger.info("Processed " + count + " virtualhost(s): Done");
@@ -103,6 +105,16 @@ public class Updater {
                 ErrorLogger.logError(e, this.getClass());
             }
         }
+    }
+
+    private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {
+        final String etag;
+        if (!virtualhosts.isEmpty()) {
+            etag = virtualhosts.get(0).getEnvironment().getProperties().get(FULLHASH_PROP);
+        } else {
+            etag = ManagerClientCache.EMPTY;
+        }
+        cache.updateEtag(etag);
     }
 
     private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
@@ -158,7 +170,7 @@ public class Updater {
     }
 
     private void expireHandlers(String virtualhostName) {
-        if ("__ping__".equals(virtualhostName) || "__cache__".equals(virtualhostName)) return;
+        if (Arrays.stream(VirtualHostsNotExpired.values()).anyMatch(s -> s.getHost().equals(virtualhostName))) return;
         if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
             logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
             cleanUpNameVirtualHostHandler(virtualhostName);

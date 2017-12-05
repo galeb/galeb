@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.galeb</groupId>
-    <artifactId>galeb-api</artifactId>
+    <artifactId>galeb-legba</artifactId>
     <version>${galeb.version}-SNAPSHOT</version>
 
     <profiles>
@@ -142,7 +142,7 @@
                     <argLine>
                         -server
                         -Xmx512m -Xss256k
-                        -Dserver.port=8000
+                        -Dserver.port=8020
                         -XX:+PerfDisableSharedMem
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
                         -Dcom.sun.management.jmxremote
@@ -158,7 +158,7 @@
                     <jvmArguments>
                         -server
                         -Xmx512m -Xss256k
-                        -Dserver.port=8000
+                        -Dserver.port=8020
                         -XX:+PerfDisableSharedMem
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
                         -Dcom.sun.management.jmxremote=true

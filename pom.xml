@@ -61,6 +61,9 @@
     <module>router</module>
     <module>health</module>
     <module>api</module>
+    <module>kratos</module>
+    <module>legba</module>
+    <module>oldapi</module>
   </modules>
 
   <organization>

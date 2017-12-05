@@ -1,174 +1,120 @@
+/*
+ * Copyright (c) 2014-2017 Globo.com - ATeam
+ * All rights reserved.
+ *
+ * This source is subject to the Apache License, Version 2.0.
+ * Please see the LICENSE file for more information.
+ *
+ * Authors: See AUTHORS file
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.galeb.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import java.util.*;
-
-import static com.google.common.hash.Hashing.sha256;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_account_username", columnNames = { "username" }) })
-public class Account extends AbstractEntity implements UserDetails {
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_account", columnNames = { "name" }) })
+public class Account extends AbstractEntity<Account> {
 
-    @JsonProperty(required = true)
+    private static final long serialVersionUID = -2745836665462717899L;
+
+    private static final BCryptPasswordEncoder ENCODER = new BCryptPasswordEncoder();
+
+    public enum Role {
+        ROLE_USER,
+        ROLE_ADMIN
+    }
+
+    @ManyToMany
+    @JoinTable(joinColumns = @JoinColumn(name = "account_id",
+                                         foreignKey = @ForeignKey(name = "FK_account_teams_account_id")),
+               inverseJoinColumns = @JoinColumn(name = "team_id",
+                                       foreignKey = @ForeignKey(name = "FK_account_teams_team_id")))
+    private final Set<Team> teams = new HashSet<>();
+
     @Column(nullable = false)
-    private String email;
-
-    @JsonProperty(required = true)
-    @Column(nullable = false)
-    private String username;
-
-    @JsonIgnore
-    @Transient
     private String password;
 
-    @JsonIgnore
-    @Transient
-    private Collection<GrantedAuthority> authorities = Collections.emptyList();
+    @Column(nullable = false)
+    @JsonProperty(required = true)
+    private String email;
 
-    @JsonIgnore
-    @Transient
-    private boolean accountNonExpired = true;
-
-    @JsonIgnore
-    @Transient
-    private boolean accountNonLocked = true;
-
-    @JsonIgnore
-    @Transient
-    private boolean credentialsNonExpired = true;
-
-    @JsonIgnore
-    @Transient
-    private boolean enabled = true;
-
-    private String apitoken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
-
-    private Boolean resettoken = false;
-
-    @ManyToMany(mappedBy = "accounts")
-    private Set<Team> teams = new HashSet<>();
-
-    public Set<Team> getTeams() {
-        return teams;
-    }
-
-    public void setTeams(Set<Team> teams) {
-        if (teams != null) {
-            this.teams.clear();
-            this.teams.addAll(teams);
-        }
-    }
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @JoinColumn(foreignKey=@ForeignKey(name="FK_account_roles"))
+    private final Set<Role> roles = new HashSet<>();
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        Assert.hasText(email, "email is not valid");
+    public Account setEmail(String email) {
+        Assert.hasText(email, "[Assertion failed] - this String argument must have text; it must not be null, empty, or blank");
+        updateHash();
         this.email = email;
+        return this;
     }
 
-    public String getUsername() {
-        return username;
+    public Set<Team> getTeams() {
+        return teams;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return accountNonExpired;
+    public Account setTeams(Set<Team> teams) {
+        if (teams != null) {
+            updateHash();
+            this.teams.clear();
+            this.teams.addAll(teams);
+        }
+        return this;
     }
 
-    public void setAccountNonExpired(boolean accountNonExpired) {
-        this.accountNonExpired = accountNonExpired;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
+    public Account setRoles(Set<Role> roles) {
+        if (roles != null) {
+            updateHash();
+            this.roles.clear();
+            this.roles.addAll(roles);
+        }
+        return this;
     }
 
-    public void setAccountNonLocked(boolean accountNonLocked) {
-        this.accountNonLocked = accountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return credentialsNonExpired;
-    }
-
-    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
-        this.credentialsNonExpired = credentialsNonExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public void setUsername(String username) {
-        Assert.hasText(username, "name is not valid");
-        this.username = username;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    public void setAuthorities(Collection<GrantedAuthority> authorities) {
-        this.authorities = authorities;
-    }
-
-    @Override
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    @JsonIgnore
-    public String getApitoken() {
-        return apitoken;
-    }
-
-    public void setApitoken(String seed) {
-        this.apitoken = sha256().hashBytes((seed + UUID.randomUUID().toString()).getBytes()).toString();
-    }
-
-    public Boolean getResettoken() {
-        return resettoken;
-    }
-
-    public void setResettoken(Boolean resettoken) {
-        this.resettoken = resettoken;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Account account = (Account) o;
-        return Objects.equals(getUsername(), account.getUsername());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getUsername());
-    }
-
-    @Override
-    public String toString() {
-        return username;
+    @JsonProperty(value = "password", required = true)
+    public Account setPassword(String password) {
+        Assert.hasText(password, "[Assertion failed] - this String argument must have text; it must not be null, empty, or blank");
+        updateHash();
+        this.password = ENCODER.encode(password);
+        return this;
     }
 }

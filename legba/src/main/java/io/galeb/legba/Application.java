@@ -18,14 +18,8 @@ package io.galeb.legba;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"io.galeb.core.entity"})
-@ComponentScan(basePackages = {"io.galeb.core.services", "io.galeb.core.configuration", "io.galeb.legba"})
-@EnableJpaRepositories(basePackages = "io.galeb.legba.repository")
 public class Application {
 
     public static void main(String args[]) {

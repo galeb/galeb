@@ -15,8 +15,8 @@ jobs:
             - run:
                 name: Define Galeb version
                 command: |
-                  repo='galeb/galeb4'
-                  last=$(curl -s https://api.github.com/repos/$repo/releases/latest | jq -r .tag_name | sed 's/v.\+\..\+\.//')
+                  repo='galeb/galeb'
+                  last=$(curl -s -L https://api.github.com/repos/$repo/releases/latest | jq -r .tag_name | sed 's/v.\+\..\+\.//')
                   export GALEB_VERSION=4.0.$[last + 1]
                   echo $GALEB_VERSION | tee /tmp/galeb_version
 
@@ -37,13 +37,13 @@ jobs:
                     if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "develop" ]; then
                       sudo yum install -y ruby-devel gcc make rpm-build rubygems
                       sudo gem install --no-ri --no-rdoc fpm
-                      repo='galeb/galeb4'
+                      repo='galeb/galeb'
                       export GALEB_VERSION=$(cat /tmp/galeb_version)
                       echo $GALEB_VERSION
                       make galeb dist
-                      upload=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'"}' https://api.github.com/repos/$repo/releases | jq -r .upload_url | sed 's/{.*//')
+                      upload=$(curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'"}' https://api.github.com/repos/$repo/releases | jq -r .upload_url | sed 's/{.*//')
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do
-                        curl -s -H "Authorization: token $GITHUB_TOKEN" -XPOST -H'content-type: application/x-redhat-package-manager' --data-binary @$pkg ${upload}?name=${pkg}
-                        curl -v -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/noarch/
+                        curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -H'content-type: application/x-redhat-package-manager' --data-binary @$pkg ${upload}?name=${pkg}
+                        curl -v -L -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/noarch/
                       done; cd - > /dev/null
                     fi

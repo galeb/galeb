@@ -35,6 +35,7 @@ jobs:
                 name: Push release
                 command: |
                     if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "develop" ]; then
+                      sudo yum update -y
                       sudo yum install -y ruby-devel gcc make rpm-build rubygems
                       sudo gem install --no-ri --no-rdoc fpm
                       repo='galeb/galeb'

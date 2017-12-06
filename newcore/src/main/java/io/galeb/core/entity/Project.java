@@ -1,13 +1,25 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import java.util.Set;
 
+@Entity
 public class Project extends AbstractEntity {
 
+    @OneToMany
     private Set<Rule> rules;
+
+    @OneToMany
     private Set<Pool> pools;
+
+    @ManyToMany
     private Set<Team> teams;
+
+    @OneToMany
     private Set<VirtualHost> virtualHosts;
+
     private String name;
 
     public Set<Rule> getRules() {
@@ -49,4 +61,5 @@ public class Project extends AbstractEntity {
     public void setName(String name) {
         this.name = name;
     }
+
 }

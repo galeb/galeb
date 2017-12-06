@@ -1,7 +1,11 @@
 package io.galeb.core.entity;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import java.util.Map;
 
+@Entity
 public class HealthCheck extends AbstractEntity {
 
     public enum HttpMethod {
@@ -17,11 +21,19 @@ public class HealthCheck extends AbstractEntity {
     }
 
     private String path;
+
     private String httpStatusCode;
+
     private Boolean tcpOnly;
+
     private HttpMethod httpMethod;
+
     private String body;
+
+    @ElementCollection
+    @JoinColumn(nullable = false)
     private Map<String, String> headers;
+
     private String name;
 
     public String getName() {

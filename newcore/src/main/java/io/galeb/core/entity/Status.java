@@ -1,6 +1,6 @@
 package io.galeb.core.entity;
 
-public class Status {
+public class Status extends AbstractEntity {
 
     private Target target;
 

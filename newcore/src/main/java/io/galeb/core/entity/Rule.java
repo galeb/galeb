@@ -2,7 +2,7 @@ package io.galeb.core.entity;
 
 import java.util.Set;
 
-public class Rule {
+public class Rule extends AbstractEntity {
 
     private Set<RuleGroup> ruleGroups;
     private Set<Pool> pools;

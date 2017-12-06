@@ -1,4 +1,4 @@
 package io.galeb.core.entity;
 
-public class Role {
+public class Role extends AbstractEntity  {
 }

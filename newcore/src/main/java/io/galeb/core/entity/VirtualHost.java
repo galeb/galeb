@@ -2,7 +2,7 @@ package io.galeb.core.entity;
 
 import java.util.Set;
 
-public class VirtualHost {
+public class VirtualHost extends AbstractEntity {
 
     private RuleGroup ruleGroup;
     private Set<Environment> environments;

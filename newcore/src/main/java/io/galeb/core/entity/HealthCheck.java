@@ -1,4 +1,4 @@
 package io.galeb.core.entity;
 
-public class HealthCheck {
+public class HealthCheck extends AbstractEntity {
 }

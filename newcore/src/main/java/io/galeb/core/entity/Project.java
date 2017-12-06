@@ -5,9 +5,10 @@ import java.util.Set;
 public class Project extends AbstractEntity {
 
     private Set<Rule> rules;
-    private Set<RuleGroup> ruleGroups;
     private Set<Pool> pools;
     private Set<Team> teams;
+    private Set<VirtualHost> virtualHosts;
+    private String name;
 
     public Set<Rule> getRules() {
         return rules;
@@ -15,14 +16,6 @@ public class Project extends AbstractEntity {
 
     public void setRules(Set<Rule> rules) {
         this.rules = rules;
-    }
-
-    public Set<RuleGroup> getRuleGroups() {
-        return ruleGroups;
-    }
-
-    public void setRuleGroups(Set<RuleGroup> ruleGroups) {
-        this.ruleGroups = ruleGroups;
     }
 
     public Set<Pool> getPools() {
@@ -39,5 +32,21 @@ public class Project extends AbstractEntity {
 
     public void setTeams(Set<Team> teams) {
         this.teams = teams;
+    }
+
+    public Set<VirtualHost> getVirtualHosts() {
+        return virtualHosts;
+    }
+
+    public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
+        this.virtualHosts = virtualHosts;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

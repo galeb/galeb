@@ -6,6 +6,7 @@ public class Team extends AbstractEntity {
 
     private Set<Account> accounts;
     private Set<Project> projects;
+    private String name;
 
     public Set<Account> getAccounts() {
         return accounts;
@@ -21,5 +22,13 @@ public class Team extends AbstractEntity {
 
     public void setProjects(Set<Project> projects) {
         this.projects = projects;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

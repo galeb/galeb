@@ -1,12 +1,15 @@
 package io.galeb.core.entity;
 
+import java.util.Map;
 import java.util.Set;
 
-public class RuleGroup {
+public class RuleGroup implements WithStatus {
 
     private Set<VirtualHost> virtualHosts;
-    private Set<Rule> rules;
+    private Map<Integer, Rule> rules;
     private Project project;
+    private String name;
+
 
     public Set<VirtualHost> getVirtualHosts() {
         return virtualHosts;
@@ -16,11 +19,11 @@ public class RuleGroup {
         this.virtualHosts = virtualHosts;
     }
 
-    public Set<Rule> getRules() {
+    public Map<Integer, Rule> getRules() {
         return rules;
     }
 
-    public void setRules(Set<Rule> rules) {
+    public void setRules(Map<Integer, Rule> rules) {
         this.rules = rules;
     }
 
@@ -30,6 +33,14 @@ public class RuleGroup {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

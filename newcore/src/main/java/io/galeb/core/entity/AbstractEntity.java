@@ -15,7 +15,7 @@ public abstract class AbstractEntity implements Serializable {
 
     private Date createdAt;
 
-    private String lastModifieBy;
+    private String lastModifiedBy;
 
     private Date lastModifiedAt;
 
@@ -51,12 +51,12 @@ public abstract class AbstractEntity implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public String getLastModifieBy() {
-        return lastModifieBy;
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
     }
 
-    public void setLastModifieBy(String lastModifieBy) {
-        this.lastModifieBy = lastModifieBy;
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public Date getLastModifiedAt() {

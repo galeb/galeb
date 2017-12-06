@@ -1,15 +1,31 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 import java.util.Set;
 
+@Entity
 public class Rule extends AbstractEntity implements WithStatus {
 
+    @ManyToMany
     private Set<RuleGroup> ruleGroups;
+
+    @ManyToMany
     private Set<Pool> pools;
+
+    @ManyToOne
     private Project project;
+
     private String match;
+
     private Boolean global;
+
     private String name;
+
+    @Transient
+    private Status status = Status.UNKNOWN;
 
     public Set<RuleGroup> getRuleGroups() {
         return ruleGroups;
@@ -57,5 +73,10 @@ public class Rule extends AbstractEntity implements WithStatus {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public Status getStatus() {
+        return status;
     }
 }

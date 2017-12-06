@@ -1,12 +1,23 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.Transient;
 import java.util.Set;
 
+@Entity
 public class Environment extends AbstractEntity implements WithStatus {
 
+    @ManyToMany
     private Set<VirtualHost> virtualHosts;
+
+    @ManyToMany
     private Set<Pool> pools;
+
     private String name;
+
+    @Transient
+    private Status status = Status.UNKNOWN;
 
     public Set<VirtualHost> getVirtualHosts() {
         return virtualHosts;
@@ -31,4 +42,10 @@ public class Environment extends AbstractEntity implements WithStatus {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public Status getStatus() {
+        return status;
+    }
 }
+

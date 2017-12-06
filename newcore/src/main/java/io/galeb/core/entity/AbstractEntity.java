@@ -1,22 +1,35 @@
 package io.galeb.core.entity;
 
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+@MappedSuperclass
 public abstract class AbstractEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    @Version
     private Long version;
 
+    @CreatedBy
     private String createdBy;
 
+    @LastModifiedBy
     private Date createdAt;
 
+    @LastModifiedBy
     private String lastModifiedBy;
 
+    @LastModifiedDate
     private Date lastModifiedAt;
 
     public long getId() {

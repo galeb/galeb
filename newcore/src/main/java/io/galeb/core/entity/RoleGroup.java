@@ -1,5 +1,8 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+
+@Entity
 public class RoleGroup extends AbstractEntity  {
 
     private String name;

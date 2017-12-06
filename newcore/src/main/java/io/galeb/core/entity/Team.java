@@ -1,11 +1,18 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
 import java.util.Set;
 
+@Entity
 public class Team extends AbstractEntity {
 
+    @ManyToMany
     private Set<Account> accounts;
+
+    @ManyToMany
     private Set<Project> projects;
+
     private String name;
 
     public Set<Account> getAccounts() {

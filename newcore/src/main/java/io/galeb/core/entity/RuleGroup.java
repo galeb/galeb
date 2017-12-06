@@ -1,15 +1,23 @@
 package io.galeb.core.entity;
 
+import javax.persistence.*;
 import java.util.Map;
 import java.util.Set;
 
+@Entity
 public class RuleGroup implements WithStatus {
 
+    @ManyToMany
     private Set<VirtualHost> virtualHosts;
+
+    @ElementCollection
+    @JoinColumn(nullable = false)
     private Map<Integer, Rule> rules;
-    private Project project;
+
     private String name;
 
+    @Transient
+    private Status status = Status.UNKNOWN;
 
     public Set<VirtualHost> getVirtualHosts() {
         return virtualHosts;
@@ -27,14 +35,6 @@ public class RuleGroup implements WithStatus {
         this.rules = rules;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public String getName() {
         return name;
     }
@@ -43,4 +43,8 @@ public class RuleGroup implements WithStatus {
         this.name = name;
     }
 
+    @Override
+    public Status getStatus() {
+        return status;
+    }
 }

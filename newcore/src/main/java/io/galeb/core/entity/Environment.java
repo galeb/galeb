@@ -2,10 +2,11 @@ package io.galeb.core.entity;
 
 import java.util.Set;
 
-public class Environment extends AbstractEntity {
+public class Environment extends AbstractEntity implements WithStatus {
 
     private Set<VirtualHost> virtualHosts;
     private Set<Pool> pools;
+    private String name;
 
     public Set<VirtualHost> getVirtualHosts() {
         return virtualHosts;
@@ -21,5 +22,13 @@ public class Environment extends AbstractEntity {
 
     public void setPools(Set<Pool> pools) {
         this.pools = pools;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

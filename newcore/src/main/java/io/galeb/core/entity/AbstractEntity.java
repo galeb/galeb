@@ -19,8 +19,6 @@ public abstract class AbstractEntity implements Serializable {
 
     private Date lastModifiedAt;
 
-    private String name;
-
     public long getId() {
         return id;
     }
@@ -69,11 +67,4 @@ public abstract class AbstractEntity implements Serializable {
         this.lastModifiedAt = lastModifiedAt;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

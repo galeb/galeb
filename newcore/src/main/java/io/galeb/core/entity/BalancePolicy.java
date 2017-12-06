@@ -1,10 +1,15 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import java.util.Set;
 
+@Entity
 public class BalancePolicy extends AbstractEntity {
 
+    @OneToMany
     private Set<Pool> pools;
+
     private String name;
 
     public Set<Pool> getPools() {

@@ -15,7 +15,7 @@ public class Environment extends AbstractEntity implements WithStatus {
     @ManyToMany
     private Set<Pool> pools;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Transient

@@ -12,7 +12,7 @@ public class Target extends AbstractEntity implements WithStatus {
     @OneToMany
     private Set<HealthStatus> healthStatus;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Transient

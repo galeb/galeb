@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 @Entity
 public class RoleGroup extends AbstractEntity  {
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     public String getName() {

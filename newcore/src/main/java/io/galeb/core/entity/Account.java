@@ -8,10 +8,12 @@ import java.util.Set;
 @Entity
 public class Account extends AbstractEntity  {
 
-    @Column(name = "email", nullable = false)
+    // discuss json
+    @Column(nullable = false)
     private String email;
 
-    @Column(name = "name", nullable = false)
+    // discuss json
+    @Column(nullable = false)
     private String name;
 
     @ManyToMany

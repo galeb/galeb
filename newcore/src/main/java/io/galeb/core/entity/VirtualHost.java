@@ -15,10 +15,10 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @ManyToMany
     private Set<Environment> environments;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "alias")
+    @Column
     private String alias;
 
     @Transient

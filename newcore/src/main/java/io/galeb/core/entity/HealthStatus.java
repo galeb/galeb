@@ -10,8 +10,8 @@ public class HealthStatus extends AbstractEntity {
     @ManyToOne
     private Target target;
 
-    // Discutir
-    @Column(name = "name", nullable = false)
+    // Discuss
+    @Column(nullable = false)
     private String name;
 
     public Target getTarget() {

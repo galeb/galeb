@@ -1,5 +1,7 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
@@ -14,6 +16,7 @@ public class RoleGroup extends AbstractEntity  {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 }

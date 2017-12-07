@@ -1,16 +1,19 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 public class Rule extends AbstractEntity implements WithStatus {
 
     @ManyToMany
-    private Set<RuleGroup> ruleGroups;
+    private Set<RuleGroup> ruleGroups = new HashSet<>();
 
     @ManyToMany
-    private Set<Pool> pools;
+    private Set<Pool> pools = new HashSet<>();
 
     @ManyToOne
     private Project project;
@@ -31,7 +34,10 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setRuleGroups(Set<RuleGroup> ruleGroups) {
-        this.ruleGroups = ruleGroups;
+        if (ruleGroups != null) {
+            this.ruleGroups.clear();
+            this.ruleGroups.addAll(ruleGroups);
+        }
     }
 
     public Set<Pool> getPools() {
@@ -39,7 +45,10 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setPools(Set<Pool> pools) {
-        this.pools = pools;
+        if (pools != null) {
+            this.pools.clear();
+            this.pools.addAll(pools);
+        }
     }
 
     public Project getProject() {
@@ -47,6 +56,7 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setProject(Project project) {
+        Assert.notNull(project, "Project is NULL");
         this.project = project;
     }
 
@@ -55,6 +65,7 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setMatch(String match) {
+        Assert.hasText(match, "match is not valid");
         this.match = match;
     }
 
@@ -63,7 +74,9 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setGlobal(Boolean global) {
-        this.global = global;
+        if (global != null) {
+            this.global = global;
+        }
     }
 
     public String getName() {
@@ -71,6 +84,7 @@ public class Rule extends AbstractEntity implements WithStatus {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 

@@ -1,8 +1,11 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -17,14 +20,17 @@ public class Account extends AbstractEntity  {
     private String name;
 
     @ManyToMany
-    private Set<Team> teams;
+    private Set<Team> teams = new HashSet<>();
 
     public Set<Team> getTeams() {
         return teams;
     }
 
     public void setTeams(Set<Team> teams) {
-        this.teams = teams;
+        if (teams != null) {
+            this.teams.clear();
+            this.teams.addAll(teams);
+        }
     }
 
     public String getEmail() {
@@ -32,6 +38,7 @@ public class Account extends AbstractEntity  {
     }
 
     public void setEmail(String email) {
+        Assert.hasText(email, "email is not valid");
         this.email = email;
     }
 
@@ -40,6 +47,7 @@ public class Account extends AbstractEntity  {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 }

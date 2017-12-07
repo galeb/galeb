@@ -1,11 +1,9 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_healthstatus", columnNames = { "name" }) })
 public class HealthStatus extends AbstractEntity {
 
     @SuppressWarnings("unused")

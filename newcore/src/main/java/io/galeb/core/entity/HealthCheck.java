@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_healthcheck", columnNames = { "name" }) })
 public class HealthCheck extends AbstractEntity {
 
     @SuppressWarnings("unused")

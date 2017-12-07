@@ -4,8 +4,11 @@ import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_role", columnNames = { "name" }) })
 public class Role extends AbstractEntity  {
 
     @Column(nullable = false)

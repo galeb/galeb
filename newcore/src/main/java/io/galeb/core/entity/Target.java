@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_target", columnNames = { "name" }) })
 public class Target extends AbstractEntity implements WithStatus {
 
     @ManyToMany

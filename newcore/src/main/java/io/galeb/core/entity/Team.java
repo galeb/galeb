@@ -2,13 +2,12 @@ package io.galeb.core.entity;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_team", columnNames = { "name" }) })
 public class Team extends AbstractEntity {
 
     @ManyToMany

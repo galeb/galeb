@@ -2,13 +2,12 @@ package io.galeb.core.entity;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "balancepolicy", uniqueConstraints = { @UniqueConstraint(name = "UK_name_balancepolicy", columnNames = { "name" }) })
 public class BalancePolicy extends AbstractEntity {
 
     @OneToMany

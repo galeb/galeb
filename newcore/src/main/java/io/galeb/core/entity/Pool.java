@@ -1,6 +1,10 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.*;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -8,13 +12,13 @@ import java.util.Set;
 public class Pool extends AbstractEntity implements WithStatus {
 
     @ManyToMany
-    private Set<Rule> rules;
+    private Set<Rule> rules= new HashSet<>();
 
     @ManyToMany
-    private Set<Environment> environments;
+    private Set<Environment> environments = new HashSet<>();
 
     @ManyToMany
-    private Set<Target> targets;
+    private Set<Target> targets = new HashSet<>();
 
     @ManyToOne
     private Project project;
@@ -38,20 +42,23 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     private Boolean hcTcpOnly = false;
 
-    private HealthCheck.HttpMethod hcHttpMethod;
+    private HealthCheck.HttpMethod hcHttpMethod = HealthCheck.HttpMethod.GET;
 
     private String hcBody;
 
     @ElementCollection
-    @JoinColumn
-    private Map<String, String> hcHeaders;
+    @JoinColumn(nullable = false)
+    private Map<String, String> hcHeaders = new HashMap<>();
 
     public Set<Rule> getRules() {
         return rules;
     }
 
     public void setRules(Set<Rule> rules) {
-        this.rules = rules;
+        if (rules != null) {
+            this.rules.clear();
+            this.rules.addAll(rules);
+        }
     }
 
     public Set<Environment> getEnvironments() {
@@ -59,7 +66,10 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setEnvironments(Set<Environment> environments) {
-        this.environments = environments;
+        if (environments != null) {
+            this.environments.clear();
+            this.environments.addAll(environments);
+        }
     }
 
     public Set<Target> getTargets() {
@@ -67,7 +77,10 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setTargets(Set<Target> targets) {
-        this.targets = targets;
+        if (targets != null) {
+            this.targets.clear();
+            this.targets.addAll(targets);
+        }
     }
 
     public Project getProject() {
@@ -75,6 +88,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setProject(Project project) {
+        Assert.notNull(project, "Project is NULL");
         this.project = project;
     }
 
@@ -83,6 +97,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setBalancePolicy(BalancePolicy balancePolicy) {
+        Assert.notNull(balancePolicy, "BalancePolicy is NULL");
         this.balancePolicy = balancePolicy;
     }
 
@@ -91,6 +106,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 
@@ -123,7 +139,9 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setHcTcpOnly(Boolean hcTcpOnly) {
-        this.hcTcpOnly = hcTcpOnly;
+        if (hcTcpOnly != null) {
+            this.hcTcpOnly = hcTcpOnly;
+        }
     }
 
     public HealthCheck.HttpMethod getHcHttpMethod() {
@@ -131,7 +149,9 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setHcHttpMethod(HealthCheck.HttpMethod hcHttpMethod) {
-        this.hcHttpMethod = hcHttpMethod;
+        if (hcHttpMethod != null) {
+            this.hcHttpMethod = hcHttpMethod;
+        }
     }
 
     public String getHcBody() {
@@ -147,7 +167,10 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     public void setHcHeaders(Map<String, String> hcHeaders) {
-        this.hcHeaders = hcHeaders;
+        if (hcHeaders != null) {
+            this.hcHeaders.clear();
+            this.hcHeaders.putAll(hcHeaders);
+        }
     }
 
     @Override

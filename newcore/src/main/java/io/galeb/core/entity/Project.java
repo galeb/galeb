@@ -1,25 +1,28 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 public class Project extends AbstractEntity {
 
     @OneToMany
-    private Set<Rule> rules;
+    private Set<Rule> rules = new HashSet<>();
 
     @OneToMany
-    private Set<Pool> pools;
+    private Set<Pool> pools = new HashSet<>();
 
     @ManyToMany
-    private Set<Team> teams;
+    private Set<Team> teams = new HashSet<>();
 
     @OneToMany
-    private Set<VirtualHost> virtualHosts;
+    private Set<VirtualHost> virtualHosts = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
@@ -29,7 +32,10 @@ public class Project extends AbstractEntity {
     }
 
     public void setRules(Set<Rule> rules) {
-        this.rules = rules;
+        if (rules != null) {
+            this.rules.clear();
+            this.rules.addAll(rules);
+        }
     }
 
     public Set<Pool> getPools() {
@@ -37,7 +43,10 @@ public class Project extends AbstractEntity {
     }
 
     public void setPools(Set<Pool> pools) {
-        this.pools = pools;
+        if (pools != null) {
+            this.pools.clear();
+            this.pools.addAll(pools);
+        }
     }
 
     public Set<Team> getTeams() {
@@ -45,7 +54,10 @@ public class Project extends AbstractEntity {
     }
 
     public void setTeams(Set<Team> teams) {
-        this.teams = teams;
+        if (teams != null) {
+            this.teams.clear();
+            this.teams.addAll(teams);
+        }
     }
 
     public Set<VirtualHost> getVirtualHosts() {
@@ -53,7 +65,10 @@ public class Project extends AbstractEntity {
     }
 
     public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
-        this.virtualHosts = virtualHosts;
+        if (virtualHosts != null) {
+            this.virtualHosts.clear();
+            this.virtualHosts.addAll(virtualHosts);
+        }
     }
 
     public String getName() {
@@ -61,6 +76,7 @@ public class Project extends AbstractEntity {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 

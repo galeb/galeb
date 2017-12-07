@@ -45,6 +45,20 @@ public abstract class AbstractEntity implements Serializable {
     @JsonProperty("_last_modified_at")
     private Date lastModifiedAt;
 
+    @PrePersist
+    private void onCreate() {
+        createdAt = new Date();
+        createdBy = "";
+        lastModifiedAt = createdAt;
+        lastModifiedBy = createdBy;
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        lastModifiedAt = new Date();
+        lastModifiedBy = "";
+    }
+
     private String description;
 
     public long getId() {

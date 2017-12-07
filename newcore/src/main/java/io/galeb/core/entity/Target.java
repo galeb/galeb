@@ -1,16 +1,19 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 public class Target extends AbstractEntity implements WithStatus {
 
     @ManyToMany
-    private Set<Pool> pools;
+    private Set<Pool> pools = new HashSet<>();
 
     @OneToMany
-    private Set<HealthStatus> healthStatus;
+    private Set<HealthStatus> healthStatus = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
@@ -23,7 +26,10 @@ public class Target extends AbstractEntity implements WithStatus {
     }
 
     public void setPools(Set<Pool> pools) {
-        this.pools = pools;
+        if (pools != null) {
+            this.pools.clear();
+            this.pools.addAll(pools);
+        }
     }
 
     public Set<HealthStatus> getHealthStatus() {
@@ -31,7 +37,10 @@ public class Target extends AbstractEntity implements WithStatus {
     }
 
     public void setHealthStatus(Set<HealthStatus> healthStatus) {
-        this.healthStatus = healthStatus;
+        if (healthStatus != null) {
+            this.healthStatus.clear();
+            this.healthStatus.addAll(healthStatus);
+        }
     }
 
     public String getName() {
@@ -39,6 +48,7 @@ public class Target extends AbstractEntity implements WithStatus {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 

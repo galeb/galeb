@@ -1,9 +1,7 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
+import javax.persistence.*;
+import java.util.HashMap;
 import java.util.Map;
 
 @Entity
@@ -32,9 +30,9 @@ public class HealthCheck extends AbstractEntity {
 
     private String body;
 
-    @ElementCollection
-    @JoinColumn
-    private Map<String, String> headers;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false)
+    private Map<String, String> headers = new HashMap<>();
 
     @Column(nullable = false)
     private String name;
@@ -92,6 +90,9 @@ public class HealthCheck extends AbstractEntity {
     }
 
     public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+        if (headers != null) {
+            this.headers.clear();
+            this.headers.putAll(headers);
+        }
     }
 }

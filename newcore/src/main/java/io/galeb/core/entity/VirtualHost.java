@@ -1,6 +1,9 @@
 package io.galeb.core.entity;
 
+import org.springframework.util.Assert;
+
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -13,7 +16,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     private RuleGroup ruleGroup;
 
     @ManyToMany
-    private Set<Environment> environments;
+    private Set<Environment> environments = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
@@ -37,7 +40,10 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     }
 
     public void setEnvironments(Set<Environment> environments) {
-        this.environments = environments;
+        if (environments != null) {
+            this.environments.clear();
+            this.environments.addAll(environments);
+        }
     }
 
     public String getName() {
@@ -45,6 +51,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     }
 
     public void setName(String name) {
+        Assert.hasText(name, "name is not valid");
         this.name = name;
     }
 

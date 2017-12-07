@@ -14,7 +14,7 @@ public class Team extends AbstractEntity {
     @ManyToMany
     private Set<Project> projects;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     public Set<Account> getAccounts() {

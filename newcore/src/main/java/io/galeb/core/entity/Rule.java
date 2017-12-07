@@ -15,13 +15,13 @@ public class Rule extends AbstractEntity implements WithStatus {
     @ManyToOne
     private Project project;
 
-    @Column(name = "match", nullable = false)
+    @Column(nullable = false)
     private String match;
 
-    @Column(name = "global", nullable = false)
+    @Column(nullable = false)
     private Boolean global = false;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Transient

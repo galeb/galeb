@@ -22,7 +22,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     @ManyToOne
     private BalancePolicy balancePolicy;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     @Transient
@@ -30,22 +30,22 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     // Healthcheck Attributes
 
-    @Column(name = "hcPath")
+    @Column
     private String hcPath;
 
-    @Column(name = "hcHttpStatusCode")
+    @Column
     private String hcHttpStatusCode;
 
-    @Column(name = "hcHost")
+    @Column
     private String hcHost;
 
-    @Column(name = "hcTcpOnly", nullable = false)
+    @Column(nullable = false)
     private Boolean hcTcpOnly;
 
-    @Column(name = "hcHttpMethod")
+    @Column
     private HealthCheck.HttpMethod hcHttpMethod;
 
-    @Column(name = "hcBody")
+    @Column
     private String hcBody;
 
     @ElementCollection

@@ -21,7 +21,7 @@ public class Project extends AbstractEntity {
     @OneToMany
     private Set<VirtualHost> virtualHosts;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     public Set<Rule> getRules() {

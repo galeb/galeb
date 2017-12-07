@@ -21,26 +21,26 @@ public class HealthCheck extends AbstractEntity {
         PATCH
     }
 
-    @Column(name = "path")
+    @Column
     private String path;
 
-    @Column(name = "httpStatusCode")
+    @Column
     private String httpStatusCode;
 
-    @Column(name = "tcpOnly", nullable = false)
+    @Column(nullable = false)
     private Boolean tcpOnly;
 
-    @Column(name = "httpMethod")
+    @Column
     private HttpMethod httpMethod;
 
-    @Column(name = "body")
+    @Column
     private String body;
 
     @ElementCollection
     @JoinColumn
     private Map<String, String> headers;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     public String getName() {
@@ -50,5 +50,52 @@ public class HealthCheck extends AbstractEntity {
     public void setName(String name) {
         this.name = name;
     }
-    
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getHttpStatusCode() {
+        return httpStatusCode;
+    }
+
+    public void setHttpStatusCode(String httpStatusCode) {
+        this.httpStatusCode = httpStatusCode;
+    }
+
+    public Boolean getTcpOnly() {
+        return tcpOnly;
+    }
+
+    public void setTcpOnly(Boolean tcpOnly) {
+        this.tcpOnly = tcpOnly;
+    }
+
+    public HttpMethod getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    }
 }

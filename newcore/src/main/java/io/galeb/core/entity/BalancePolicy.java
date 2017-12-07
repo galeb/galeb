@@ -11,7 +11,7 @@ public class BalancePolicy extends AbstractEntity {
     @OneToMany
     private Set<Pool> pools;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
 
     public Set<Pool> getPools() {

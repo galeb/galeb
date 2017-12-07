@@ -1,5 +1,7 @@
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.galeb.core.entity.annotations.JsonCustomProperties;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -10,6 +12,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @MappedSuperclass
+@JsonCustomProperties
 public abstract class AbstractEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -20,22 +23,27 @@ public abstract class AbstractEntity implements Serializable {
 
     @Version
     @Column(name = "_version")
+    @JsonProperty("_version")
     private Long version;
 
     @CreatedBy
     @Column(name = "_created_by", nullable = false, updatable = false)
+    @JsonProperty("_created_by")
     private String createdBy;
 
     @CreatedDate
     @Column(name = "_created_at", nullable = false, updatable = false)
+    @JsonProperty("_created_at")
     private Date createdAt;
 
     @LastModifiedBy
     @Column(name = "_last_modified_by", nullable = false)
+    @JsonProperty("_last_modified_by")
     private String lastModifiedBy;
 
     @LastModifiedDate
     @Column(name = "_last_modified_at", nullable = false)
+    @JsonProperty("_last_modified_at")
     private Date lastModifiedAt;
 
     public long getId() {

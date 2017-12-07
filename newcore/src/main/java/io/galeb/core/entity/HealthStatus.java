@@ -1,18 +1,24 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 @Entity
 public class HealthStatus extends AbstractEntity {
 
+    @SuppressWarnings("unused")
+    public enum Status {
+        HEALTHY,
+        FAIL,
+        UNKNOWN
+    }
+
     @ManyToOne
     private Target target;
 
-    // Discuss
-    @Column(nullable = false)
-    private String name;
+    private Status status = Status.UNKNOWN;
+
+    private String statusDetailed;
 
     public Target getTarget() {
         return target;
@@ -22,11 +28,19 @@ public class HealthStatus extends AbstractEntity {
         this.target = target;
     }
 
-    public String getName() {
-        return name;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public String getStatusDetailed() {
+        return statusDetailed;
+    }
+
+    public void setStatusDetailed(String statusDetailed) {
+        this.statusDetailed = statusDetailed;
     }
 }

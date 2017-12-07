@@ -30,22 +30,16 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     // Healthcheck Attributes
 
-    @Column
     private String hcPath;
 
-    @Column
     private String hcHttpStatusCode;
 
-    @Column
     private String hcHost;
 
-    @Column(nullable = false)
-    private Boolean hcTcpOnly;
+    private Boolean hcTcpOnly = false;
 
-    @Column
     private HealthCheck.HttpMethod hcHttpMethod;
 
-    @Column
     private String hcBody;
 
     @ElementCollection

@@ -9,6 +9,7 @@ import java.util.Map;
 @Entity
 public class HealthCheck extends AbstractEntity {
 
+    @SuppressWarnings("unused")
     public enum HttpMethod {
         GET,
         POST,
@@ -21,19 +22,14 @@ public class HealthCheck extends AbstractEntity {
         PATCH
     }
 
-    @Column
     private String path;
 
-    @Column
     private String httpStatusCode;
 
-    @Column(nullable = false)
-    private Boolean tcpOnly;
+    private Boolean tcpOnly = false;
 
-    @Column
     private HttpMethod httpMethod;
 
-    @Column
     private String body;
 
     @ElementCollection

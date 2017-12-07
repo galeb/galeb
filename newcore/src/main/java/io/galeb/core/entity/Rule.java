@@ -18,7 +18,6 @@ public class Rule extends AbstractEntity implements WithStatus {
     @Column(nullable = false)
     private String match;
 
-    @Column(nullable = false)
     private Boolean global = false;
 
     @Column(nullable = false)

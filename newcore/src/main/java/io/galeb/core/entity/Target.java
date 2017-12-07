@@ -10,10 +10,10 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name", columnNames = { "name" }) })
 public class Target extends AbstractEntity implements WithStatus {
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "targets")
     private Set<Pool> pools = new HashSet<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "target")
     private Set<HealthStatus> healthStatus = new HashSet<>();
 
     @Column(nullable = false)

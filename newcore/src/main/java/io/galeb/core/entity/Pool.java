@@ -12,19 +12,22 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
 public class Pool extends AbstractEntity implements WithStatus {
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "pools")
     private Set<Rule> rules= new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "pools")
     private Set<Environment> environments = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_target_id")),
+            inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_id")))
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne
     private Project project;
 
     @ManyToOne
+    @JoinColumn(name = "balancepolicy_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_balancepolicy"))
     private BalancePolicy balancePolicy;
 
     @Column(nullable = false)

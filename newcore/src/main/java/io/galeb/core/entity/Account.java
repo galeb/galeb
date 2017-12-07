@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -10,15 +11,15 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_account_name", columnNames = { "name" }) })
 public class Account extends AbstractEntity  {
 
-    // discuss json
+    @JsonProperty(required = true)
     @Column(nullable = false)
     private String email;
 
-    // discuss json
+    @JsonProperty(required = true)
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
 
     public Set<Team> getTeams() {

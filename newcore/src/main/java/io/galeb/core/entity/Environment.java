@@ -11,9 +11,13 @@ import java.util.Set;
 public class Environment extends AbstractEntity implements WithStatus {
 
     @ManyToMany
+    @JoinTable(joinColumns=@JoinColumn(name = "virtualhost_id",  foreignKey = @ForeignKey(name="FK_virtualhost_id")),
+            inverseJoinColumns=@JoinColumn(name = "environment_id", nullable = false,foreignKey = @ForeignKey(name="FK_environment_id")))
     private Set<VirtualHost> virtualHosts = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(joinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_pool_id")),
+            inverseJoinColumns=@JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_environment_id")))
     private Set<Pool> pools = new HashSet<>();
 
     @Column(nullable = false)

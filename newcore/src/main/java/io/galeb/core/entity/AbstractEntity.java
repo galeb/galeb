@@ -22,29 +22,30 @@ public abstract class AbstractEntity implements Serializable {
     private long id;
 
     @Version
-    @Column(name = "_version")
     @JsonProperty("_version")
     private Long version;
 
     @CreatedBy
-    @Column(name = "_created_by", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     @JsonProperty("_created_by")
     private String createdBy;
 
     @CreatedDate
-    @Column(name = "_created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     @JsonProperty("_created_at")
     private Date createdAt;
 
     @LastModifiedBy
-    @Column(name = "_last_modified_by", nullable = false)
+    @Column(nullable = false)
     @JsonProperty("_last_modified_by")
     private String lastModifiedBy;
 
     @LastModifiedDate
-    @Column(name = "_last_modified_at", nullable = false)
+    @Column(nullable = false)
     @JsonProperty("_last_modified_at")
     private Date lastModifiedAt;
+
+    private String description;
 
     public long getId() {
         return id;
@@ -94,4 +95,11 @@ public abstract class AbstractEntity implements Serializable {
         this.lastModifiedAt = lastModifiedAt;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

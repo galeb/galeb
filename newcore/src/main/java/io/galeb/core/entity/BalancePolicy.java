@@ -10,7 +10,7 @@ import java.util.Set;
 @Table(name = "balancepolicy", uniqueConstraints = { @UniqueConstraint(name = "UK_balancepolicy_name", columnNames = { "name" }) })
 public class BalancePolicy extends AbstractEntity {
 
-    @OneToMany
+    @OneToMany(mappedBy = "balancePolicy")
     private Set<Pool> pools = new HashSet<>();
 
     @Column(nullable = false)

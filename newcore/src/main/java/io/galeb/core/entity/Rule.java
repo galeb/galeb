@@ -10,10 +10,12 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id"}) })
 public class Rule extends AbstractEntity implements WithStatus {
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "rules")
     private Set<RuleGroup> ruleGroups = new HashSet<>();
 
     @ManyToMany
+    @JoinTable(joinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_pool_id")),
+            inverseJoinColumns=@JoinColumn(name = "rule_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_id")))
     private Set<Pool> pools = new HashSet<>();
 
     @ManyToOne

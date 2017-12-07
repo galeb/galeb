@@ -14,6 +14,7 @@ public class HealthStatus extends AbstractEntity {
     }
 
     @ManyToOne
+    @JoinColumn(name = "target_id", nullable = false, foreignKey = @ForeignKey(name="FK_healthstatus_target"))
     private Target target;
 
     @Enumerated(EnumType.STRING)

@@ -16,7 +16,7 @@ public class Project extends AbstractEntity {
     @OneToMany
     private Set<Pool> pools = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "projects")
     private Set<Team> teams = new HashSet<>();
 
     @OneToMany

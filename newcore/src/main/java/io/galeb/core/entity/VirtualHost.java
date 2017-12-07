@@ -16,7 +16,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @ManyToOne
     private RuleGroup ruleGroup;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "virtualhosts")
     private Set<Environment> environments = new HashSet<>();
 
     @Column(nullable = false)

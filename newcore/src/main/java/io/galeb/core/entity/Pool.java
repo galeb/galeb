@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_pool", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
 public class Pool extends AbstractEntity implements WithStatus {
 
     @ManyToMany

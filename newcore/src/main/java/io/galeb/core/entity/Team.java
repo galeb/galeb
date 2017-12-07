@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import java.util.Set;
@@ -13,6 +14,7 @@ public class Team extends AbstractEntity {
     @ManyToMany
     private Set<Project> projects;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     public Set<Account> getAccounts() {

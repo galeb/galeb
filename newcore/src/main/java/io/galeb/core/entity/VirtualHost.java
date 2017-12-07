@@ -1,9 +1,6 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -18,8 +15,10 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @ManyToMany
     private Set<Environment> environments;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "alias")
     private String alias;
 
     @Transient

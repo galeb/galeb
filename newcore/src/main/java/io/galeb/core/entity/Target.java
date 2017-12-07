@@ -1,9 +1,6 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -15,6 +12,7 @@ public class Target extends AbstractEntity implements WithStatus {
     @OneToMany
     private Set<HealthStatus> healthStatus;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Transient

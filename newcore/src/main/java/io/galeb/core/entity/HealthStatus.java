@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -9,6 +10,8 @@ public class HealthStatus extends AbstractEntity {
     @ManyToOne
     private Target target;
 
+    // Discutir
+    @Column(name = "name", nullable = false)
     private String name;
 
     public Target getTarget() {

@@ -14,6 +14,7 @@ public class RuleGroup implements WithStatus {
     @JoinColumn(nullable = false)
     private Map<Integer, Rule> rules;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Transient

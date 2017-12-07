@@ -1,9 +1,6 @@
 package io.galeb.core.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,18 +22,34 @@ public class Pool extends AbstractEntity implements WithStatus {
     @ManyToOne
     private BalancePolicy balancePolicy;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Transient
     private Status status = Status.UNKNOWN;
 
     // Healthcheck Attributes
+
+    @Column(name = "hcPath")
     private String hcPath;
+
+    @Column(name = "hcHttpStatusCode")
     private String hcHttpStatusCode;
+
+    @Column(name = "hcHost")
     private String hcHost;
+
+    @Column(name = "hcTcpOnly", nullable = false)
     private Boolean hcTcpOnly;
+
+    @Column(name = "hcHttpMethod")
     private HealthCheck.HttpMethod hcHttpMethod;
+
+    @Column(name = "hcBody")
     private String hcBody;
+
+    @ElementCollection
+    @JoinColumn
     private Map<String, String> hcHeaders;
 
     public Set<Rule> getRules() {

@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_role", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_role_name", columnNames = { "name" }) })
 public class Role extends AbstractEntity  {
 
     @Column(nullable = false)

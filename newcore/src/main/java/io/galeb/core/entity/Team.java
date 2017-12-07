@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_team", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_team_name", columnNames = { "name" }) })
 public class Team extends AbstractEntity {
 
     @ManyToMany

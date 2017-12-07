@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_environment", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_environment_name", columnNames = { "name" }) })
 public class Environment extends AbstractEntity implements WithStatus {
 
     @ManyToMany

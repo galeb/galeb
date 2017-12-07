@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -20,20 +21,26 @@ public class HealthCheck extends AbstractEntity {
         PATCH
     }
 
+    @Column(name = "path")
     private String path;
 
+    @Column(name = "httpStatusCode")
     private String httpStatusCode;
 
+    @Column(name = "tcpOnly", nullable = false)
     private Boolean tcpOnly;
 
+    @Column(name = "httpMethod")
     private HttpMethod httpMethod;
 
+    @Column(name = "body")
     private String body;
 
     @ElementCollection
-    @JoinColumn(nullable = false)
+    @JoinColumn
     private Map<String, String> headers;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     public String getName() {

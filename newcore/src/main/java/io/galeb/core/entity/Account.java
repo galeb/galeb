@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import java.util.Set;
@@ -7,8 +8,10 @@ import java.util.Set;
 @Entity
 public class Account extends AbstractEntity  {
 
+    @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     @ManyToMany

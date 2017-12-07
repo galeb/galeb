@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.util.Set;
@@ -10,6 +11,7 @@ public class BalancePolicy extends AbstractEntity {
     @OneToMany
     private Set<Pool> pools;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     public Set<Pool> getPools() {

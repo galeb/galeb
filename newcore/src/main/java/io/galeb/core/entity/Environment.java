@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.Transient;
@@ -14,6 +15,7 @@ public class Environment extends AbstractEntity implements WithStatus {
     @ManyToMany
     private Set<Pool> pools;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Transient

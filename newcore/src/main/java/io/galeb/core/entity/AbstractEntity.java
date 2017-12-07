@@ -1,6 +1,7 @@
 package io.galeb.core.entity;
 
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -18,18 +19,23 @@ public abstract class AbstractEntity implements Serializable {
     private long id;
 
     @Version
+    @Column(name = "_version")
     private Long version;
 
     @CreatedBy
+    @Column(name = "_created_by", nullable = false, updatable = false)
     private String createdBy;
 
-    @LastModifiedBy
+    @CreatedDate
+    @Column(name = "_created_at", nullable = false, updatable = false)
     private Date createdAt;
 
     @LastModifiedBy
+    @Column(name = "_last_modified_by", nullable = false)
     private String lastModifiedBy;
 
     @LastModifiedDate
+    @Column(name = "_last_modified_at", nullable = false)
     private Date lastModifiedAt;
 
     public long getId() {

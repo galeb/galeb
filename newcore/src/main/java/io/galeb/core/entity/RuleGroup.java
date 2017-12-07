@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_name_rulegroup", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rulegroup_name", columnNames = { "name" }) })
 public class RuleGroup implements WithStatus {
 
     @ManyToMany

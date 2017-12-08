@@ -22,6 +22,8 @@ public class HealthStatus extends AbstractEntity {
 
     private String statusDetailed;
 
+    private String source;
+
     public Target getTarget() {
         return target;
     }
@@ -44,5 +46,13 @@ public class HealthStatus extends AbstractEntity {
 
     public void setStatusDetailed(String statusDetailed) {
         this.statusDetailed = statusDetailed;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rulegroup_name", columnNames = { "name" }) })
-public class RuleGroup implements WithStatus {
+public class RuleGroup extends AbstractEntity implements WithStatus {
 
     @ManyToMany
     private Set<VirtualHost> virtualHosts = new HashSet<>();

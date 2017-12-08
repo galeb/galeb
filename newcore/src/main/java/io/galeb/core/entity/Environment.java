@@ -15,9 +15,7 @@ public class Environment extends AbstractEntity implements WithStatus {
             inverseJoinColumns=@JoinColumn(name = "environment_id", nullable = false,foreignKey = @ForeignKey(name="FK_environment_id")))
     private Set<VirtualHost> virtualHosts = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_pool_id")),
-            inverseJoinColumns=@JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_environment_id")))
+    @OneToMany(mappedBy = "environment")
     private Set<Pool> pools = new HashSet<>();
 
     @Column(nullable = false)

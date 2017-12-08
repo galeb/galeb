@@ -15,15 +15,17 @@ public class Pool extends AbstractEntity implements WithStatus {
     @ManyToMany(mappedBy = "pools")
     private Set<Rule> rules= new HashSet<>();
 
-    @ManyToMany(mappedBy = "pools")
-    private Set<Environment> environments = new HashSet<>();
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
+    private Environment environment;
 
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_target_id")),
             inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_id")))
     private Set<Target> targets = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Project project;
 
     @ManyToOne
@@ -65,15 +67,12 @@ public class Pool extends AbstractEntity implements WithStatus {
         }
     }
 
-    public Set<Environment> getEnvironments() {
-        return environments;
+    public Environment getEnvironment() {
+        return environment;
     }
 
-    public void setEnvironments(Set<Environment> environments) {
-        if (environments != null) {
-            this.environments.clear();
-            this.environments.addAll(environments);
-        }
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 
     public Set<Target> getTargets() {

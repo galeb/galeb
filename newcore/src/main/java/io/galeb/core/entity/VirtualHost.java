@@ -11,9 +11,11 @@ import java.util.Set;
 public class VirtualHost extends AbstractEntity implements WithStatus {
 
     @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_project"))
     private Project project;
 
     @ManyToOne
+    @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
     private RuleGroup ruleGroup;
 
     @ManyToMany(mappedBy = "virtualhosts")

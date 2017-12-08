@@ -22,7 +22,6 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @Column(nullable = false)
     private String name;
 
-    @Column
     private String alias;
 
     @Transient

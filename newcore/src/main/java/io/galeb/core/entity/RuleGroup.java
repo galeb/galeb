@@ -12,8 +12,8 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rulegroup_name", columnNames = { "name" }) })
 public class RuleGroup extends AbstractEntity implements WithStatus {
 
-    @ManyToMany
-    private Set<VirtualHost> virtualHosts = new HashSet<>();
+    @OneToMany(mappedBy = "ruleGroup")
+    private Set<VirtualHost> virtualhosts = new HashSet<>();
 
     @ElementCollection
     @JoinColumn(nullable = false)
@@ -25,14 +25,14 @@ public class RuleGroup extends AbstractEntity implements WithStatus {
     @Transient
     private Status status = Status.UNKNOWN;
 
-    public Set<VirtualHost> getVirtualHosts() {
-        return virtualHosts;
+    public Set<VirtualHost> getVirtualhosts() {
+        return virtualhosts;
     }
 
-    public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
-        if (virtualHosts != null) {
-            this.virtualHosts.clear();
-            this.virtualHosts.addAll(virtualHosts);
+    public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
+        if (virtualhosts != null) {
+            this.virtualhosts.clear();
+            this.virtualhosts.addAll(virtualhosts);
         }
     }
 

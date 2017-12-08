@@ -19,8 +19,8 @@ public class Project extends AbstractEntity {
     @ManyToMany(mappedBy = "projects")
     private Set<Team> teams = new HashSet<>();
 
-    @OneToMany
-    private Set<VirtualHost> virtualHosts = new HashSet<>();
+    @OneToMany(mappedBy = "project")
+    private Set<VirtualHost> virtualhosts = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
@@ -58,14 +58,14 @@ public class Project extends AbstractEntity {
         }
     }
 
-    public Set<VirtualHost> getVirtualHosts() {
-        return virtualHosts;
+    public Set<VirtualHost> getVirtualhosts() {
+        return virtualhosts;
     }
 
-    public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
-        if (virtualHosts != null) {
-            this.virtualHosts.clear();
-            this.virtualHosts.addAll(virtualHosts);
+    public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
+        if (virtualhosts != null) {
+            this.virtualhosts.clear();
+            this.virtualhosts.addAll(virtualhosts);
         }
     }
 

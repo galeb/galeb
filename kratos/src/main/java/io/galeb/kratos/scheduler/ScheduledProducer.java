@@ -45,14 +45,16 @@ public class ScheduledProducer {
     @Scheduled(fixedDelay = 10000L)
     public void sendToTargetsToQueue() {
         final String schedId = UUID.randomUUID().toString();
-        LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX);
         long start = System.currentTimeMillis();
         final AtomicInteger counter = new AtomicInteger(0);
-        final long size = targetRepository.count();
         environmentRepository.findAll().stream().map(environment -> environment.getName().replaceAll("[ ]+", "_")).forEach(env -> {
-            for (int page = 0; page <= size/PAGE_SIZE; page++) {
-                Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(page, PAGE_SIZE));
+            LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env);
+            Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(0, PAGE_SIZE));
+            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, env, counter));
+            long size = targetsPage.getTotalElements();
+            for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
+                    targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(page, PAGE_SIZE));
                     StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, env, counter));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);

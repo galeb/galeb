@@ -11,9 +11,9 @@ import java.util.Set;
 public class Environment extends AbstractEntity implements WithStatus {
 
     @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "virtualhost_id",  foreignKey = @ForeignKey(name="FK_virtualhost_id")),
-            inverseJoinColumns=@JoinColumn(name = "environment_id", nullable = false,foreignKey = @ForeignKey(name="FK_environment_id")))
-    private Set<VirtualHost> virtualHosts = new HashSet<>();
+    @JoinTable(joinColumns = @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name = "FK_environment_id")),
+            inverseJoinColumns = @JoinColumn(name = "virtualhost_id", foreignKey = @ForeignKey(name = "FK_virtualhost_id")))
+    private Set<VirtualHost> virtualhosts = new HashSet<>();
 
     @OneToMany(mappedBy = "environment")
     private Set<Pool> pools = new HashSet<>();
@@ -25,13 +25,13 @@ public class Environment extends AbstractEntity implements WithStatus {
     private Status status = Status.UNKNOWN;
 
     public Set<VirtualHost> getVirtualHosts() {
-        return virtualHosts;
+        return virtualhosts;
     }
 
     public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
         if (virtualHosts != null) {
-            this.virtualHosts.clear();
-            this.virtualHosts.addAll(virtualHosts);
+            this.virtualhosts.clear();
+            this.virtualhosts.addAll(virtualHosts);
         }
     }
 

@@ -3,7 +3,6 @@ package io.galeb.core.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_healthstatus_name", columnNames = { "name" }) })
 public class HealthStatus extends AbstractEntity {
 
     @SuppressWarnings("unused")

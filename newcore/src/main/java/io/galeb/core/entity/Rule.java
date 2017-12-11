@@ -7,22 +7,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id"}) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id" }) })
 public class Rule extends AbstractEntity implements WithStatus {
 
     @ManyToMany(mappedBy = "rules")
     private Set<RuleGroup> ruleGroups = new HashSet<>();
 
     @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_pool_id")),
-            inverseJoinColumns=@JoinColumn(name = "rule_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_id")))
+    @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_pool_rule_id")),
+            inverseJoinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_rule_pool_id")))
     private Set<Pool> pools = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_project"))
     private Project project;
 
     @Column(nullable = false)
-    private String match;
+    private String matching;
 
     private Boolean global = false;
 
@@ -63,13 +64,13 @@ public class Rule extends AbstractEntity implements WithStatus {
         this.project = project;
     }
 
-    public String getMatch() {
-        return match;
+    public String getMatching() {
+        return matching;
     }
 
-    public void setMatch(String match) {
-        Assert.hasText(match, "match is not valid");
-        this.match = match;
+    public void setMatching(String matching) {
+        Assert.hasText(matching, "matching is not valid");
+        this.matching = matching;
     }
 
     public Boolean getGlobal() {

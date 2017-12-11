@@ -10,10 +10,10 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_project_name", columnNames = { "name" }) })
 public class Project extends AbstractEntity {
 
-    @OneToMany
+    @OneToMany(mappedBy = "project")
     private Set<Rule> rules = new HashSet<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "project")
     private Set<Pool> pools = new HashSet<>();
 
     @ManyToMany(mappedBy = "projects")

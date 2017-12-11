@@ -20,12 +20,12 @@ public class Pool extends AbstractEntity implements WithStatus {
     private Environment environment;
 
     @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_target_id")),
-            inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_id")))
+    @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_pool_target_id")),
+            inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool_id")))
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_project"))
     private Project project;
 
     @ManyToOne

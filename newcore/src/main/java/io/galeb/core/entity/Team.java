@@ -11,14 +11,14 @@ import java.util.Set;
 public class Team extends AbstractEntity {
 
     @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "account_id", foreignKey = @ForeignKey(name="FK_account_id")),
-            inverseJoinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_team_id")))
+    @JoinTable(joinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_team_id")),
+            inverseJoinColumns=@JoinColumn(name = "account_id", foreignKey = @ForeignKey(name="FK_account_id")))
     private Set<Account> accounts = new HashSet<>();
 
 
     @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "project_id",  foreignKey = @ForeignKey(name="FK_project_id")),
-            inverseJoinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_team_id")))
+    @JoinTable(joinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_project_team_id")),
+            inverseJoinColumns=@JoinColumn(name = "project_id",  foreignKey = @ForeignKey(name="FK_team_project_id")))
     private Set<Project> projects = new HashSet<>();
 
     @Column(nullable = false)

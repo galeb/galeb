@@ -15,8 +15,10 @@ public class RuleGroup extends AbstractEntity implements WithStatus {
     @OneToMany(mappedBy = "ruleGroup")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @ElementCollection
-    @JoinColumn(nullable = false)
+    @ManyToMany
+    @MapKeyColumn(name = "num_order")
+    @JoinTable(joinColumns=@JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_rulegroup_id")),
+            inverseJoinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_rule_id")))
     private Map<Integer, Rule> rules = new HashMap<>();
 
     @Column(nullable = false)

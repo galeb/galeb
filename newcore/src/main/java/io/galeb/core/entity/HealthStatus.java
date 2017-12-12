@@ -3,6 +3,7 @@ package io.galeb.core.entity;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "health_status")
 public class HealthStatus extends AbstractEntity {
 
     @SuppressWarnings("unused")

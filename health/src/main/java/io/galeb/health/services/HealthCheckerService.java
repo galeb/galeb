@@ -16,11 +16,14 @@
 
 package io.galeb.health.services;
 
-import com.google.gson.Gson;
-import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.entity.HealthCheck;
+import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
-import io.galeb.core.enums.EnumHealthState;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.health.util.CallBackQueue;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
@@ -28,16 +31,12 @@ import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.net.URI;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
-import static io.galeb.core.enums.EnumHealthState.*;
-import static io.galeb.core.enums.EnumPropHealth.*;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
@@ -54,12 +53,14 @@ public class HealthCheckerService {
 
     private final CallBackQueue callBackQueue;
     private final AsyncHttpClient asyncHttpClient;
+    private final ConsumerRegister consumerRegister;
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
 
     @Autowired
-    public HealthCheckerService(final CallBackQueue callBackQueue) {
+    public HealthCheckerService(final CallBackQueue callBackQueue, ConsumerRegister consumerRegister) {
         this.callBackQueue = callBackQueue;
+        this.consumerRegister = consumerRegister;
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
@@ -70,87 +71,105 @@ public class HealthCheckerService {
                 .setUserAgent(HEALTHCHECKER_USERAGENT).build());
     }
 
-    @SuppressWarnings({"FutureReturnValueIgnored", "unused"})
-    @JmsListener(destination = "galeb-health", concurrency = "5-5")
-    public void check(String targetStr) throws ExecutionException, InterruptedException {
-        final Target target = new Gson().fromJson(targetStr, Target.class);
-        final String poolName = target.getParent().getName();
-        final Map<String, String> properties = target.getParent().getProperties();
-        final String hcPath = Optional.ofNullable(properties.get(PROP_HEALTHCHECK_PATH.toString())).orElse("/");
-        final String hcStatusCode = Optional.ofNullable(properties.get(PROP_HEALTHCHECK_CODE.toString())).orElse("");
-        final String hcBody = Optional.ofNullable(properties.get(PROP_HEALTHCHECK_RETURN.toString())).orElse("");
-        final String hcHost = Optional.ofNullable(properties.get(PROP_HEALTHCHECK_HOST.toString())).orElse(buildHcHostFromTarget(target));
-        final String lastReason = target.getProperties().get(PROP_STATUS_DETAILED.toString());
-        long start = System.currentTimeMillis();
+    @PostConstruct
+    public void init() {
+        consumerRegister.startMessageListener();
+    }
 
-        RequestBuilder requestBuilder = new RequestBuilder("GET").setUrl(target.getName() + hcPath).setVirtualHost(hcHost);
-        asyncHttpClient.executeRequest(requestBuilder, new AsyncCompletionHandler<Response>() {
-            @Override
-            public Response onCompleted(Response response) throws Exception {
-                if (checkFailStatusCode(response) || checkFailBody(response)) return response;
-                definePropertiesAndUpdate(OK, OK.toString());
-                return response;
+    public void check(Target target) {
+        Pool pool = target.getPools().stream().findAny().orElse(null);
+        if (pool != null) {
+            final String poolName = pool.getName();
+            final String hcPath = Optional.ofNullable(pool.getHcPath()).orElse("/");
+            final String hcStatusCode = Optional.ofNullable(pool.getHcHttpStatusCode()).orElse("");
+            final String hcBody = Optional.ofNullable(pool.getHcBody()).orElse("");
+            final String hcHost = Optional.ofNullable(pool.getHcHost()).orElse(buildHcHostFromTarget(target));
+            final HealthCheck.HttpMethod method = pool.getHcHttpMethod();
+            final HttpHeaders headers = new DefaultHttpHeaders();
+            pool.getHcHeaders().forEach(headers::add);
+
+            final String lastReason = target.getHealthStatus().stream()
+                    .filter(hs -> getSource().equals(hs.getSource()))
+                    .map(HealthStatus::getStatusDetailed).findAny().orElse("");
+            long start = System.currentTimeMillis();
+
+            RequestBuilder requestBuilder = new RequestBuilder(method.toString()).setHeaders(headers).setUrl(target.getName() + hcPath).setVirtualHost(hcHost);
+            if (method == HealthCheck.HttpMethod.POST || method == HealthCheck.HttpMethod.PATCH || method == HealthCheck.HttpMethod.PUT) {
+                requestBuilder.setBody("");
             }
+            asyncHttpClient.executeRequest(requestBuilder, new AsyncCompletionHandler<Response>() {
+                @Override
+                public Response onCompleted(Response response) {
+                    if (checkFailStatusCode(response) || checkFailBody(response)) return response;
+                    definePropertiesAndUpdate(HealthStatus.Status.HEALTHY, HealthStatus.Status.HEALTHY.toString());
+                    return response;
+                }
 
-            @Override
-            public void onThrowable(Throwable t) {
-                definePropertiesAndUpdate(UNKNOWN, t.getMessage());
-            }
+                @Override
+                public void onThrowable(Throwable t) {
+                    definePropertiesAndUpdate(HealthStatus.Status.UNKNOWN, t.getMessage());
+                }
 
-            private boolean checkFailBody(Response response) {
-                if (!"".equals(hcBody)) {
-                    String body = response.getResponseBody();
-                    if (body != null && !body.isEmpty() && !body.contains(hcBody)) {
-                        definePropertiesAndUpdate(FAIL, "Body check FAIL");
-                        return true;
+                private boolean checkFailBody(Response response) {
+                    if (!"".equals(hcBody)) {
+                        String body = response.getResponseBody();
+                        if (body != null && !body.isEmpty() && !body.contains(hcBody)) {
+                            definePropertiesAndUpdate(HealthStatus.Status.FAIL, "Body check FAIL");
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                private boolean checkFailStatusCode(Response response) {
+                    if (!"".equals(hcStatusCode)) {
+                        String statusCodeStr = String.valueOf(response.getStatusCode());
+                        if (!hcStatusCode.equals(statusCodeStr)) {
+                            definePropertiesAndUpdate(HealthStatus.Status.FAIL, "HTTP Status Code check FAIL");
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                private void definePropertiesAndUpdate(HealthStatus.Status status, String reason) {
+                    HealthStatus healthStatus = new HealthStatus();
+                    healthStatus.setSource(getSource());
+                    healthStatus.setStatus(status);
+                    healthStatus.setStatusDetailed(reason);
+                    String logMessage = buildLogMessage(reason);
+                    if (status.equals(HealthStatus.Status.HEALTHY)) {
+                        logger.info(logMessage);
+                    } else {
+                        logger.warn(logMessage);
+                    }
+                    if (!reason.equals(lastReason)) {
+                        callBackQueue.update(healthStatus);
                     }
                 }
-                return false;
-            }
 
-            private boolean checkFailStatusCode(Response response) {
-                if (!"".equals(hcStatusCode)) {
-                    String statusCodeStr = String.valueOf(response.getStatusCode());
-                    if (!hcStatusCode.equals(statusCodeStr)) {
-                        definePropertiesAndUpdate(FAIL, "HTTP Status Code check FAIL");
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            private void definePropertiesAndUpdate(EnumHealthState state, String reason) {
-                String newHealthyState = state.toString();
-
-                target.getProperties().put(PROP_HEALTHY.toString(), newHealthyState);
-                target.getProperties().put(PROP_STATUS_DETAILED.toString(), reason);
-                String logMessage = buildLogMessage(reason);
-                if (state.equals(OK)) {
-                    logger.info(logMessage);
-                } else {
-                    logger.warn(logMessage);
-                }
-                if (lastReason == null || !reason.equals(lastReason)) {
-                    callBackQueue.update(target);
-                }
-            }
-
-            private String buildLogMessage(String reason) {
-                return "Pool " + poolName + " -> " + "Test Params: { "
+                private String buildLogMessage(String reason) {
+                    return "Pool " + poolName + " -> " + "Test Params: { "
                             + "ExpectedBody:\"" + hcBody + "\", "
                             + "ExpectedStatusCode:" + hcStatusCode + ", "
                             + "Host:\"" + hcHost + "\", "
                             + "FullUrl:\"" + target.getName() + hcPath + "\", "
                             + "ConnectionTimeout:" + connectionTimeout + "ms }, "
-                        + "Result: [ " + reason
+                            + "Result: [ " + reason
                             + " (request time: " + (System.currentTimeMillis() - start) + " ms) ]";
-            }
+                }
 
-        });
+            });
+        }
+    }
+
+    private String getSource() {
+        return "UNDEF";
     }
 
     private String buildHcHostFromTarget(Target target) {
-        String hcHost;URI targetURI = URI.create(target.getName());
+        String hcHost;
+        URI targetURI = URI.create(target.getName());
         hcHost = targetURI.getHost() + ":" + targetURI.getPort();
         return hcHost;
     }

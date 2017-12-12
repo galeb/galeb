@@ -16,8 +16,7 @@
 
 package io.galeb.health.util;
 
-import com.google.gson.Gson;
-import io.galeb.core.entity.Target;
+import io.galeb.core.entity.HealthStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,16 +41,15 @@ public class CallBackQueue {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void update(Target target) {
-        String targetStr = new Gson().toJson(target, Target.class);
+    public void update(HealthStatus healthStatus) {
         jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
-            Message message = session.createObjectMessage(targetStr);
-            String uniqueId = "ID:" + target.getName() + "-" + System.currentTimeMillis();
+            Message message = session.createObjectMessage(healthStatus);
+            String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);
             message.setJMSMessageID(uniqueId);
             message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
 
-            logger.info("JMSMessageID: " + uniqueId + " - Target " + target.getName());
+            logger.info("JMSMessageID: " + uniqueId);
             return message;
         });
     }

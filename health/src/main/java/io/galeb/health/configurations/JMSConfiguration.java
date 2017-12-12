@@ -30,6 +30,7 @@ import javax.jms.JMSException;
 
 import static org.springframework.jms.support.destination.JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT;
 
+@SuppressWarnings("Duplicates")
 @Configuration
 @EnableJms
 public class JMSConfiguration {

@@ -1,6 +1,7 @@
 package io.galeb.kratos.scheduler;
 
 import io.galeb.core.entity.Target;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
 import org.apache.commons.logging.Log;
@@ -29,7 +30,7 @@ public class ScheduledProducer {
     private static final Log LOGGER = LogFactory.getLog(ScheduledProducer.class);
 
     private static final int    PAGE_SIZE                 = 100;
-    private static final String QUEUE_GALEB_HEALTH_PREFIX = "galeb-health";
+    private static final String QUEUE_GALEB_HEALTH_PREFIX = SystemEnv.QUEUE_NAME.getValue();
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
@@ -47,7 +48,7 @@ public class ScheduledProducer {
         final String schedId = UUID.randomUUID().toString();
         long start = System.currentTimeMillis();
         final AtomicInteger counter = new AtomicInteger(0);
-        environmentRepository.findAll().stream().map(environment -> environment.getName().replaceAll("[ ]+", "_")).forEach(env -> {
+        environmentRepository.findAll().stream().map(environment -> environment.getName().replaceAll("[ ]+", "_").toLowerCase()).forEach(env -> {
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env);
             Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(0, PAGE_SIZE));
             StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, env, counter));

@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rulegroup_name", columnNames = { "name" }) })
+@Table(name = "rulegroup", uniqueConstraints = { @UniqueConstraint(name = "UK_rulegroup_name", columnNames = { "name" }) })
 public class RuleGroup extends AbstractEntity implements WithStatus {
 
-    @OneToMany(mappedBy = "ruleGroup")
+    @OneToMany(mappedBy = "rulegroup")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
     @ManyToMany

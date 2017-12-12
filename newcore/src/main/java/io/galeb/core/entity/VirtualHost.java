@@ -16,7 +16,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
 
     @ManyToOne
     @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
-    private RuleGroup ruleGroup;
+    private RuleGroup rulegroup;
 
     @ManyToMany(mappedBy = "virtualhosts")
     private Set<Environment> environments = new HashSet<>();
@@ -29,12 +29,12 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @Transient
     private Status status = Status.UNKNOWN;
 
-    public RuleGroup getRuleGroup() {
-        return ruleGroup;
+    public RuleGroup getRulegroup() {
+        return rulegroup;
     }
 
-    public void setRuleGroup(RuleGroup ruleGroup) {
-        this.ruleGroup = ruleGroup;
+    public void setRulegroup(RuleGroup rulegroup) {
+        this.rulegroup = rulegroup;
     }
 
     public Set<Environment> getEnvironments() {

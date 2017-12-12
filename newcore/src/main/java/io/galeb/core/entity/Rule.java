@@ -11,7 +11,7 @@ import java.util.Set;
 public class Rule extends AbstractEntity implements WithStatus {
 
     @ManyToMany(mappedBy = "rules")
-    private Set<RuleGroup> ruleGroups = new HashSet<>();
+    private Set<RuleGroup> rulegroups = new HashSet<>();
 
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_pool_rule_id")),
@@ -33,14 +33,14 @@ public class Rule extends AbstractEntity implements WithStatus {
     @Transient
     private Status status = Status.UNKNOWN;
 
-    public Set<RuleGroup> getRuleGroups() {
-        return ruleGroups;
+    public Set<RuleGroup> getRulegroups() {
+        return rulegroups;
     }
 
-    public void setRuleGroups(Set<RuleGroup> ruleGroups) {
-        if (ruleGroups != null) {
-            this.ruleGroups.clear();
-            this.ruleGroups.addAll(ruleGroups);
+    public void setRulegroups(Set<RuleGroup> rulegroups) {
+        if (rulegroups != null) {
+            this.rulegroups.clear();
+            this.rulegroups.addAll(rulegroups);
         }
     }
 

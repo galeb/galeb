@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Optional;
 
@@ -53,14 +52,12 @@ public class HealthCheckerService {
 
     private final CallBackQueue callBackQueue;
     private final AsyncHttpClient asyncHttpClient;
-    private final ConsumerRegister consumerRegister;
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
 
     @Autowired
-    public HealthCheckerService(final CallBackQueue callBackQueue, ConsumerRegister consumerRegister) {
+    public HealthCheckerService(final CallBackQueue callBackQueue) {
         this.callBackQueue = callBackQueue;
-        this.consumerRegister = consumerRegister;
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
@@ -69,11 +66,6 @@ public class HealthCheckerService {
                 .setPooledConnectionIdleTimeout(pooledConnectionIdleTimeout)
                 .setMaxConnectionsPerHost(maxConnectionsPerHost)
                 .setUserAgent(HEALTHCHECKER_USERAGENT).build());
-    }
-
-    @PostConstruct
-    public void init() {
-        consumerRegister.startMessageListener();
     }
 
     public void check(Target target) {

@@ -20,6 +20,7 @@ import io.galeb.core.entity.HealthStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
@@ -42,16 +43,20 @@ public class CallBackQueue {
     }
 
     public void update(HealthStatus healthStatus) {
-        jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
-            Message message = session.createObjectMessage(healthStatus);
-            String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
-            message.setStringProperty("_HQ_DUPL_ID", uniqueId);
-            message.setJMSMessageID(uniqueId);
-            message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+        try {
+            jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
+                Message message = session.createObjectMessage(healthStatus);
+                String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
+                message.setStringProperty("_HQ_DUPL_ID", uniqueId);
+                message.setJMSMessageID(uniqueId);
+                message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
 
-            logger.info("JMSMessageID: " + uniqueId);
-            return message;
-        });
+                logger.info("JMSMessageID: " + uniqueId);
+                return message;
+            });
+        } catch (JmsException e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 
 }

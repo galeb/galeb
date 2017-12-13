@@ -3,15 +3,11 @@ package io.galeb.core.entity;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id" }) })
 public class Rule extends AbstractEntity implements WithStatus {
-
-    @ManyToMany(mappedBy = "rules")
-    private Set<RuleGroup> rulegroups = new HashSet<>();
 
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_pool_rule_id")),
@@ -30,19 +26,11 @@ public class Rule extends AbstractEntity implements WithStatus {
     @Column(nullable = false)
     private String name;
 
+    @OneToMany(mappedBy = "rule")
+    private List<RuleOrdered> rulesOrdered = new ArrayList<>();
+
     @Transient
     private Status status = Status.UNKNOWN;
-
-    public Set<RuleGroup> getRulegroups() {
-        return rulegroups;
-    }
-
-    public void setRulegroups(Set<RuleGroup> rulegroups) {
-        if (rulegroups != null) {
-            this.rulegroups.clear();
-            this.rulegroups.addAll(rulegroups);
-        }
-    }
 
     public Set<Pool> getPools() {
         return pools;
@@ -92,8 +80,32 @@ public class Rule extends AbstractEntity implements WithStatus {
         this.name = name;
     }
 
+    public List<RuleOrdered> getRulesOrdered() {
+        return rulesOrdered;
+    }
+
+    public void setRulesOrdered(List<RuleOrdered> rulesOrdered) {
+        if (rulesOrdered != null) {
+            this.rulesOrdered.clear();
+            this.rulesOrdered.addAll(rulesOrdered);
+        }
+    }
+
     @Override
     public Status getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rule rule = (Rule) o;
+        return Objects.equals(name, rule.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

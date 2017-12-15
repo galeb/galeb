@@ -26,7 +26,7 @@ public class Rule extends AbstractEntity implements WithStatus {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "rule")
+    @OneToMany(mappedBy = "rule", cascade = CascadeType.REMOVE)
     private List<RuleOrdered> rulesOrdered = new ArrayList<>();
 
     @Transient

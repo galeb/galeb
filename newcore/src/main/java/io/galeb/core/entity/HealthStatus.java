@@ -1,9 +1,10 @@
 package io.galeb.core.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
-@Table(name = "health_status")
+@Table(name = "health_status", uniqueConstraints = { @UniqueConstraint(name = "UK_health_status_source_target_id", columnNames = { "source", "target_id" }) })
 public class HealthStatus extends AbstractEntity {
 
     @SuppressWarnings("unused")
@@ -54,5 +55,19 @@ public class HealthStatus extends AbstractEntity {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HealthStatus that = (HealthStatus) o;
+        return Objects.equals(getTarget(), that.getTarget()) &&
+                Objects.equals(getSource(), that.getSource());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTarget(), getSource());
     }
 }

@@ -1,6 +1,5 @@
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;

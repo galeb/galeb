@@ -3,10 +3,7 @@ package io.galeb.core.entity;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
@@ -179,5 +176,19 @@ public class Pool extends AbstractEntity implements WithStatus {
     @Override
     public Status getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pool pool = (Pool) o;
+        return Objects.equals(getProject(), pool.getProject()) &&
+                Objects.equals(getName(), pool.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getProject(), getName());
     }
 }

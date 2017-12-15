@@ -26,10 +26,10 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "link_id", foreignKey = @ForeignKey(name="FK_virtualhost_link"))
-    private VirtualHost link;
+    @JoinColumn(name = "principal_id", foreignKey = @ForeignKey(name="FK_virtualhost_principal"))
+    private VirtualHost principal;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "link")
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "principal")
     private Set<VirtualHost> aliases = new HashSet<>();
 
     @Transient
@@ -71,20 +71,20 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
         this.rulesOrdered = rulesOrdered;
     }
 
-    public VirtualHost getLink() {
-        return link;
+    public VirtualHost getPrincipal() {
+        return principal;
     }
 
-    public void setLink(VirtualHost link) {
-        if (link != null) {
-            if (link.getName().equalsIgnoreCase(getName()) || link.getId() == getId()) {
-                throw new IllegalArgumentException("Self link NOT ALLOWED");
+    public void setPrincipal(VirtualHost principal) {
+        if (principal != null) {
+            if (principal.getName().equalsIgnoreCase(getName()) || principal.getId() == getId()) {
+                throw new IllegalArgumentException("Self linked Virtualhost (alias AND principal) NOT ALLOWED");
             }
             if (getRulesOrdered().size() > 0) {
                 throw new IllegalArgumentException("Change Virtualhost (principal) to Virtualhost Alias NOT ALLOWED");
             }
         }
-        this.link = link;
+        this.principal = principal;
     }
 
     public Set<VirtualHost> getAliases() {

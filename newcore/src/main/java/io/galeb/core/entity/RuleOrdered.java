@@ -32,7 +32,7 @@ public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdere
 
     public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
         if (virtualhosts != null) {
-            if (virtualhosts.stream().anyMatch(v -> v.getLink() != null)) throw new IllegalArgumentException("RuleOrdered to Virtualhost alias (with link to principal) NOT ALLOWED. Use the PRINCIPAL Virtualhost");
+            if (virtualhosts.stream().anyMatch(v -> v.getPrincipal() != null)) throw new IllegalArgumentException("Using RuleOrdered with Virtualhost alias (not principal) NOT ALLOWED. Use the PRINCIPAL Virtualhost");
             this.virtualhosts.clear();
             this.virtualhosts.addAll(virtualhosts);
         }

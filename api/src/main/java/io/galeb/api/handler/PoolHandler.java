@@ -1,10 +1,9 @@
 package io.galeb.api.handler;
 
 import io.galeb.core.entity.Pool;
-import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
-import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
+import org.springframework.stereotype.Component;
 
-@RepositoryEventHandler
+@Component
 public class PoolHandler extends AbstractHandler<Pool> {
 
 }

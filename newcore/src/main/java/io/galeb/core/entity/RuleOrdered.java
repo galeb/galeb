@@ -3,9 +3,7 @@ package io.galeb.core.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "ruleordered")
@@ -13,10 +11,9 @@ public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdere
 
     private static final long serialVersionUID = 1L;
 
-    @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "rule_order_id", foreignKey = @ForeignKey(name="FK_virtualhost_rule_order_id")),
-            inverseJoinColumns=@JoinColumn(name = "virtualhost_id", foreignKey = @ForeignKey(name="FK_rule_order_virtualhost_id")))
-    private Set<VirtualHost> virtualhosts = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "rulegroup_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rulegroup_rule_ordered"))
+    private RuleGroup rulegroup;
 
     @JsonProperty("order")
     @Column(name = "rule_order", nullable = false)
@@ -26,16 +23,12 @@ public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdere
     @JoinColumn(name = "rule_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_rule_ordered"))
     private Rule rule;
 
-    public Set<VirtualHost> getVirtualhosts() {
-        return virtualhosts;
+    public RuleGroup getRulegroup() {
+        return rulegroup;
     }
 
-    public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
-        if (virtualhosts != null) {
-            if (virtualhosts.stream().anyMatch(v -> v.getPrincipal() != null)) throw new IllegalArgumentException("Using RuleOrdered with Virtualhost alias (not principal) NOT ALLOWED. Use the PRINCIPAL Virtualhost");
-            this.virtualhosts.clear();
-            this.virtualhosts.addAll(virtualhosts);
-        }
+    public void setRulegroup(RuleGroup rulegroup) {
+        this.rulegroup = rulegroup;
     }
 
     public Integer getOrder() {

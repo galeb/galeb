@@ -27,7 +27,7 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     @ManyToOne
     @JoinColumn(name = "balancepolicy_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_balancepolicy"))
-    private BalancePolicy balancePolicy;
+    private BalancePolicy balancepolicy;
 
     @Column(nullable = false)
     private String name;
@@ -92,13 +92,13 @@ public class Pool extends AbstractEntity implements WithStatus {
         this.project = project;
     }
 
-    public BalancePolicy getBalancePolicy() {
-        return balancePolicy;
+    public BalancePolicy getBalancepolicy() {
+        return balancepolicy;
     }
 
-    public void setBalancePolicy(BalancePolicy balancePolicy) {
-        Assert.notNull(balancePolicy, "BalancePolicy is NULL");
-        this.balancePolicy = balancePolicy;
+    public void setBalancepolicy(BalancePolicy balancepolicy) {
+        Assert.notNull(balancepolicy, "BalancePolicy is NULL");
+        this.balancepolicy = balancepolicy;
     }
 
     public String getName() {

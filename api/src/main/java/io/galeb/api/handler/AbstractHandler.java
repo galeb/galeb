@@ -1,50 +1,58 @@
 package io.galeb.api.handler;
 
 import io.galeb.core.entity.AbstractEntity;
+import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
 
 @SuppressWarnings("unused")
-public abstract class AbstractHandler<T extends AbstractEntity> {
+public abstract class AbstractHandler<T extends AbstractEntity> extends AbstractRepositoryEventListener<T> {
 
-    public void beforeCreate(T entity) {
-
+    @Override
+    protected void onBeforeCreate(T entity) {
+        super.onBeforeCreate(entity);
     }
 
-    public void afterCreate(T entity) {
-
+    @Override
+    protected void onAfterCreate(T entity) {
+        super.onAfterCreate(entity);
     }
 
-    public void beforeSave(T entity) {
-
+    @Override
+    protected void onBeforeSave(T entity) {
+        super.onBeforeSave(entity);
     }
 
-    public void afterSave(T entity) {
-
+    @Override
+    protected void onAfterSave(T entity) {
+        super.onAfterSave(entity);
     }
 
-    public void beforeLinkSave(Object parent, T linked) {
-
+    @Override
+    protected void onBeforeLinkSave(T parent, Object linked) {
+        super.onBeforeLinkSave(parent, linked);
     }
 
-    public void afterLinkSave(Object parent, T linked) {
-
+    @Override
+    protected void onAfterLinkSave(T parent, Object linked) {
+        super.onAfterLinkSave(parent, linked);
     }
 
-    public void beforeLinkDelete(Object parent, T linked) {
-
+    @Override
+    protected void onBeforeLinkDelete(T parent, Object linked) {
+        super.onBeforeLinkDelete(parent, linked);
     }
 
-    public void afterLinkDelete(Object parent, T linked) {
-
+    @Override
+    protected void onAfterLinkDelete(T parent, Object linked) {
+        super.onAfterLinkDelete(parent, linked);
     }
 
-    public void beforeDelete(T entity) {
-
+    @Override
+    protected void onBeforeDelete(T entity) {
+        super.onBeforeDelete(entity);
     }
 
-    public void afterDelete(T entity) {
-
+    @Override
+    protected void onAfterDelete(T entity) {
+        super.onAfterDelete(entity);
     }
-
-    public abstract Class<? extends AbstractEntity> entityClass();
-
 }

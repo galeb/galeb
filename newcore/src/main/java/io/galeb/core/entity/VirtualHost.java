@@ -33,10 +33,11 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     }
 
     public void setEnvironments(Set<Environment> environments) {
-        if (environments != null) {
-            this.environments.clear();
-            this.environments.addAll(environments);
+        if (environments == null || environments.isEmpty()) {
+            throw new IllegalArgumentException("Environment(s) undefined");
         }
+        this.environments.clear();
+        this.environments.addAll(environments);
     }
 
     public String getName() {

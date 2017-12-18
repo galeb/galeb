@@ -15,8 +15,8 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_project"))
     private Project project;
 
-    @ManyToOne
-    @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "rulegroup_id", foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
     private RuleGroup rulegroup;
 
     @ManyToMany(mappedBy = "virtualhosts")

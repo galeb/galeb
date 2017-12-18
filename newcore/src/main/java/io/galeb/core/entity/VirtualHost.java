@@ -15,21 +15,15 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_project"))
     private Project project;
 
-    @ManyToMany(mappedBy = "virtualhosts", cascade = CascadeType.REMOVE)
-    private Set<RuleOrdered> rulesOrdered = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
+    private RuleGroup rulegroup;
 
     @ManyToMany(mappedBy = "virtualhosts")
     private Set<Environment> environments = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
-
-    @ManyToOne
-    @JoinColumn(name = "principal_id", foreignKey = @ForeignKey(name="FK_virtualhost_principal"))
-    private VirtualHost principal;
-
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "principal")
-    private Set<VirtualHost> aliases = new HashSet<>();
 
     @Transient
     private Status status = Status.UNKNOWN;
@@ -62,39 +56,12 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
         this.project = project;
     }
 
-    public Set<RuleOrdered> getRulesOrdered() {
-        return rulesOrdered;
+    public RuleGroup getRulegroup() {
+        return rulegroup;
     }
 
-    public void setRulesOrdered(Set<RuleOrdered> rulesOrdered) {
-        this.rulesOrdered = rulesOrdered;
-    }
-
-    public VirtualHost getPrincipal() {
-        return principal;
-    }
-
-    public void setPrincipal(VirtualHost principal) {
-        if (principal != null) {
-            if (principal.getName().equalsIgnoreCase(getName()) || principal.getId() == getId()) {
-                throw new IllegalArgumentException("Self linked Virtualhost (alias AND principal) NOT ALLOWED");
-            }
-            if (getRulesOrdered().size() > 0) {
-                throw new IllegalArgumentException("Change Virtualhost (principal) to Virtualhost Alias NOT ALLOWED");
-            }
-        }
-        this.principal = principal;
-    }
-
-    public Set<VirtualHost> getAliases() {
-        return aliases;
-    }
-
-    public void setAliases(Set<VirtualHost> aliases) {
-        if (aliases != null) {
-            this.aliases.clear();
-            this.aliases.addAll(aliases);
-        }
+    public void setRulegroup(RuleGroup rulegroup) {
+        this.rulegroup = rulegroup;
     }
 
     @Override

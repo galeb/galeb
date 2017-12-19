@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatusService {
 
-    public WithStatus.Status status(WithStatus withStatus, Long id) {
+    public WithStatus.Status status(WithStatus entity, Long id) {
         return WithStatus.Status.OK;
     }
 }

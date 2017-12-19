@@ -12,8 +12,9 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     private static final long serialVersionUID = 1L;
 
     @ManyToOne
-    @JoinColumn(name = "rulegroup_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rulegroup_rule_ordered"))
-    private RuleGroup rulegroup;
+    @JsonProperty("virtualhostgroup")
+    @JoinColumn(name = "virtualhostgroup_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhostgroup_rule_ordered"))
+    private VirtualhostGroup virtualhostgroup;
 
     @JsonProperty("order")
     @Column(name = "rule_order", nullable = false)
@@ -26,12 +27,12 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     @Transient
     private Status status = Status.UNKNOWN;
 
-    public RuleGroup getRulegroup() {
-        return rulegroup;
+    public VirtualhostGroup getVirtualhostgroup() {
+        return virtualhostgroup;
     }
 
-    public void setRulegroup(RuleGroup rulegroup) {
-        this.rulegroup = rulegroup;
+    public void setVirtualhostgroup(VirtualhostGroup virtualhostgroup) {
+        this.virtualhostgroup = virtualhostgroup;
     }
 
     public Integer getOrder() {

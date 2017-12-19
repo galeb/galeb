@@ -3,6 +3,7 @@ package io.galeb.api.handler;
 import io.galeb.api.repository.VirtualhostGroupRepository;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
+import io.galeb.core.entity.WithStatus;
 import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
             virtualhostGroupRepository.save(virtualhostGroup);
             virtualHost.setVirtualhostgroup(virtualhostGroup);
         }
+        virtualHost.setStatus(WithStatus.Status.OK);
     }
 
 }

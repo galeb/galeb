@@ -62,6 +62,11 @@ public class Environment extends AbstractEntity implements WithStatus {
     }
 
     @Override
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

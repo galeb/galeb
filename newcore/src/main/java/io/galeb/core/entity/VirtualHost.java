@@ -17,8 +17,8 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     private Project project;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
-    private RuleGroup rulegroup;
+    @JoinColumn(name = "virtualhostgroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_virtualhostgroup"))
+    private VirtualhostGroup virtualhostgroup;
 
     @ManyToMany(mappedBy = "virtualhosts")
     private Set<Environment> environments = new HashSet<>();
@@ -58,12 +58,12 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
         this.project = project;
     }
 
-    public RuleGroup getRulegroup() {
-        return rulegroup;
+    public VirtualhostGroup getVirtualhostgroup() {
+        return virtualhostgroup;
     }
 
-    public void setRulegroup(RuleGroup rulegroup) {
-        this.rulegroup = rulegroup;
+    public void setVirtualhostgroup(VirtualhostGroup virtualhostgroup) {
+        this.virtualhostgroup = virtualhostgroup;
     }
 
     @Override

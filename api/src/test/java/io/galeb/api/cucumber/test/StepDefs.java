@@ -15,10 +15,14 @@ import io.galeb.api.Application;
 import io.galeb.core.entity.AbstractEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -36,8 +40,10 @@ import static org.hamcrest.Matchers.hasToString;
 
 @ContextConfiguration
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@PropertySource("classpath:application.properties")
 public class StepDefs {
 
+    private static final Flyway FLYWAY  = new Flyway();
     private static final Log LOGGER     = LogFactory.getLog(StepDefs.class);
 
     @LocalServerPort
@@ -46,6 +52,16 @@ public class StepDefs {
     @PersistenceContext
     private EntityManager em;
 
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username}")
+    private String dbUsername;
+
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
+
+
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
     private RequestSpecification request;
@@ -53,6 +69,21 @@ public class StepDefs {
 
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
+
+
+    @PostConstruct
+    public void init() {
+        System.out.println("dbUrl: " + dbUrl);
+        FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
+    }
+
+    @Given("^reset")
+    public void reset(){
+        System.out.println("chamou reset");
+        FLYWAY.clean();
+        FLYWAY.migrate();
+        response = null;
+    }
 
 
     @Given("^a REST client unauthenticated$")
@@ -179,5 +210,7 @@ public class StepDefs {
         }
         return id;
     }
+
+
 
 }

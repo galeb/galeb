@@ -44,4 +44,8 @@ public class VirtualhostGroup extends AbstractEntity implements WithStatus {
         return status;
     }
 
+    @Override
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

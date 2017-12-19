@@ -5,14 +5,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "rulegroup")
-public class RuleGroup extends AbstractEntity implements WithStatus {
+@Table(name = "virtualhostgroup")
+public class VirtualhostGroup extends AbstractEntity implements WithStatus {
 
-    @OneToMany(mappedBy = "rulegroup", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "virtualhostgroup", cascade = CascadeType.REMOVE)
     public Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @OneToMany(mappedBy = "rulegroup", cascade = CascadeType.REMOVE)
-    public Set<RuleOrdered> rulesOrdered = new HashSet<>();
+    @OneToMany(mappedBy = "virtualhostgroup", cascade = CascadeType.REMOVE)
+    public Set<RuleOrdered> rulesordered = new HashSet<>();
 
     @Transient
     private Status status = Status.UNKNOWN;
@@ -28,14 +28,14 @@ public class RuleGroup extends AbstractEntity implements WithStatus {
         }
     }
 
-    public Set<RuleOrdered> getRulesOrdered() {
-        return rulesOrdered;
+    public Set<RuleOrdered> getRulesordered() {
+        return rulesordered;
     }
 
-    public void setRulesOrdered(Set<RuleOrdered> rulesOrdered) {
-        if (rulesOrdered != null) {
-            this.rulesOrdered.clear();
-            this.rulesOrdered.addAll(rulesOrdered);
+    public void setRulesordered(Set<RuleOrdered> rulesordered) {
+        if (rulesordered != null) {
+            this.rulesordered.clear();
+            this.rulesordered.addAll(rulesordered);
         }
     }
 

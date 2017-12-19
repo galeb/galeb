@@ -1,9 +1,7 @@
 package io.galeb.core.entity;
 
 import javax.persistence.*;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -17,7 +15,7 @@ public class VirtualhostGroup extends AbstractEntity implements WithStatus {
     public Set<RuleOrdered> rulesordered = new HashSet<>();
 
     @Transient
-    private Map<Long, Status> status = new HashMap<>();
+    private Status status = Status.UNKNOWN;
 
     public Set<VirtualHost> getVirtualhosts() {
         return virtualhosts;
@@ -42,12 +40,8 @@ public class VirtualhostGroup extends AbstractEntity implements WithStatus {
     }
 
     @Override
-    public Map<Long, Status> getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    @Override
-    public void setStatus(Map<Long, Status> status) {
-        this.status = status;
-    }
 }

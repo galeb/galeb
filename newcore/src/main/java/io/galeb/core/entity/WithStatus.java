@@ -8,8 +8,6 @@ public interface WithStatus {
         UNKNOWN
     }
 
-    default Status getStatus() {
-        return Status.UNKNOWN;
-    }
+    Status getStatus();
 
 }

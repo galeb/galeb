@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "ruleordered")
-public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdered> {
+public class RuleOrdered extends AbstractEntity implements WithStatus, Comparable<RuleOrdered> {
 
     private static final long serialVersionUID = 1L;
 
@@ -22,6 +22,9 @@ public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdere
     @ManyToOne
     @JoinColumn(name = "rule_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_rule_ordered"))
     private Rule rule;
+
+    @Transient
+    private Status status = Status.UNKNOWN;
 
     public RuleGroup getRulegroup() {
         return rulegroup;
@@ -45,6 +48,11 @@ public class RuleOrdered extends AbstractEntity implements Comparable<RuleOrdere
 
     public void setRule(Rule rule) {
         this.rule = rule;
+    }
+
+    @Override
+    public Status getStatus() {
+        return status;
     }
 
     @Override

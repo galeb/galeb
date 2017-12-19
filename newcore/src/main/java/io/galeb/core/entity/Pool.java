@@ -16,9 +16,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Environment environment;
 
-    @ManyToMany
-    @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_pool_target_id")),
-            inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool_id")))
+    @ManyToMany(mappedBy = "pools", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(optional = false)
@@ -37,13 +35,13 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     // Healthcheck Attributes
 
-    private String hcPath;
+    private String hcPath = "/";
 
     private String hcHttpStatusCode;
 
     private String hcHost;
 
-    private Boolean hcTcpOnly = false;
+    private Boolean hcTcpOnly = true;
 
     private HealthCheck.HttpMethod hcHttpMethod = HealthCheck.HttpMethod.GET;
 

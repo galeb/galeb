@@ -8,11 +8,11 @@ import java.util.Set;
 @Table(name = "rulegroup")
 public class RuleGroup extends AbstractEntity implements WithStatus {
 
-    @OneToMany(mappedBy = "rulegroup")
+    @OneToMany(mappedBy = "rulegroup", cascade = CascadeType.REMOVE)
     public Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @OneToMany(mappedBy = "rulegroup")
-    public Set<RuleOrdered> rulesOrdered;
+    @OneToMany(mappedBy = "rulegroup", cascade = CascadeType.REMOVE)
+    public Set<RuleOrdered> rulesOrdered = new HashSet<>();
 
     @Transient
     private Status status = Status.UNKNOWN;

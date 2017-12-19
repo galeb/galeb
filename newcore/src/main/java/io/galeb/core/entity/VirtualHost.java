@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -16,7 +17,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     private Project project;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "rulegroup_id", foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
+    @JoinColumn(name = "rulegroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_rulegroup"))
     private RuleGroup rulegroup;
 
     @ManyToMany(mappedBy = "virtualhosts")
@@ -34,7 +35,7 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
 
     public void setEnvironments(Set<Environment> environments) {
         if (environments == null || environments.isEmpty()) {
-            throw new IllegalArgumentException("Environment(s) undefined");
+            throw new BadRequestException("Environment(s) undefined");
         }
         this.environments.clear();
         this.environments.addAll(environments);

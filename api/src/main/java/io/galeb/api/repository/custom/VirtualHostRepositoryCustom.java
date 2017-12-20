@@ -14,4 +14,6 @@ public interface VirtualHostRepositoryCustom {
     Iterable<VirtualHost> findAll(Sort var1);
 
     Page<VirtualHost> findAll(Pageable var1);
+
+    void delete(Long id);
 }

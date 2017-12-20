@@ -1,5 +1,6 @@
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.galeb.core.entity.annotations.JsonCustomProperties;
 import org.springframework.data.annotation.CreatedBy;
@@ -44,6 +45,9 @@ public abstract class AbstractEntity implements Serializable {
     @Column(nullable = false)
     @JsonProperty("_last_modified_at")
     private Date lastModifiedAt;
+
+    @JsonIgnore
+    private Boolean quarantine = false;
 
     @PrePersist
     private void onCreate() {
@@ -115,5 +119,13 @@ public abstract class AbstractEntity implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean isQuarantine() {
+        return quarantine;
+    }
+
+    public void quarantine(Boolean quarantine) {
+        this.quarantine = quarantine;
     }
 }

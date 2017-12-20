@@ -14,4 +14,6 @@ public interface TargetRepositoryCustom {
     Iterable<Target> findAll(Sort var1);
 
     Page<Target> findAll(Pageable var1);
+
+    void delete(Long id);
 }

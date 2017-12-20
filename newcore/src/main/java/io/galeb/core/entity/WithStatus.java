@@ -7,7 +7,8 @@ public interface WithStatus {
     enum Status {
         PENDING,
         OK,
-        UNKNOWN
+        UNKNOWN,
+        DELETED
     }
 
     Status getStatus();

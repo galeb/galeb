@@ -3,9 +3,6 @@ package io.galeb.api.repository.custom;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -26,18 +23,4 @@ public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<
         setStatusService(statusService);
     }
 
-    @Override
-    public Environment findOne(Long id) {
-        return super.findOne(id);
-    }
-
-    @Override
-    public Iterable<Environment> findAll(Sort sort) {
-        return super.findAll(sort);
-    }
-
-    @Override
-    public Page<Environment> findAll(Pageable pageable) {
-        return super.findAll(pageable);
-    }
 }

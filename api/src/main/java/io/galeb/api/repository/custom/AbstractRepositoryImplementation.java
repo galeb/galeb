@@ -29,14 +29,16 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
 
     public T findOne(Long id) {
         T entity = simpleJpaRepository.findOne(id);
-        ((WithStatus)entity).setStatus(statusService.status((WithStatus) entity, id));
+        if (entity instanceof WithStatus)
+            ((WithStatus)entity).setStatus(statusService.status(entity));
         return entity;
     }
 
     public Iterable<T> findAll(Sort sort) {
         Iterable<T> iterable = simpleJpaRepository.findAll(sort);
         for (T entity: iterable) {
-            ((WithStatus)entity).setStatus(statusService.status((WithStatus) entity, entity.getId()));
+            if (entity instanceof WithStatus)
+                ((WithStatus)entity).setStatus(statusService.status(entity));
         }
         return iterable;
     }
@@ -44,7 +46,8 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
     public Page<T> findAll(Pageable pageable) {
         Page<T> page = simpleJpaRepository.findAll(pageable);
         for (T entity: page) {
-            ((WithStatus)entity).setStatus(statusService.status((WithStatus) entity, entity.getId()));
+            if (entity instanceof WithStatus)
+                ((WithStatus)entity).setStatus(statusService.status(entity));
         }
         return page;
     }

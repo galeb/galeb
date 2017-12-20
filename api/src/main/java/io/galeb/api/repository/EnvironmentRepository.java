@@ -9,7 +9,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.Set;
 
-@RepositoryRestResource(path = "environment", collectionResourceRel = "environment")
+@RepositoryRestResource(path = "environment", collectionResourceRel = "environment", itemResourceRel = "environment")
 public interface EnvironmentRepository extends JpaRepository<Environment, Long> {
 
     @RestResource(exported = false)

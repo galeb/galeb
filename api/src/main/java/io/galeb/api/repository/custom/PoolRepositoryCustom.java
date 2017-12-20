@@ -14,4 +14,6 @@ public interface PoolRepositoryCustom {
     Iterable<Pool> findAll(Sort var1);
 
     Page<Pool> findAll(Pageable var1);
+
+    void delete(Long id);
 }

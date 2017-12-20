@@ -14,4 +14,6 @@ public interface RuleRepositoryCustom {
     Iterable<Rule> findAll(Sort var1);
 
     Page<Rule> findAll(Pageable var1);
+
+    void delete(Long id);
 }

@@ -11,9 +11,7 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_environment_name", columnNames = { "name" }) })
 public class Environment extends AbstractEntity implements WithStatus {
 
-    @ManyToMany
-    @JoinTable(joinColumns = @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name = "FK_environment_id")),
-            inverseJoinColumns = @JoinColumn(name = "virtualhost_id", foreignKey = @ForeignKey(name = "FK_virtualhost_id")))
+    @ManyToMany(mappedBy = "environments")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
     @OneToMany(mappedBy = "environment")

@@ -20,7 +20,9 @@ public class VirtualHost extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "virtualhostgroup_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_virtualhostgroup"))
     private VirtualhostGroup virtualhostgroup;
 
-    @ManyToMany(mappedBy = "virtualhosts")
+    @ManyToMany
+    @JoinTable(inverseJoinColumns = @JoinColumn(name = "virtualhost_id", foreignKey = @ForeignKey(name = "FK_virtualhost_id")),
+            joinColumns = @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name = "FK_environment_id")))
     private Set<Environment> environments = new HashSet<>();
 
     @Column(nullable = false)

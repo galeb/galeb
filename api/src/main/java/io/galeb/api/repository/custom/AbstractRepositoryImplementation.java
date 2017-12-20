@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
@@ -46,5 +47,12 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
             ((WithStatus)entity).setStatus(statusService.status((WithStatus) entity, entity.getId()));
         }
         return page;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        T entity = simpleJpaRepository.findOne(id);
+        entity.quarantine(true);
+        simpleJpaRepository.saveAndFlush(entity);
     }
 }

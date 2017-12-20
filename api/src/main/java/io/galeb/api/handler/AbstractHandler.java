@@ -1,5 +1,6 @@
 package io.galeb.api.handler;
 
+import io.galeb.api.services.ChangesService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,8 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public abstract class AbstractHandler<T extends AbstractEntity> extends AbstractRepositoryEventListener<T> {
 
-    public static final String PREFIX_VERSION     = "version:";
-    public static final String PREFIX_HAS_CHANGE  = "haschange:";
-
     @Autowired
-    RedisTemplate redisTemplate;
+    ChangesService changesService;
 
     @Override
     protected void onBeforeCreate(T entity) {
@@ -76,18 +74,7 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     }
 
     private void registerChanges(T entity) {
-        getAllEnvironments(entity).stream().forEach(e -> {
-            long envId = e.getId();
-            Long newVersion = incrementVersion(envId);
-            String suffix = entity.getClass().getSimpleName().toLowerCase() + ":" + entity.getId() + ":" + entity.getLastModifiedAt().getTime();
-            final ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-            valueOperations.setIfAbsent(PREFIX_HAS_CHANGE + envId + ":" + suffix, String.valueOf(newVersion));
-        });
+        getAllEnvironments(entity).stream().forEach(e-> changesService.register(e, entity));
     }
-
-    private Long incrementVersion(long envId) {
-        return redisTemplate.opsForValue().increment(PREFIX_VERSION + envId, 1);
-    }
-
 
 }

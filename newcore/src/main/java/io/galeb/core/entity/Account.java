@@ -26,6 +26,8 @@ public class Account extends AbstractEntity  {
 
     private String apitoken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
 
+    private Boolean renewtoken = false;
+
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
 
@@ -65,6 +67,14 @@ public class Account extends AbstractEntity  {
 
     public void setApitoken(String seed) {
         this.apitoken = sha256().hashBytes((seed + UUID.randomUUID().toString()).getBytes()).toString();
+    }
+
+    public Boolean getRenewtoken() {
+        return renewtoken;
+    }
+
+    public void setRenewtoken(Boolean renewtoken) {
+        this.renewtoken = renewtoken;
     }
 
     @Override

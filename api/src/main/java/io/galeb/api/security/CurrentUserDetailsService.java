@@ -21,12 +21,14 @@ package io.galeb.api.security;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -39,14 +41,21 @@ public class CurrentUserDetailsService implements UserDetailsService {
 
     private static final Logger LOGGER = LogManager.getLogger(CurrentUserDetailsService.class);
 
-    private static final Account LOCAL_ADMIN;
-    static {
-        String apitoken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
-        LOCAL_ADMIN = new Account();
-        LOCAL_ADMIN.setUsername("admin");
-        LOCAL_ADMIN.setPassword(apitoken);
-        LOCAL_ADMIN.setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
-        LOGGER.info(">>> Local Token: " + apitoken);
+    private Account localAdmin;
+
+    @Value("${auth.localtoken:UNDEF}")
+    private String apiToken;
+
+    @PostConstruct
+    public void init() {
+        if ("UNDEF".equals(apiToken)) {
+            apiToken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
+            LOGGER.info(">>> Local Token: " + apiToken);
+        }
+        localAdmin = new Account();
+        localAdmin.setUsername("admin");
+        localAdmin.setPassword(apiToken);
+        localAdmin.setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
     }
 
     @PersistenceContext
@@ -66,8 +75,8 @@ public class CurrentUserDetailsService implements UserDetailsService {
         return account;
     }
 
-    public static Account localAdmin() {
-        return LOCAL_ADMIN;
+    public Account localAdmin() {
+        return localAdmin;
     }
 
 }

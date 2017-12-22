@@ -37,8 +37,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
-                .withUser(CurrentUserDetailsService.localAdmin().getUsername())
-                .password(CurrentUserDetailsService.localAdmin().getApitoken()).roles("USER");
+                .withUser(((CurrentUserDetailsService)userDetailsService).localAdmin().getUsername())
+                .password(((CurrentUserDetailsService)userDetailsService).localAdmin().getApitoken()).roles("USER");
         auth.authenticationProvider(authenticationProvider);
         auth.userDetailsService(userDetailsService);
     }

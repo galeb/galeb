@@ -5,9 +5,7 @@ import javassist.tools.web.BadHttpRequest;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name", columnNames = { "name" }) })
@@ -25,7 +23,7 @@ public class Target extends AbstractEntity implements WithStatus {
     private String name;
 
     @Transient
-    private Status status = Status.UNKNOWN;
+    private Map<Long, Status> status = new HashMap<>();
 
     public Set<Pool> getPools() {
         return pools;
@@ -60,12 +58,12 @@ public class Target extends AbstractEntity implements WithStatus {
     }
 
     @Override
-    public Status getStatus() {
+    public Map<Long, Status> getStatus() {
         return status;
     }
 
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(Map<Long, Status> status) {
         this.status = status;
     }
 

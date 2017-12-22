@@ -2,19 +2,22 @@ package io.galeb.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.google.common.hash.Hashing.sha256;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_account_name", columnNames = { "name" }) })
-public class Account extends AbstractEntity  {
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_account_username", columnNames = { "username" }) })
+public class Account extends AbstractEntity implements UserDetails {
 
     @JsonProperty(required = true)
     @Column(nullable = false)
@@ -22,9 +25,35 @@ public class Account extends AbstractEntity  {
 
     @JsonProperty(required = true)
     @Column(nullable = false)
-    private String name;
+    private String username;
+
+    @JsonIgnore
+    @Transient
+    private String password;
+
+    @JsonIgnore
+    @Transient
+    private Collection<GrantedAuthority> authorities = Collections.emptyList();
+
+    @JsonIgnore
+    @Transient
+    private boolean accountNonExpired = true;
+
+    @JsonIgnore
+    @Transient
+    private boolean accountNonLocked = true;
+
+    @JsonIgnore
+    @Transient
+    private boolean credentialsNonExpired = true;
+
+    @JsonIgnore
+    @Transient
+    private boolean enabled = true;
 
     private String apitoken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
+
+    private Boolean renewtoken = false;
 
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
@@ -49,13 +78,67 @@ public class Account extends AbstractEntity  {
         this.email = email;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        Assert.hasText(name, "name is not valid");
-        this.name = name;
+    @Override
+    public boolean isAccountNonExpired() {
+        return accountNonExpired;
+    }
+
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        this.accountNonExpired = accountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
+    }
+
+    public void setAccountNonLocked(boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return credentialsNonExpired;
+    }
+
+    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
+        this.credentialsNonExpired = credentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setUsername(String username) {
+        Assert.hasText(username, "name is not valid");
+        this.username = username;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Collection<GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @JsonIgnore
@@ -67,16 +150,29 @@ public class Account extends AbstractEntity  {
         this.apitoken = sha256().hashBytes((seed + UUID.randomUUID().toString()).getBytes()).toString();
     }
 
+    public Boolean getRenewtoken() {
+        return renewtoken;
+    }
+
+    public void setRenewtoken(Boolean renewtoken) {
+        this.renewtoken = renewtoken;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return Objects.equals(getName(), account.getName());
+        return Objects.equals(getUsername(), account.getUsername());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName());
+        return Objects.hash(getUsername());
+    }
+
+    @Override
+    public String toString() {
+        return username;
     }
 }

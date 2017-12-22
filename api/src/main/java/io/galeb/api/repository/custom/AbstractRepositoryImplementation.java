@@ -2,6 +2,7 @@ package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.WithStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,9 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 @NoRepositoryBean
 public class AbstractRepositoryImplementation<T extends AbstractEntity> {
@@ -29,16 +33,20 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
 
     public T findOne(Long id) {
         T entity = simpleJpaRepository.findOne(id);
-        if (entity instanceof WithStatus)
-            ((WithStatus)entity).setStatus(statusService.status(entity));
+        if (entity instanceof WithStatus) {
+            entity.setAllEnvironments(getAllEnvironments(entity));
+            ((WithStatus) entity).setStatus(statusService.status(entity));
+        }
         return entity;
     }
 
     public Iterable<T> findAll(Sort sort) {
         Iterable<T> iterable = simpleJpaRepository.findAll(sort);
         for (T entity: iterable) {
-            if (entity instanceof WithStatus)
-                ((WithStatus)entity).setStatus(statusService.status(entity));
+            if (entity instanceof WithStatus) {
+                entity.setAllEnvironments(getAllEnvironments(entity));
+                ((WithStatus) entity).setStatus(statusService.status(entity));
+            }
         }
         return iterable;
     }
@@ -46,8 +54,10 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
     public Page<T> findAll(Pageable pageable) {
         Page<T> page = simpleJpaRepository.findAll(pageable);
         for (T entity: page) {
-            if (entity instanceof WithStatus)
-                ((WithStatus)entity).setStatus(statusService.status(entity));
+            if (entity instanceof WithStatus) {
+                entity.setAllEnvironments(getAllEnvironments(entity));
+                ((WithStatus) entity).setStatus(statusService.status(entity));
+            }
         }
         return page;
     }
@@ -57,5 +67,9 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
         T entity = simpleJpaRepository.findOne(id);
         entity.quarantine(true);
         simpleJpaRepository.saveAndFlush(entity);
+    }
+
+    protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
+        return Collections.emptySet();
     }
 }

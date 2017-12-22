@@ -1,8 +1,10 @@
 package io.galeb.core.entity;
 
+import java.util.Map;
+
 public interface WithStatus {
 
-    void setStatus(Status status);
+    void setStatus(Map<Long, Status> status);
 
     enum Status {
         PENDING,
@@ -11,6 +13,6 @@ public interface WithStatus {
         DELETED
     }
 
-    Status getStatus();
+    Map<Long, Status> getStatus();
 
 }

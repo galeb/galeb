@@ -29,7 +29,6 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
             virtualhostGroupRepository.save(virtualhostGroup);
             virtualHost.setVirtualhostgroup(virtualhostGroup);
         }
-        virtualHost.setStatus(WithStatus.Status.OK);
     }
 
     @Override

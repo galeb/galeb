@@ -21,10 +21,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == 'admin' or #id == principal.id")
+    @PreAuthorize("principal.username == 'admin' or #id == principal.id")
     Account findOne(@Param("id") Long id);
 
     @Override
-    @Query("SELECT a FROM Account a WHERE a.username LIKE ?#{hasRole('ROLE_ADMIN') or principal.username == 'admin' ? '%' : principal.username}")
+    @Query("SELECT a FROM Account a WHERE a.username LIKE ?#{principal.username == 'admin' ? '%' : principal.username}")
     Page<Account> findAll(Pageable pageable);
 }

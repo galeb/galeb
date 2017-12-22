@@ -11,6 +11,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @MappedSuperclass
 @JsonCustomProperties
@@ -39,6 +41,7 @@ public abstract class AbstractEntity implements Serializable {
     @LastModifiedBy
     @Column(nullable = false)
     @JsonProperty("_last_modified_by")
+
     private String lastModifiedBy;
 
     @LastModifiedDate
@@ -48,6 +51,10 @@ public abstract class AbstractEntity implements Serializable {
 
     @JsonIgnore
     private Boolean quarantine = false;
+
+    @JsonIgnore
+    @Transient
+    private Set<Environment> allEnvironments = new HashSet<>();
 
     @PrePersist
     private void onCreate() {
@@ -128,4 +135,13 @@ public abstract class AbstractEntity implements Serializable {
     public void quarantine(Boolean quarantine) {
         this.quarantine = quarantine;
     }
+
+    public Set<Environment> getAllEnvironments() {
+        return allEnvironments;
+    }
+
+    public void setAllEnvironments(Set<Environment> allEnvironments) {
+        this.allEnvironments = allEnvironments;
+    }
+
 }

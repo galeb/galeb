@@ -31,7 +31,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     private String name;
 
     @Transient
-    private Status status = Status.UNKNOWN;
+    private Map<Long, Status> status = new HashMap<>();
 
     // Healthcheck Attributes
 
@@ -172,12 +172,12 @@ public class Pool extends AbstractEntity implements WithStatus {
     }
 
     @Override
-    public Status getStatus() {
+    public Map<Long, Status> getStatus() {
         return status;
     }
 
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(Map<Long, Status> status) {
         this.status = status;
     }
 

@@ -3,6 +3,8 @@ package io.galeb.core.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity
@@ -25,7 +27,7 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     private Rule rule;
 
     @Transient
-    private Status status = Status.UNKNOWN;
+    private Map<Long, Status> status = new HashMap<>();
 
     public VirtualhostGroup getVirtualhostgroup() {
         return virtualhostgroup;
@@ -52,12 +54,12 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     }
 
     @Override
-    public Status getStatus() {
+    public Map<Long, Status> getStatus() {
         return status;
     }
 
     @Override
-    public void setStatus(Status status) {
+    public void setStatus(Map<Long, Status> status) {
         this.status = status;
     }
 

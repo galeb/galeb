@@ -21,42 +21,19 @@ package io.galeb.api.security;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import java.util.UUID;
-
-import static com.google.common.hash.Hashing.sha256;
 
 @Service
 public class CurrentUserDetailsService implements UserDetailsService {
 
     private static final Logger LOGGER = LogManager.getLogger(CurrentUserDetailsService.class);
-
-    private Account localAdmin;
-
-    @Value("${auth.localtoken:UNDEF}")
-    private String apiToken;
-
-    @PostConstruct
-    public void init() {
-        if ("UNDEF".equals(apiToken)) {
-            apiToken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
-            LOGGER.info(">>> Local Token: " + apiToken);
-        }
-        localAdmin = new Account();
-        localAdmin.setUsername("admin");
-        localAdmin.setPassword(apiToken);
-        localAdmin.setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
-    }
 
     @PersistenceContext
     private EntityManager em;
@@ -64,7 +41,7 @@ public class CurrentUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        if ("admin".equals(username)) return localAdmin();
+        if (LocalAdmin.NAME.equals(username)) return LocalAdmin.get();
         Account account = null;
         try {
             account = (Account) em.createQuery("SELECT a FROM Account a WHERE a.username = :username").setParameter("username", username).getSingleResult();
@@ -73,10 +50,6 @@ public class CurrentUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Account " + username + " NOT FOUND");
         }
         return account;
-    }
-
-    public Account localAdmin() {
-        return localAdmin;
     }
 
 }

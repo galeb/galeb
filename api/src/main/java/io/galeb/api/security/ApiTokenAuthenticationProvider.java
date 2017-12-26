@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LocalAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
     @Autowired
     private CurrentUserDetailsService currentUserDetailsService;

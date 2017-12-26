@@ -1,5 +1,6 @@
 package io.galeb.api.security.filter;
 
+import io.galeb.api.security.LocalAdmin;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -31,8 +32,8 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
         if (remoteUser != null) {
             String remoteAddr = request.getRemoteAddr();
             LOGGER.warn("auth user: " + remoteUser + ", remote addr: " + remoteAddr);
-            if ("admin".equals(remoteUser) && !"127.0.0.1".equals(remoteAddr)) {
-                throw new UsernameNotFoundException("Account admin NOT FOUND");
+            if (LocalAdmin.NAME.equals(remoteUser) && !"127.0.0.1".equals(remoteAddr)) {
+                throw new UsernameNotFoundException("Account " + LocalAdmin.NAME + " NOT FOUND");
             }
         }
         filter.doFilter(request, response);

@@ -2,10 +2,6 @@ package io.galeb.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
@@ -53,7 +49,7 @@ public class Account extends AbstractEntity implements UserDetails {
 
     private String apitoken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
 
-    private Boolean renewtoken = false;
+    private Boolean resettoken = false;
 
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
@@ -150,12 +146,12 @@ public class Account extends AbstractEntity implements UserDetails {
         this.apitoken = sha256().hashBytes((seed + UUID.randomUUID().toString()).getBytes()).toString();
     }
 
-    public Boolean getRenewtoken() {
-        return renewtoken;
+    public Boolean getResettoken() {
+        return resettoken;
     }
 
-    public void setRenewtoken(Boolean renewtoken) {
-        this.renewtoken = renewtoken;
+    public void setResettoken(Boolean resettoken) {
+        this.resettoken = resettoken;
     }
 
     @Override

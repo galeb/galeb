@@ -24,9 +24,9 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
         String remoteUser = null;
         if (header != null && header.startsWith("Basic ")) {
             try {
-                String[] tokens = this.extractAndDecodeHeader(header);
+                String[] tokens = extractAndDecodeHeader(header);
                 remoteUser = tokens[0];
-            } catch (Exception e) { }
+            } catch (Exception ignored) { }
         }
         if (remoteUser != null) {
             String remoteAddr = request.getRemoteAddr();
@@ -43,7 +43,7 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
         byte[] decoded;
         try {
             decoded = Base64.decode(base64Token);
-        } catch (IllegalArgumentException var7) {
+        } catch (IllegalArgumentException ignored) {
             throw new BadCredentialsException("Failed to decode basic authentication token");
         }
 

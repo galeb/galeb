@@ -13,9 +13,9 @@ public class AccountHandler extends AbstractHandler<Account> {
     @Override
     protected void onBeforeSave(Account account) {
         super.onBeforeSave(account);
-        if (account.getRenewtoken() != null && account.getRenewtoken()) {
+        if (account.getResettoken() != null && account.getResettoken()) {
             account.setApitoken(sha256().hashBytes((UUID.randomUUID().toString()).getBytes()).toString());
-            account.setRenewtoken(false);
+            account.setResettoken(false);
         }
     }
 }

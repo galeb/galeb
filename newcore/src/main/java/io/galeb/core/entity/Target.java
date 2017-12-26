@@ -1,7 +1,6 @@
 package io.galeb.core.entity;
 
 import io.galeb.core.exceptions.BadRequestException;
-import javassist.tools.web.BadHttpRequest;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;

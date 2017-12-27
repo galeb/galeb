@@ -6,6 +6,7 @@ import io.galeb.core.entity.RuleOrdered;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Set;
 
 @Component
@@ -16,7 +17,7 @@ public class RuleOrderedHandler extends AbstractHandler<RuleOrdered> {
 
     @Override
     protected Set<Environment> getAllEnvironments(RuleOrdered entity) {
-        return environmentRepository.findAllByRuleOrderedId(entity.getId());
+        return Collections.singleton(entity.getEnvironment());
     }
 
 }

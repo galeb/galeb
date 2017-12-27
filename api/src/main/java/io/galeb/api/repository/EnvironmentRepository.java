@@ -1,5 +1,6 @@
 package io.galeb.api.repository;
 
+import io.galeb.api.security.LocalAdmin;
 import io.galeb.core.entity.Environment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,11 +15,11 @@ import java.util.Set;
 public interface EnvironmentRepository extends JpaRepository<Environment, Long> {
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == 'admin'")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == '" + LocalAdmin.NAME + "'")
     Environment save(Environment environment);
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == 'admin'")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == '" + LocalAdmin.NAME + "'")
     void delete(Long id);
 
     @RestResource(exported = false)

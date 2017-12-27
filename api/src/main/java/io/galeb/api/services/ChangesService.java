@@ -50,6 +50,11 @@ public class ChangesService {
         return hasKey(keyFormatted);
     }
 
+    public boolean hasByEnvironmentId(Long environmentId) {
+        String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, environmentId, "*", "*", "*");
+        return hasKey(keyFormatted);
+    }
+
     public Set<Long> listEnvironmentIds(AbstractEntity entity) {
         MessageFormat messageFormat = new MessageFormat(FORMAT_KEY_HAS_CHANGE);
         String simpleNameClass = entity.getClass().getSimpleName().toLowerCase();

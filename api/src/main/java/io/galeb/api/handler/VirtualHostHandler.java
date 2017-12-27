@@ -4,7 +4,6 @@ import io.galeb.api.repository.VirtualhostGroupRepository;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
-import io.galeb.core.entity.WithStatus;
 import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

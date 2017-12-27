@@ -4,8 +4,6 @@ import java.util.Map;
 
 public interface WithStatus {
 
-    void setStatus(Map<Long, Status> status);
-
     enum Status {
         PENDING,
         OK,
@@ -14,5 +12,6 @@ public interface WithStatus {
     }
 
     Map<Long, Status> getStatus();
+    void setStatus(Map<Long, Status> status);
 
 }

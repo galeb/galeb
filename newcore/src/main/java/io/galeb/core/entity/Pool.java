@@ -16,7 +16,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Environment environment;
 
-    @ManyToMany(mappedBy = "pools", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @ManyToMany(mappedBy = "pools", cascade = CascadeType.REMOVE)
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(optional = false)

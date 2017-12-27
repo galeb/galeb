@@ -17,6 +17,9 @@ public class Environment extends AbstractEntity implements WithStatus {
     @OneToMany(mappedBy = "environment")
     private Set<Pool> pools = new HashSet<>();
 
+    @OneToMany(mappedBy = "environment")
+    private Set<RuleOrdered> rulesordered = new HashSet<>();
+
     @Column(nullable = false)
     private String name;
 
@@ -43,6 +46,22 @@ public class Environment extends AbstractEntity implements WithStatus {
             this.pools.clear();
             this.pools.addAll(pools);
         }
+    }
+
+    public Set<VirtualHost> getVirtualhosts() {
+        return virtualhosts;
+    }
+
+    public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
+        this.virtualhosts = virtualhosts;
+    }
+
+    public Set<RuleOrdered> getRulesordered() {
+        return rulesordered;
+    }
+
+    public void setRulesordered(Set<RuleOrdered> rulesordered) {
+        this.rulesordered = rulesordered;
     }
 
     public String getName() {

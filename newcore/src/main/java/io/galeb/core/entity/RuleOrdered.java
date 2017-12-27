@@ -24,6 +24,10 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     @JoinColumn(name = "rule_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_rule_ordered"))
     private Rule rule;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_ruleordered_environment"))
+    private Environment environment;
+
     @Transient
     private Status status = Status.UNKNOWN;
 
@@ -49,6 +53,14 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
 
     public void setRule(Rule rule) {
         this.rule = rule;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 
     @Override

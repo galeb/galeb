@@ -42,11 +42,5 @@ public class VersionService {
     public void setCache(String cache, String envid, String version) {
         redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envid, version), cache, 5, TimeUnit.MINUTES);
     }
-
-    public Long incrementVersion(long envId) {
-        String keyFormatted = MessageFormat.format(FORMAT_KEY_VERSION, envId);
-        return redisTemplate.opsForValue().increment(keyFormatted, 1);
-    }
-
 }
 

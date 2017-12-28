@@ -10,6 +10,6 @@ public class ConverterV1 implements Converter {
 
     @Override
     public String convertToString(List<VirtualHost> virtualHostList) {
-        return "EMPTY";
+        return "Length: " + virtualHostList.size();
     }
 }

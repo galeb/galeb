@@ -59,8 +59,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-
         <org.apache.logging.log4j.version>2.8.1</org.apache.logging.log4j.version>
+        <hikaricp.version>2.7.4</hikaricp.version>
+        <mysql-connector-java.version>6.0.6</mysql-connector-java.version>
+        <timestamp>${maven.build.timestamp}</timestamp>
     </properties>
 
     <repositories>
@@ -115,13 +117,26 @@
             <version>${org.apache.logging.log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
         </dependency>
         <dependency>
-            <groupId>biz.paluch.redis</groupId>
-            <artifactId>lettuce</artifactId>
-            <version>4.4.2.Final</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql-connector-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
         <!--  tests -->
@@ -173,7 +188,7 @@
                         -Dcom.sun.management.jmxremote=true
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
-                        -Dcom.sun.management.jmxremote.port=5001
+                        -Dcom.sun.management.jmxremote.port=5002
                     </jvmArguments>
                 </configuration>
             </plugin>

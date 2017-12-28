@@ -29,8 +29,6 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
         final UserDetails userDetails = retrieveUser(authentication.getName(), null);
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
-        System.out.println("ApiToken" + ((Account) userDetails).getApitoken());
-        System.out.println("Credentials" + authentication.getCredentials());
         if (!((Account) userDetails).getApitoken().equals(authentication.getCredentials())) {
             throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
         }

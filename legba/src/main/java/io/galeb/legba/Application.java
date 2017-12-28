@@ -21,7 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"io.galeb.core.services"})
+@ComponentScan(basePackages = {"io.galeb.core.services", "io.galeb.core.configuration", "io.galeb.legba"})
 public class Application {
 
     public static void main(String args[]) {

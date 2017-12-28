@@ -1,11 +1,11 @@
 package io.galeb.legba.controller;
 
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.services.VersionService;
 import io.galeb.legba.conversors.Converter;
 import io.galeb.legba.conversors.ConverterBuilder;
 import io.galeb.legba.services.CopyService;
 import io.galeb.legba.services.RoutersService;
-import io.galeb.legba.services.VersionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;

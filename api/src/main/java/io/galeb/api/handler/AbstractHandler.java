@@ -3,6 +3,7 @@ package io.galeb.api.handler;
 import io.galeb.api.services.ChangesService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -16,6 +17,9 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
 
     @Autowired
     ChangesService changesService;
+
+    @Autowired
+    VersionService versionService;
 
     @Override
     protected void onBeforeCreate(T entity) {
@@ -74,7 +78,7 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     }
 
     private void registerChanges(T entity) {
-        getAllEnvironments(entity).stream().forEach(e-> changesService.register(e, entity));
+        getAllEnvironments(entity).stream().forEach(e-> changesService.register(e, entity, String.valueOf(versionService.incrementVersion(e.getId()))));
     }
 
 }

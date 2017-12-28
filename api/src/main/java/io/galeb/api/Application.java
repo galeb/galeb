@@ -23,7 +23,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EntityScan( basePackages = {"io.galeb.core.entity"} )
-@ComponentScan(basePackages = {"io.galeb.core.services", "io.galeb.core.configuration", "io.galeb.api.services", "io.galeb.api.configuration"})
+@ComponentScan(basePackages = {"io.galeb.core.services", "io.galeb.core.configuration", "io.galeb.api"})
 public class Application {
 
     public static void main(String args[]) {

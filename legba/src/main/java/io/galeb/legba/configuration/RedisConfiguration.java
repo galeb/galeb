@@ -1,4 +1,4 @@
-package io.galeb.api.configuration;
+package io.galeb.legba.configuration;
 
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;

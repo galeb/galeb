@@ -4,6 +4,7 @@ import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -31,7 +32,7 @@ public class ChangesService {
     private static final String FORMAT_KEY_VERSION = "version:{0}";
 
     @Autowired
-    RedisTemplate redisTemplate;
+    StringRedisTemplate redisTemplate;
 
     public void register(Environment e, AbstractEntity entity) {
         long envId = e.getId();

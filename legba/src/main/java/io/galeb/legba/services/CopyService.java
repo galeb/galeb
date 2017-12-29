@@ -13,9 +13,21 @@ public class CopyService {
     @Autowired
     private VirtualHostRepository virtualHostRepository;
 
-    public List<VirtualHost> getVirtualHosts(String envid, String numRouters, String version) {
-        List<VirtualHost> list = virtualHostRepository.findAll();
-        return list;
+    public List<VirtualHost> getVirtualHosts(String envid) {
+        List<VirtualHost> listVirtualHost = virtualHostRepository.findAllByEnvironmentId(Long.valueOf(envid));
+        listVirtualHost.stream().forEach(vh -> {
+            vh.getEnvironments();
+            vh.getVirtualhostgroup().getRulesordered().stream().forEach(ro -> {
+                ro.getRule().getPools().stream().forEach(p -> {
+                    p.getBalancepolicy();
+                    p.getHcHeaders();
+                    p.getTargets().stream().forEach( t -> {
+                        t.getHealthStatus().stream().forEach(hs -> {});
+                    });
+                });
+            });
+        });
+        return listVirtualHost;
     }
 
 }

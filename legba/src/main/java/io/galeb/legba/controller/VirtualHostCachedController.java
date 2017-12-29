@@ -52,8 +52,8 @@ public class VirtualHostCachedController {
         if (cache == null) {
             Converter converter = ConverterBuilder.getConversor(apiVersion);
             String numRouters = routersService.get(envid, routerGroupId);
-            List<VirtualHost> list = copyService.getVirtualHosts(envid, numRouters, version);
-            cache = converter.convertToString(list);
+            List<VirtualHost> list = copyService.getVirtualHosts(envid);
+            cache = converter.convertToString(list, numRouters, version);
             versionService.setCache(cache, envid, version);
         }
         if ("".equals(cache)) {

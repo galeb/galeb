@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface Converter {
 
-    String convertToString(List<VirtualHost> virtualHostList);
+    String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version);
 
 }

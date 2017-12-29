@@ -3,6 +3,7 @@ package io.galeb.api.cucumber.test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
 import cucumber.api.java.en.And;
@@ -67,6 +68,7 @@ public class StepDefs {
 
     private RequestSpecification request;
     private ValidatableResponse response;
+    private String token;
 
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
@@ -82,9 +84,7 @@ public class StepDefs {
     @Transactional
     public void ddeleteAll() {
         Stream.of(
-                Account.class, BalancePolicy.class, Environment.class, HealthCheck.class, HealthStatus.class,
-                Pool.class, Project.class, Role.class, RoleGroup.class, Rule.class, RuleOrdered.class,
-                Target.class, Team.class, VirtualhostGroup.class, VirtualHost.class
+                Account.class, Team.class
         ).forEach(c -> {
             em.joinTransaction();
             Query query = em.createQuery("DELETE FROM " + c.getSimpleName());
@@ -99,6 +99,7 @@ public class StepDefs {
         ddeleteAll();
         response = null;
         request = null;
+        token = null;
     }
 
 
@@ -107,6 +108,30 @@ public class StepDefs {
         request = with().config(restAssuredConfig).contentType("application/json");
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
+
+//    @Given("^a REST client authenticated as (.*)$")
+//    public void givenRestClientAuthenticatedAs(String login) throws Throwable {
+//        final URI loginUrl = URI.create("http://127.0.0.1:"+port+"/");
+//        Response result = with().auth().basic(login, "password")
+//                .get(loginUrl).thenReturn();
+//
+//        if (result.getStatusCode() == 200) {
+//            final URI tokenURI = URI.create("http://127.0.0.1:"+port+"/token");
+//            token = with().auth().basic(login, "password").get(tokenURI)
+//                    .thenReturn().body().jsonPath().getString("token");
+//        } else {
+//            token="NULL";
+//        }
+//
+//        try {
+//            request = with().config(restAssuredConfig).contentType("application/json")
+//                    .header("x-auth-token", token);
+//        } catch (Exception e) {
+//            request = with().config(restAssuredConfig).contentType("application/json");
+//            LOGGER.warn(e);
+//        }
+//        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated as "+login);
+//    }
 
     @Given("^a REST client authenticated$")
     public void givenRestClientAuthenticated() throws Throwable {

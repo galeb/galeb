@@ -2,6 +2,7 @@ package io.galeb.legba.conversors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.legba.model.v1.*;
 
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ConverterV1 implements Converter {
 
@@ -17,21 +19,21 @@ public class ConverterV1 implements Converter {
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     @Override
-    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version) {
+    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String networkId) {
         List<io.galeb.legba.model.v1.VirtualHost> list = new ArrayList<>();
         virtualHostList.stream().forEach(vh -> {
 
             io.galeb.legba.model.v1.VirtualHost v = new io.galeb.legba.model.v1.VirtualHost();
             v.setName(vh.getName());
             v.setVersion(version);
-            v.setVirtualhostGroup(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters));
+            v.setVirtualhostGroup(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, networkId));
             list.add(v);
 
         });
         return gson.toJson(list);
     }
 
-    private VirtualhostGroup convertVirtualhostGroup(io.galeb.core.entity.VirtualhostGroup virtualhostgroup, String numRouters) {
+    private VirtualhostGroup convertVirtualhostGroup(io.galeb.core.entity.VirtualhostGroup virtualhostgroup, String numRouters, String networkId) {
 
         VirtualhostGroup vhg = new VirtualhostGroup();
         Set<RuleOrdered> ruleOrdereds = new HashSet<>();
@@ -43,7 +45,7 @@ public class ConverterV1 implements Converter {
             rule.setGlobal(ro.getRule().getGlobal());
             rule.setMatching(ro.getRule().getMatching());
             rule.setName(ro.getRule().getMatching());
-            rule.setPools(convertPools(ro.getRule().getPools(), numRouters));
+            rule.setPools(convertPools(ro.getRule().getPools(), numRouters, networkId));
 
             roLocal.setRule(rule);
             ruleOrdereds.add(roLocal);
@@ -53,7 +55,7 @@ public class ConverterV1 implements Converter {
         return vhg;
     }
 
-    private Set<Pool> convertPools(Set<io.galeb.core.entity.Pool> pools, String numRouters) {
+    private Set<Pool> convertPools(Set<io.galeb.core.entity.Pool> pools, String numRouters, String networkId) {
         Set<Pool> poolsLocal = new HashSet<>();
         pools.stream().forEach(p -> {
             Pool pool = new Pool();
@@ -62,9 +64,15 @@ public class ConverterV1 implements Converter {
 
             Set<Target> targets = new HashSet<>();
             p.getTargets().stream().forEach(t -> {
-                Target target = new Target();
-                target.setName(t.getName());
-                targets.add(target);
+                Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
+                        .stream()
+                        .filter(hs -> (networkId == null || hs.getSource().equals(networkId)) && hs.getStatus().equals(HealthStatus.Status.HEALTHY))
+                        .collect(Collectors.toSet());
+                healthStatusesOK.stream().forEach(hs -> {
+                    Target target = new Target();
+                    target.setName(hs.getTarget().getName());
+                    targets.add(target);
+                });
             });
             pool.setTargets(targets);
             poolsLocal.add(pool);

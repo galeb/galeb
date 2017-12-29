@@ -71,6 +71,7 @@ public class StepDefs {
 
     private RequestSpecification request;
     private ValidatableResponse response;
+    private String token;
 
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);

@@ -3,6 +3,7 @@ package io.galeb.api.cucumber.test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
 import cucumber.api.java.en.And;
@@ -12,7 +13,7 @@ import cucumber.api.java.en.When;
 import gherkin.deps.com.google.gson.Gson;
 import gherkin.deps.com.google.gson.GsonBuilder;
 import io.galeb.api.Application;
-import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
@@ -21,6 +22,7 @@ import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.jayway.restassured.RestAssured.with;
 import static org.hamcrest.Matchers.equalTo;
@@ -61,11 +64,11 @@ public class StepDefs {
     @Value("${spring.datasource.password}")
     private String dbPassword;
 
-
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
     private RequestSpecification request;
     private ValidatableResponse response;
+    private String token;
 
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
@@ -75,14 +78,28 @@ public class StepDefs {
     public void init() {
         System.out.println("dbUrl: " + dbUrl);
         FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
+        FLYWAY.migrate();
     }
 
+    @Transactional
+    public void ddeleteAll() {
+        Stream.of(
+                Account.class, Team.class
+        ).forEach(c -> {
+            em.joinTransaction();
+            Query query = em.createQuery("DELETE FROM " + c.getSimpleName());
+            query.executeUpdate();
+        });
+    }
+
+
+    @Transactional
     @Given("^reset")
     public void reset(){
-        System.out.println("chamou reset");
-        FLYWAY.clean();
-        FLYWAY.migrate();
+        ddeleteAll();
         response = null;
+        request = null;
+        token = null;
     }
 
 
@@ -90,6 +107,44 @@ public class StepDefs {
     public void givenRestClientUnauthenticated() throws Throwable {
         request = with().config(restAssuredConfig).contentType("application/json");
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
+    }
+
+//    @Given("^a REST client authenticated as (.*)$")
+//    public void givenRestClientAuthenticatedAs(String login) throws Throwable {
+//        final URI loginUrl = URI.create("http://127.0.0.1:"+port+"/");
+//        Response result = with().auth().basic(login, "password")
+//                .get(loginUrl).thenReturn();
+//
+//        if (result.getStatusCode() == 200) {
+//            final URI tokenURI = URI.create("http://127.0.0.1:"+port+"/token");
+//            token = with().auth().basic(login, "password").get(tokenURI)
+//                    .thenReturn().body().jsonPath().getString("token");
+//        } else {
+//            token="NULL";
+//        }
+//
+//        try {
+//            request = with().config(restAssuredConfig).contentType("application/json")
+//                    .header("x-auth-token", token);
+//        } catch (Exception e) {
+//            request = with().config(restAssuredConfig).contentType("application/json");
+//            LOGGER.warn(e);
+//        }
+//        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated as "+login);
+//    }
+
+    @Given("^a REST client authenticated$")
+    public void givenRestClientAuthenticated() throws Throwable {
+
+        try {
+            request = with().config(restAssuredConfig).contentType("application/json")
+                    .header("x-auth-token", "pass");
+            System.out.println("pass");
+        } catch (Exception e) {
+            request = with().config(restAssuredConfig).contentType("application/json");
+            LOGGER.warn(e);
+        }
+        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
     }
 
     @When("^request json body has:$")

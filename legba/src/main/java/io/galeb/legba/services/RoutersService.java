@@ -1,5 +1,6 @@
 package io.galeb.legba.services;
 
+import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,6 +31,9 @@ public class RoutersService {
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private VersionService versionService;
 
     public Set<JsonSchema.Env> get() {
         return get(null);
@@ -88,7 +92,7 @@ public class RoutersService {
             String key = MessageFormat.format(FORMAT_KEY_VERSION, envid, routerGroupId, routerLocalIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
             if (!redisTemplate.hasKey(key)) {
-                //routerState.incrementVersion(envid);
+                versionService.incrementVersion(Long.valueOf(envid));
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
             //routerState.updateRouterState(envid);

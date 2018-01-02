@@ -45,6 +45,7 @@
 
         <commons-logging.version>1.2</commons-logging.version>
         <jnr-posix.version>3.0.38</jnr-posix.version>
+        <hikaricp.version>2.7.4</hikaricp.version>
     </properties>
 
     <dependencies>
@@ -118,6 +119,11 @@
             <groupId>biz.paluch.redis</groupId>
             <artifactId>lettuce</artifactId>
             <version>4.4.2.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
         </dependency>
     </dependencies>
 

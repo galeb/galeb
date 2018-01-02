@@ -57,11 +57,5 @@ spring:
     profiles:
         active: production
 
-    #redis:
-    #    sentinel:
-    #        master: master
-    #        nodes: [ "127.0.0.1:26379" ]
-
     redis:
-          host: 127.0.0.1
-          port: 6379
+        url: ${REDIS_URL:"redis://127.0.0.1:6379"}

@@ -3,7 +3,6 @@ package io.galeb.api.cucumber.test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
 import cucumber.api.java.en.And;
@@ -68,7 +67,6 @@ public class StepDefs {
 
     private RequestSpecification request;
     private ValidatableResponse response;
-    private String token;
 
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);

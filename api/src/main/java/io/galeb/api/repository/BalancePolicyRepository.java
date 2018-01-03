@@ -10,11 +10,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Long> {
 
     @Override
-    @PreAuthorize("@authz.check(principal, #balancePolicy, #this)")
+    @PreAuthorize("@authz.checkSave(principal, #balancePolicy, #this)")
     BalancePolicy save(@Param("balancePolicy") BalancePolicy balancePolicy);
 
     @Override
-    @PreAuthorize("@authz.check(principal, #this)")
+    @PreAuthorize("@authz.checkDelete(principal, #id, #this)")
     void delete(Long id);
 
 }

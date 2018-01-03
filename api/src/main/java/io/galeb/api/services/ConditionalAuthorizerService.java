@@ -8,34 +8,54 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.stereotype.Service;
 
+@SuppressWarnings("Duplicates")
 @Service("authz")
 public class ConditionalAuthorizerService {
 
     private static final Logger LOGGER = LogManager.getLogger(ConditionalAuthorizerService.class);
 
-    public boolean check(Object principal, MethodSecurityExpressionOperations securityExpressionOperations) {
-        return check(principal, null, securityExpressionOperations);
-    }
-
-    public boolean check(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
-        Object jpaRepositoryObj = securityExpressionOperations.getThis();
-        Class<? extends AbstractEntity> entityClass = extractType(jpaRepositoryObj);
+    public boolean checkDelete(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
+        Class<? extends AbstractEntity> entityClass = extractEntityClass(securityExpressionOperations);
         if (principal instanceof Account) {
-            Account account = (Account) principal;
-            if (LocalAdmin.NAME.equals(account.getUsername()) || account.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()))) {
-                return true;
-            }
 
             // TODO: for each Entity class, then ...
             if (Account.class.equals(entityClass)) {
-                return checkAccount(account, criteria);
+                return accountPermission(principal, criteria);
             }
-        }
+            //
 
+            if (isAdmin(principal)) return true;
+        }
         return false;
     }
 
-    private boolean checkAccount(Account account, Object criteria) {
+    public boolean checkSave(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
+        Class<? extends AbstractEntity> entityClass = extractEntityClass(securityExpressionOperations);
+        if (principal instanceof Account) {
+
+            // TODO: for each Entity class, then ...
+            if (Account.class.equals(entityClass)) {
+                return accountPermission(principal, criteria);
+            }
+            //
+
+            if (isAdmin(principal)) return true;
+        }
+        return false;
+    }
+
+    public boolean isAdmin(Object principal) {
+        Account account = (Account) principal;
+        return isLocalAdmin(account) || account.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    public boolean isLocalAdmin(Object principal) {
+        Account account = (Account) principal;
+        return LocalAdmin.NAME.equals(account.getUsername());
+    }
+
+    public boolean isMySelf(Object principal, Object criteria) {
+        Account account = (Account) principal;
         if (criteria instanceof Account) {
             return criteria.equals(account);
         }
@@ -44,6 +64,15 @@ public class ConditionalAuthorizerService {
             return account.getId() == id;
         }
         return false;
+    }
+
+    private boolean accountPermission(Object principal, Object criteria) {
+        return isAdmin(principal) || isMySelf(principal, criteria);
+    }
+
+    private Class<? extends AbstractEntity> extractEntityClass(MethodSecurityExpressionOperations securityExpressionOperations) {
+        Object jpaRepositoryObj = securityExpressionOperations.getThis();
+        return extractType(jpaRepositoryObj);
     }
 
     private Class<? extends AbstractEntity> extractType(Object o) {

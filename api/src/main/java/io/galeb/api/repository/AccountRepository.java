@@ -13,15 +13,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Override
-    @PreAuthorize("@authz.check(principal, #account, #this)")
+    @PreAuthorize("@authz.checkSave(principal, #account, #this)")
     Account save(@Param("account") Account account);
 
     @Override
-    @PreAuthorize("@authz.check(principal, #id, #this)")
+    @PreAuthorize("@authz.checkDelete(principal, #id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("principal.username == @localAdmin.username or #id == principal.id")
+    @PreAuthorize("@authz.isMySelf(principal, #id) or @authz.isLocalAdmin(principal)")
     Account findOne(@Param("id") Long id);
 
     @Override

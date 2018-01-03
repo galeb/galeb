@@ -59,3 +59,9 @@ spring:
 
     redis:
         url: ${REDIS_URL:"redis://127.0.0.1:6379"}
+
+security:
+    oauth2:
+        resource:
+            userInfoUri: ${OAUTH_USERINFO:http://localhost/user}
+            filter-order: 99

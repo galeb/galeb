@@ -35,6 +35,7 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
                 throw new UsernameNotFoundException("Account " + LocalAdmin.NAME + " NOT FOUND");
             }
         }
+        LOGGER.warn("InMemoryAccountFilter :" + remoteUser);
         filter.doFilter(request, response);
     }
 

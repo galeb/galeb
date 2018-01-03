@@ -3,6 +3,7 @@ package io.galeb.api.cucumber.test;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
 import cucumber.api.java.en.And;
@@ -108,19 +109,13 @@ public class StepDefs {
 
     @Given("^a REST client unauthenticated$")
     public void givenRestClientUnauthenticated() throws Throwable {
-        request = with().config(restAssuredConfig).contentType("application/json");
+        request = with().config(restAssuredConfig).contentType("application/json").auth().none();
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
-    @Given("^a REST client authenticated$")
-    public void givenRestClientAuthenticated() throws Throwable {
-
-        try {
-            request = with().config(restAssuredConfig).contentType("application/json").auth().basic(LocalAdmin.NAME, localAdminToken);
-        } catch (Exception e) {
-            request = with().config(restAssuredConfig).contentType("application/json");
-            LOGGER.warn(e);
-        }
+    @Given("^a REST client authenticated as (.*) with password (.*)$")
+    public void givenRestClientAuthenticated(String login, String password) {
+        request = with().config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
     }
 

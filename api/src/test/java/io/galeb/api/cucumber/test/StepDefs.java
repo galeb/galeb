@@ -109,19 +109,13 @@ public class StepDefs {
 
     @Given("^a REST client unauthenticated$")
     public void givenRestClientUnauthenticated() throws Throwable {
-        request = with().config(restAssuredConfig).contentType("application/json");
+        request = with().config(restAssuredConfig).contentType("application/json").auth().none();
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
     @Given("^a REST client authenticated as (.*) with password (.*)$")
-    public void givenRestClientAuthenticated(String login, String password) throws Throwable {
-        try {
-            request = with().auth().basic(login, password);
-            //request = with().config(restAssuredConfig).contentType("application/json").auth().basic(LocalAdmin.NAME, localAdminToken);
-        } catch (Exception e) {
-            //request = with().config(restAssuredConfig).contentType("application/json");
-            LOGGER.warn(e);
-        }
+    public void givenRestClientAuthenticated(String login, String password) {
+        request = with().config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
     }
 

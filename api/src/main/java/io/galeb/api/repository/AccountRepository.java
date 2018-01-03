@@ -1,6 +1,5 @@
 package io.galeb.api.repository;
 
-import io.galeb.api.security.LocalAdmin;
 import io.galeb.core.entity.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,18 +13,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == '" + LocalAdmin.NAME + "' or #account == principal")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == @localAdmin.username or #account == principal")
     Account save(@Param("account") Account account);
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == '" + LocalAdmin.NAME + "' or #id == principal.id")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == @localAdmin.username or #id == principal.id")
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("principal.username == '" + LocalAdmin.NAME + "' or #id == principal.id")
+    @PreAuthorize("principal.username == @localAdmin.username or #id == principal.id")
     Account findOne(@Param("id") Long id);
 
     @Override
-    @Query("SELECT a FROM Account a WHERE a.username LIKE ?#{principal.username == '" + LocalAdmin.NAME + "' ? '%' : principal.username}")
+    @Query("SELECT a FROM Account a WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username}")
     Page<Account> findAll(Pageable pageable);
 }

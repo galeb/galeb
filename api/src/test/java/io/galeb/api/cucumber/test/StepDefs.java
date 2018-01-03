@@ -12,6 +12,7 @@ import cucumber.api.java.en.When;
 import gherkin.deps.com.google.gson.Gson;
 import gherkin.deps.com.google.gson.GsonBuilder;
 import io.galeb.api.Application;
+import io.galeb.api.security.LocalAdmin;
 import io.galeb.core.entity.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -115,8 +116,7 @@ public class StepDefs {
     public void givenRestClientAuthenticated() throws Throwable {
 
         try {
-            request = with().config(restAssuredConfig).contentType("application/json")
-                    .header("x-auth-token", localAdminToken);
+            request = with().config(restAssuredConfig).contentType("application/json").auth().basic(LocalAdmin.NAME, localAdminToken);
         } catch (Exception e) {
             request = with().config(restAssuredConfig).contentType("application/json");
             LOGGER.warn(e);
@@ -171,7 +171,7 @@ public class StepDefs {
                 response = request.get(fullUrl).then();
                 break;
             case "POST":
-                final String fullUrlStr="http://localhost:" + port + path;
+                final String fullUrlStr="http://127.0.0.1:" + port + path;
                 response = request.post(URI.create(fullUrlStr)).then();
                 break;
             case "PUT":

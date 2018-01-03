@@ -68,6 +68,7 @@ public class StepDefs {
     @Value("${auth.localtoken}")
     private String localAdminToken;
 
+
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
     private RequestSpecification request;
@@ -113,6 +114,7 @@ public class StepDefs {
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
+
     @Given("^a REST client authenticated as (.*) with password (.*)$")
     public void givenRestClientAuthenticated(String login, String password) throws Throwable {
         try {
@@ -120,6 +122,7 @@ public class StepDefs {
             //request = with().config(restAssuredConfig).contentType("application/json").auth().basic(LocalAdmin.NAME, localAdminToken);
         } catch (Exception e) {
             //request = with().config(restAssuredConfig).contentType("application/json");
+
             LOGGER.warn(e);
         }
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");

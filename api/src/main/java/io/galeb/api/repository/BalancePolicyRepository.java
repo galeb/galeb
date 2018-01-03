@@ -15,6 +15,6 @@ public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Lo
 
     @Override
     @PreAuthorize("@authz.checkDelete(principal, #id, #this)")
-    void delete(Long id);
+    void delete(@Param("id") Long id);
 
 }

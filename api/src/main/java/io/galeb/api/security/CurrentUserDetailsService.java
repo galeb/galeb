@@ -18,34 +18,31 @@
 
 package io.galeb.api.security;
 
+import io.galeb.api.services.AccountDaoService;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 
 @Service
 public class CurrentUserDetailsService implements UserDetailsService {
 
     private static final Logger LOGGER = LogManager.getLogger(CurrentUserDetailsService.class);
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private AccountDaoService accountDaoService;
+
+    @Autowired
+    private LocalAdmin localAdmin;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        if (LocalAdmin.NAME.equals(username)) return LocalAdmin.get();
-        Account account = null;
-        try {
-            account = (Account) em.createQuery("SELECT a FROM Account a WHERE a.username = :username").setParameter("username", username).getSingleResult();
-        } catch (NoResultException ignore) { }
+        if (LocalAdmin.NAME.equals(username)) return localAdmin;
+        Account account = accountDaoService.find(username);
         if (account == null) {
             throw new UsernameNotFoundException("Account " + username + " NOT FOUND");
         }

@@ -19,35 +19,32 @@ package io.galeb.api.security;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.util.Assert;
+import org.springframework.stereotype.Component;
 
-public class LocalAdmin {
+import java.util.UUID;
+
+import static com.google.common.hash.Hashing.sha256;
+
+@Component
+public class LocalAdmin extends Account {
 
     private static final Logger LOGGER = LogManager.getLogger(LocalAdmin.class);
 
-    private static Account localAdmin = null;
-
     public static final String NAME = "admin";
 
-    private LocalAdmin() {
-
-    }
-
-    public static Account get(String apiToken) {
-        if (localAdmin == null) {
-            localAdmin = new Account();
-            localAdmin.setUsername(NAME);
-            localAdmin.setPassword(apiToken);
-            localAdmin.setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
-            LOGGER.info(">>> Local Token: " + apiToken);
+    public LocalAdmin(@Value("${auth.localtoken:UNDEF}") String localAdminToken) {
+        setUsername(NAME);
+        setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
+        if ("UNDEF".equals(localAdminToken)) {
+            localAdminToken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
+            LOGGER.info(">>> Local Token: " + localAdminToken);
         }
-
-        return localAdmin;
+        setPassword(localAdminToken);
     }
 
-    public static Account get() {
-        Assert.notNull(localAdmin, "LocalAdmin is NULL");
-        return localAdmin;
+    public boolean check(String credential) {
+        return getPassword().equals(credential);
     }
 }

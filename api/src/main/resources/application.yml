@@ -58,7 +58,7 @@ spring:
         active: production
 
     redis:
-        url: ${REDIS_URL:"redis://127.0.0.1:6379"}
+        url: ${REDIS_URL:redis://127.0.0.1:6379}
 
 security:
     oauth2:

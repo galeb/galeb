@@ -63,6 +63,9 @@ public class StepDefs {
     @Value("${spring.datasource.password}")
     private String dbPassword;
 
+    @Value("${auth.localtoken}")
+    private String localAdminToken;
+
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
     private RequestSpecification request;
@@ -113,8 +116,7 @@ public class StepDefs {
 
         try {
             request = with().config(restAssuredConfig).contentType("application/json")
-                    .header("x-auth-token", "pass");
-            System.out.println("pass");
+                    .header("x-auth-token", localAdminToken);
         } catch (Exception e) {
             request = with().config(restAssuredConfig).contentType("application/json");
             LOGGER.warn(e);

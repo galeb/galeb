@@ -311,37 +311,6 @@ LOCK TABLES `project` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `role`
---
-
-DROP TABLE IF EXISTS `role`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `role` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `created_at` datetime NOT NULL,
-  `created_by` varchar(255) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `last_modified_at` datetime NOT NULL,
-  `last_modified_by` varchar(255) NOT NULL,
-  `quarantine` bit(1) DEFAULT NULL,
-  `version` bigint(20) DEFAULT NULL,
-  `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_role_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `role`
---
-
-LOCK TABLES `role` WRITE;
-/*!40000 ALTER TABLE `role` DISABLE KEYS */;
-/*!40000 ALTER TABLE `role` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `rolegroup`
 --
 

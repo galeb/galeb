@@ -80,6 +80,13 @@
         <simplejmx.version>1.15</simplejmx.version>
     </properties>
 
+    <repositories>
+       <repository>
+           <id>galeb_core</id>
+           <url>file://${project.basedir}/core/target</url>
+       </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>io.galeb</groupId>

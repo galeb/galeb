@@ -6,6 +6,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
+import cucumber.api.java.After;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -97,9 +98,9 @@ public class StepDefs {
         });
     }
 
-
+    @After
     @Transactional
-    @Given("^reset")
+    //@Given("^reset")
     public void reset(){
         ddeleteAll();
         response = null;

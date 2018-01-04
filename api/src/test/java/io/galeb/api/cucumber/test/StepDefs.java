@@ -88,7 +88,7 @@ public class StepDefs {
     public void ddeleteAll() {
         Stream.of(
                 Account.class, BalancePolicy.class, Environment.class, HealthCheck.class, HealthStatus.class,
-                Pool.class, Project.class, Role.class, RoleGroup.class, Rule.class, RuleOrdered.class,
+                Pool.class, Project.class, RoleGroup.class, Rule.class, RuleOrdered.class,
                 Target.class, Team.class, VirtualhostGroup.class, VirtualHost.class
         ).forEach(c -> {
             em.joinTransaction();

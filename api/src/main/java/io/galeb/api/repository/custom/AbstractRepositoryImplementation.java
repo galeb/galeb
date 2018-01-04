@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @NoRepositoryBean
-public class AbstractRepositoryImplementation<T extends AbstractEntity> {
+public abstract class AbstractRepositoryImplementation<T extends AbstractEntity> implements WithRoles {
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
@@ -71,4 +71,7 @@ public class AbstractRepositoryImplementation<T extends AbstractEntity> {
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return Collections.emptySet();
     }
+
+    @Override
+    public abstract boolean hasPermission(Object principal, Object criteria, String role);
 }

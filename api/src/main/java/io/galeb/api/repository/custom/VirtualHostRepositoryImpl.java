@@ -35,4 +35,9 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return Sets.newHashSet(((VirtualHost)entity).getEnvironments());
     }
+
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

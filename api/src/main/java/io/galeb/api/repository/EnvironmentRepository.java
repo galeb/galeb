@@ -1,5 +1,6 @@
 package io.galeb.api.repository;
 
+import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
 import io.galeb.core.entity.Environment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.Set;
 
 @RepositoryRestResource(path = "environment", collectionResourceRel = "environment", itemResourceRel = "environment")
-public interface EnvironmentRepository extends JpaRepository<Environment, Long> {
+public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 
     @Override
     @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == @localAdmin.username")

@@ -31,4 +31,9 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return Sets.newHashSet(((Pool)entity).getEnvironment());
     }
+
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

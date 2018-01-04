@@ -34,4 +34,9 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return environmentRepository.findAllByRuleOrderedId(entity.getId());
     }
+
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

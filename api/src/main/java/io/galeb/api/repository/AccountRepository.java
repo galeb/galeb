@@ -1,5 +1,6 @@
 package io.galeb.api.repository;
 
+import io.galeb.api.repository.custom.AccountRepositoryCustom;
 import io.galeb.core.entity.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +11,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RepositoryRestResource(path = "account", collectionResourceRel = "account", itemResourceRel = "account")
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Long>, AccountRepositoryCustom {
 
     @Override
     @PreAuthorize("@authz.checkSave(principal, #account, #this)")

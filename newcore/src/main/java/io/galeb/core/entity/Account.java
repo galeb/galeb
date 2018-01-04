@@ -54,6 +54,9 @@ public class Account extends AbstractEntity implements UserDetails {
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
 
+    @ManyToMany(mappedBy = "accounts")
+    private Set<RoleGroup> rolegroups = new HashSet<>();
+
     public Set<Team> getTeams() {
         return teams;
     }
@@ -126,6 +129,17 @@ public class Account extends AbstractEntity implements UserDetails {
 
     public void setAuthorities(Collection<GrantedAuthority> authorities) {
         this.authorities = authorities;
+    }
+
+    public Set<RoleGroup> getRolegroups() {
+        return rolegroups;
+    }
+
+    public void setRolegroups(Set<RoleGroup> rolegroups) {
+        if (rolegroups != null) {
+            this.rolegroups.clear();
+            this.rolegroups.addAll(rolegroups);
+        }
     }
 
     @Override

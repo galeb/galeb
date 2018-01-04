@@ -23,4 +23,8 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
         setStatusService(statusService);
     }
 
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

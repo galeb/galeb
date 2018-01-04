@@ -35,4 +35,9 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
         return environmentRepository.findAllByTargetId(entity.getId());
     }
 
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
+
 }

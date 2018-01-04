@@ -30,4 +30,9 @@ public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return Collections.singleton((Environment)entity);
     }
+
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

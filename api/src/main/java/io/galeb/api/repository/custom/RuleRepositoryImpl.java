@@ -34,4 +34,9 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return environmentRepository.findAllByRuleId(entity.getId());
     }
+
+    @Override
+    public boolean hasPermission(Object principal, Object criteria, String role) {
+        return true;
+    }
 }

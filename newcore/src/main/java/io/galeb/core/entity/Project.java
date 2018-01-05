@@ -23,6 +23,9 @@ public class Project extends AbstractEntity {
     @OneToMany(mappedBy = "project")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
+    @ManyToMany(mappedBy = "projects")
+    private Set<RoleGroup> rolegroups = new HashSet<>();
+
     @Column(nullable = false)
     private String name;
 
@@ -67,6 +70,17 @@ public class Project extends AbstractEntity {
         if (virtualhosts != null) {
             this.virtualhosts.clear();
             this.virtualhosts.addAll(virtualhosts);
+        }
+    }
+
+    public Set<RoleGroup> getRolegroups() {
+        return rolegroups;
+    }
+
+    public void setRolegroups(Set<RoleGroup> rolegroups) {
+        if (rolegroups != null) {
+            this.rolegroups.clear();
+            this.rolegroups.addAll(rolegroups);
         }
     }
 

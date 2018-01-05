@@ -2,6 +2,8 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
 import io.galeb.core.entity.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,4 +46,5 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "WHERE r.id = :ruleId")
     Set<Environment> findAllByRuleId(@Param("ruleId") long ruleId);
 
+    Page<Environment> findByName(@Param("name") String name, Pageable pageable);
 }

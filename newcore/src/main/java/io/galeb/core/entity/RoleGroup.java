@@ -142,6 +142,16 @@ public class RoleGroup extends AbstractEntity  {
             inverseJoinColumns = @JoinColumn(name = "account_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_rolegroup_id")))
     public Set<Account> accounts;
 
+    @ManyToMany
+    @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_project_id")),
+            inverseJoinColumns = @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_project_rolegroup_id")))
+    public Set<Account> projects;
+
+    @ManyToMany
+    @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_team_id")),
+            inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_team_id")))
+    public Set<Account> teams;
+
     public String getName() {
         return name;
     }
@@ -159,6 +169,39 @@ public class RoleGroup extends AbstractEntity  {
         if (roles != null) {
             this.roles.clear();
             this.roles.addAll(roles);
+        }
+    }
+
+    public Set<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(Set<Account> accounts) {
+        if (accounts != null) {
+            this.accounts.clear();
+            this.accounts.addAll(accounts);
+        }
+    }
+
+    public Set<Account> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Account> projects) {
+        if (projects != null) {
+            this.projects.clear();
+            this.projects.addAll(projects);
+        }
+    }
+
+    public Set<Account> getTeams() {
+        return teams;
+    }
+
+    public void setTeams(Set<Account> teams) {
+        if (teams != null) {
+            this.teams.clear();
+            this.teams.addAll(teams);
         }
     }
 

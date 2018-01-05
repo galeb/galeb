@@ -25,6 +25,9 @@ public class Team extends AbstractEntity {
     @Column(nullable = false)
     private String name;
 
+    @ManyToMany(mappedBy = "teams")
+    private Set<RoleGroup> rolegroups = new HashSet<>();
+
     public Set<Account> getAccounts() {
         return accounts;
     }
@@ -54,6 +57,17 @@ public class Team extends AbstractEntity {
     public void setName(String name) {
         Assert.hasText(name, "name is not valid");
         this.name = name;
+    }
+
+    public Set<RoleGroup> getRolegroups() {
+        return rolegroups;
+    }
+
+    public void setRolegroups(Set<RoleGroup> rolegroups) {
+        if (rolegroups != null) {
+            this.rolegroups.clear();
+            this.rolegroups.addAll(rolegroups);
+        }
     }
 
     @Override

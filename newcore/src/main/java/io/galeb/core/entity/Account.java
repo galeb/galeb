@@ -3,6 +3,7 @@ package io.galeb.core.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
@@ -29,7 +30,7 @@ public class Account extends AbstractEntity implements UserDetails {
 
     @JsonIgnore
     @Transient
-    private Collection<GrantedAuthority> authorities = Collections.emptyList();
+    private Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ADMIN");
 
     @JsonIgnore
     @Transient

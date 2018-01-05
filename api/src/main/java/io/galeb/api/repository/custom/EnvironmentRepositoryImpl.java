@@ -32,7 +32,7 @@ public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<
     }
 
     @Override
-    public boolean hasPermission(Object principal, Object criteria, String role) {
-        return true;
+    public Set<String> roles(Object principal, Object criteria) {
+        return Collections.emptySet();
     }
 }

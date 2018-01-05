@@ -36,7 +36,6 @@ public class LocalAdmin extends Account {
 
     public LocalAdmin(@Value("${auth.localtoken:UNDEF}") String localAdminToken) {
         setUsername(NAME);
-        setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
         if ("UNDEF".equals(localAdminToken)) {
             localAdminToken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
             LOGGER.info(">>> Local Token: " + localAdminToken);

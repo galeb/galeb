@@ -64,7 +64,6 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                             account = new Account();
                             account.setUsername(remoteUser);
                             account.setEmail(remoteUser + "@fake." + UUID.randomUUID().toString());
-                            account.setAuthorities(AuthorityUtils.createAuthorityList("ROLE_USER"));
                             account = accountDaoService.save(account);
                             LOGGER.warn("Created " + account.getUsername() + " account");
                         }

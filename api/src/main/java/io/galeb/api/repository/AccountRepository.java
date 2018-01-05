@@ -22,7 +22,7 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("@authz.isMySelf(principal, #id) or @authz.isLocalAdmin(principal)")
+    @PreAuthorize("@authz.checkView(principal, #id, #this)")
     Account findOne(@Param("id") Long id);
 
     @Override

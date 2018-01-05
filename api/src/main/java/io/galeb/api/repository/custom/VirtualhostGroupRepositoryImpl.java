@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementation<VirtualhostGroup> implements VirtualhostGroupRepositoryCustom {
@@ -24,7 +26,7 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
     }
 
     @Override
-    public boolean hasPermission(Object principal, Object criteria, String role) {
-        return true;
+    public Set<String> roles(Object principal, Object criteria) {
+        return Collections.emptySet();
     }
 }

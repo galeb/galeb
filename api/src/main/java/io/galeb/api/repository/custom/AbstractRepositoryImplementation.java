@@ -73,5 +73,5 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     @Override
-    public abstract boolean hasPermission(Object principal, Object criteria, String role);
+    public abstract Set<String> roles(Object principal, Object criteria);
 }

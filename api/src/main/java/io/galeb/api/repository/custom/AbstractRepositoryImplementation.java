@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @NoRepositoryBean
-public abstract class AbstractRepositoryImplementation<T extends AbstractEntity> implements WithRoles {
+public abstract class AbstractRepositoryImplementation<T extends AbstractEntity> {
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
@@ -76,6 +76,5 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return Collections.emptySet();
     }
 
-    @Override
     public abstract Set<String> roles(Object principal, Object criteria);
 }

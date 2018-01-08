@@ -1,7 +1,7 @@
 package io.galeb.api.services;
 
 import io.galeb.api.repository.*;
-import io.galeb.api.repository.custom.WithRoles;
+import io.galeb.api.repository.custom.AbstractRepositoryImplementation;
 import io.galeb.api.security.LocalAdmin;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
@@ -51,12 +51,10 @@ public class PermissionService {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean hasRole(Object principal, Object criteria, Object repositoryObj, String role) {
         Account account = (Account) principal;
-        WithRoles repository = null;
-        if (repositoryObj instanceof WithRoles) {
-            repository = (WithRoles) repositoryObj;
-        }
+        AbstractRepositoryImplementation repository = (AbstractRepositoryImplementation) repositoryObj;
         if (repository != null) {
             Set<String> roles = repository.roles(principal, criteria);
             boolean result = roles.stream().anyMatch(r -> r.equals(role));
@@ -68,7 +66,7 @@ public class PermissionService {
 
     public boolean isAdmin(Object principal) {
         Account account = (Account) principal;
-        return hasRole(account, RoleGroup.Role.ADMIN.toString());
+        return hasRole(account, Role.ADMIN.toString());
     }
 
     public boolean hasRole(Object principal, String role) {

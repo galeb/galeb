@@ -1,7 +1,7 @@
 package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
-import io.galeb.core.entity.Account;
+import io.galeb.core.entity.RoleGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Account> implements AccountRepositoryCustom {
+public class RoleGroupRepositoryImpl extends AbstractRepositoryImplementation<RoleGroup> implements RoleGroupRepositoryCustom {
 
     @PersistenceContext
     private EntityManager em;
@@ -20,7 +20,7 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Account.class, em);
+        setSimpleJpaRepository(RoleGroup.class, em);
         setStatusService(statusService);
     }
 
@@ -28,5 +28,4 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     public Set<String> roles(Object principal, Object criteria) {
         return Collections.emptySet();
     }
-
 }

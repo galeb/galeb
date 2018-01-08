@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
+import static io.galeb.router.handlers.PathGlobHandler.RULE_NAME;
 import static io.galeb.router.handlers.PoolHandler.POOL_NAME;
 
 @Component
@@ -41,6 +42,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     private static final String VH_PREFIX   = "VH_";
     private static final String ENV_PREFIX  = "ENV_";
     private static final String POOL_PREFIX = "POOL_";
+    private static final String RULE_PREFIX = "RULE_";
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -59,6 +61,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
             String poolName = exchange.getAttachment(POOL_NAME);
+            String ruleName = exchange.getAttachment(RULE_NAME);
             String virtualhost = exchange.getHostName();
             virtualhost = virtualhost != null ? virtualhost : UNDEF;
             String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
@@ -85,6 +88,10 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
                 keys.add(statsdKeyPoolTarget);
                 keys.add(statsdKeyVirtualHostPool);
                 keys.add(statsdKeyVirtualHostPoolTarget);
+            }
+            if (ruleName != null) {
+                final String statsdKeyRule = cleanUpKey(RULE_PREFIX + ruleName);
+                keys.add(statsdKeyRule);
             }
 
             sendStatusCodeCount(keys, statusCode, targetIsUndef);

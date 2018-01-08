@@ -1,7 +1,7 @@
 package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
-import io.galeb.core.entity.HealthCheck;
+import io.galeb.core.entity.Team;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<HealthCheck> implements HealthCheckRepositoryCustom, WithRoles {
+public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> implements TeamRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -20,7 +20,7 @@ public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(HealthCheck.class, em);
+        setSimpleJpaRepository(Team.class, em);
         setStatusService(statusService);
     }
 
@@ -28,4 +28,5 @@ public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<
     public Set<String> roles(Object principal, Object criteria) {
         return Collections.emptySet();
     }
+
 }

@@ -1,4 +1,4 @@
 package io.galeb.api.repository.custom;
 
-public interface HealthCheckRepositoryCustom {
+public interface HealthCheckRepositoryCustom extends WithRoles {
 }

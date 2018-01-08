@@ -1,5 +1,5 @@
 package io.galeb.api.repository.custom;
 
-public interface AccountRepositoryCustom {
+public interface AccountRepositoryCustom extends WithRoles {
 
 }

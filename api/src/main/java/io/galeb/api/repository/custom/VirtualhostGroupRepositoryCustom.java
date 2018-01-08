@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("unused")
-public interface VirtualhostGroupRepositoryCustom {
+public interface VirtualhostGroupRepositoryCustom extends WithRoles {
 
     VirtualhostGroup findOne(Long var1);
 

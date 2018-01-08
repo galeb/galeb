@@ -2,8 +2,8 @@ package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Project;
-import io.galeb.core.entity.VirtualhostGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -13,8 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-@SuppressWarnings("unused")
-public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementation<VirtualhostGroup> implements VirtualhostGroupRepositoryCustom, WithRoles {
+public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation<HealthStatus> implements HealthStatusRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -24,7 +23,7 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(VirtualhostGroup.class, em);
+        setSimpleJpaRepository(HealthStatus.class, em);
         setStatusService(statusService);
     }
 
@@ -35,15 +34,15 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
 
     @Override
     protected long getProjectId(Object criteria) {
-        VirtualhostGroup virtualhostGroup = null;
+        HealthStatus healthStatus = null;
         try {
-            virtualhostGroup = em.find(VirtualhostGroup.class, ((VirtualhostGroup) criteria).getId());
+            healthStatus = em.find(HealthStatus.class, ((HealthStatus) criteria).getId());
         } catch (Exception ignored) {}
-        if (virtualhostGroup == null) {
+        if (healthStatus == null) {
             return -1L;
         }
-        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.virtualhosts v WHERE v.virtualhostgroup.id = :id", Project.class)
-                .setParameter("id", virtualhostGroup.getId())
+        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t INNER JOIN t.healthStatus h WHERE h.id = :id", Project.class)
+                .setParameter("id", healthStatus.getId())
                 .getResultList();
         if (projects == null || projects.isEmpty()) {
             return -1;

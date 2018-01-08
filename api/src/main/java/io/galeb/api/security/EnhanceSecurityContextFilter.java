@@ -66,10 +66,14 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                             account.setEmail(remoteUser + "@fake." + UUID.randomUUID().toString());
                             account = accountDaoService.save(account);
                             LOGGER.warn("Created " + account.getUsername() + " account");
+                        } else {
+                            LOGGER.warn("Using " + account.getUsername() + " account (already created)");
                         }
                     }
                     Authentication auth = new AuthenticationToken(account.getAuthorities(), account);
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    LOGGER.error("Remote User undefined");
                 }
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);

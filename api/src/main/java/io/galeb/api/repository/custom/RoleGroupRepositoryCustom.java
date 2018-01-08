@@ -1,4 +1,4 @@
 package io.galeb.api.repository.custom;
 
-public interface RoleGroupRepositoryCustom {
+public interface RoleGroupRepositoryCustom extends WithRoles {
 }

@@ -7,6 +7,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "projectLinkedToAccount",
+                query = "SELECT p FROM Project p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND p.id = :project_id")
+})
+
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_project_name", columnNames = { "name" }) })
 public class Project extends AbstractEntity {
@@ -23,7 +29,7 @@ public class Project extends AbstractEntity {
     @OneToMany(mappedBy = "project")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @ManyToMany(mappedBy = "projects")
+    @ManyToMany(mappedBy = "projects", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 
     @Column(nullable = false)

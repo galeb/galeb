@@ -55,7 +55,7 @@ public class Account extends AbstractEntity implements UserDetails {
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
 
-    @ManyToMany(mappedBy = "accounts")
+    @ManyToMany(mappedBy = "accounts", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 
     public Set<Team> getTeams() {

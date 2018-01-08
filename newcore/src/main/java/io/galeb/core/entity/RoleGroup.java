@@ -7,6 +7,18 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "roleGroupsFromProject",
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p ON p.id = :project_id INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id"),
+        @NamedQuery(
+                name = "roleGroupsFromTeams",
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :id"),
+        @NamedQuery(
+                name = "roleGroupsFromAccount",
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.accounts a WHERE a.id = :id")
+})
+
 @Entity
 @Table(name = "rolegroup", uniqueConstraints = { @UniqueConstraint(name = "UK_rolegroup_name", columnNames = { "name" }) })
 public class RoleGroup extends AbstractEntity  {
@@ -14,27 +26,27 @@ public class RoleGroup extends AbstractEntity  {
     @Column(nullable = false)
     private String name;
 
-    @ElementCollection(targetClass = Role.class)
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @JoinTable(name = "rolegroup_roles",
             joinColumns = @JoinColumn(name = "rolegroup_id", nullable = false, foreignKey = @ForeignKey(name = "FK_rolegroup_role_id")))
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_account_id")),
             inverseJoinColumns = @JoinColumn(name = "account_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_rolegroup_id")))
     public Set<Account> accounts;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_project_id")),
             inverseJoinColumns = @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_project_rolegroup_id")))
-    public Set<Account> projects;
+    public Set<Project> projects;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_team_id")),
             inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_team_id")))
-    public Set<Account> teams;
+    public Set<Team> teams;
 
     public String getName() {
         return name;
@@ -67,22 +79,22 @@ public class RoleGroup extends AbstractEntity  {
         }
     }
 
-    public Set<Account> getProjects() {
+    public Set<Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(Set<Account> projects) {
+    public void setProjects(Set<Project> projects) {
         if (projects != null) {
             this.projects.clear();
             this.projects.addAll(projects);
         }
     }
 
-    public Set<Account> getTeams() {
+    public Set<Team> getTeams() {
         return teams;
     }
 
-    public void setTeams(Set<Account> teams) {
+    public void setTeams(Set<Team> teams) {
         if (teams != null) {
             this.teams.clear();
             this.teams.addAll(teams);

@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> implements PoolRepositoryCustom {
+public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> implements PoolRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -36,5 +36,10 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
     @Override
     public Set<String> roles(Object principal, Object criteria) {
         return Collections.emptySet();
+    }
+
+    @Override
+    protected long getProjectId(Object criteria) {
+        return ((Pool)criteria).getProject().getId();
     }
 }

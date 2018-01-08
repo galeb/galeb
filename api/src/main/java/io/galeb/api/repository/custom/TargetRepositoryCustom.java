@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("unused")
-public interface TargetRepositoryCustom {
+public interface TargetRepositoryCustom extends WithRoles {
 
     Target findOne(Long var1);
 

@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-public class BalancePolicyRepositoryImpl extends AbstractRepositoryImplementation<BalancePolicy> implements BalancePolicyRepositoryCustom {
+public class BalancePolicyRepositoryImpl extends AbstractRepositoryImplementation<BalancePolicy> implements BalancePolicyRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;

@@ -64,8 +64,12 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     @Transactional
     public void delete(Long id) {
         T entity = simpleJpaRepository.findOne(id);
-        entity.quarantine(true);
-        simpleJpaRepository.saveAndFlush(entity);
+        if (entity instanceof WithStatus) {
+            entity.quarantine(true);
+            simpleJpaRepository.saveAndFlush(entity);
+        } else {
+            simpleJpaRepository.delete(entity);
+        }
     }
 
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {

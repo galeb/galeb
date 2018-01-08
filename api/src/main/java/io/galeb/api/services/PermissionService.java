@@ -58,7 +58,7 @@ public class PermissionService {
         if (repository != null) {
             Set<String> roles = repository.roles(principal, criteria);
             boolean result = roles.stream().anyMatch(r -> r.equals(role));
-            auditHasRole(role, account, roles, result);
+            audit(role, account, roles, result);
             return result;
         }
         return false;
@@ -72,7 +72,7 @@ public class PermissionService {
     public boolean hasRole(Object principal, String role) {
         Account account = (Account) principal;
         boolean result = account.getAuthorities().stream().anyMatch(a -> role.equals(a.getAuthority()));
-        auditHasRole(role, account, account.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()), result);
+        audit(role, account, account.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()), result);
         return result;
     }
 
@@ -114,7 +114,7 @@ public class PermissionService {
                 o instanceof VirtualHostRepository ? VirtualHost.class : null;
     }
 
-    private void auditHasRole(String role, Account account, Set<String> roles, boolean result) {
+    private void audit(String role, Account account, Set<String> roles, boolean result) {
         LOGGER.warn("AUDIT: " + account.getUsername() + " (roles: " + roles.stream().collect(Collectors.joining(",")) + ") has " + role + " = " + result);
     }
 

@@ -60,9 +60,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <timestamp>${maven.build.timestamp}</timestamp>
-
+        <mysql-connector-java.version>6.0.6</mysql-connector-java.version>
         <org.apache.logging.log4j.version>2.8.1</org.apache.logging.log4j.version>
-        <hikaricp.version>2.2.5</hikaricp.version>
     </properties>
 
     <repositories>
@@ -117,6 +116,15 @@
             <version>${org.apache.logging.log4j.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql-connector-java.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
@@ -134,11 +142,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
         </dependency>
     </dependencies>
 
@@ -183,7 +186,6 @@
                         -Dcom.sun.management.jmxremote=true
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
-                        -Dcom.sun.management.jmxremote.port=5001
                     </jvmArguments>
                 </configuration>
             </plugin>

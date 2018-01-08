@@ -14,15 +14,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface AccountRepository extends JpaRepository<Account, Long>, AccountRepositoryCustom {
 
     @Override
-    @PreAuthorize("@authz.checkSave(principal, #account, #this)")
+    @PreAuthorize("@perm.allowSave(principal, #account, #this)")
     Account save(@Param("account") Account account);
 
     @Override
-    @PreAuthorize("@authz.checkDelete(principal, #id, #this)")
+    @PreAuthorize("@perm.allowDelete(principal, #id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("@authz.checkView(principal, #id, #this)")
+    @PreAuthorize("@perm.allowView(principal, #id, #this)")
     Account findOne(@Param("id") Long id);
 
     @Override

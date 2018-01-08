@@ -13,8 +13,9 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service("authz")
-public class ConditionalAuthorizerService {
+@SuppressWarnings("WeakerAccess")
+@Service("perm")
+public class PermissionService {
 
     private enum Action {
         SAVE,
@@ -22,22 +23,22 @@ public class ConditionalAuthorizerService {
         VIEW
     }
 
-    private static final Logger LOGGER = LogManager.getLogger(ConditionalAuthorizerService.class);
+    private static final Logger LOGGER = LogManager.getLogger(PermissionService.class);
 
-    public boolean checkSave(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
-        return check(principal, criteria, securityExpressionOperations, Action.SAVE);
+    public boolean allowSave(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        return allow(principal, criteria, expressionOperations, Action.SAVE.toString());
     }
 
-    public boolean checkDelete(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
-        return check(principal, criteria, securityExpressionOperations, Action.DELETE);
+    public boolean allowDelete(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        return allow(principal, criteria, expressionOperations, Action.DELETE.toString());
     }
 
-    public boolean checkView(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations) {
-        return check(principal, criteria, securityExpressionOperations, Action.VIEW);
+    public boolean allowView(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        return allow(principal, criteria, expressionOperations, Action.VIEW.toString());
     }
 
-    public boolean check(Object principal, Object criteria, MethodSecurityExpressionOperations securityExpressionOperations, Action action) {
-        Class<? extends AbstractEntity> entityClass = extractEntityClass(securityExpressionOperations);
+    public boolean allow(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations, String action) {
+        Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
         if (principal instanceof Account && entityClass != null) {
             String roleEntityPrefix = entityClass.getSimpleName().toUpperCase();
             String role = roleEntityPrefix + "_" + action;
@@ -45,7 +46,7 @@ public class ConditionalAuthorizerService {
                     isLocalAdmin(principal) ||
                     isAdmin(principal) ||
                     hasRole(principal, role + "_ALL") ||
-                    hasRole(principal, criteria, securityExpressionOperations.getThis(), role);
+                    hasRole(principal, criteria, expressionOperations.getThis(), role);
         }
         return false;
     }

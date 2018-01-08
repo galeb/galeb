@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long>, VirtualHostRepositoryCustom {
 
     @Override
-    @PreAuthorize("@authz.checkSave(principal, #virtualhost, #this)")
+    @PreAuthorize("@perm.allowSave(principal, #virtualhost, #this)")
     VirtualHost save(@Param("virtualhost") VirtualHost virtualhost);
 
 }

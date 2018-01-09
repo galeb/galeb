@@ -47,7 +47,7 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     private String hcBody;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false)
     private Map<String, String> hcHeaders = new HashMap<>();
 

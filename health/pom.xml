@@ -81,16 +81,22 @@
 
     <repositories>
        <repository>
-           <id>galeb_core</id>
-           <url>file://${project.basedir}/core/target</url>
+           <id>galeb_newcore</id>
+           <url>file://${project.basedir}/newcore/target</url>
        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>io.galeb</groupId>
-            <artifactId>galeb-core</artifactId>
+            <artifactId>galeb-newcore</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>biz.paluch.redis</groupId>
+                    <artifactId>lettuce</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

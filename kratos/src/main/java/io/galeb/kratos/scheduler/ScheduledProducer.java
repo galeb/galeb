@@ -1,9 +1,11 @@
 package io.galeb.kratos.scheduler;
 
+import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import io.galeb.kratos.repository.PoolRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
@@ -34,12 +37,14 @@ public class ScheduledProducer {
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
+    private final PoolRepository poolRepository;
     private final JmsTemplate template;
 
     @Autowired
-    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template) {
+    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, PoolRepository poolRepository, JmsTemplate template) {
         this.targetRepository = targetRepository;
         this.environmentRepository = environmentRepository;
+        this.poolRepository = poolRepository;
         this.template = template;
     }
 
@@ -51,7 +56,16 @@ public class ScheduledProducer {
         environmentRepository.findAll().stream().map(environment -> environment.getName().replaceAll("[ ]+", "_").toLowerCase()).forEach(env -> {
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env);
             Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(0, PAGE_SIZE));
-            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, env, counter));
+            StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
+                Set<Pool> pools = poolRepository.findAllByTargetId(t.getId());
+                Target newTarget = new Target();
+                newTarget.setName(t.getName());
+                newTarget.setPools(pools);
+                newTarget.setHealthStatus(t.getHealthStatus());
+                newTarget.setId(t.getId());
+                newTarget.setLastModifiedAt(t.getLastModifiedAt());
+                return newTarget;
+             }).forEach(target -> sendToQueue(target, env, counter));
             long size = targetsPage.getTotalElements();
             for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {

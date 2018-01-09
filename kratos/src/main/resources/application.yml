@@ -41,7 +41,7 @@ spring:
     jpa:
         database-platform: ${GALEB_DB_DIALECT:org.hibernate.dialect.H2Dialect}
         hibernate:
-            ddl-auto: ${DDL_MODE:create-drop}
+            ddl-auto: ${DDL_MODE:validate}
         properties:
             hibernate:
                 format_sql: ${FORMAT_SQL:false}

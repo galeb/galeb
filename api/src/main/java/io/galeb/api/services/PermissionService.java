@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,15 +85,16 @@ public class PermissionService {
     private boolean hasRole(Object principal, String role) {
         Account account = (Account) principal;
         long accountId = account.getId();
-        Set<String> roles = new HashSet<>();
-//        List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
-//                .setParameter("id", accountId)
-//                .getResultList();
-//        Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).distinct().collect(Collectors.toSet());
+        List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
+                .setParameter("id", accountId)
+                .getResultList();
+        Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).distinct().collect(Collectors.toSet());
         List<RoleGroup> roleGroupsFromAccount = em.createNamedQuery("roleGroupsFromAccount", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();
-        roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet()));
+        roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).collect(Collectors.toSet()));
 
         boolean result = roles.contains(role);
         audit(account, role, roles, result);

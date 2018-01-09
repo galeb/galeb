@@ -41,7 +41,7 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
         if (healthStatus == null) {
             return -1L;
         }
-        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t INNER JOIN t.healthStatus h WHERE h.id = :id", Project.class)
+        List<Project> projects = em.createNamedQuery("projectHealthStatus", Project.class)
                 .setParameter("id", healthStatus.getId())
                 .getResultList();
         if (projects == null || projects.isEmpty()) {

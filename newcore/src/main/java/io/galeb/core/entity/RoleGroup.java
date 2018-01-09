@@ -16,7 +16,10 @@ import java.util.Set;
                 query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :id"),
         @NamedQuery(
                 name = "roleGroupsFromAccount",
-                query = "SELECT r FROM RoleGroup r INNER JOIN r.accounts a WHERE a.id = :id")
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.accounts a WHERE a.id = :id"),
+        @NamedQuery(
+                name = "roleGroupsTeam",
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t ON t.id = :team_id INNER JOIN t.accounts a WHERE a.id = :account_id")
 })
 
 @Entity

@@ -10,7 +10,19 @@ import java.util.Set;
 @NamedQueries({
         @NamedQuery(
                 name = "projectLinkedToAccount",
-                query = "SELECT p FROM Project p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND p.id = :project_id")
+                query = "SELECT p FROM Project p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND p.id = :project_id"),
+        @NamedQuery(
+                name = "projectHealthStatus",
+                query = "SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t INNER JOIN t.healthStatus h WHERE h.id = :id"),
+        @NamedQuery(
+                name = "projectsFromRuleOrdered",
+                query = "SELECT p FROM Project p INNER JOIN p.rules r INNER JOIN r.rulesOrdered ro WHERE ro.id = :id"),
+        @NamedQuery(
+                name = "projectFromVirtualhostGroup",
+                query = "SELECT p FROM Project p INNER JOIN p.virtualhosts v WHERE v.virtualhostgroup.id = :id"),
+        @NamedQuery(
+                name = "projectFromTarget",
+                query = "SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t WHERE t.id = :id")
 })
 
 @Entity

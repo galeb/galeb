@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -39,11 +38,6 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        return Collections.emptySet();
-    }
-
-    @Override
     protected long getProjectId(Object criteria) {
         RuleOrdered ruleOrdered = null;
         try {
@@ -52,7 +46,7 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
         if (ruleOrdered == null) {
             return -1L;
         }
-        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.rules r INNER JOIN r.rulesOrdered ro WHERE ro.id = :id", Project.class)
+        List<Project> projects = em.createNamedQuery("projectsFromRuleOrdered", Project.class)
                 .setParameter("id", ruleOrdered.getId())
                 .getResultList();
         if (projects == null || projects.isEmpty()) {

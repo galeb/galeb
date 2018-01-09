@@ -87,7 +87,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
     protected long getProjectId(Object criteria) {
         return -1;
-    };
+    }
 
     private Set<String> projectRoles(long accountId, long projectId, final EntityManager em) {
         Set<String> roles;
@@ -114,8 +114,11 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public Set<String> roles(Object principal, Object criteria) {
         Account account = (Account) principal;
         long projectId = getProjectId(criteria);
-        long accountId = account.getId();
-        return projectRoles(accountId, projectId, em);
+        if (projectId > -1) {
+            long accountId = account.getId();
+            return projectRoles(accountId, projectId, em);
+        }
+        return Collections.emptySet();
     }
 
 }

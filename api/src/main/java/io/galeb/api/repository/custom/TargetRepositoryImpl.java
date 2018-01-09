@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -39,11 +38,6 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        return Collections.emptySet();
-    }
-
-    @Override
     protected long getProjectId(Object criteria) {
         Target target = null;
         try {
@@ -52,7 +46,7 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
         if (target == null) {
             return -1L;
         }
-        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.pools pools WHERE pools.target.id = :id", Project.class)
+        List<Project> projects = em.createNamedQuery("projectFromTarget", Project.class)
                 .setParameter("id", target.getId())
                 .getResultList();
         if (projects == null || projects.isEmpty()) {

@@ -26,9 +26,8 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
 
     @Override
     public Set<String> roles(Object principal, Object criteria) {
-        Set<String> roles = ((Account) principal).getRolegroups().stream().flatMap(rg -> rg.getRoles().stream()).map(Object::toString).collect(Collectors.toSet());
-        //
-        return roles;
+        return ((Account) principal).getRolegroups().stream().flatMap(rg -> rg.getRoles().stream())
+                .map(Object::toString).collect(Collectors.toSet());
     }
 
 }

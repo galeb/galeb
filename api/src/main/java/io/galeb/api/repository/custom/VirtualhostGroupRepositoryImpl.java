@@ -42,7 +42,7 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
         if (virtualhostGroup == null) {
             return -1L;
         }
-        List<Project> projects = em.createQuery("SELECT p FROM Project p INNER JOIN p.virtualhosts v WHERE v.virtualhostgroup.id = :id", Project.class)
+        List<Project> projects = em.createNamedQuery("projectFromVirtualhostGroup", Project.class)
                 .setParameter("id", virtualhostGroup.getId())
                 .getResultList();
         if (projects == null || projects.isEmpty()) {

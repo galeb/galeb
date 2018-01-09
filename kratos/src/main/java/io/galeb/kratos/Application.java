@@ -16,15 +16,19 @@
 
 package io.galeb.kratos;
 
+import io.galeb.core.configuration.RedisConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"io.galeb.core.entity"})
-@ComponentScan(basePackages = {"io.galeb.core.services", "io.galeb.core.configuration", "io.galeb.kratos"})
+@ComponentScan(basePackages = {"io.galeb.core.configuration", "io.galeb.kratos"}, excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = {RedisConfiguration.class})})
 @EnableJpaRepositories(basePackages = "io.galeb.kratos.repository")
 public class Application {
 

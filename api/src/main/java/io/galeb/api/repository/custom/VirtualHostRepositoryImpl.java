@@ -11,11 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<VirtualHost> implements VirtualHostRepositoryCustom {
+public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<VirtualHost> implements VirtualHostRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -28,6 +27,7 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
 
     @PostConstruct
     private void init() {
+        setEntityManager(em);
         setSimpleJpaRepository(VirtualHost.class, em);
         setStatusService(statusService);
     }
@@ -38,7 +38,15 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        return Collections.emptySet();
+    protected long getProjectId(Object criteria) {
+        VirtualHost virtualHost = null;
+        try {
+            virtualHost = em.find(VirtualHost.class, ((VirtualHost) criteria).getId());
+        } catch (Exception ignored) {}
+        if (virtualHost == null) {
+            return -1L;
+        }
+        return virtualHost.getProject().getId();
     }
+
 }

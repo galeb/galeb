@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-public class RoleGroupRepositoryImpl extends AbstractRepositoryImplementation<RoleGroup> implements RoleGroupRepositoryCustom {
+public class RoleGroupRepositoryImpl extends AbstractRepositoryImplementation<RoleGroup> implements RoleGroupRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;

@@ -7,10 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
-import java.util.Set;
 
-public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Project> implements ProjectRepositoryCustom {
+public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Project> implements ProjectRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -25,7 +23,7 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        return Collections.emptySet();
+    protected long getProjectId(Object criteria) {
+        return ((Project) criteria).getId();
     }
 }

@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<Environment> implements EnvironmentRepositoryCustom {
+public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<Environment> implements EnvironmentRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;

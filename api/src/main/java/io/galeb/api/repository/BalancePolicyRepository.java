@@ -1,5 +1,6 @@
 package io.galeb.api.repository;
 
+import io.galeb.api.repository.custom.BalancePolicyRepositoryCustom;
 import io.galeb.core.entity.BalancePolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @RepositoryRestResource(path = "balancepolicy", collectionResourceRel = "balancepolicy", itemResourceRel = "balancepolicy")
-public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Long> {
+public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Long>, BalancePolicyRepositoryCustom {
 
     @Override
     @PreAuthorize("@perm.allowSave(principal, #balancePolicy, #this)")

@@ -10,7 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<HealthCheck> implements HealthCheckRepositoryCustom {
+public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<HealthCheck> implements HealthCheckRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;

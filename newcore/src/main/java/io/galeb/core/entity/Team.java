@@ -25,7 +25,7 @@ public class Team extends AbstractEntity {
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "teams")
+    @ManyToMany(mappedBy = "teams", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 
     public Set<Account> getAccounts() {

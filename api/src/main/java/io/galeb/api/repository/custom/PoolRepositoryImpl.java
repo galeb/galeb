@@ -10,11 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> implements PoolRepositoryCustom {
+public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> implements PoolRepositoryCustom, WithRoles {
 
     @PersistenceContext
     private EntityManager em;
@@ -34,7 +33,7 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        return Collections.emptySet();
+    protected long getProjectId(Object criteria) {
+        return ((Pool)criteria).getProject().getId();
     }
 }

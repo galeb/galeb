@@ -1,4 +1,4 @@
 package io.galeb.api.repository.custom;
 
-public interface BalancePolicyRepositoryCustom {
+public interface BalancePolicyRepositoryCustom extends WithRoles {
 }

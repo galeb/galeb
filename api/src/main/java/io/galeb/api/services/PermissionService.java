@@ -26,6 +26,8 @@ public class PermissionService {
         VIEW
     }
 
+    private static final String SHOW_ROLES = System.getenv("SHOW_ROLES");
+
     @PersistenceContext
     private EntityManager em;
 
@@ -84,7 +86,8 @@ public class PermissionService {
         long accountId = account.getId();
         Set<String> roles = mergeRoles(accountId);
         boolean result = roles.contains(role);
-        audit(account, role, roles, result, entityClass, action);
+        boolean showRoles = SHOW_ROLES != null;
+        audit(account, role, roles, result, entityClass, action, showRoles);
         return result;
     }
 
@@ -104,7 +107,8 @@ public class PermissionService {
 
     private boolean hasRole(Account account, String role, Set<String> roles, String entityClass, String action) {
         boolean result = roles.stream().anyMatch(role::equals);
-        audit(account, role, roles, result, entityClass, action);
+        boolean showRoles = SHOW_ROLES != null;
+        audit(account, role, roles, result, entityClass, action, showRoles);
         return result;
     }
 
@@ -154,8 +158,9 @@ public class PermissionService {
         // @formatter:on
     }
 
-    private void audit(Account account, String role, Set<String> roles, boolean result, String entityClass, String action) {
-        LOGGER.warn("AUDIT [" + entityClass + "/" + action + "]: " + account.getUsername() + " (roles: " + roles.stream().collect(Collectors.joining(",")) + ") has " + role + " = " + result);
+    private void audit(Account account, String role, Set<String> roles, boolean result, String entityClass, String action, boolean showRoles) {
+        LOGGER.warn("AUDIT [{}/{}]: {}{} has role {}? {}",
+                entityClass, action, account.getUsername(), showRoles ? " (roles: " + roles.stream().collect(Collectors.joining(",")) + ")" : "", role, result);
     }
 
 }

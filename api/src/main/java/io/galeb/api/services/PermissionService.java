@@ -29,9 +29,6 @@ public class PermissionService {
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
-    private AccountDaoService accountDaoService;
-
     private static final Logger LOGGER = LogManager.getLogger(PermissionService.class);
 
     public boolean allowSave(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
@@ -60,31 +57,38 @@ public class PermissionService {
                 LOGGER.error(repositoryObj + " is not instance of " + WithRoles.class.getSimpleName());
                 return false;
             }
-            return  ((Account.class.equals(entityClass)) && isMySelf(principal, criteria)) ||
-                    isLocalAdmin(principal) ||
-                    isAdmin(principal) ||
-                    hasRole(principal, role + "_ALL") ||
-                    hasRole(principal, criteria, repository, role);
+            return  ((Account.class.equals(entityClass)) && !(criteria instanceof Account) && isMySelf(principal, criteria, entityClass.getSimpleName(), action)) ||
+                    isLocalAdmin(principal, entityClass.getSimpleName(), action) ||
+                    isAdmin(principal, entityClass.getSimpleName(), action) ||
+                    hasRole(principal, role + "_ALL", entityClass.getSimpleName(), action) ||
+                    hasRole(principal, criteria, repository, role, entityClass.getSimpleName(), action);
         }
         return false;
     }
 
-    private boolean hasRole(Object principal, Object criteria, Object repositoryObj, String role) {
+    private boolean hasRole(Object principal, Object criteria, Object repositoryObj, String role, String entityClass, String action) {
         Account account = (Account) principal;
         WithRoles repository;
         if (repositoryObj instanceof WithRoles) {
             repository = (WithRoles) repositoryObj;
         } else {
-            LOGGER.error(repositoryObj + " is not instance of " + WithRoles.class.getSimpleName());
+            LOGGER.error(repositoryObj + " is not an instance of " + WithRoles.class.getSimpleName());
             return false;
         }
         Set<String> roles = repository.roles(principal, criteria);
-        return hasRole(account, role, roles);
+        return hasRole(account, role, roles, entityClass, action);
     }
 
-    private boolean hasRole(Object principal, String role) {
+    private boolean hasRole(Object principal, String role, String entityClass, String action) {
         Account account = (Account) principal;
         long accountId = account.getId();
+        Set<String> roles = mergeRoles(accountId);
+        boolean result = roles.contains(role);
+        audit(account, role, roles, result, entityClass, action);
+        return result;
+    }
+
+    private Set<String> mergeRoles(long accountId) {
         List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();
@@ -95,31 +99,28 @@ public class PermissionService {
                 .getResultList();
         roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet()));
-
-        boolean result = roles.contains(role);
-        audit(account, role, roles, result);
-        return result;
+        return roles;
     }
 
-    private boolean hasRole(Account account, String role, Set<String> roles) {
+    private boolean hasRole(Account account, String role, Set<String> roles, String entityClass, String action) {
         boolean result = roles.stream().anyMatch(role::equals);
-        audit(account, role, roles, result);
+        audit(account, role, roles, result, entityClass, action);
         return result;
     }
 
-    public boolean isAdmin(Object principal) {
+    private boolean isAdmin(Object principal, String entityClass, String action) {
         Account account = (Account) principal;
-        return hasRole(account, Role.ADMIN.toString());
+        return hasRole(account, Role.ADMIN.toString(), entityClass, action);
     }
 
-    public boolean isLocalAdmin(Object principal) {
+    private boolean isLocalAdmin(Object principal, String entityClass, String action) {
         Account account = (Account) principal;
         boolean result = LocalAdmin.NAME.equals(account.getUsername());
-        LOGGER.warn("AUDIT: Is Local Admin? " + result);
+        LOGGER.warn("AUDIT [" + entityClass + "/" + action + "]: " + account.getUsername() + " is Local Admin? " + result);
         return result;
     }
 
-    public boolean isMySelf(Object principal, Object criteria) {
+    private boolean isMySelf(Object principal, Object criteria, String entityClass, String action) {
         Account account = (Account) principal;
         boolean result = false;
         if (criteria instanceof Account) {
@@ -129,7 +130,7 @@ public class PermissionService {
             Long id = (Long) criteria;
             result = account.getId() == id;
         }
-        LOGGER.warn("AUDIT: Is my self? " + result);
+        LOGGER.warn("AUDIT [" + entityClass + "/" + action + "]: " + account.getUsername() + " is my self? " + result);
         return result;
     }
 
@@ -143,6 +144,7 @@ public class PermissionService {
                 o instanceof HealthStatusRepository ? HealthStatus.class :
                 o instanceof PoolRepository ? Pool.class :
                 o instanceof ProjectRepository ? Project.class :
+                o instanceof RoleGroupRepository ? RoleGroup.class :
                 o instanceof RuleOrderedRepository ? RuleOrdered.class :
                 o instanceof RuleRepository ? Rule.class :
                 o instanceof TargetRepository ? Target.class :
@@ -152,8 +154,8 @@ public class PermissionService {
         // @formatter:on
     }
 
-    private void audit(Account account, String role, Set<String> roles, boolean result) {
-        LOGGER.warn("AUDIT: " + account.getUsername() + " (roles: " + roles.stream().collect(Collectors.joining(",")) + ") has " + role + " = " + result);
+    private void audit(Account account, String role, Set<String> roles, boolean result, String entityClass, String action) {
+        LOGGER.warn("AUDIT [" + entityClass + "/" + action + "]: " + account.getUsername() + " (roles: " + roles.stream().collect(Collectors.joining(",")) + ") has " + role + " = " + result);
     }
 
 }

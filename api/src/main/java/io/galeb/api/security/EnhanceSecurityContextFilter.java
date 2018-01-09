@@ -65,9 +65,9 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                             account.setUsername(remoteUser);
                             account.setEmail(remoteUser + "@fake." + UUID.randomUUID().toString());
                             account = accountDaoService.save(account);
-                            LOGGER.warn("Created " + account.getUsername() + " account");
+                            LOGGER.warn("AUDIT: Created " + account.getUsername() + " account (OAuth2 sync)");
                         } else {
-                            LOGGER.warn("Using " + account.getUsername() + " account (already created)");
+                            LOGGER.warn("AUDIT: Using " + account.getUsername() + " account (already created)");
                         }
                     }
                     Authentication auth = new AuthenticationToken(account.getAuthorities(), account);

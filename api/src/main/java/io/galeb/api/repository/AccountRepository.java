@@ -26,6 +26,7 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     Account findOne(@Param("id") Long id);
 
     @Override
+    @PreAuthorize("@perm.allowView(principal, principal, #this)")
     @Query("SELECT a FROM Account a WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username}")
     Page<Account> findAll(Pageable pageable);
 }

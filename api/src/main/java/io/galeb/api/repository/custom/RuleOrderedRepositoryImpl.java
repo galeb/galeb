@@ -41,7 +41,12 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
     protected long getProjectId(Object criteria) {
         RuleOrdered ruleOrdered = null;
         try {
-           ruleOrdered  = em.find(RuleOrdered.class, ((RuleOrdered) criteria).getId());
+            if (criteria instanceof RuleOrdered) {
+                ruleOrdered  = em.find(RuleOrdered.class, ((RuleOrdered) criteria).getId());
+            }
+            if (criteria instanceof Long) {
+                ruleOrdered = em.find(RuleOrdered.class, criteria);
+            }
         } catch (Exception ignored) {}
         if (ruleOrdered == null) {
             return -1L;

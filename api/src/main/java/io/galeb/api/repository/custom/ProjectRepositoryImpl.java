@@ -24,6 +24,17 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
 
     @Override
     protected long getProjectId(Object criteria) {
-        return ((Project) criteria).getId();
+        Project project = null;
+        if (criteria instanceof Project) {
+            project = em.find(Project.class, ((Project) criteria).getId());
+        }
+        if (criteria instanceof Long) {
+            project = em.find(Project.class, criteria);
+        }
+        if (criteria instanceof String) {
+            String query = "SELECT p FROM Project p WHERE p.name = :name";
+            project = em.createQuery(query, Project.class).setParameter("name", criteria).getSingleResult();
+        }
+        return project != null ? project.getId() : -1L;
     }
 }

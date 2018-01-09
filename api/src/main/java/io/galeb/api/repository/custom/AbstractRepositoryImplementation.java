@@ -99,15 +99,30 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
                 LOGGER.warn("Project id " + projectId + " not linked with account id " + accountId);
                 return Collections.emptySet();
             }
-            List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
-                    .setParameter("account_id", accountId)
-                    .setParameter("project_id", projectId)
-                    .getResultList();
-            roles = roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
+            roles = mergeRoles(accountId, projectId, em);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return Collections.emptySet();
         }
+        return roles;
+    }
+
+    private Set<String> mergeRoles(long accountId, long projectId, EntityManager em) {
+        List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
+                .setParameter("account_id", accountId)
+                .setParameter("project_id", projectId)
+                .getResultList();
+        Set<String> roles = roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
+        List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
+                .setParameter("id", accountId)
+                .getResultList();
+        roles.addAll(roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).distinct().collect(Collectors.toSet()));
+        List<RoleGroup> roleGroupsFromAccount = em.createNamedQuery("roleGroupsFromAccount", RoleGroup.class)
+                .setParameter("id", accountId)
+                .getResultList();
+        roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).collect(Collectors.toSet()));
         return roles;
     }
 

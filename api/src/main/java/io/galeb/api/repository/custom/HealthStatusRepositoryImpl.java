@@ -36,7 +36,12 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
     protected long getProjectId(Object criteria) {
         HealthStatus healthStatus = null;
         try {
-            healthStatus = em.find(HealthStatus.class, ((HealthStatus) criteria).getId());
+            if (criteria instanceof HealthStatus) {
+                healthStatus = em.find(HealthStatus.class, ((HealthStatus) criteria).getId());
+            }
+            if (criteria instanceof Long) {
+                healthStatus = em.find(HealthStatus.class, criteria);
+            }
         } catch (Exception ignored) {}
         if (healthStatus == null) {
             return -1L;

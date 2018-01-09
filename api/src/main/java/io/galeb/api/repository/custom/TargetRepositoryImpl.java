@@ -41,7 +41,16 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
     protected long getProjectId(Object criteria) {
         Target target = null;
         try {
-            target = em.find(Target.class, ((Target) criteria).getId());
+            if (criteria instanceof Target) {
+                target = em.find(Target.class, ((Target) criteria).getId());
+            }
+            if (criteria instanceof Long) {
+                target = em.find(Target.class, criteria);
+            }
+            if (criteria instanceof String) {
+                String query = "SELECT t FROM Target t WHERE t.name = :name";
+                target = em.createQuery(query, Target.class).setParameter("name", criteria).getSingleResult();
+            }
         } catch (Exception ignored) {}
         if (target == null) {
             return -1L;

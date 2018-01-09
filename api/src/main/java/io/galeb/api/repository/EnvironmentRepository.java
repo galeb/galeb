@@ -17,12 +17,12 @@ import java.util.Set;
 public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == @localAdmin.username")
-    Environment save(Environment environment);
+    @PreAuthorize("@perm.allowSave(principal, #environment, #this)")
+    Environment save(@Param("environment") Environment environment);
 
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') or principal.username == @localAdmin.username")
-    void delete(Long id);
+    @PreAuthorize("@perm.allowDelete(principal, #id, #this)")
+    void delete(@Param("id") Long id);
 
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +

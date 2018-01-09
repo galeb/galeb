@@ -41,7 +41,16 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
     protected long getProjectId(Object criteria) {
         VirtualHost virtualHost = null;
         try {
-            virtualHost = em.find(VirtualHost.class, ((VirtualHost) criteria).getId());
+            if (criteria instanceof VirtualHost) {
+                virtualHost = em.find(VirtualHost.class, ((VirtualHost) criteria).getId());
+            }
+            if (criteria instanceof Long) {
+                virtualHost = em.find(VirtualHost.class, criteria);
+            }
+            if (criteria instanceof String) {
+                String query = "SELECT v FROM VirtualHost v WHERE v.name = :name";
+                virtualHost = em.createQuery(query, VirtualHost.class).setParameter("name", criteria).getSingleResult();
+            }
         } catch (Exception ignored) {}
         if (virtualHost == null) {
             return -1L;

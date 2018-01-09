@@ -10,7 +10,7 @@ import java.util.Set;
 @NamedQueries({
         @NamedQuery(
                 name = "roleGroupsFromProject",
-                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p ON p.id = :project_id INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id"),
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND p.id = :project_id"),
         @NamedQuery(
                 name = "roleGroupsFromTeams",
                 query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :id"),
@@ -19,7 +19,7 @@ import java.util.Set;
                 query = "SELECT r FROM RoleGroup r INNER JOIN r.accounts a WHERE a.id = :id"),
         @NamedQuery(
                 name = "roleGroupsTeam",
-                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t ON t.id = :team_id INNER JOIN t.accounts a WHERE a.id = :account_id")
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id")
 })
 
 @Entity

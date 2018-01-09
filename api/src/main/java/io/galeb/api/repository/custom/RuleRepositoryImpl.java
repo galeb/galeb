@@ -37,6 +37,19 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
 
     @Override
     protected long getProjectId(Object criteria) {
-        return ((Rule) criteria).getProject().getId();
+        Rule rule = null;
+        try {
+            if (criteria instanceof Rule) {
+                rule = em.find(Rule.class, ((Rule) criteria).getId());
+            }
+            if (criteria instanceof Long) {
+                rule = em.find(Rule.class, criteria);
+            }
+            if (criteria instanceof String) {
+                String query = "SELECT r FROM Rule r WHERE r.name = :name";
+                rule = em.createQuery(query, Rule.class).setParameter("name", criteria).getSingleResult();
+            }
+        } catch (Exception ignored) {}
+        return rule != null ? rule.getProject().getId() : -1L;
     }
 }

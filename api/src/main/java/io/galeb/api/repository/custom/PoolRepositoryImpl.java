@@ -34,6 +34,17 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
 
     @Override
     protected long getProjectId(Object criteria) {
-        return ((Pool)criteria).getProject().getId();
+        Pool pool = null;
+        if (criteria instanceof Pool) {
+            pool = em.find(Pool.class, ((Pool) criteria).getId());
+        }
+        if (criteria instanceof Long) {
+            pool = em.find(Pool.class, criteria);
+        }
+        if (criteria instanceof String) {
+            String query = "SELECT p FROM Project p WHERE p.name = :name";
+            pool = em.createQuery(query, Pool.class).setParameter("name", criteria).getSingleResult();
+        }
+        return pool != null ? pool.getProject().getId() : -1L;
     }
 }

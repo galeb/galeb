@@ -20,9 +20,9 @@ import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.Charset;
 import java.util.UUID;
 
 import static com.google.common.hash.Hashing.sha256;
@@ -37,7 +37,7 @@ public class LocalAdmin extends Account {
     public LocalAdmin(@Value("${auth.localtoken:UNDEF}") String localAdminToken) {
         setUsername(NAME);
         if ("UNDEF".equals(localAdminToken)) {
-            localAdminToken = sha256().hashBytes(UUID.randomUUID().toString().getBytes()).toString();
+            localAdminToken = sha256().hashString(UUID.randomUUID().toString(), Charset.defaultCharset()).toString();
             LOGGER.info(">>> Local Token: " + localAdminToken);
         }
         setPassword(localAdminToken);

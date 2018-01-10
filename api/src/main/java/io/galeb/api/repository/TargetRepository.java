@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Collection;
 
+@SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "target", collectionResourceRel = "target", itemResourceRel = "target")
 public interface TargetRepository extends JpaRepository<Target, Long>, TargetRepositoryCustom {
 

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+@SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "rule", collectionResourceRel = "rule", itemResourceRel = "rule")
 public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositoryCustom {
 

@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.transaction.annotation.Transactional;
 
+@SuppressWarnings("unused")
 @Configuration
 @EnableResourceServer
 public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {

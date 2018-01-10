@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+@SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Project> implements ProjectRepositoryCustom, WithRoles {
 
     @PersistenceContext

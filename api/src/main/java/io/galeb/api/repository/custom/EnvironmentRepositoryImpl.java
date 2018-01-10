@@ -11,7 +11,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<Environment> implements EnvironmentRepositoryCustom, WithRoles {
 
     @PersistenceContext

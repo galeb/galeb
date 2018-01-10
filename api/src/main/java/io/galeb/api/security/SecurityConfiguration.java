@@ -1,5 +1,6 @@
 package io.galeb.api.security;
 
+import io.galeb.api.security.filter.InMemoryAccountFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -18,18 +20,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationProvider authenticationProvider;
+    private final LocalAdmin localAdmin;
 
     @Autowired
-    private LocalAdmin localAdmin;
-
-    @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdmin localAdmin) {
         this.userDetailsService = userDetailsService;
         this.authenticationProvider = authenticationProvider;
+        this.localAdmin = localAdmin;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.addFilterBefore(new InMemoryAccountFilter(), BasicAuthenticationFilter.class);
         // @formatter:off
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).

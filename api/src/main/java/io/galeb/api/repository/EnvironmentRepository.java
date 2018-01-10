@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Set;
 
+@SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "environment", collectionResourceRel = "environment", itemResourceRel = "environment")
 public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 

@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<RuleOrdered> implements RuleOrderedRepositoryCustom, WithRoles {
 
     @PersistenceContext

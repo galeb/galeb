@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -35,7 +34,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
-public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
+class EnhanceSecurityContextFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LogManager.getLogger(EnhanceSecurityContextFilter.class);
 
@@ -82,7 +81,7 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
         filter.doFilter(request, response);
     }
 
-    public static class AuthenticationToken extends AbstractAuthenticationToken {
+    static class AuthenticationToken extends AbstractAuthenticationToken {
 
         private final Account account;
 

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+@SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "team", collectionResourceRel = "team", itemResourceRel = "team")
 public interface TeamRepository extends JpaRepository<Team, Long>, TeamRepositoryCustom {
 

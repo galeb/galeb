@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 @NoRepositoryBean
 public abstract class AbstractRepositoryImplementation<T extends AbstractEntity> implements WithRoles {
 

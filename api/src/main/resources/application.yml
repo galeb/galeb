@@ -1,5 +1,6 @@
 auth:
     localtoken: ${LOCAL_TOKEN:UNDEF}
+    show_roles: ${SHOW_ROLES:false}
 
 build:
     project: '@project.artifactId@'

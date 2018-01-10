@@ -10,6 +10,7 @@ import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
+@SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class RoleGroupRepositoryImpl extends AbstractRepositoryImplementation<RoleGroup> implements RoleGroupRepositoryCustom, WithRoles {
 
     @PersistenceContext

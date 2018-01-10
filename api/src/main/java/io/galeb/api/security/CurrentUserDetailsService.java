@@ -44,7 +44,9 @@ public class CurrentUserDetailsService implements UserDetailsService {
         if (LocalAdmin.NAME.equals(username)) return localAdmin;
         Account account = accountDaoService.find(username);
         if (account == null) {
-            throw new UsernameNotFoundException("Account " + username + " NOT FOUND");
+            String errMsg = "Account " + username + " NOT FOUND";
+            LOGGER.error(errMsg);
+            throw new UsernameNotFoundException(errMsg);
         }
         return account;
     }

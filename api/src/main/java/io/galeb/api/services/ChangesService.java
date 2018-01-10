@@ -41,13 +41,11 @@ public class ChangesService {
     }
 
     public Set<Long> listEnvironmentIds(AbstractEntity entity) {
-        MessageFormat messageFormat = new MessageFormat(FORMAT_KEY_HAS_CHANGE);
         String simpleNameClass = entity.getClass().getSimpleName().toLowerCase();
         Long entityId = entity.getId();
-        String keyFormatted = messageFormat.format(FORMAT_KEY_HAS_CHANGE, "*",simpleNameClass, entityId, "*");
+        String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, "*",simpleNameClass, entityId, "*");
         Set<String> keys = keys(keyFormatted);
-        Set<Long> environmentIds = keys.stream().map(k -> Long.parseLong(messageFormat.parse(k, new ParsePosition(0))[0].toString())).collect(Collectors.toSet());
-        return environmentIds;
+        return keys.stream().map(k -> Long.parseLong(new MessageFormat(FORMAT_KEY_HAS_CHANGE).parse(k, new ParsePosition(0))[0].toString())).collect(Collectors.toSet());
     }
 
     private boolean hasKey(String key) {

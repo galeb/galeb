@@ -31,7 +31,9 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if (authentication.getPrincipal() == null) {
-            throw new SecurityException("principal is NULL");
+            String errMsg = "principal is NULL";
+            LOGGER.error(errMsg);
+            throw new SecurityException(errMsg);
         }
         final UserDetails userDetails = retrieveUser(authentication.getName(), null);
 

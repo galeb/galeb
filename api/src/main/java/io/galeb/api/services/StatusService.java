@@ -26,7 +26,7 @@ public class StatusService {
         }
         if (entity.isQuarantine()) {
             Map<Long, Status> mapStatus = new HashMap<>();
-            entity.getAllEnvironments().stream().forEach(e -> mapStatus.put(e.getId(), Status.DELETED));
+            entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.DELETED));
             return mapStatus;
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
@@ -34,8 +34,8 @@ public class StatusService {
         allEnvironmentIdsEntity.removeAll(allEnvironmentsWithChanges);
 
         Map<Long, Status> mapStatus = new HashMap<>();
-        allEnvironmentIdsEntity.stream().forEach(e -> mapStatus.put(e, Status.OK));
-        allEnvironmentsWithChanges.stream().forEach(e -> mapStatus.put(e, Status.PENDING));
+        allEnvironmentIdsEntity.forEach(e -> mapStatus.put(e, Status.OK));
+        allEnvironmentsWithChanges.forEach(e -> mapStatus.put(e, Status.PENDING));
 
         return mapStatus;
     }

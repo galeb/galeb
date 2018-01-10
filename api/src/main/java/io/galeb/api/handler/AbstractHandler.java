@@ -5,8 +5,6 @@ import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;
 
 import java.util.Collections;
@@ -78,7 +76,8 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     }
 
     private void registerChanges(T entity) {
-        getAllEnvironments(entity).stream().forEach(e-> changesService.register(e, entity, String.valueOf(versionService.incrementVersion(e.getId()))));
+        getAllEnvironments(entity).forEach(e ->
+                changesService.register(e, entity, String.valueOf(versionService.incrementVersion(e.getId()))));
     }
 
 }

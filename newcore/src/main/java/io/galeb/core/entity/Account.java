@@ -74,6 +74,9 @@ public class Account extends AbstractEntity implements UserDetails {
     @ManyToMany(mappedBy = "accounts", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String, String> details = new HashMap<>();
+
     public Set<Team> getTeams() {
         return teams;
     }
@@ -183,6 +186,17 @@ public class Account extends AbstractEntity implements UserDetails {
 
     public void setResettoken(Boolean resettoken) {
         this.resettoken = resettoken;
+    }
+
+    public Map<String, String> getDetails() {
+        return details;
+    }
+
+    public void setDetails(Map<String, String> details) {
+        if (details != null) {
+            this.details.clear();
+            this.details.putAll(details);
+        }
     }
 
     @Override

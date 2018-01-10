@@ -17,6 +17,7 @@
 package io.galeb.api.security;
 
 import io.galeb.api.services.AccountDaoService;
+import io.galeb.api.services.AuditService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +38,13 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private final LocalAdmin localAdmin;
     private final AccountDaoService accountDaoService;
+    private final AuditService auditService;
 
     @Autowired
-    public OAuthResourceServerConfig(LocalAdmin localAdmin, AccountDaoService accountDaoService) {
+    public OAuthResourceServerConfig(LocalAdmin localAdmin, AccountDaoService accountDaoService, AuditService auditService) {
         this.localAdmin = localAdmin;
         this.accountDaoService = accountDaoService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .csrf().disable();
         // @formatter:off
 
-        http.addFilterAfter(new EnhanceSecurityContextFilter(accountDaoService, localAdmin), SecurityContextHolderAwareRequestFilter.class);
+        http.addFilterAfter(new EnhanceSecurityContextFilter(accountDaoService, localAdmin, auditService), SecurityContextHolderAwareRequestFilter.class);
     }
 
 }

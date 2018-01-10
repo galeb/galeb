@@ -17,9 +17,17 @@
 package io.galeb.api.handler;
 
 import io.galeb.core.entity.Project;
+import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectHandler extends AbstractHandler<Project> {
 
+    @Override
+    protected void onBeforeCreate(Project entity) {
+        super.onBeforeCreate(entity);
+        if (entity.getTeams() == null || entity.getTeams().isEmpty()) {
+            throw new BadRequestException("Team(s) undefined");
+        }
+    }
 }

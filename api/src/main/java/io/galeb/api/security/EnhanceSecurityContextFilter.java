@@ -17,6 +17,7 @@
 package io.galeb.api.security;
 
 import io.galeb.api.services.AccountDaoService;
+import io.galeb.api.services.AuditService;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +25,8 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -31,19 +34,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@SuppressWarnings("unchecked")
 class EnhanceSecurityContextFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LogManager.getLogger(EnhanceSecurityContextFilter.class);
 
     private final AccountDaoService accountDaoService;
     private final LocalAdmin localAdmin;
+    private final AuditService auditService;
 
-    EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin) {
+    EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService) {
         this.accountDaoService = accountDaoService;
         this.localAdmin = localAdmin;
+        this.auditService = auditService;
     }
 
     @Override
@@ -51,7 +57,9 @@ class EnhanceSecurityContextFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             try {
-                Object remoteUserObj = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                final OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
+                final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) authentication.getDetails();
+                final Object remoteUserObj = authentication.getPrincipal();
                 if (remoteUserObj instanceof String) {
                     String remoteUser = (String) remoteUserObj;
                     Account account;
@@ -62,14 +70,19 @@ class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                         if (account == null) {
                             account = new Account();
                             account.setUsername(remoteUser);
-                            account.setEmail(remoteUser + "@fake." + UUID.randomUUID().toString());
+                            final Map<String, String> newDetails = ((Map<String, Object>) authentication.getUserAuthentication().getDetails())
+                                    .entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> String.format("%s", e.getValue())));
+                            account.setDetails(newDetails);
+                            String email = newDetails.get("email");
+                            account.setEmail(email != null ? email : remoteUser + "@fake." + UUID.randomUUID().toString());
                             account = accountDaoService.save(account);
-                            LOGGER.warn("AUDIT: Created " + account.getUsername() + " account (OAuth2 sync)");
+                            auditService.register("Created " + account.getUsername() + " account (OAuth2 sync)");
                         } else {
-                            LOGGER.warn("AUDIT: Using " + account.getUsername() + " account (already created)");
+                            auditService.register("Using " + account.getUsername() + " account (already created)");
                         }
                     }
-                    Authentication auth = new AuthenticationToken(account.getAuthorities(), account);
+                    Authentication auth = new AuthenticationToken(account.getAuthorities(), account, details);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 } else {
                     LOGGER.error("Remote User undefined");
@@ -85,9 +98,10 @@ class EnhanceSecurityContextFilter extends OncePerRequestFilter {
 
         private final Account account;
 
-        AuthenticationToken(Collection<? extends GrantedAuthority> authorities, Account account) {
+        AuthenticationToken(Collection<? extends GrantedAuthority> authorities, Account account, Object details) {
             super(authorities);
             this.account = account;
+            setDetails(details);
         }
 
         @Override

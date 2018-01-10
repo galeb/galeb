@@ -19,15 +19,17 @@ package io.galeb.api.services;
 import io.galeb.api.repository.*;
 import io.galeb.api.repository.custom.WithRoles;
 import io.galeb.api.security.LocalAdmin;
+import io.galeb.api.services.AuditService.AuditType;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,11 +44,11 @@ public class PermissionService {
         VIEW
     }
 
-    @Value("${auth.show_roles}")
-    private boolean showRoles;
-
     @PersistenceContext
     private EntityManager em;
+
+    @Autowired
+    private AuditService auditService;
 
     private static final Logger LOGGER = LogManager.getLogger(PermissionService.class);
 
@@ -77,9 +79,9 @@ public class PermissionService {
                 return false;
             }
             return  ((Account.class.equals(entityClass)) && !(criteria instanceof Account) && isMySelf(principal, criteria, entityClass.getSimpleName(), action)) ||
-                    isLocalAdmin(principal, entityClass.getSimpleName(), action) ||
-                    isAdmin(principal, entityClass.getSimpleName(), action) ||
-                    hasSelfRole(principal, role + "_ALL", entityClass.getSimpleName(), action) ||
+                    isLocalAdmin(principal, entityClass.getSimpleName(), action, criteria) ||
+                    isAdmin(principal, entityClass.getSimpleName(), action, criteria) ||
+                    hasSelfRole(principal, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
                     hasContextRole(principal, criteria, repository, role, entityClass.getSimpleName(), action);
         }
         return false;
@@ -96,16 +98,16 @@ public class PermissionService {
         }
         Set<String> roles = repository.roles(principal, criteria);
         boolean result = roles.stream().anyMatch(role::equals);
-        audit(account, role, roles, result, entityClass, action);
+        auditService.logAccess(account.getUsername(), role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
-    private boolean hasSelfRole(Object principal, String role, String entityClass, String action) {
+    private boolean hasSelfRole(Object principal, String role, String entityClass, String action, Object criteria) {
         Account account = (Account) principal;
         long accountId = account.getId();
         Set<String> roles = mergeRoles(accountId);
         boolean result = roles.contains(role);
-        audit(account, role, roles, result, entityClass, action);
+        auditService.logAccess(account.getUsername(), role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
@@ -123,15 +125,15 @@ public class PermissionService {
         return roles;
     }
 
-    private boolean isAdmin(Object principal, String entityClass, String action) {
+    private boolean isAdmin(Object principal, String entityClass, String action, Object criteria) {
         Account account = (Account) principal;
-        return hasSelfRole(account, Role.ADMIN.toString(), entityClass, action);
+        return hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria);
     }
 
-    private boolean isLocalAdmin(Object principal, String entityClass, String action) {
+    private boolean isLocalAdmin(Object principal, String entityClass, String action, Object criteria) {
         Account account = (Account) principal;
         boolean result = LocalAdmin.NAME.equals(account.getUsername());
-        LOGGER.warn("AUDIT [{}/{}]: {} is Local Admin? {}", entityClass, action, account.getUsername(), result);
+        auditService.logAccess(account.getUsername(), null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
         return result;
     }
 
@@ -145,7 +147,7 @@ public class PermissionService {
             Long id = (Long) criteria;
             result = account.getId() == id;
         }
-        LOGGER.warn("AUDIT [{}/{}]: {} is my self? {}", entityClass, action, account.getUsername(), result);
+        auditService.logAccess(account.getUsername(), null, Collections.emptySet(), result, entityClass, action, criteria, AuditType.MYSELF);
         return result;
     }
 
@@ -167,11 +169,6 @@ public class PermissionService {
                 o instanceof VirtualhostGroupRepository ? VirtualhostGroup.class :
                 o instanceof VirtualHostRepository ? VirtualHost.class : null;
         // @formatter:on
-    }
-
-    private void audit(Account account, String role, Set<String> roles, boolean result, String entityClass, String action) {
-        LOGGER.warn("AUDIT [{}/{}]: {}{} has role {}? {}",
-                entityClass, action, account.getUsername(), showRoles ? " (roles: " + roles.stream().collect(Collectors.joining(",")) + ")" : "", role, result);
     }
 
 }

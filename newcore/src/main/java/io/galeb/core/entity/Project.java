@@ -35,7 +35,9 @@ public class Project extends AbstractEntity {
     @OneToMany(mappedBy = "project")
     private Set<Pool> pools = new HashSet<>();
 
-    @ManyToMany(mappedBy = "projects")
+    @ManyToMany
+    @JoinTable(joinColumns=@JoinColumn(name = "project_id",  foreignKey = @ForeignKey(name="FK_team_project_id")),
+            inverseJoinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_project_team_id")))
     private Set<Team> teams = new HashSet<>();
 
     @OneToMany(mappedBy = "project")

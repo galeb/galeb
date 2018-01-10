@@ -27,6 +27,7 @@ public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositor
 
     @Override
     @PreAuthorize("@perm.allowView(principal, principal, #this)")
-    @Query("SELECT r FROM Rule r INNER JOIN r.project.teams t INNER JOIN t.accounts a WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username}")
+    @Query("SELECT r FROM Rule r LEFT JOIN r.project.teams t INNER JOIN t.accounts a " +
+           "WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username} OR r.global = true")
     Page<Rule> findAll(Pageable pageable);
 }

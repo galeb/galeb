@@ -30,7 +30,8 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
 
     @Override
     @PreAuthorize("@perm.allowView(principal, principal, #this)")
-    @Query("SELECT t FROM Target t INNER JOIN t.pools pools INNER JOIN pools.project p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username}")
+    @Query("SELECT tg FROM Target tg INNER JOIN tg.pools p LEFT JOIN p.project.teams t INNER JOIN t.accounts a LEFT JOIN p.rules r " +
+           "WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username} OR r.global = true")
     Page<Target> findAll(Pageable pageable);
 
     Page<Target> findByNameAndPoolsIn(@Param("name") String name, @Param("pools") Collection<Pool> pools, Pageable page);

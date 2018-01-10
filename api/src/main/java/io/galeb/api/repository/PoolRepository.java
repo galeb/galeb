@@ -27,6 +27,7 @@ public interface PoolRepository extends JpaRepository<Pool, Long>, PoolRepositor
 
     @Override
     @PreAuthorize("@perm.allowView(principal, principal, #this)")
-    @Query("SELECT pools FROM Pool pools INNER JOIN pools.project.teams t INNER JOIN t.accounts a WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username}")
+    @Query("SELECT pools FROM Pool pools LEFT JOIN pools.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN pools.rules r " +
+           "WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username} OR r.global = true")
     Page<Pool> findAll(Pageable pageable);
 }

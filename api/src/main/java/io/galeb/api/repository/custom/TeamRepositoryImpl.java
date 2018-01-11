@@ -58,7 +58,7 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
         }
         if (criteria instanceof Account) {
             roleGroups = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
-                    .setParameter("account_id", account.getId())
+                    .setParameter("id", account.getId())
                     .getResultList();
             return roleGroups.stream().flatMap(rg -> rg.getRoles().stream()).map(Enum::toString).collect(Collectors.toSet());
         }

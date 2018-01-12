@@ -126,6 +126,7 @@ public class HealthCheckerService {
 
                 private void definePropertiesAndUpdate(HealthStatus.Status status, String reason) {
                     HealthStatus healthStatus = new HealthStatus();
+                    healthStatus.setTarget(target);
                     healthStatus.setSource(getSource());
                     healthStatus.setStatus(status);
                     healthStatus.setStatusDetailed(reason);

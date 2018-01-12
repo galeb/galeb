@@ -15,7 +15,7 @@ public class CallbackConsumer {
 
     private static final Log LOGGER = LogFactory.getLog(CallbackConsumer.class);
 
-    private static final String QUEUE_HEALTH_CALLBACK = "healthstatus-callback";
+    private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
 
     private final HealthStatusRepository healthStatusRepository;
     private final TargetRepository targetRepository;

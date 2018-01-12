@@ -46,11 +46,15 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
     private final AccountDaoService accountDaoService;
     private final LocalAdmin localAdmin;
     private final AuditService auditService;
+    private final String login_key;
+    private final String reject_key;
 
-    public EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService) {
+    public EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService, String login_key, String reject_key) {
         this.accountDaoService = accountDaoService;
         this.localAdmin = localAdmin;
         this.auditService = auditService;
+        this.login_key = login_key;
+        this.reject_key = reject_key;
     }
 
     @Override
@@ -61,32 +65,44 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                 final OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
                 final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) authentication.getDetails();
                 final Object remoteUserObj = authentication.getPrincipal();
+                Account account = null;
                 if (remoteUserObj instanceof String) {
                     String remoteUser = (String) remoteUserObj;
-                    Account account;
                     if (LocalAdmin.NAME.equals(remoteUser)) {
                         account = localAdmin;
-                    } else {
-                        account = accountDaoService.find(remoteUser);
-                        if (account == null) {
-                            account = new Account();
-                            account.setUsername(remoteUser);
-                            final Map<String, String> newDetails = ((Map<String, Object>) authentication.getUserAuthentication().getDetails())
-                                    .entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> String.format("%s", e.getValue())));
-                            account.setDetails(newDetails);
-                            String email = newDetails.get("email");
-                            account.setEmail(email != null ? email : remoteUser + "@fake." + UUID.randomUUID().toString());
-                            account = accountDaoService.save(account);
-                            auditService.register("Created " + account.getUsername() + " account (OAuth2 sync)");
+                    } else if (details != null) {
+                        final Map<String, String> newDetails = ((Map<String, Object>) authentication.getUserAuthentication().getDetails())
+                                .entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+                                .collect(Collectors.toMap(Map.Entry::getKey, e -> String.format("%s", e.getValue())));
+                        if (newDetails.containsKey(reject_key)) {
+                            String errMsg = "reject_key " + reject_key + " found.";
+                            auditService.register(errMsg);
+                            SecurityContextHolder.clearContext();
+                            throw new SecurityException(errMsg);
                         } else {
-                            auditService.register("Using " + account.getUsername() + " account (already created)");
+                            String login = newDetails.get(login_key);
+                            if (login != null && !login.isEmpty()) account = accountDaoService.find(remoteUser);
+                            if (account == null) {
+                                account = new Account();
+                                account.setUsername(remoteUser);
+                                account.setDetails(newDetails);
+                                String email = newDetails.get("email");
+                                account.setEmail(email != null ? email : remoteUser + "@fake." + UUID.randomUUID().toString());
+                                account = accountDaoService.save(account);
+                                auditService.register("Created " + account.getUsername() + " account (OAuth2 sync)");
+                            } else {
+                                auditService.register("Using " + account.getUsername() + " account (already created)");
+                            }
                         }
                     }
-                    Authentication auth = new AuthenticationToken(account.getAuthorities(), account, details);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    if (account != null) {
+                        Authentication auth = new AuthenticationToken(account.getAuthorities(), account, details);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 } else {
-                    LOGGER.error("Remote User undefined");
+                    String errMsg = "Remote User undefined";
+                    auditService.register(errMsg);
+                    throw new SecurityException(errMsg);
                 }
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);

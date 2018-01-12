@@ -98,7 +98,7 @@ public class PermissionService {
         }
         Set<String> roles = repository.roles(principal, criteria);
         boolean result = roles.stream().anyMatch(role::equals);
-        auditService.logAccess(account.getUsername(), role, roles, result, entityClass, action, criteria, AuditType.ROLE);
+        auditService.logAccess(role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
@@ -107,7 +107,7 @@ public class PermissionService {
         long accountId = account.getId();
         Set<String> roles = mergeRoles(accountId);
         boolean result = roles.contains(role);
-        auditService.logAccess(account.getUsername(), role, roles, result, entityClass, action, criteria, AuditType.ROLE);
+        auditService.logAccess(role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
@@ -133,7 +133,7 @@ public class PermissionService {
     private boolean isLocalAdmin(Object principal, String entityClass, String action, Object criteria) {
         Account account = (Account) principal;
         boolean result = LocalAdmin.NAME.equals(account.getUsername());
-        auditService.logAccess(account.getUsername(), null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
+        auditService.logAccess(null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
         return result;
     }
 
@@ -147,7 +147,7 @@ public class PermissionService {
             Long id = (Long) criteria;
             result = account.getId() == id;
         }
-        auditService.logAccess(account.getUsername(), null, Collections.emptySet(), result, entityClass, action, criteria, AuditType.MYSELF);
+        auditService.logAccess(null, Collections.emptySet(), result, entityClass, action, criteria, AuditType.MYSELF);
         return result;
     }
 

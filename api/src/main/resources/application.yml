@@ -1,6 +1,8 @@
 auth:
     localtoken: ${LOCAL_TOKEN:UNDEF}
     show_roles: ${SHOW_ROLES:false}
+    login_key:  ${LOGIN_KEY:login}
+    reject_key: ${REJECT_KEY:}
 
 build:
     project: '@project.artifactId@'

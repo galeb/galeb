@@ -17,6 +17,7 @@
 package io.galeb.api.services;
 
 import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,13 +51,14 @@ public class AuditService {
         }
     }
 
-    @Value("${auth.show_roles}")
+    @Value("${auth.show_roles:false}")
     private boolean showRoles;
 
-    public void logAccess(String username, String role, Set<String> roles, boolean result, String entityClass, String action, Object criteria, AuditType auditType) {
+    public void logAccess(String role, Set<String> roles, boolean result, String entityClass, String action, Object criteria, AuditType auditType) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object detailsObj = authentication.getDetails();
         String remoteAddr = null;
+        Account account = (Account) authentication.getPrincipal();
         if (detailsObj instanceof WebAuthenticationDetails) {
             remoteAddr = ((WebAuthenticationDetails) detailsObj).getRemoteAddress();
         }
@@ -67,7 +69,7 @@ public class AuditService {
                 entityClass,
                 action,
                 criteria instanceof AbstractEntity ? ((AbstractEntity)criteria).getId() : criteria,
-                username + (remoteAddr != null ? "/" + remoteAddr : ""),
+                account.getUsername() + (remoteAddr != null ? "/" + remoteAddr : ""),
                 showRoles ? " (roles: " + roles.stream().collect(Collectors.joining(",")) + ")" : "",
                 auditType == AuditType.ROLE ? auditType.getMsg() + role + "?" : auditType.getMsg(),
                 result));

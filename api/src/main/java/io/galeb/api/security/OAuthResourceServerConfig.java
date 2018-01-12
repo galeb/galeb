@@ -22,6 +22,7 @@ import io.galeb.api.services.AuditService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -40,12 +41,21 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
     private final LocalAdmin localAdmin;
     private final AccountDaoService accountDaoService;
     private final AuditService auditService;
+    private final String login_key;
+    private final String reject_key;
 
     @Autowired
-    public OAuthResourceServerConfig(LocalAdmin localAdmin, AccountDaoService accountDaoService, AuditService auditService) {
+    public OAuthResourceServerConfig(
+            LocalAdmin localAdmin,
+            AccountDaoService accountDaoService,
+            AuditService auditService,
+            @Value("${auth.login_key:login}") String login_key,
+            @Value("${auth.reject_key}") String reject_key) {
         this.localAdmin = localAdmin;
         this.accountDaoService = accountDaoService;
         this.auditService = auditService;
+        this.login_key = login_key;
+        this.reject_key = reject_key;
     }
 
     @Override
@@ -62,7 +72,7 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .csrf().disable();
         // @formatter:off
 
-        http.addFilterAfter(new EnhanceSecurityContextFilter(accountDaoService, localAdmin, auditService), SecurityContextHolderAwareRequestFilter.class);
+        http.addFilterAfter(new EnhanceSecurityContextFilter(accountDaoService, localAdmin, auditService, login_key, reject_key), SecurityContextHolderAwareRequestFilter.class);
     }
 
 }

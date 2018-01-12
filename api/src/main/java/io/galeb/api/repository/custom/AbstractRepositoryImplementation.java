@@ -124,7 +124,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return roles;
     }
 
-    private Set<String> mergeRoles(long accountId, long projectId, EntityManager em) {
+    protected Set<String> mergeRoles(long accountId, long projectId, EntityManager em) {
         List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
                 .setParameter("account_id", accountId)
                 .setParameter("project_id", projectId)

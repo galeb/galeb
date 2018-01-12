@@ -17,6 +17,7 @@
 package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.RuleRepositoryCustom;
+import io.galeb.core.entity.Role;
 import io.galeb.core.entity.Rule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,9 +43,4 @@ public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositor
     @PreAuthorize("@perm.allowView(principal, #id, #this)")
     Rule findOne(@Param("id") Long id);
 
-    @Override
-    @PreAuthorize("@perm.allowView(principal, principal, #this)")
-    @Query("SELECT r FROM Rule r LEFT JOIN r.project.teams t INNER JOIN t.accounts a " +
-           "WHERE a.username LIKE ?#{principal.username == @localAdmin.username ? '%' : principal.username} OR r.global = true")
-    Page<Rule> findAll(Pageable pageable);
 }

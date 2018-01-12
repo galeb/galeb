@@ -16,6 +16,7 @@
 
 package io.galeb.api.security;
 
+import io.galeb.api.security.filter.EnhanceSecurityContextFilter;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.AuditService;
 import org.apache.logging.log4j.LogManager;

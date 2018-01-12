@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.galeb.api.security;
+package io.galeb.api.security.filter;
 
+import io.galeb.api.security.LocalAdmin;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.AuditService;
 import io.galeb.core.entity.Account;
@@ -38,7 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
-class EnhanceSecurityContextFilter extends OncePerRequestFilter {
+public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LogManager.getLogger(EnhanceSecurityContextFilter.class);
 
@@ -46,7 +47,7 @@ class EnhanceSecurityContextFilter extends OncePerRequestFilter {
     private final LocalAdmin localAdmin;
     private final AuditService auditService;
 
-    EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService) {
+    public EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService) {
         this.accountDaoService = accountDaoService;
         this.localAdmin = localAdmin;
         this.auditService = auditService;

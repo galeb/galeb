@@ -57,20 +57,15 @@ public class ScheduledProducer {
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env);
             Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(0, PAGE_SIZE));
             StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
-                Set<Pool> pools = poolRepository.findAllByTargetId(t.getId());
-                Target newTarget = new Target();
-                newTarget.setName(t.getName());
-                newTarget.setPools(pools);
-                newTarget.setHealthStatus(t.getHealthStatus());
-                newTarget.setId(t.getId());
-                newTarget.setLastModifiedAt(t.getLastModifiedAt());
-                return newTarget;
+                return getTargetInformation(t);
              }).forEach(target -> sendToQueue(target, env, counter));
             long size = targetsPage.getTotalElements();
             for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
                     targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(page, PAGE_SIZE));
-                    StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, env, counter));
+                    StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
+                        return getTargetInformation(t);
+                    }).forEach(target -> sendToQueue(target, env, counter));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     break;
@@ -80,6 +75,17 @@ public class ScheduledProducer {
                     "[" + (System.currentTimeMillis() - start) + " ms] (before to start this task: " + size + " targets from db)");
 
         });
+    }
+
+    private Target getTargetInformation(Target t) {
+        Set<Pool> pools = poolRepository.findAllByTargetId(t.getId());
+        Target newTarget = new Target();
+        newTarget.setName(t.getName());
+        newTarget.setPools(pools);
+        newTarget.setHealthStatus(t.getHealthStatus());
+        newTarget.setId(t.getId());
+        newTarget.setLastModifiedAt(t.getLastModifiedAt());
+        return newTarget;
     }
 
     private void sendToQueue(final Target target, String env, final AtomicInteger counter) {

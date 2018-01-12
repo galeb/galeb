@@ -54,6 +54,7 @@ public class HealthCheckerService {
     private final AsyncHttpClient asyncHttpClient;
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     @Autowired
     public HealthCheckerService(final CallBackQueue callBackQueue) {
@@ -81,7 +82,7 @@ public class HealthCheckerService {
             pool.getHcHeaders().forEach(headers::add);
 
             final String lastReason = target.getHealthStatus().stream()
-                    .filter(hs -> getSource().equals(hs.getSource()))
+                    .filter(hs -> ZONE_ID.equals(hs.getSource()))
                     .map(HealthStatus::getStatusDetailed).findAny().orElse("");
             long start = System.currentTimeMillis();
 
@@ -127,7 +128,7 @@ public class HealthCheckerService {
                 private void definePropertiesAndUpdate(HealthStatus.Status status, String reason) {
                     HealthStatus healthStatus = new HealthStatus();
                     healthStatus.setTarget(target);
-                    healthStatus.setSource(getSource());
+                    healthStatus.setSource(ZONE_ID);
                     healthStatus.setStatus(status);
                     healthStatus.setStatusDetailed(reason);
                     String logMessage = buildLogMessage(reason);
@@ -154,10 +155,6 @@ public class HealthCheckerService {
 
             });
         }
-    }
-
-    private String getSource() {
-        return "UNDEF";
     }
 
     private String buildHcHostFromTarget(Target target) {

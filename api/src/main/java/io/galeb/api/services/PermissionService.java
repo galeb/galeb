@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 @Service("perm")
 public class PermissionService {
 
-    private enum Action {
+    public enum Action {
         SAVE,
         DELETE,
         VIEW
@@ -52,43 +53,46 @@ public class PermissionService {
 
     private static final Logger LOGGER = LogManager.getLogger(PermissionService.class);
 
-    public boolean allowSave(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
-        return allow(principal, criteria, expressionOperations, Action.SAVE.toString());
+    public boolean allowSave(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return allow(account, criteria, expressionOperations, Action.SAVE.toString());
     }
 
-    public boolean allowDelete(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
-        return allow(principal, criteria, expressionOperations, Action.DELETE.toString());
+    public boolean allowDelete(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return allow(account, criteria, expressionOperations, Action.DELETE.toString());
     }
 
-    public boolean allowView(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
-        return allow(principal, criteria, expressionOperations, Action.VIEW.toString());
+    public boolean allowView(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
+        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (criteria == null) {
+            Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
+            if (entityClass == null) return false;
+            String criteriaName = entityClass.getSimpleName();
+            String realCriteria = "ALL";
+            if (isAdmin(account, entityClass.getSimpleName(), Action.VIEW.toString(), realCriteria)) {
+                return true;
+            }
+            Set<String> roles = mergeRoles(account);
+            String roleView = criteriaName.toUpperCase() + "_VIEW";
+            boolean isView = roles.contains(roleView);
+            auditService.logAccess(roleView, roles, isView, criteriaName, Action.VIEW.toString(), realCriteria, AuditService.AuditType.ROLE);
+
+            String roleViewAll = roleView + "_ALL";
+            boolean isViewAll = roles.contains(roleViewAll);
+            auditService.logAccess(roleViewAll, roles, isViewAll, criteriaName, Action.VIEW.toString(), realCriteria, AuditService.AuditType.ROLE);
+            return true; // audit only
+        }
+        return allow(account, criteria, expressionOperations, Action.VIEW.toString());
     }
 
     @SuppressWarnings("unchecked")
-    public boolean allow(Object principal, Object criteria, MethodSecurityExpressionOperations expressionOperations, String action) {
+    private boolean allow(Account account, Object criteria, MethodSecurityExpressionOperations expressionOperations, String action) {
         Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
-        if (principal instanceof Account && entityClass != null) {
-            String roleEntityPrefix = entityClass.getSimpleName().toUpperCase();
-            String role = roleEntityPrefix + "_" + action;
-            final Object repositoryObj = expressionOperations.getThis();
-            WithRoles repository;
-            if (repositoryObj instanceof WithRoles) {
-                repository = (WithRoles) repositoryObj;
-            } else {
-                LOGGER.error("{} is not an instance of {}", repositoryObj, WithRoles.class.getSimpleName());
-                return false;
-            }
-            return  ((Account.class.equals(entityClass)) && !(criteria instanceof Account) && isMySelf(principal, criteria, entityClass.getSimpleName(), action)) ||
-                    isLocalAdmin(principal, entityClass.getSimpleName(), action, criteria) ||
-                    isAdmin(principal, entityClass.getSimpleName(), action, criteria) ||
-                    hasSelfRole(principal, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
-                    hasContextRole(principal, criteria, repository, role, entityClass.getSimpleName(), action);
-        }
-        return false;
-    }
-
-    private boolean hasContextRole(Object principal, Object criteria, Object repositoryObj, String role, String entityClass, String action) {
-        Account account = (Account) principal;
+        if (entityClass == null) return false;
+        String roleEntityPrefix = entityClass.getSimpleName().toUpperCase();
+        String role = roleEntityPrefix + "_" + action;
+        final Object repositoryObj = expressionOperations.getThis();
         WithRoles repository;
         if (repositoryObj instanceof WithRoles) {
             repository = (WithRoles) repositoryObj;
@@ -96,22 +100,35 @@ public class PermissionService {
             LOGGER.error("{} is not an instance of {}", repositoryObj, WithRoles.class.getSimpleName());
             return false;
         }
-        Set<String> roles = repository.roles(principal, criteria);
+        return  ((Account.class.equals(entityClass)) && !(criteria instanceof Account) && isMySelf(account, criteria, entityClass.getSimpleName(), action)) ||
+                isAdmin(account, entityClass.getSimpleName(), action, criteria) ||
+                hasSelfRole(account, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
+                hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action);
+    }
+
+    private boolean hasContextRole(Object criteria, Object repositoryObj, String role, String entityClass, String action) {
+        WithRoles repository;
+        if (repositoryObj instanceof WithRoles) {
+            repository = (WithRoles) repositoryObj;
+        } else {
+            LOGGER.error("{} is not an instance of {}", repositoryObj, WithRoles.class.getSimpleName());
+            return false;
+        }
+        Set<String> roles = repository.roles(criteria);
         boolean result = roles.stream().anyMatch(role::equals);
         auditService.logAccess(role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
-    private boolean hasSelfRole(Object principal, String role, String entityClass, String action, Object criteria) {
-        Account account = (Account) principal;
-        long accountId = account.getId();
-        Set<String> roles = mergeRoles(accountId);
+    private boolean hasSelfRole(Account account, String role, String entityClass, String action, Object criteria) {
+        Set<String> roles = mergeRoles(account);
         boolean result = roles.contains(role);
         auditService.logAccess(role, roles, result, entityClass, action, criteria, AuditType.ROLE);
         return result;
     }
 
-    private Set<String> mergeRoles(long accountId) {
+    private Set<String> mergeRoles(Account account) {
+        long accountId = account.getId();
         List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();
@@ -125,20 +142,16 @@ public class PermissionService {
         return roles;
     }
 
-    private boolean isAdmin(Object principal, String entityClass, String action, Object criteria) {
-        Account account = (Account) principal;
-        return hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria);
-    }
-
-    private boolean isLocalAdmin(Object principal, String entityClass, String action, Object criteria) {
-        Account account = (Account) principal;
+    private boolean isAdmin(Account account, String entityClass, String action, Object criteria) {
+        if (hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria)) {
+            return true;
+        }
         boolean result = LocalAdmin.NAME.equals(account.getUsername());
         auditService.logAccess(null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
         return result;
     }
 
-    private boolean isMySelf(Object principal, Object criteria, String entityClass, String action) {
-        Account account = (Account) principal;
+    private boolean isMySelf(Account account, Object criteria, String entityClass, String action) {
         boolean result = false;
         if (criteria instanceof Account) {
             result = criteria.equals(account);

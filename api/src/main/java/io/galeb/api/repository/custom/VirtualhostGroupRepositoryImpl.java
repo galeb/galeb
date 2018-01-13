@@ -45,13 +45,14 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
+    public Set<String> roles(Object criteria) {
         return Collections.emptySet();
     }
 
     @Override
     protected long getProjectId(Object criteria) {
         VirtualhostGroup virtualhostGroup = null;
+        long projectId = -1L;
         try {
             if (criteria instanceof VirtualhostGroup) {
                 virtualhostGroup = em.find(VirtualhostGroup.class, ((VirtualhostGroup) criteria).getId());
@@ -59,16 +60,23 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
             if (criteria instanceof Long) {
                 virtualhostGroup = em.find(VirtualhostGroup.class, criteria);
             }
+            if (criteria instanceof Project) {
+                projectId = ((Project)criteria).getId();
+            }
         } catch (Exception ignored) {}
-        if (virtualhostGroup == null) {
-            return -1L;
-        }
+        if (projectId > -1L) return projectId;
+        if (virtualhostGroup == null) return -1L;
         List<Project> projects = em.createNamedQuery("projectFromVirtualhostGroup", Project.class)
                 .setParameter("id", virtualhostGroup.getId())
                 .getResultList();
-        if (projects == null || projects.isEmpty()) {
-            return -1;
-        }
+        if (projects == null || projects.isEmpty()) return -1L;
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "INNER JOIN entity.virtualhosts v INNER JOIN v.project.teams t INNER JOIN t.accounts a " +
+                "WHERE a.username = '" + username + "'";
+    }
+
 }

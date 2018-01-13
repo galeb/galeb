@@ -19,6 +19,8 @@ package io.galeb.api.repository;
 import io.galeb.api.repository.custom.VirtualhostGroupRepositoryCustom;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -33,16 +35,20 @@ public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGro
 
     @Override
     @RestResource(exported = false)
-    @PreAuthorize("@perm.allowSave(principal, #virtualhostgroup, #this)")
+    @PreAuthorize("@perm.allowSave(#virtualhostgroup, #this)")
     VirtualhostGroup save(@Param("virtualhostgroup") VirtualhostGroup virtualhostgroup);
 
     @Override
-    @PreAuthorize("@perm.allowDelete(principal, #id, #this)")
+    @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("@perm.allowView(principal, #id, #this)")
+    @PreAuthorize("@perm.allowView(#id, #this)")
     VirtualhostGroup findOne(@Param("id") Long id);
 
     VirtualhostGroup findByVirtualhostsIn(@Param("virtualhosts") Collection<VirtualHost> virtualhosts);
+
+    @Override
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualhostGroup> findAll(Pageable pageable);
 }

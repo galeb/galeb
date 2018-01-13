@@ -20,6 +20,7 @@ import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -44,8 +45,8 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        Account account = ((Account) principal);
+    public Set<String> roles(Object criteria) {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Set<String> roles = account.getRolegroups().stream().flatMap(rg -> rg.getRoles().stream())
                 .map(Object::toString).distinct().collect(Collectors.toSet());
         List<RoleGroup> roleGroups = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
@@ -54,6 +55,11 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
         roles.addAll(roleGroups.stream().flatMap(rg -> rg.getRoles().stream())
                 .map(Object::toString).distinct().collect(Collectors.toSet()));
         return roles;
+    }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "WHERE entity.username = '" + username + "'";
     }
 
 }

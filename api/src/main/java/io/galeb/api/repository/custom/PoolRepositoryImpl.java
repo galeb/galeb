@@ -63,4 +63,10 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
         }
         return pool != null ? pool.getProject().getId() : -1L;
     }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "LEFT JOIN entity.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN entity.rules r " +
+                "WHERE a.username = '" + username + "' OR r.global = true";
+    }
 }

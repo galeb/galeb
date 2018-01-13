@@ -48,7 +48,12 @@ public class EnvironmentRepositoryImpl extends AbstractRepositoryImplementation<
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
+    public Set<String> roles(Object criteria) {
         return Collections.emptySet();
+    }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "";
     }
 }

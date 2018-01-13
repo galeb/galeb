@@ -79,4 +79,10 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
         }
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "INNER JOIN entity.pools p LEFT JOIN p.project.teams t INNER JOIN t.accounts a LEFT JOIN p.rules r " +
+                "WHERE a.username = '" + username + "' OR r.global = true";
+    }
 }

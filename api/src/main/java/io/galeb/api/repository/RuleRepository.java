@@ -17,12 +17,10 @@
 package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.RuleRepositoryCustom;
-import io.galeb.core.entity.Role;
 import io.galeb.core.entity.Rule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,15 +30,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositoryCustom {
 
     @Override
-    @PreAuthorize("@perm.allowSave(principal, #rule, #this)")
+    @PreAuthorize("@perm.allowSave(#rule, #this)")
     Rule save(@Param("rule") Rule rule);
 
     @Override
-    @PreAuthorize("@perm.allowDelete(principal, #id, #this)")
+    @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @PreAuthorize("@perm.allowView(principal, #id, #this)")
+    @PreAuthorize("@perm.allowView(#id, #this)")
     Rule findOne(@Param("id") Long id);
 
+    @Override
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Rule> findAll(Pageable pageable);
 }

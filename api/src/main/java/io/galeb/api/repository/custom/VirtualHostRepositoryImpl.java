@@ -21,6 +21,7 @@ import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Project;
 import io.galeb.core.entity.VirtualHost;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,7 +44,6 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
 
     @PostConstruct
     private void init() {
-        setEntityManager(em);
         setSimpleJpaRepository(VirtualHost.class, em);
         setStatusService(statusService);
     }
@@ -56,6 +56,7 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
     @Override
     protected long getProjectId(Object criteria) {
         VirtualHost virtualHost = null;
+        long projectId = -1L;
         try {
             if (criteria instanceof VirtualHost) {
                 virtualHost = em.find(VirtualHost.class, ((VirtualHost) criteria).getId());
@@ -67,11 +68,16 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
                 String query = "SELECT v FROM VirtualHost v WHERE v.name = :name";
                 virtualHost = em.createQuery(query, VirtualHost.class).setParameter("name", criteria).getSingleResult();
             }
+            if (criteria instanceof Project) {
+                projectId = ((Project) criteria).getId();
+            }
         } catch (Exception ignored) {}
-        if (virtualHost == null) {
-            return -1L;
-        }
-        return virtualHost.getProject().getId();
+        return projectId > -1L ? projectId : (virtualHost != null ? virtualHost.getProject().getId() : -1L);
+    }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "INNER JOIN entity.project.teams t INNER JOIN t.accounts a WHERE a.username = '" + username + "'";
     }
 
 }

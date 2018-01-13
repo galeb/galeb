@@ -16,18 +16,28 @@
 
 package io.galeb.api.repository.custom;
 
+import com.google.common.reflect.TypeToken;
+import io.galeb.api.security.LocalAdmin;
 import io.galeb.api.services.StatusService;
-import io.galeb.core.entity.*;
+import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Account;
+import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Project;
+import io.galeb.core.entity.RoleGroup;
+import io.galeb.core.entity.WithStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +52,8 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
     private EntityManager em;
+    private TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
+    private Class<? super T> entityClass = typeToken.getRawType();
 
     public void setStatusService(StatusService statusService) {
         this.statusService = statusService;
@@ -50,35 +62,52 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public void setSimpleJpaRepository(Class<T> klazz, EntityManager entityManager) {
         if (this.simpleJpaRepository != null) return;
         this.simpleJpaRepository = new SimpleJpaRepository<>(klazz, entityManager);
+        this.em = entityManager;
     }
 
     public T findOne(Long id) {
         T entity = simpleJpaRepository.findOne(id);
-        if (entity instanceof WithStatus) {
-            entity.setAllEnvironments(getAllEnvironments(entity));
-            ((WithStatus) entity).setStatus(statusService.status(entity));
-        }
+        setStatus(entity);
         return entity;
     }
 
+    @Deprecated
     public Iterable<T> findAll(Sort sort) {
-        Iterable<T> iterable = simpleJpaRepository.findAll(sort);
-        for (T entity: iterable) {
-            if (entity instanceof WithStatus) {
-                entity.setAllEnvironments(getAllEnvironments(entity));
-                ((WithStatus) entity).setStatus(statusService.status(entity));
-            }
-        }
-        return iterable;
+        LOGGER.warn("Sorting not yet supported");
+        return Collections.emptySet();
     }
 
+    @SuppressWarnings("unchecked")
     public Page<T> findAll(Pageable pageable) {
-        Page<T> page = simpleJpaRepository.findAll(pageable);
+        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isViewAll;
+        boolean isView = false;
+        if (LocalAdmin.NAME.equals(account.getUsername())) {
+            isViewAll = true;
+        } else {
+            Set<String> roles = mergeRoles(-1L);
+            String roleView = entityClass.getSimpleName().toUpperCase() + "_VIEW";
+            isView = roles.contains(roleView);
+
+            String roleViewAll = roleView + "_ALL";
+            isViewAll = roles.contains(roleViewAll);
+        }
+
+        if (!isView && !isViewAll) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        String username = account.getUsername();
+        TypedQuery<?> query = em.createQuery(isViewAll ? selectPrefix() : selectPrefix() + " " + querySuffix(username), entityClass);
+        TypedQuery<Long> queryCount = em.createQuery(isViewAll ? selectCountPrefix() : selectCountPrefix() + " " + querySuffix(username), Long.class);
+
+        query.setFirstResult(pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List<?> queryResult = query.getResultList();
+        Page<T> page = new PageImpl<>((List<T>) queryResult, pageable, queryCount.getSingleResult());
         for (T entity: page) {
-            if (entity instanceof WithStatus) {
-                entity.setAllEnvironments(getAllEnvironments(entity));
-                ((WithStatus) entity).setStatus(statusService.status(entity));
-            }
+            setStatus(entity);
         }
         return page;
     }
@@ -94,10 +123,6 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         }
     }
 
-    protected void setEntityManager(EntityManager em) {
-        this.em = em;
-    }
-
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
         return Collections.emptySet();
     }
@@ -106,25 +131,31 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return -1;
     }
 
-    private Set<String> projectRoles(long accountId, long projectId, final EntityManager em) {
-        Set<String> roles;
+    private Set<String> projectRoles(long accountId, long projectId) {
         try {
-            List<Project> projects = em.createNamedQuery("projectLinkedToAccount", Project.class)
-                    .setParameter("account_id", accountId)
-                    .setParameter("project_id", projectId).getResultList();
-            if (projects == null || projects.isEmpty()) {
-                LOGGER.warn("Project id " + projectId + " not linked with account id " + accountId);
-                return Collections.emptySet();
-            }
-            roles = mergeRoles(accountId, projectId, em);
+            if (!isAccountLinkedWithProject(accountId, projectId)) return Collections.emptySet();
+            return mergeRoles(projectId);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            return Collections.emptySet();
         }
-        return roles;
+        return Collections.emptySet();
     }
 
-    protected Set<String> mergeRoles(long accountId, long projectId, EntityManager em) {
+    private boolean isAccountLinkedWithProject(long accountId, long projectId) {
+        List<Project> projects = em.createNamedQuery("projectLinkedToAccount", Project.class)
+                .setParameter("account_id", accountId)
+                .setParameter("project_id", projectId).getResultList();
+        if (projects == null || projects.isEmpty()) {
+            LOGGER.warn("Project id " + projectId + " not linked with account id " + accountId);
+            return false;
+        }
+        return true;
+    }
+
+    protected Set<String> mergeRoles(long projectId) {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        long accountId = account.getId();
+
         List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
                 .setParameter("account_id", accountId)
                 .setParameter("project_id", projectId)
@@ -143,14 +174,31 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return roles;
     }
 
-    public Set<String> roles(Object principal, Object criteria) {
-        Account account = (Account) principal;
+    public Set<String> roles(Object criteria) {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long projectId = getProjectId(criteria);
         if (projectId > -1) {
             long accountId = account.getId();
-            return projectRoles(accountId, projectId, em);
+            return projectRoles(accountId, projectId);
         }
         return Collections.emptySet();
+    }
+
+    private void setStatus(T entity) {
+        if (entity instanceof WithStatus) {
+            entity.setAllEnvironments(getAllEnvironments(entity));
+            ((WithStatus) entity).setStatus(statusService.status(entity));
+        }
+    }
+
+    protected abstract String querySuffix(String username);
+
+    protected String selectPrefix() {
+        return "SELECT entity From " + entityClass.getSimpleName() + " entity";
+    }
+
+    private String selectCountPrefix() {
+        return "SELECT COUNT(entity) From " + entityClass.getSimpleName() + " entity";
     }
 
 }

@@ -21,6 +21,7 @@ import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -46,8 +47,8 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
-        Account account = (Account) principal;
+    public Set<String> roles(Object criteria) {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<RoleGroup> roleGroups;
         if (criteria instanceof Team) {
             roleGroups = em.createNamedQuery("roleGroupsTeam", RoleGroup.class)
@@ -64,14 +65,19 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
         }
         if (criteria instanceof Long) {
             Team team = em.find(Team.class, criteria);
-            return roles(principal, team);
+            return roles(team);
         }
         if (criteria instanceof String) {
             String query = "SELECT t FROM Team t WHERE t.name = :name";
             Team team = em.createQuery(query, Team.class).setParameter("name", criteria).getSingleResult();
-            return roles(principal, team);
+            return roles(team);
         }
         return Collections.emptySet();
+    }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "INNER JOIN entity.accounts a WHERE a.username = '" + username + "'";
     }
 
 }

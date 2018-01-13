@@ -45,7 +45,7 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
     }
 
     @Override
-    public Set<String> roles(Object principal, Object criteria) {
+    public Set<String> roles(Object criteria) {
         return Collections.emptySet();
     }
 
@@ -70,5 +70,11 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
             return -1;
         }
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
+    }
+
+    @Override
+    protected String querySuffix(String username) {
+        return "INNER JOIN entity.target.pools pools INNER JOIN pools.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
+                "WHERE a.username = '" + username + "'";
     }
 }

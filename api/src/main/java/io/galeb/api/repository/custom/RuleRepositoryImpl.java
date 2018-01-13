@@ -18,27 +18,25 @@ package io.galeb.api.repository.custom;
 
 import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.StatusService;
-import io.galeb.core.entity.*;
+import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Project;
+import io.galeb.core.entity.Rule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> implements RuleRepositoryCustom, WithRoles {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleRepositoryImpl.class);
+
+    private static final Class<? extends AbstractEntity> ENTITY_CLASS = Rule.class;
 
     @PersistenceContext
     private EntityManager em;
@@ -63,6 +61,7 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
     @Override
     protected long getProjectId(Object criteria) {
         Rule rule = null;
+        long projectId = -1L;
         try {
             if (criteria instanceof Rule) {
                 rule = em.find(Rule.class, ((Rule) criteria).getId());
@@ -74,29 +73,17 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
                 String query = "SELECT r FROM Rule r WHERE r.name = :name";
                 rule = em.createQuery(query, Rule.class).setParameter("name", criteria).getSingleResult();
             }
+            if (criteria instanceof Project) {
+                projectId = ((Project) criteria).getId();
+            }
         } catch (Exception ignored) {}
-        return rule != null ? rule.getProject().getId() : -1L;
+        return projectId > -1L ? projectId : (rule != null ? rule.getProject().getId() : -1L);
     }
 
     @Override
-    public Page<Rule> findAll(Pageable pageable) {
-        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Set<String> roles = mergeRoles(account.getId(), -1L, em);
-        boolean isViewAll = roles.contains(Role.RULE_VIEW_ALL.toString());
-        boolean isView = roles.contains(Role.RULE_VIEW.toString());
-
-        if (!isView && !isView) {
-            return new PageImpl<>(Collections.emptyList(), pageable, 0);
-        }
-
-        String query = "SELECT r FROM Rule r ";
-        if (isView) query += " LEFT JOIN r.project.teams t INNER JOIN t.accounts a WHERE a.username = :username OR r.global = true ";
-
-        Query queryCreated = em.createQuery(query);
-        if (isView) queryCreated = queryCreated.setParameter("username", account.getUsername());
-
-        List<Rule> list = queryCreated.getResultList();
-        Page<Rule> page = new PageImpl<>(list, pageable, list.size());
-        return page;
+    protected String querySuffix(String username) {
+        return "LEFT JOIN entity.project.teams t INNER JOIN t.accounts a " +
+                "WHERE a.username = '" + username + "' OR entity.global = true";
     }
+
 }

@@ -34,11 +34,11 @@ import java.util.Set;
 public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 
     @Override
-    @PreAuthorize("@perm.allowSave(principal, #environment, #this)")
+    @PreAuthorize("@perm.allowSave(#environment, #this)")
     Environment save(@Param("environment") Environment environment);
 
     @Override
-    @PreAuthorize("@perm.allowDelete(principal, #id, #this)")
+    @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @RestResource(exported = false)
@@ -64,4 +64,8 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     Set<Environment> findAllByRuleId(@Param("ruleId") long ruleId);
 
     Page<Environment> findByName(@Param("name") String name, Pageable pageable);
+
+    @Override
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Environment> findAll(Pageable pageable);
 }

@@ -7,4 +7,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(exported = false)
 public interface HealthStatusRepository extends JpaRepository<HealthStatus, Long> {
 
+    HealthStatus findBySourceAndTargetId(String source, long target_id);
 }

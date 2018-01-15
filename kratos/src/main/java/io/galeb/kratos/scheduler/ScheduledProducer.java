@@ -73,7 +73,7 @@ public class ScheduledProducer {
             }
             LOGGER.info("[sch " + schedId + "] Sent " + counter.get() + " targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env + " " +
                     "[" + (System.currentTimeMillis() - start) + " ms] (before to start this task: " + size + " targets from db)");
-
+            counter.set(0);
         });
     }
 

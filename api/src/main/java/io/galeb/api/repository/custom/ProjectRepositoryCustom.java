@@ -16,5 +16,14 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.core.entity.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 public interface ProjectRepositoryCustom extends WithRoles {
+
+    Iterable<Project> findAll(Sort sort);
+
+    Page<Project> findAll(Pageable pageable);
 }

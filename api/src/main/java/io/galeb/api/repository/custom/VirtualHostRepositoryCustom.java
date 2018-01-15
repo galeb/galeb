@@ -25,11 +25,11 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface VirtualHostRepositoryCustom extends WithRoles {
 
-    VirtualHost findOne(Long var1);
+    VirtualHost findOne(Long id);
 
-    Iterable<VirtualHost> findAll(Sort var1);
+    Iterable<VirtualHost> findAll(Sort sort);
 
-    Page<VirtualHost> findAll(Pageable var1);
+    Page<VirtualHost> findAll(Pageable pageable);
 
     void delete(Long id);
 }

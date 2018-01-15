@@ -25,11 +25,11 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface RuleRepositoryCustom extends WithRoles {
 
-    Rule findOne(Long var1);
+    Rule findOne(Long id);
 
-    Iterable<Rule> findAll(Sort var1);
+    Iterable<Rule> findAll(Sort sort);
 
-    Page<Rule> findAll(Pageable var1);
+    Page<Rule> findAll(Pageable pageable);
 
     void delete(Long id);
 }

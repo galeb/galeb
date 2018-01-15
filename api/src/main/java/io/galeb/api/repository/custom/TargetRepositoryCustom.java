@@ -25,11 +25,11 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface TargetRepositoryCustom extends WithRoles {
 
-    Target findOne(Long var1);
+    Target findOne(Long id);
 
-    Iterable<Target> findAll(Sort var1);
+    Iterable<Target> findAll(Sort sort);
 
-    Page<Target> findAll(Pageable var1);
+    Page<Target> findAll(Pageable pageable);
 
     void delete(Long id);
 }

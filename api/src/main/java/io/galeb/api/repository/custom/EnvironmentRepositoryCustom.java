@@ -27,7 +27,7 @@ public interface EnvironmentRepositoryCustom extends WithRoles {
 
     Environment findOne(Long var1);
 
-    Iterable<Environment> findAll(Sort var1);
+    Iterable<Environment> findAll(Sort sort);
 
-    Page<Environment> findAll(Pageable var1);
+    Page<Environment> findAll(Pageable id);
 }

@@ -25,9 +25,9 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface RuleOrderedRepositoryCustom extends WithRoles {
 
-    RuleOrdered findOne(Long var1);
+    RuleOrdered findOne(Long id);
 
-    Iterable<RuleOrdered> findAll(Sort var1);
+    Iterable<RuleOrdered> findAll(Sort sort);
 
-    Page<RuleOrdered> findAll(Pageable var1);
+    Page<RuleOrdered> findAll(Pageable pageable);
 }

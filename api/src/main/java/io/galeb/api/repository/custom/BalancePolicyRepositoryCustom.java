@@ -16,5 +16,14 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.core.entity.BalancePolicy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 public interface BalancePolicyRepositoryCustom extends WithRoles {
+
+    Iterable<BalancePolicy> findAll(Sort sort);
+
+    Page<BalancePolicy> findAll(Pageable pageable);
 }

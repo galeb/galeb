@@ -25,11 +25,11 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface PoolRepositoryCustom extends WithRoles {
 
-    Pool findOne(Long var1);
+    Pool findOne(Long id);
 
-    Iterable<Pool> findAll(Sort var1);
+    Iterable<Pool> findAll(Sort sort);
 
-    Page<Pool> findAll(Pageable var1);
+    Page<Pool> findAll(Pageable pageable);
 
     void delete(Long id);
 }

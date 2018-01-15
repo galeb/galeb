@@ -16,5 +16,14 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.core.entity.HealthStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 public interface HealthStatusRepositoryCustom extends WithRoles {
+
+    Iterable<HealthStatus> findAll(Sort sort);
+
+    Page<HealthStatus> findAll(Pageable pageable);
 }

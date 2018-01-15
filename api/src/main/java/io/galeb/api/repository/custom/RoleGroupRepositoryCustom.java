@@ -16,5 +16,14 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.core.entity.RoleGroup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 public interface RoleGroupRepositoryCustom extends WithRoles {
+
+    Iterable<RoleGroup> findAll(Sort sort);
+
+    Page<RoleGroup> findAll(Pageable pageable);
 }

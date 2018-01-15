@@ -25,9 +25,9 @@ import org.springframework.data.domain.Sort;
 @SuppressWarnings("unused")
 public interface VirtualhostGroupRepositoryCustom extends WithRoles {
 
-    VirtualhostGroup findOne(Long var1);
+    VirtualhostGroup findOne(Long id);
 
-    Iterable<VirtualhostGroup> findAll(Sort var1);
+    Iterable<VirtualhostGroup> findAll(Sort sort);
 
-    Page<VirtualhostGroup> findAll(Pageable var1);
+    Page<VirtualhostGroup> findAll(Pageable pageable);
 }

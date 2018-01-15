@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package io.galeb.api.cucumber.test;
+package io.galeb.api.cucumber;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
 import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(features = "src/test/resources")
+@CucumberOptions(
+        monochrome = true,
+        plugin= {"pretty", "json:target/cucumber.json", "html:target/cucumber"},
+        glue = {"io.galeb"},
+        features= {"classpath:cucumber"},
+        tags={"~@ignore"}
+)
 public class CucumberTest {
 }

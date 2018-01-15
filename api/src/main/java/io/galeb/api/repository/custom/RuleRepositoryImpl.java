@@ -82,8 +82,11 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
 
     @Override
     protected String querySuffix(String username) {
-        return "LEFT JOIN entity.project.teams t INNER JOIN t.accounts a " +
-                "WHERE a.username = '" + username + "' OR entity.global = true";
+        return "WHERE entity.id IN " +
+                    "(SELECT entity.id FROM Rule entity INNER JOIN entity.project.teams t INNER JOIN t.accounts a " +
+                        "WHERE a.username = '" + username + "' AND entity.global = false) " +
+                "OR entity.id IN " +
+                    "(SELECT entity.id From Rule entity WHERE entity.global = true)";
     }
 
 }

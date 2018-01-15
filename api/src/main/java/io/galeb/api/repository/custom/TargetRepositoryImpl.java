@@ -82,7 +82,10 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
 
     @Override
     protected String querySuffix(String username) {
-        return "INNER JOIN entity.pools p LEFT JOIN p.project.teams t INNER JOIN t.accounts a LEFT JOIN p.rules r " +
-                "WHERE a.username = '" + username + "' OR r.global = true";
+        return "WHERE entity.id IN " +
+                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pools pools INNER JOIN pools.rules r INNER JOIN r.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
+                        "WHERE a.username = '" + username + "' AND r.global = false) " +
+                "OR entity.id IN " +
+                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pools pools INNER JOIN pools.rules r WHERE r.global = true)";
     }
 }

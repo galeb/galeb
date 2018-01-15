@@ -16,74 +16,198 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.v1entities.Environment;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EnvironmentService {
 
-    public ResponseEntity<Environment> get() {
-        return null;
+    private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    public ResponseEntity<String> get() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(Collections.singleton(emptyMap)));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> getWithParam(String param) {
-        return null;
+    public ResponseEntity<String> getWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
     
-    public ResponseEntity<Environment> post() {
-        return null;
+    public ResponseEntity<String> post(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> postWithParam(String param) {
-        return null;
+    public ResponseEntity<String> postWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> put() {
-        return null;
+    public ResponseEntity<String> put(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> putWithParam(String param) {
-        return null;
+    public ResponseEntity<String> putWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> delete() {
-        return null;
+    public ResponseEntity<String> delete() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> deleteWithParam(String param) {
-        return null;
+    public ResponseEntity<String> deleteWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> patch() {
-        return null;
+    public ResponseEntity<String> patch(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> patchWithParam(String param) {
-        return null;
+    public ResponseEntity<String> patchWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> options() {
-        return null;
+    public ResponseEntity<String> options() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> optionsWithParam(String param) {
-        return null;
+    public ResponseEntity<String> optionsWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> head() {
-        return null;
+    public ResponseEntity<String> head() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> headWithParam(String param) {
-        return null;
+    public ResponseEntity<String> headWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> trace() {
-        return null;
+    public ResponseEntity<String> trace() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<Environment> traceWithParam(String param) {
-        return null;
+    public ResponseEntity<String> traceWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 }

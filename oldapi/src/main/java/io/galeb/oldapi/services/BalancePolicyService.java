@@ -16,74 +16,198 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.v1entities.BalancePolicy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class BalancePolicyService {
 
-    public ResponseEntity<BalancePolicy> get() {
-        return null;
+    private static final Logger LOGGER = LogManager.getLogger(BalancePolicyService.class);
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    public ResponseEntity<String> get() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(Collections.singleton(emptyMap)));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> getWithParam(String param) {
-        return null;
+    public ResponseEntity<String> getWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
     
-    public ResponseEntity<BalancePolicy> post() {
-        return null;
+    public ResponseEntity<String> post(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> postWithParam(String param) {
-        return null;
+    public ResponseEntity<String> postWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> put() {
-        return null;
+    public ResponseEntity<String> put(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> putWithParam(String param) {
-        return null;
+    public ResponseEntity<String> putWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> delete() {
-        return null;
+    public ResponseEntity<String> delete() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> deleteWithParam(String param) {
-        return null;
+    public ResponseEntity<String> deleteWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> patch() {
-        return null;
+    public ResponseEntity<String> patch(String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> patchWithParam(String param) {
-        return null;
+    public ResponseEntity<String> patchWithParam(String param, String body) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase() + "/" + param, body);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> options() {
-        return null;
+    public ResponseEntity<String> options() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> optionsWithParam(String param) {
-        return null;
+    public ResponseEntity<String> optionsWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> head() {
-        return null;
+    public ResponseEntity<String> head() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> headWithParam(String param) {
-        return null;
+    public ResponseEntity<String> headWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> trace() {
-        return null;
+    public ResponseEntity<String> trace() {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), "NULL");
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<BalancePolicy> traceWithParam(String param) {
-        return null;
+    public ResponseEntity<String> traceWithParam(String param) {
+        Map<String, Object> emptyMap = new HashMap<>();
+        emptyMap.put(BalancePolicy.class.getSimpleName().toLowerCase(), param);
+        try {
+            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return ResponseEntity.badRequest().body("{}");
     }
 }

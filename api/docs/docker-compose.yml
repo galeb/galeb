@@ -2,7 +2,7 @@ version: '2'
 
 services:
 
-  db:
+  mysql:
     image: mysql:5.6
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -10,7 +10,7 @@ services:
     ports:
       - 3306:3306
 
-  master:
+  redis:
     image: redis:3.2.6-alpine
     command: redis-server --appendonly yes
     ports:

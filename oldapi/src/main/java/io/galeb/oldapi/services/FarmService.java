@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Farm;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FarmService {
+
+    public ResponseEntity<Farm> get() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Farm> post() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> put() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> options() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> head() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Farm> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Farm> traceWithParam(String param) {
+        return null;
+    }
 }

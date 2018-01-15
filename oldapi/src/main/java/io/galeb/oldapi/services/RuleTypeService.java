@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.RuleType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RuleTypeService {
+
+    public ResponseEntity<RuleType> get() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<RuleType> post() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> put() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> delete() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> patch() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> options() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> head() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> trace() {
+        return null;
+    }
+
+    public ResponseEntity<RuleType> traceWithParam(String param) {
+        return null;
+    }
 }

@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Team;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TeamService {
+
+    public ResponseEntity<Team> get() {
+        return null;
+    }
+
+    public ResponseEntity<Team> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Team> post() {
+        return null;
+    }
+
+    public ResponseEntity<Team> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> put() {
+        return null;
+    }
+
+    public ResponseEntity<Team> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Team> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Team> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> options() {
+        return null;
+    }
+
+    public ResponseEntity<Team> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> head() {
+        return null;
+    }
+
+    public ResponseEntity<Team> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Team> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Team> traceWithParam(String param) {
+        return null;
+    }
 }

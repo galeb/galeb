@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.RuleOrder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RuleOrderService {
+
+    public ResponseEntity<RuleOrder> get() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<RuleOrder> post() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> put() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> delete() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> patch() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> options() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> head() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> trace() {
+        return null;
+    }
+
+    public ResponseEntity<RuleOrder> traceWithParam(String param) {
+        return null;
+    }
 }

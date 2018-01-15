@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Provider;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProviderService {
+
+    public ResponseEntity<Provider> get() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Provider> post() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> put() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> options() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> head() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Provider> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Provider> traceWithParam(String param) {
+        return null;
+    }
 }

@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Target;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TargetService {
+
+    public ResponseEntity<Target> get() {
+        return null;
+    }
+
+    public ResponseEntity<Target> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Target> post() {
+        return null;
+    }
+
+    public ResponseEntity<Target> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> put() {
+        return null;
+    }
+
+    public ResponseEntity<Target> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Target> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Target> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> options() {
+        return null;
+    }
+
+    public ResponseEntity<Target> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> head() {
+        return null;
+    }
+
+    public ResponseEntity<Target> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Target> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Target> traceWithParam(String param) {
+        return null;
+    }
 }

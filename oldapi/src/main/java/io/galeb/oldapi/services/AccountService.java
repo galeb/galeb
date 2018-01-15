@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Account;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AccountService {
+
+    public ResponseEntity<Account> get() {
+        return null;
+    }
+
+    public ResponseEntity<Account> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Account> post() {
+        return null;
+    }
+
+    public ResponseEntity<Account> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> put() {
+        return null;
+    }
+
+    public ResponseEntity<Account> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Account> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Account> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> options() {
+        return null;
+    }
+
+    public ResponseEntity<Account> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> head() {
+        return null;
+    }
+
+    public ResponseEntity<Account> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Account> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Account> traceWithParam(String param) {
+        return null;
+    }
 }

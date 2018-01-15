@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Pool;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PoolService {
+
+    public ResponseEntity<Pool> get() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Pool> post() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> put() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> options() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> head() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Pool> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Pool> traceWithParam(String param) {
+        return null;
+    }
 }

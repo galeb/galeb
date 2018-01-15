@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.Environment;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EnvironmentService {
+
+    public ResponseEntity<Environment> get() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<Environment> post() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> put() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> delete() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> patch() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> options() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> head() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<Environment> trace() {
+        return null;
+    }
+
+    public ResponseEntity<Environment> traceWithParam(String param) {
+        return null;
+    }
 }

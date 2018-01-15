@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.BalancePolicyType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class BalancePolicyTypeService {
+
+    public ResponseEntity<BalancePolicyType> get() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<BalancePolicyType> post() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> put() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> delete() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> patch() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> options() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> head() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> trace() {
+        return null;
+    }
+
+    public ResponseEntity<BalancePolicyType> traceWithParam(String param) {
+        return null;
+    }
 }

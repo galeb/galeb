@@ -16,8 +16,74 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.v1entities.VirtualHost;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
 public class VirtualHostService {
+
+    public ResponseEntity<VirtualHost> get() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> getWithParam(String param) {
+        return null;
+    }
+    
+    public ResponseEntity<VirtualHost> post() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> postWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> put() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> putWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> delete() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> deleteWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> patch() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> patchWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> options() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> optionsWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> head() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> headWithParam(String param) {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> trace() {
+        return null;
+    }
+
+    public ResponseEntity<VirtualHost> traceWithParam(String param) {
+        return null;
+    }
 }

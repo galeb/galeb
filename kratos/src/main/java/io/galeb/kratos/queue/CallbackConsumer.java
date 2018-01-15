@@ -31,10 +31,16 @@ public class CallbackConsumer {
     public void callback(HealthStatus healthStatus) {
         try {
             if (healthStatus != null) {
-                Target target = targetRepository.findOne(healthStatus.getTarget().getId());
-                healthStatus.setTarget(target);
-                healthStatusRepository.save(healthStatus);
-                LOGGER.warn("HealthStatus [source: " + healthStatus.getSource() +  "] (from target " + healthStatus.getTarget().getName() + ") updated.");
+                HealthStatus tempHealthStatus = healthStatusRepository.findBySourceAndTargetId(healthStatus.getSource(), healthStatus.getTarget().getId());
+                if (tempHealthStatus == null) {
+                    tempHealthStatus = healthStatus;
+                    Target target = targetRepository.findOne(healthStatus.getTarget().getId());
+                    tempHealthStatus.setTarget(target);
+                }
+                tempHealthStatus.setStatus(healthStatus.getStatus());
+                tempHealthStatus.setStatusDetailed(healthStatus.getStatusDetailed());
+                healthStatusRepository.save(tempHealthStatus);
+                LOGGER.warn("HealthStatus [source: " + tempHealthStatus.getSource() +  "] (from target " + tempHealthStatus.getTarget().getName() + ") updated.");
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

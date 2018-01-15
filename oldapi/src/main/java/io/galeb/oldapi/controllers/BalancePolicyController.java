@@ -29,6 +29,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @SuppressWarnings("unused")
 @RestController
+@RequestMapping("/balancepolicy")
 public class BalancePolicyController {
 
     @Autowired

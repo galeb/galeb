@@ -29,6 +29,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @SuppressWarnings("unused")
 @RestController
+@RequestMapping("/account")
 public class AccountController {
 
     @Autowired

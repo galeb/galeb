@@ -23,10 +23,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @SuppressWarnings("unused")
 @RestController
+@RequestMapping("/info")
 public class InfoController {
 
     @Value("${build.project}")
@@ -38,7 +40,7 @@ public class InfoController {
     @Value("${build.timestamp}")
     private String buildTimestamp;
 
-    @GetMapping(value = "/info")
+    @GetMapping()
     public ResponseEntity<String> info() {
         String body = String.format("{\"name\":\"%s\", \"version\":\"%s\", \"build\":\"%s\"}", buildProject, buildVersion, buildTimestamp);
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();

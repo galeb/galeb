@@ -17,14 +17,16 @@
 package io.galeb.oldapi.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @SuppressWarnings({"unused", "SameReturnValue"})
 @RestController
+@RequestMapping("/healthcheck")
 public class HealthcheckController {
 
-    @GetMapping(value = "/healthcheck")
+    @GetMapping()
     @ResponseBody
     public String healthcheck() {
         return "WORKING";

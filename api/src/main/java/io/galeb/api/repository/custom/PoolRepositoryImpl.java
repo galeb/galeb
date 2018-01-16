@@ -68,8 +68,10 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
     protected String querySuffix(String username) {
         return "WHERE entity.id IN " +
                     "(SELECT entity.id FROM Pool entity INNER JOIN entity.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN entity.rules r " +
-                        "WHERE a.username = '" + username + "' AND r.global = false) " +
+                        "WHERE a.username = '" + username + "' AND (r.global = false OR entity.global = false)) " +
                 "OR entity.id IN " +
-                    "(SELECT entity.id FROM Pool entity INNER JOIN entity.rules r WHERE r.global = true)";
+                    "(SELECT entity.id FROM Pool entity INNER JOIN entity.rules r WHERE r.global = true) " +
+                "OR entity.id IN " +
+                    "(SELECT entity.id FROM Pool entity WHERE entity.global = true)";
     }
 }

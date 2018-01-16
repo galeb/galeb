@@ -46,6 +46,8 @@ public class Pool extends AbstractEntity implements WithStatus {
     @Column(nullable = false)
     private String name;
 
+    private Boolean global = false;
+
     @Transient
     private Map<Long, Status> status = new HashMap<>();
 
@@ -122,6 +124,16 @@ public class Pool extends AbstractEntity implements WithStatus {
     public void setName(String name) {
         Assert.hasText(name, "name is not valid");
         this.name = name;
+    }
+
+    public Boolean getGlobal() {
+        return global;
+    }
+
+    public void setGlobal(Boolean global) {
+        if (global != null) {
+            this.global = global;
+        }
     }
 
     public String getHcPath() {

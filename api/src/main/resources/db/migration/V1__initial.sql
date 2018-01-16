@@ -186,6 +186,7 @@ CREATE TABLE `pool` (
   `last_modified_by` varchar(255) NOT NULL,
   `quarantine` bit(1) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
+  `global` bit(1) DEFAULT NULL,
   `hc_body` varchar(255) DEFAULT NULL,
   `hc_host` varchar(255) DEFAULT NULL,
   `hc_http_method` int(11) DEFAULT NULL,
@@ -576,4 +577,4 @@ CREATE TABLE `virtualhostgroup` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-16 14:06:17
+-- Dump completed on 2018-01-16 15:43:30

@@ -194,7 +194,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     protected abstract String querySuffix(String username);
 
     protected String selectPrefix() {
-        return "SELECT entity From " + entityClass.getSimpleName() + " entity";
+        return "SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity";
     }
 
     private String selectCountPrefix() {

@@ -16,7 +16,7 @@
 
 package io.galeb.legba.model.v1;
 
-public class Target extends AbstractEntity {
+public class Environment extends AbstractEntity {
 
-    public Target() {}
+    public Environment() {}
 }

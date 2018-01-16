@@ -32,9 +32,7 @@ public class Pool extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Environment environment;
 
-    @ManyToMany(cascade = CascadeType.REMOVE)
-    @JoinTable(joinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool_id")),
-                inverseJoinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_pool_target_id")))
+    @ManyToMany(mappedBy = "pools")
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(optional = false)

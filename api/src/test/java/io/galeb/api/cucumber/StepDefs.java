@@ -21,7 +21,6 @@ import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
-import cucumber.api.java.After;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -60,7 +59,7 @@ import static org.hamcrest.Matchers.hasToString;
 
 @ContextConfiguration
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yml")
 public class StepDefs {
 
     private static final Flyway FLYWAY  = new Flyway();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2017 Globo.com
+ * Copyright (c) 2014-2018 Globo.com - ATeam
  * All rights reserved.
  *
  * This source is subject to the Apache License, Version 2.0.
@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi;
+package io.galeb.oldapi.suites;
 
-import org.junit.Test;
+import io.galeb.oldapi.CucumberTest;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.runners.Suite;
 
-@SuppressWarnings("EmptyMethod")
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class ApplicationTest {
-
-    @Test
-    public void contextLoads() {
-    }
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+        CucumberTest.class
+})
+public class ManagerTestSuite {
 
 }

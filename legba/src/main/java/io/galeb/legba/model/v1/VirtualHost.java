@@ -16,7 +16,26 @@
 
 package io.galeb.legba.model.v1;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class VirtualHost extends AbstractEntity {
 
     public VirtualHost() {}
+
+    private final Set<Rule> rules = new HashSet<>();
+
+    public Set<Rule> getRules() {
+        return rules;
+    }
+
+    public void setRules(Set<Rule> rules) {
+        if (rules != null) {
+            updateHash();
+            this.rules.clear();
+            this.rules.addAll(rules);
+        }
+    }
+
+
 }

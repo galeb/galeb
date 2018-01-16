@@ -21,6 +21,7 @@ import org.springframework.util.Assert;
 public class Rule extends AbstractEntity {
 
     private Pool pool;
+    private Boolean global = false;
 
     public Rule() {}
 
@@ -34,5 +35,18 @@ public class Rule extends AbstractEntity {
         this.pool = pool;
         return this;
     }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public Rule setGlobal(Boolean global) {
+        if (global != null) {
+            updateHash();
+            this.global = global;
+        }
+        return this;
+    }
+
 
 }

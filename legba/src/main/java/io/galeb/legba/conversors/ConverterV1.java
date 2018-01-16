@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class ConverterV1 implements Converter {
 
     public static final String API_VERSION = "v1";
+    private static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
 
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
@@ -57,6 +58,11 @@ public class ConverterV1 implements Converter {
             io.galeb.legba.model.v1.BalancePolicy tempBalancePolicy = new io.galeb.legba.model.v1.BalancePolicy();
             tempBalancePolicy.setName(p.getBalancepolicy().getName());
             pool.setBalancePolicy(tempBalancePolicy);
+
+            /**
+             * Commented because today not contains the use of numRouters
+             */
+            //pool.getProperties().put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
 
             p.getTargets().stream().forEach(t -> {
                 Set<HealthStatus> healthStatusesOK = t.getHealthStatus()

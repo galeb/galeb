@@ -2,7 +2,7 @@
 --
 -- Host: 127.0.0.1    Database: galeb_api
 -- ------------------------------------------------------
--- Server version	5.6.27
+-- Server version	5.6.36
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -224,23 +224,6 @@ CREATE TABLE `pool_hc_headers` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `pool_targets`
---
-
-DROP TABLE IF EXISTS `pool_targets`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `pool_targets` (
-  `pool_id` bigint(20) NOT NULL,
-  `target_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`pool_id`,`target_id`),
-  KEY `FK_pool_target_id` (`target_id`),
-  CONSTRAINT `FK_pool_target_id` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`),
-  CONSTRAINT `FK_target_pool_id` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `project`
 --
 
@@ -346,7 +329,7 @@ CREATE TABLE `rolegroup_roles` (
   `rolegroup_id` bigint(20) NOT NULL,
   `role` varchar(255) NOT NULL,
   PRIMARY KEY (`rolegroup_id`,`role`),
-  CONSTRAINT `FK_rolegroup_role_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`) ON DELETE CASCADE
+  CONSTRAINT `FK_rolegroup_role_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -464,6 +447,23 @@ CREATE TABLE `target` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `target_pools`
+--
+
+DROP TABLE IF EXISTS `target_pools`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `target_pools` (
+  `target_id` bigint(20) NOT NULL,
+  `pool_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`target_id`,`pool_id`),
+  KEY `FK_target_pool_id` (`pool_id`),
+  CONSTRAINT `FK_pool_target_id` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`),
+  CONSTRAINT `FK_target_pool_id` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `team`
 --
 
@@ -576,4 +576,4 @@ CREATE TABLE `virtualhostgroup` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-15 15:40:46
+-- Dump completed on 2018-01-16 14:06:17

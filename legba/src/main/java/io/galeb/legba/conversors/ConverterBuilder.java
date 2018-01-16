@@ -10,6 +10,7 @@ public class ConverterBuilder {
 
     private static Map<String, Converter> mapConverter = new HashMap() {{
         put(ConverterV1.API_VERSION, new ConverterV1());
+        put(ConverterV2.API_VERSION, new ConverterV2());
     }};
 
     public static Converter getConversor(String apiVersion) throws ConverterNotFoundException {

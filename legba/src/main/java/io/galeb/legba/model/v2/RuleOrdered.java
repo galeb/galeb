@@ -1,4 +1,4 @@
-package io.galeb.legba.model.v1;
+package io.galeb.legba.model.v2;
 
 public class RuleOrdered {
 

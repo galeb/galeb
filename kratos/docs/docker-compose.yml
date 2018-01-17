@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+
+  broker:
+      image: vromero/activemq-artemis:1.5.4
+      ports:
+        - "61616:61616"
+        - "8161:8161"
+      environment:
+        - ARTEMIS_USERNAME=guest
+        - ARTEMIS_PASSWORD=guest
+        - ARTEMIS_MIN_MEMORY=512M
+        - ARTEMIS_MAX_MEMORY=1024M
+        - ARTEMIS_PERF_JOURNAL=AUTO

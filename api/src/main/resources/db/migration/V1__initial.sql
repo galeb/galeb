@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.7.17, for macos10.12 (x86_64)
 --
--- Host: 127.0.0.1    Database: galeb_api
+-- Host: localhost    Database: galeb_api
 -- ------------------------------------------------------
 -- Server version	5.6.36
 
@@ -194,6 +194,7 @@ CREATE TABLE `pool` (
   `hc_path` varchar(255) DEFAULT NULL,
   `hc_tcp_only` bit(1) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
+  `pool_size` bigint(20) DEFAULT NULL,
   `balancepolicy_id` bigint(20) NOT NULL,
   `environment_id` bigint(20) NOT NULL,
   `project_id` bigint(20) NOT NULL,
@@ -577,4 +578,4 @@ CREATE TABLE `virtualhostgroup` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-16 15:43:30
+-- Dump completed on 2018-01-17 16:40:40

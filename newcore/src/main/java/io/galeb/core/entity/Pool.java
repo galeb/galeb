@@ -48,6 +48,8 @@ public class Pool extends AbstractEntity implements WithStatus {
 
     private Boolean global = false;
 
+    private Long poolSize = -1L;
+
     @Transient
     private Map<Long, Status> status = new HashMap<>();
 
@@ -197,6 +199,14 @@ public class Pool extends AbstractEntity implements WithStatus {
             this.hcHeaders.clear();
             this.hcHeaders.putAll(hcHeaders);
         }
+    }
+
+    public Long getPoolSize() {
+        return poolSize;
+    }
+
+    public void setPoolSize(Long poolSize) {
+        this.poolSize = poolSize;
     }
 
     @Override

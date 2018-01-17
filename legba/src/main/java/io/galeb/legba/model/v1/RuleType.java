@@ -16,31 +16,31 @@
 
 package io.galeb.legba.model.v1;
 
-import java.util.HashSet;
 import java.util.Set;
 
-public class VirtualHost extends AbstractEntity {
+public class RuleType extends AbstractEntity {
 
-    public VirtualHost() {}
+    private static final long serialVersionUID = 5596582746795373010L;
 
-    private final Set<Rule> rules = new HashSet<>();
+    private Set<Rule> rules;
 
-    private Environment environment;
+    public RuleType(String name) {
+        setName(name);
+    }
+
+    protected RuleType() {
+        //
+    }
 
     public Set<Rule> getRules() {
         return rules;
     }
 
-    public void setRules(Set<Rule> rules) {
+    public RuleType setRules(Set<Rule> rules) {
         if (rules != null) {
-            updateHash();
             this.rules.clear();
             this.rules.addAll(rules);
         }
+        return this;
     }
-
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
-
 }

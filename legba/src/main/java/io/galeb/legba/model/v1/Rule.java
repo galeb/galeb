@@ -23,6 +23,8 @@ public class Rule extends AbstractEntity {
     private Pool pool;
     private Boolean global = false;
 
+    private RuleType ruleType;
+
     public Rule() {}
 
     public Pool getPool() {
@@ -48,5 +50,12 @@ public class Rule extends AbstractEntity {
         return this;
     }
 
+    public RuleType getRuleType() {
+        return ruleType;
+    }
+
+    public void setRuleType(RuleType ruleType) {
+        this.ruleType = ruleType;
+    }
 
 }

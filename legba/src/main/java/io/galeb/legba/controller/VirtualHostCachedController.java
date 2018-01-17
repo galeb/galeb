@@ -39,23 +39,23 @@ public class VirtualHostCachedController {
                                                @PathVariable String envid,
                                                @RequestHeader(value = "If-None-Match", required = false) String version,
                                                @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,
-                                               @RequestHeader(value = "X-Galeb-NetworkID", required = false) String networkId) throws Exception {
+                                               @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
         Assert.notNull(envid, "Environment id is null");
         Assert.notNull(routerGroupId, "GroupID undefined");
         Assert.notNull(version, "version undefined");
-
-        if (version.equals(versionService.getActualVersion(envid))) {
+        String actualVersion = versionService.getActualVersion(envid);
+        if (version.equals(actualVersion)) {
             LOGGER.warn("If-None-Match header matchs with internal etag, then ignoring request");
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envid, version);
+        String cache = versionService.getCache(envid, actualVersion);
         if (cache == null) {
             Converter converter = ConverterBuilder.getConversor(apiVersion);
             String numRouters = routersService.get(envid, routerGroupId);
             List<VirtualHost> list = copyService.getVirtualHosts(envid);
-            cache = converter.convertToString(list, numRouters, version, networkId, envid);
-            versionService.setCache(cache, envid, version);
+            cache = converter.convertToString(list, numRouters, actualVersion, zoneId, envid);
+            versionService.setCache(cache, envid, actualVersion);
         }
         if ("".equals(cache)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

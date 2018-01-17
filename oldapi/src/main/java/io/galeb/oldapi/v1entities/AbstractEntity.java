@@ -16,6 +16,8 @@
 
 package io.galeb.oldapi.v1entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -34,35 +36,42 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> extends Abstra
         UNKNOWN
     }
 
-    private long id;
+    private Long id;
 
+    @JsonProperty("_version")
     private Long version;
 
+    @JsonProperty("_created_by")
     private String createdBy;
 
+    @JsonProperty("_created_at")
     private Date createdAt;
 
+    @JsonProperty("_lastmodified_at")
     private Date lastModifiedAt;
 
+    @JsonProperty("_lastmodified_by")
     private String lastModifiedBy;
 
     private String name;
 
     private final Map<String, String> properties = new HashMap<>();
 
+    @JsonProperty("_status")
     protected EntityStatus status;
 
+    @JsonIgnore
     private boolean saveOnly = false;
 
     private String description;
 
     private Integer hash = 0;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

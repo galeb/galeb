@@ -17,7 +17,10 @@
 package io.galeb.oldapi.controllers;
 
 import io.galeb.oldapi.services.EnvironmentService;
+import io.galeb.oldapi.v1entities.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +39,7 @@ public class EnvironmentController {
     private EnvironmentService service;
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> get() {
+    public ResponseEntity<PagedResources<Resource<Environment>>> get() {
         return service.get();
     }
 

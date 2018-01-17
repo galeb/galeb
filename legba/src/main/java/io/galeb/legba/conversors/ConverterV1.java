@@ -27,6 +27,7 @@ public class ConverterV1 implements Converter {
         List<String> keysFullHash = new ArrayList<>();
         virtualHostList.stream().forEach(vh -> {
             keysFullHash.add(vh.getLastModifiedAt().toString());
+
             io.galeb.legba.model.v1.VirtualHost v = new io.galeb.legba.model.v1.VirtualHost();
             v.setName(vh.getName());
             v.setRules(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, zoneId, envId, keysFullHash));
@@ -60,15 +61,18 @@ public class ConverterV1 implements Converter {
 
         virtualhostgroup.getRulesordered().stream().forEach(ro -> {
             keysFullHash.add(ro.getLastModifiedAt().toString());
-            io.galeb.legba.model.v1.Rule rule = new io.galeb.legba.model.v1.Rule();
             keysFullHash.add(ro.getRule().getLastModifiedAt().toString());
+
+            io.galeb.legba.model.v1.Rule rule = new io.galeb.legba.model.v1.Rule();
             rule.setGlobal(ro.getRule().getGlobal());
             rule.setName(ro.getRule().getName());
             rule.setRuleType(new RuleType("UrlPath"));
+
             HashMap<String, String> properties = new HashMap();
             properties.put("match", ro.getRule().getMatching());
             properties.put("order", ro.getOrder().toString());
             rule.setProperties(properties);
+
             rule.setPool(convertPools(ro.getRule().getPools(), numRouters, zoneId, envId, keysFullHash));
 
             rules.add(rule);
@@ -82,6 +86,7 @@ public class ConverterV1 implements Converter {
         Set<io.galeb.legba.model.v1.Target> targets = new HashSet<>();
         pools.stream().filter(p -> p.getEnvironment().getId() == Long.valueOf(envId)).forEach(p -> {
             keysFullHash.add(p.getLastModifiedAt().toString());
+
             pool.setName(p.getName());
             io.galeb.legba.model.v1.BalancePolicy tempBalancePolicy = new io.galeb.legba.model.v1.BalancePolicy();
             tempBalancePolicy.setName(p.getBalancepolicy().getName());
@@ -100,6 +105,7 @@ public class ConverterV1 implements Converter {
                 healthStatusesOK.stream().forEach(hs -> {
                     keysFullHash.add(hs.getLastModifiedAt().toString());
                     keysFullHash.add(hs.getTarget().getLastModifiedAt().toString());
+                    
                     io.galeb.legba.model.v1.Target target = new io.galeb.legba.model.v1.Target();
                     target.setName(hs.getTarget().getName());
                     targets.add(target);

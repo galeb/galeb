@@ -48,7 +48,8 @@ public class HealthCheck extends AbstractEntity {
     private String body;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false)
+    @JoinTable(name = "healthcheck_headers",
+            joinColumns = @JoinColumn(name = "healthcheck_id", nullable = false, foreignKey = @ForeignKey(name = "FK_headers_healthcheck_id")))
     private Map<String, String> headers = new HashMap<>();
 
     @Column(nullable = false)

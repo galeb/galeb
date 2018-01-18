@@ -37,8 +37,7 @@ CREATE TABLE `account` (
   `username` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_account_username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `account` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,8 +53,7 @@ CREATE TABLE `account_details` (
   `details_key` varchar(255) NOT NULL,
   PRIMARY KEY (`account_id`,`details_key`),
   CONSTRAINT `FKjlchm9h4od1gxeqrfsngfkj5b` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `account_details` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -77,8 +75,7 @@ CREATE TABLE `balancepolicy` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_balancepolicy_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `balancepolicy` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,25 +97,23 @@ CREATE TABLE `environment` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_environment_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `environment` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `health_check_headers`
+-- Table structure for table `healthcheck_headers`
 --
 
-DROP TABLE IF EXISTS `health_check_headers`;
+DROP TABLE IF EXISTS `healthcheck_headers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `health_check_headers` (
-  `health_check_id` bigint(20) NOT NULL,
+CREATE TABLE `healthcheck_headers` (
+  `healthcheck_id` bigint(20) NOT NULL,
   `headers` varchar(255) DEFAULT NULL,
   `headers_key` varchar(255) NOT NULL,
-  PRIMARY KEY (`health_check_id`,`headers_key`),
-  CONSTRAINT `FKjdimg96xwb52gnt4pgmvdwdv1` FOREIGN KEY (`health_check_id`) REFERENCES `healthcheck` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `health_check_headers` AUTO_INCREMENT = 1;
+  PRIMARY KEY (`healthcheck_id`,`headers_key`),
+  CONSTRAINT `FK_headers_healthcheck_id` FOREIGN KEY (`healthcheck_id`) REFERENCES `healthcheck` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,8 +140,7 @@ CREATE TABLE `health_status` (
   UNIQUE KEY `UK_health_status_source_target_id` (`source`,`target_id`),
   KEY `FK_healthstatus_target` (`target_id`),
   CONSTRAINT `FK_healthstatus_target` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `health_status` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,8 +167,7 @@ CREATE TABLE `healthcheck` (
   `tcp_only` bit(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_healthcheck_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `healthcheck` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -213,8 +206,7 @@ CREATE TABLE `pool` (
   CONSTRAINT `FK_pool_balancepolicy` FOREIGN KEY (`balancepolicy_id`) REFERENCES `balancepolicy` (`id`),
   CONSTRAINT `FK_pool_environment` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
   CONSTRAINT `FK_pool_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `pool` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -230,8 +222,7 @@ CREATE TABLE `pool_hc_headers` (
   `hc_headers_key` varchar(255) NOT NULL,
   PRIMARY KEY (`pool_id`,`hc_headers_key`),
   CONSTRAINT `FKhl6i1wp155x5ovgxgp3kb17fr` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `pool_hc_headers` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -253,8 +244,7 @@ CREATE TABLE `project` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_project_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `project` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -271,8 +261,7 @@ CREATE TABLE `project_teams` (
   KEY `FK_project_team_id` (`team_id`),
   CONSTRAINT `FK_project_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`),
   CONSTRAINT `FK_team_project_id` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `project_teams` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -294,8 +283,7 @@ CREATE TABLE `rolegroup` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_rolegroup_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-ALTER TABLE `rolegroup` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -312,8 +300,7 @@ CREATE TABLE `rolegroup_accounts` (
   KEY `FK_account_rolegroup_id` (`account_id`),
   CONSTRAINT `FK_account_rolegroup_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`),
   CONSTRAINT `FK_rolegroup_account_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rolegroup_accounts` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,8 +317,7 @@ CREATE TABLE `rolegroup_projects` (
   KEY `FK_project_rolegroup_id` (`project_id`),
   CONSTRAINT `FK_project_rolegroup_id` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `FK_rolegroup_project_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rolegroup_projects` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -346,8 +332,7 @@ CREATE TABLE `rolegroup_roles` (
   `role` varchar(255) NOT NULL,
   PRIMARY KEY (`rolegroup_id`,`role`),
   CONSTRAINT `FK_rolegroup_role_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rolegroup_roles` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,8 +349,7 @@ CREATE TABLE `rolegroup_teams` (
   KEY `FK_account_team_id` (`team_id`),
   CONSTRAINT `FK_account_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`),
   CONSTRAINT `FK_rolegroup_team_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rolegroup_teams` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,8 +376,7 @@ CREATE TABLE `rule` (
   UNIQUE KEY `UK_rule_name_project_id` (`name`,`project_id`),
   KEY `FK_rule_project` (`project_id`),
   CONSTRAINT `FK_rule_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rule` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -410,8 +393,7 @@ CREATE TABLE `rule_pools` (
   KEY `FK_rule_pool_id` (`pool_id`),
   CONSTRAINT `FK_pool_rule_id` FOREIGN KEY (`rule_id`) REFERENCES `rule` (`id`),
   CONSTRAINT `FK_rule_pool_id` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `rule_pools` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -441,8 +423,7 @@ CREATE TABLE `ruleordered` (
   CONSTRAINT `FK_rule_rule_ordered` FOREIGN KEY (`rule_rule_ordered_id`) REFERENCES `rule` (`id`),
   CONSTRAINT `FK_ruleordered_environment` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
   CONSTRAINT `FK_virtualhostgroup_rule_ordered` FOREIGN KEY (`virtualhostgroup_rule_ordered_id`) REFERENCES `virtualhostgroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `ruleordered` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -464,8 +445,7 @@ CREATE TABLE `target` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_target_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `target` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -482,8 +462,7 @@ CREATE TABLE `target_pools` (
   KEY `FK_target_pool_id` (`pool_id`),
   CONSTRAINT `FK_pool_target_id` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`),
   CONSTRAINT `FK_target_pool_id` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `target_pools` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -505,8 +484,7 @@ CREATE TABLE `team` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_team_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `team` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -523,8 +501,7 @@ CREATE TABLE `team_accounts` (
   KEY `FK_account_id` (`account_id`),
   CONSTRAINT `FK_account_id` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`),
   CONSTRAINT `FK_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `team_accounts` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -552,8 +529,7 @@ CREATE TABLE `virtualhost` (
   KEY `FK_virtualhost_virtualhostgroup` (`virtualhostgroup_id`),
   CONSTRAINT `FK_virtualhost_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
   CONSTRAINT `FK_virtualhost_virtualhostgroup` FOREIGN KEY (`virtualhostgroup_id`) REFERENCES `virtualhostgroup` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `virtualhost` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -567,11 +543,10 @@ CREATE TABLE `virtualhost_environments` (
   `virtualhost_id` bigint(20) NOT NULL,
   `environment_id` bigint(20) NOT NULL,
   PRIMARY KEY (`virtualhost_id`,`environment_id`),
-  KEY `FK_environment_id` (`environment_id`),
-  CONSTRAINT `FK_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
-  CONSTRAINT `FK_virtualhost_id` FOREIGN KEY (`virtualhost_id`) REFERENCES `virtualhost` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `virtualhost_environments` AUTO_INCREMENT = 1;
+  KEY `FK_virtualhost_environment_id` (`environment_id`),
+  CONSTRAINT `FK_virtualhost_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
+  CONSTRAINT `FK_environment_virtualhost_id` FOREIGN KEY (`virtualhost_id`) REFERENCES `virtualhost` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -591,8 +566,7 @@ CREATE TABLE `virtualhostgroup` (
   `quarantine` bit(1) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-ALTER TABLE `virtualhostgroup` AUTO_INCREMENT = 1;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

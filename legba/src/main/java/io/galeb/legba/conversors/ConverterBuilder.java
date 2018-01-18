@@ -14,7 +14,11 @@ public class ConverterBuilder {
     }};
 
     public static Converter getConversor(String apiVersion) throws ConverterNotFoundException {
-        Converter conv = mapConverter.get(apiVersion);
+        String api = ConverterV1.API_VERSION;
+        if (apiVersion != null) {
+            api = apiVersion;
+        }
+        Converter conv = mapConverter.get(api);
         if (conv == null) {
             throw new ConverterNotFoundException();
         }

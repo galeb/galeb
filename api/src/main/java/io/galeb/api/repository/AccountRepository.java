@@ -44,4 +44,6 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @Override
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Account> findAll(Pageable pageable);
+
+    Account findByUsername(@Param("username") String username);
 }

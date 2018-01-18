@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.api.services;
+package io.galeb.core.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,16 @@ public class ChangesService {
         String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, "*",simpleNameClass, entityId, "*");
         Set<String> keys = keys(keyFormatted);
         return keys.stream().map(k -> Long.parseLong(new MessageFormat(FORMAT_KEY_HAS_CHANGE).parse(k, new ParsePosition(0))[0].toString())).collect(Collectors.toSet());
+    }
+
+    public void removeAllWithOldestVersion(String envid, Long version) {
+        String key = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, envid, "*", "*", "*");
+        keys(key).stream().forEach(k -> {
+            String value = redisTemplate.opsForValue().get(k);
+            if (version >= Long.valueOf(value)) {
+                redisTemplate.delete(k);
+            }
+        });
     }
 
     private boolean hasKey(String key) {

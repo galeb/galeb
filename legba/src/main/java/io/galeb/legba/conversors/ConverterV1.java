@@ -105,7 +105,7 @@ public class ConverterV1 implements Converter {
                 healthStatusesOK.stream().forEach(hs -> {
                     keysFullHash.add(hs.getLastModifiedAt().toString());
                     keysFullHash.add(hs.getTarget().getLastModifiedAt().toString());
-                    
+
                     io.galeb.legba.model.v1.Target target = new io.galeb.legba.model.v1.Target();
                     target.setName(hs.getTarget().getName());
                     targets.add(target);

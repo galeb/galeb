@@ -1,23 +1,29 @@
 package io.galeb.legba.services;
 
+import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.NumberUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
+import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class RoutersService {
+
+    private static final Log LOGGER = LogFactory.getLog(RoutersService.class);
+
 
     /**
      * Description arguments:
@@ -31,6 +37,9 @@ public class RoutersService {
 
     @Autowired
     StringRedisTemplate redisTemplate;
+
+    @Autowired
+    ChangesService changesService;
 
     @Autowired
     private VersionService versionService;
@@ -72,19 +81,17 @@ public class RoutersService {
         return Collections.emptySet();
     }
 
-    public String get(String envid, String routerGroupId) {
-//        int numRouters;
-//        numRouters = routerMap.get(envname)
-//                .stream()
-//                .mapToInt(e -> e.getGroupIDs()
-//                        .stream()
-//                        .filter(g -> g.getGroupID().equals(routerGroupIp))
-//                        .mapToInt(r -> r.getRouters().size())
-//                        .sum())
-//                .sum();
-//        return numRouters;
-
-        return "0";
+    public int get(String envid, String routerGroupId) {
+        int numRouters;
+        numRouters = get(envid)
+                .stream()
+                .mapToInt(e -> e.getGroupIDs()
+                        .stream()
+                        .filter(g -> g.getGroupID().equals(routerGroupId))
+                        .mapToInt(r -> r.getRouters().size())
+                        .sum())
+                .sum();
+        return numRouters;
     }
 
     public void put(String routerGroupId, String routerLocalIP, String version, String envid) {
@@ -92,13 +99,33 @@ public class RoutersService {
             String key = MessageFormat.format(FORMAT_KEY_VERSION, envid, routerGroupId, routerLocalIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
             if (!redisTemplate.hasKey(key)) {
-                versionService.incrementVersion(Long.valueOf(envid));
+                versionService.incrementVersion(envid);
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
-            //routerState.updateRouterState(envid);
+            updateRouterState(envid);
         } catch (Exception e) {
             ErrorLogger.logError(e, this.getClass());
         }
-
     }
+
+    private void updateRouterState(String envid) {
+        Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
+        Set<Long> eTagRouters = new HashSet<>();
+        String keyAll = MessageFormat.format(FORMAT_KEY_VERSION, envid, "*", "*");
+        redisTemplate.keys(keyAll).stream().forEach(key -> {
+            try {
+                eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Version is not a number. Verify the environment " + envid);
+            }
+            Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
+            if (ttl == null || ttl < (REGISTER_TTL/2)) {
+                redisTemplate.delete(key);
+                versionService.incrementVersion(envid);
+            }
+        });
+        Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        changesService.removeAllWithOldestVersion(envid, versionRouter);
+    }
+
 }

@@ -20,7 +20,7 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
-@RequestMapping(value = "{apiVersion:.+}/virtualhostscached", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = {"virtualhostscached", "{apiVersion:.+}/virtualhostscached"}, produces = MediaType.APPLICATION_JSON_VALUE)
 public class VirtualHostCachedController {
 
     private static final Log LOGGER = LogFactory.getLog(VirtualHostCachedController.class);
@@ -35,7 +35,7 @@ public class VirtualHostCachedController {
     private RoutersService routersService;
 
     @RequestMapping(value="/{envid:.+}", method = RequestMethod.GET)
-    public synchronized ResponseEntity showall(@PathVariable String apiVersion,
+    public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
                                                @PathVariable String envid,
                                                @RequestHeader(value = "If-None-Match", required = false) String version,
                                                @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,

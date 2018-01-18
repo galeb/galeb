@@ -16,6 +16,7 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -40,11 +41,11 @@ public class Environment extends AbstractEntity implements WithStatus {
     @Transient
     private Map<Long, Status> status = new HashMap<>();
 
-    public Set<VirtualHost> getVirtualHosts() {
+    public Set<VirtualHost> getVirtualhosts() {
         return virtualhosts;
     }
 
-    public void setVirtualHosts(Set<VirtualHost> virtualHosts) {
+    public void setVirtualhosts(Set<VirtualHost> virtualHosts) {
         if (virtualHosts != null) {
             this.virtualhosts.clear();
             this.virtualhosts.addAll(virtualHosts);
@@ -60,14 +61,6 @@ public class Environment extends AbstractEntity implements WithStatus {
             this.pools.clear();
             this.pools.addAll(pools);
         }
-    }
-
-    public Set<VirtualHost> getVirtualhosts() {
-        return virtualhosts;
-    }
-
-    public void setVirtualhosts(Set<VirtualHost> virtualhosts) {
-        this.virtualhosts = virtualhosts;
     }
 
     public Set<RuleOrdered> getRulesordered() {

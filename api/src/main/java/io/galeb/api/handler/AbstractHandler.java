@@ -16,9 +16,9 @@
 
 package io.galeb.api.handler;
 
-import io.galeb.api.services.ChangesService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.event.AbstractRepositoryEventListener;

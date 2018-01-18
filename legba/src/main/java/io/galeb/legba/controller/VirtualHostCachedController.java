@@ -52,7 +52,7 @@ public class VirtualHostCachedController {
         String cache = versionService.getCache(envid, actualVersion);
         if (cache == null) {
             Converter converter = ConverterBuilder.getConversor(apiVersion);
-            String numRouters = routersService.get(envid, routerGroupId);
+            String numRouters = String.valueOf(routersService.get(envid, routerGroupId));
             List<VirtualHost> list = copyService.getVirtualHosts(envid);
             cache = converter.convertToString(list, numRouters, actualVersion, zoneId, envid);
             versionService.setCache(cache, envid, actualVersion);

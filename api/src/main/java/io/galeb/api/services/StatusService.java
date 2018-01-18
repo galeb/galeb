@@ -19,6 +19,7 @@ package io.galeb.api.services;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.WithStatus.Status;
+import io.galeb.core.services.ChangesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

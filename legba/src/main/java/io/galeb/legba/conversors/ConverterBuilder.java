@@ -26,7 +26,7 @@ public class ConverterBuilder {
     }
 
     @ResponseStatus(value= HttpStatus.BAD_REQUEST, reason = "Converter not found")
-    private static class ConverterNotFoundException extends Exception {
+    public static class ConverterNotFoundException extends Exception {
 
     }
 

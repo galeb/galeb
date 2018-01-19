@@ -28,7 +28,7 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_VERSION = "routers:{0}:{1}:{2}";
 
-    public static final long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
+    public static long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -127,5 +127,4 @@ public class RoutersService {
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
         changesService.removeAllWithOldestVersion(envid, versionRouter);
     }
-
 }

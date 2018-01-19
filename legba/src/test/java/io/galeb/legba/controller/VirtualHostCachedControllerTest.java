@@ -56,15 +56,19 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldOkResponseWhenNotPassingApiVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "2")).thenReturn("{}");
+        when(versionService.getCache("1", "2")).thenReturn(null);
+        when(routersService.get("1", "group-local")).thenReturn(1);
+
+        List<VirtualHost> listVirtualHost = new ArrayList<>();
+        when(copyService.getVirtualHosts("1")).thenReturn(listVirtualHost);
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
-        httpHeaders.add("X-Galeb-ZoneID", "zone-local");
         this.mockMvc.perform(get("/virtualhostscached/1").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("{}"));
+                .andExpect(content().string("{\"virtualhosts\":[]}"));
     }
 
     @Test

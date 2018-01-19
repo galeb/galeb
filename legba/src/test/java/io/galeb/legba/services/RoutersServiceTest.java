@@ -13,6 +13,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Date;
 import java.util.Set;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RoutersServiceTest {
@@ -32,6 +35,7 @@ public class RoutersServiceTest {
         String envId = "1";
 
         //Action
+        routersService.REGISTER_TTL = Long.MAX_VALUE;
         routersService.put(groupId, localIP, version, envId);
         Set<JsonSchema.Env> envs = routersService.get(envId);
 
@@ -42,7 +46,6 @@ public class RoutersServiceTest {
         Assert.assertNotNull(groupID);
         boolean containsRouterAndVersion = groupID.getRouters().stream().anyMatch(r -> r.getLocalIp().equals(localIP) && r.getEtag().equals(version));
         Assert.assertTrue(containsRouterAndVersion);
-
     }
 
     @Test
@@ -62,6 +65,7 @@ public class RoutersServiceTest {
         changesService.register(env, target, versionOldest);
 
         //Action
+        routersService.REGISTER_TTL = Long.MAX_VALUE;
         routersService.put(groupId, localIP, versionNewest, envId);
 
         //Assert
@@ -86,10 +90,36 @@ public class RoutersServiceTest {
         changesService.register(env, target, versionNewest);
 
         //Action
+        routersService.REGISTER_TTL = Long.MAX_VALUE;
         routersService.put(groupId, localIP, versionOldest, envId);
 
         //Assert
         boolean hasChanges = changesService.hasByEnvironmentId(Long.valueOf(envId));
         Assert.assertTrue(hasChanges);
+    }
+
+    @Test
+    public void shouldRegisterRouterAndAutoRemoveWhenExpires() {
+        //Arrange
+        String groupId = "group-local";
+        String localIP = "127.0.0.1";
+        String version = "1";
+        String envId = "1";
+
+        routersService.REGISTER_TTL = 1L;
+
+        //Action
+        routersService.put(groupId, localIP, version, envId);
+
+        //Assert
+        try {
+            Thread.sleep(1L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Set<JsonSchema.Env> envs = routersService.get(envId);
+        JsonSchema.Env env = envs.stream().filter(e -> e.getEnvId().equals(envId)).findAny().orElse(null);
+        Assert.assertNull(env);
+
     }
 }

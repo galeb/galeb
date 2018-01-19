@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.configuration;
+package io.galeb.core.configuration.db;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.configuration;
+package io.galeb.core.configuration.redis;
 
 import com.lambdaworks.redis.RedisURI;
 import org.apache.logging.log4j.LogManager;

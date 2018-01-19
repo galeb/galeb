@@ -26,6 +26,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -48,6 +49,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
             and().
                 authorizeRequests().anyRequest().authenticated().
+            and().
+                requestCache().requestCache(new NullRequestCache()).
             and().
                 httpBasic().
             and()

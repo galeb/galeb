@@ -32,11 +32,14 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
 
     private static final Logger LOGGER = LogManager.getLogger(ApiTokenAuthenticationProvider.class);
 
-    @Autowired
-    private CurrentUserDetailsService currentUserDetailsService;
+    private final CurrentUserDetailsService currentUserDetailsService;
+    private final LdapAuthenticationService ldapAuthenticationService;
 
     @Autowired
-    private LdapAuthenticationService ldapAuthenticationService;
+    public ApiTokenAuthenticationProvider(CurrentUserDetailsService currentUserDetailsService, LdapAuthenticationService ldapAuthenticationService) {
+        this.currentUserDetailsService = currentUserDetailsService;
+        this.ldapAuthenticationService = ldapAuthenticationService;
+    }
 
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
@@ -50,10 +53,10 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
             LOGGER.error(errMsg);
             throw new SecurityException(errMsg);
         }
-        final UserDetails userDetails = retrieveUser(authentication.getName(), null);
-        if (userDetails.getUsername() != null) {
-            boolean ldapCheckOk = ldapAuthenticationService.check(userDetails.getUsername(), (String) authentication.getCredentials());
-            if (ldapCheckOk) {
+        boolean ldapCheckOk = ldapAuthenticationService.check(authentication.getName(), (String) authentication.getCredentials());
+        if (ldapCheckOk) {
+            final UserDetails userDetails = retrieveUser(authentication.getName(), null);
+            if (userDetails.getUsername() != null) {
                 return new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
             }
         }

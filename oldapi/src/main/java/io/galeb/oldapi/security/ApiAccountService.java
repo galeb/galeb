@@ -28,7 +28,6 @@ import org.asynchttpclient.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
@@ -38,52 +37,45 @@ public class ApiAccountService {
 
     private static final Logger LOGGER = LogManager.getLogger(ApiAccountService.class);
 
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final AsyncHttpClient httpClient;
+
     @Autowired
-    private HttpClientService clientService;
-
-    private AsyncHttpClient httpClient = null;
-
-    private ObjectMapper mapper = new ObjectMapper();
-
-    @PostConstruct
-    private void init() {
-        httpClient = clientService.httpClient();
+    public ApiAccountService(HttpClientService clientService) {
+        this.httpClient = clientService.httpClient();
     }
 
     @SuppressWarnings("unchecked")
     public Account find(String username) {
-        if (httpClient != null) {
-            String adminLogin = System.getenv("GALEB_API_ADMIN_NAME");
-            String adminPass = System.getenv("GALEB_API_ADMIN_PASS");
-            RequestBuilder requestBuilder = new RequestBuilder();
-            requestBuilder.setRealm(Dsl.basicAuthRealm(adminLogin, adminPass).setUsePreemptiveAuth(true));
-            requestBuilder.setUrl(System.getenv("GALEB_API_URL") + "/account/search/findByUsername?username=" + username + "&projection=apitoken");
+        String adminLogin = System.getenv("GALEB_API_ADMIN_NAME");
+        String adminPass = System.getenv("GALEB_API_ADMIN_PASS");
+        RequestBuilder requestBuilder = new RequestBuilder();
+        requestBuilder.setRealm(Dsl.basicAuthRealm(adminLogin, adminPass).setUsePreemptiveAuth(true));
+        requestBuilder.setUrl(System.getenv("GALEB_API_URL") + "/account/search/findByUsername?username=" + username + "&projection=apitoken");
 
-            try {
-                Response response = httpClient.executeRequest(requestBuilder).get();
-                String responseBody = response.getResponseBody();
-                if (responseBody != null && !responseBody.isEmpty()) {
-                    HashMap json = mapper.readValue(responseBody, HashMap.class);
-                    String token = (String) ((HashMap<String, Object>) json).get("apitoken");
-                    String self = (String) ((HashMap<String, Object>)((HashMap<String, Object>)((HashMap<String, Object>) json)
-                                    .get("_links")).get("self")).get("href");
+        Account account = null;
+        try {
+            Response response = httpClient.executeRequest(requestBuilder).get();
+            String responseBody;
+            if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (responseBody = response.getResponseBody()) != null && !responseBody.isEmpty()) {
+                HashMap json = mapper.readValue(responseBody, HashMap.class);
+                String token = (String) ((HashMap<String, Object>) json).get("apitoken");
+                String self = (String) ((HashMap<String, Object>)((HashMap<String, Object>)((HashMap<String, Object>) json)
+                                .get("_links")).get("self")).get("href");
 
-                    /**
-                    LOGGER.warn("TOKEN: " + token + " / SELF: " + self);
-                    */
+                /**
+                LOGGER.warn("TOKEN: " + token + " / SELF: " + self);
+                */
 
-                    Account account = new Account();
-                    account.setUsername(username);
-                    account.setEmail(username + "@fake");
-                    account.setPassword(token);
-                    account.setDescription(self);
-                    return account;
-                }
-
-            } catch (InterruptedException | ExecutionException | IOException e) {
-                LOGGER.error(e.getMessage(), e);
+                account = new Account();
+                account.setUsername(username);
+                account.setEmail(username + "@fake");
+                account.setDescription(self + "#" + token); // preserve original self url and token
             }
+
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        return null;
+        return account;
     }
 }

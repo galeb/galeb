@@ -56,14 +56,14 @@ public class HttpClientService {
         RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
-        return new Response(httpClient.executeRequest(requestBuilder).get());
+        return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
-    public static class Response implements io.galeb.oldapi.services.Response {
+    private static class AsyncHttpClientResponse implements Response {
 
         private final org.asynchttpclient.Response response;
 
-        Response(org.asynchttpclient.Response response) {
+        private AsyncHttpClientResponse(org.asynchttpclient.Response response) {
             this.response = response;
         }
 

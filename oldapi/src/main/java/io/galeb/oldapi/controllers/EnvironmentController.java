@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
@@ -39,8 +40,9 @@ public class EnvironmentController {
     private EnvironmentService service;
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Environment>>> get() {
-        return service.get();
+    public ResponseEntity<PagedResources<Resource<Environment>>> get(@RequestParam(value = "size", required = false) Integer size,
+                                                                     @RequestParam(value = "page", required = false) Integer page) {
+        return service.get(size, page);
     }
 
     @RequestMapping(value = "/{param:.+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)

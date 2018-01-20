@@ -77,8 +77,12 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return environment;
     }
 
-    public ResponseEntity<PagedResources<Resource<Environment>>> get() {
-        String url = resourceUrlBase + "?size=9999";
+    public ResponseEntity<PagedResources<Resource<Environment>>> get(Integer size, Integer page) {
+        String url = resourceUrlBase +
+                (size != null || page != null ? "?" : "") +
+                (size != null ? size : "") +
+                (size != null && page != null ? "&" : "") +
+                (page != null ? page : "");
         try {
             final Response response = httpClientService.getResponse(url);
             final String body;

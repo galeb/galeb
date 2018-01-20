@@ -20,7 +20,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.galeb.oldapi.entities.v1.Environment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.asynchttpclient.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
@@ -39,10 +38,13 @@ public class EnvironmentService extends AbstractHttpService<Environment> {
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 
     private final String resourceName = Environment.class.getSimpleName().toLowerCase();
+    private final String resourceUrlBase = System.getenv("GALEB_API_URL") + "/" + resourceName;
+    private final HttpClientService httpClientService;
 
     @Autowired
-    public EnvironmentService(HttpClientService clientService) {
-        super(clientService.httpClient());
+    public EnvironmentService(HttpClientService httpClientService) {
+        super();
+        this.httpClientService = httpClientService;
     }
 
     @Override
@@ -74,15 +76,12 @@ public class EnvironmentService extends AbstractHttpService<Environment> {
     }
 
     public ResponseEntity<PagedResources<Resource<Environment>>> get() {
-        String url = System.getenv("GALEB_API_URL") + "/" + resourceName + "?size=9999";
+        String url = resourceUrlBase + "?size=9999";
         try {
-            Response response = getResponse(url);
-            String body;
+            final Response response = httpClientService.getResponse(url);
+            final String body;
             if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-                final ArrayList<LinkedHashMap> v2Environments = jsonToList(body);
-                Set<Resource<Environment>> v1Environments = convertResources(v2Environments);
-                final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(9999, 0, v1Environments.size(), 1);
-                final PagedResources<Resource<Environment>> pagedResources = new PagedResources<>(v1Environments, metadata, getBaseLinks());
+                final PagedResources<Resource<Environment>> pagedResources = newPagedResourcesFromV2(jsonToList(body));
                 return ResponseEntity.ok(pagedResources);
             }
             return ResponseEntity.status(response.getStatusCode()).build();
@@ -90,6 +89,12 @@ public class EnvironmentService extends AbstractHttpService<Environment> {
             LOGGER.error(e.getMessage(), e);
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    private PagedResources<Resource<Environment>> newPagedResourcesFromV2(ArrayList<LinkedHashMap> v2Environments) {
+        Set<Resource<Environment>> v1Environments = convertResources(v2Environments);
+        final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(9999, 0, v1Environments.size(), 1);
+        return new PagedResources<>(v1Environments, metadata, getBaseLinks());
     }
 
     public ResponseEntity<String> getWithParam(String param) {

@@ -19,12 +19,9 @@ package io.galeb.oldapi.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
 import io.galeb.oldapi.services.HttpClientService;
+import io.galeb.oldapi.services.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.Dsl;
-import org.asynchttpclient.RequestBuilder;
-import org.asynchttpclient.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,24 +36,22 @@ public class ApiAccountService {
     private static final Logger LOGGER = LogManager.getLogger(ApiAccountService.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final AsyncHttpClient httpClient;
+    private final HttpClientService httpClientService;
 
     @Autowired
-    public ApiAccountService(HttpClientService clientService) {
-        this.httpClient = clientService.httpClient();
+    public ApiAccountService(HttpClientService httpClientService) {
+        this.httpClientService = httpClientService;
     }
 
     @SuppressWarnings("unchecked")
     public Account find(String username) {
         String adminLogin = System.getenv("GALEB_API_ADMIN_NAME");
         String adminPass = System.getenv("GALEB_API_ADMIN_PASS");
-        RequestBuilder requestBuilder = new RequestBuilder();
-        requestBuilder.setRealm(Dsl.basicAuthRealm(adminLogin, adminPass).setUsePreemptiveAuth(true));
-        requestBuilder.setUrl(System.getenv("GALEB_API_URL") + "/account/search/findByUsername?username=" + username + "&projection=apitoken");
+        String url = System.getenv("GALEB_API_URL") + "/account/search/findByUsername?username=" + username + "&projection=apitoken";
 
         Account account = null;
         try {
-            Response response = httpClient.executeRequest(requestBuilder).get();
+            Response response = httpClientService.getResponse(url, adminLogin, adminPass);
             String responseBody;
             if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (responseBody = response.getResponseBody()) != null && !responseBody.isEmpty()) {
                 HashMap json = mapper.readValue(responseBody, HashMap.class);

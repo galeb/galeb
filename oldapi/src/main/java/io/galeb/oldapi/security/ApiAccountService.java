@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -70,7 +71,10 @@ public class ApiAccountService {
                 account = new Account();
                 account.setUsername(username);
                 account.setEmail(username + "@fake");
-                account.setDescription(self + "#" + token); // preserve original self url and token
+                Map<String, String> details = new HashMap<>();
+                details.put("self", self);
+                details.put("token", token);
+                account.setDetails(details);
             }
 
         } catch (InterruptedException | ExecutionException | IOException e) {

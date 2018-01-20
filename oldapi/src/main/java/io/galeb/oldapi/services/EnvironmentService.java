@@ -38,9 +38,16 @@ public class EnvironmentService extends AbstractHttpService<Environment> {
 
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 
+    private final String resourceName = Environment.class.getSimpleName().toLowerCase();
+
     @Autowired
     public EnvironmentService(HttpClientService clientService) {
         super(clientService.httpClient());
+    }
+
+    @Override
+    protected String getResourceName() {
+        return resourceName;
     }
 
     @Override
@@ -67,7 +74,7 @@ public class EnvironmentService extends AbstractHttpService<Environment> {
     }
 
     public ResponseEntity<PagedResources<Resource<Environment>>> get() {
-        String url = System.getenv("GALEB_API_URL") + "/" + envClassName + "?size=9999";
+        String url = System.getenv("GALEB_API_URL") + "/" + resourceName + "?size=9999";
         try {
             Response response = getResponse(url);
             String body;

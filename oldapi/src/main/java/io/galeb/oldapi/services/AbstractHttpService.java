@@ -18,9 +18,8 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.reflect.TypeToken;
+import io.galeb.core.entity.Account;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
-import io.galeb.oldapi.entities.v1.Account;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.RequestBuilder;
@@ -42,9 +41,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractHttpService<T> {
 
     protected final ObjectMapper mapper = new ObjectMapper();
-    private TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
-    private Class<? super T> entityClass = typeToken.getRawType();
-    protected String envClassName = entityClass.getSimpleName().toLowerCase();
     private final AsyncHttpClient httpClient;
 
     AbstractHttpService(AsyncHttpClient httpClient) {
@@ -55,17 +51,19 @@ public abstract class AbstractHttpService<T> {
     @SuppressWarnings("unchecked")
     private Link convertLink(Map.Entry<String, Object> entry) {
         String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
-                .replaceAll(".*/" + envClassName, "/" + envClassName);
+                .replaceAll(".*/" + getResourceName(), "/" + getResourceName());
         return new Link(href, entry.getKey());
     }
 
     private String extractApiToken(Account account) {
-        return account.getDescription().replaceAll(".*#", "");
+        return account.getDetails().get("token");
     }
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
 
     protected abstract T convertResource(LinkedHashMap resource) throws IOException;
+
+    protected abstract String getResourceName();
 
     @SuppressWarnings("unchecked")
     List<Link> extractLinks(LinkedHashMap resource) {
@@ -77,7 +75,7 @@ public abstract class AbstractHttpService<T> {
     @SuppressWarnings("unchecked")
     ArrayList<LinkedHashMap> jsonToList(String body) throws IOException {
         return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                mapper.readValue(body, HashMap.class).get("_embedded")).get(envClassName);
+                mapper.readValue(body, HashMap.class).get("_embedded")).get(getResourceName());
     }
 
     // TODO: Set Environment Status
@@ -87,7 +85,7 @@ public abstract class AbstractHttpService<T> {
 
     Response getResponse(String url) throws InterruptedException, ExecutionException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = account.getName();
+        String username = account.getUsername();
         String password = extractApiToken(account); // extract token from description
         RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
@@ -97,8 +95,8 @@ public abstract class AbstractHttpService<T> {
 
     List<Link> getBaseLinks() {
         final List<Link> links = new ArrayList<>();
-        links.add(new Link("/" + envClassName + "?page=0&size=1000{&sort}", "self"));
-        links.add(new Link("/" + envClassName + "/search", "search"));
+        links.add(new Link("/" + getResourceName() + "?page=0&size=1000{&sort}", "self"));
+        links.add(new Link("/" + getResourceName() + "/search", "search"));
         return links;
     }
 }

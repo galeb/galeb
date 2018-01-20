@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @SuppressWarnings("unused")
@@ -38,6 +40,12 @@ public class EnvironmentController {
 
     @Autowired
     private EnvironmentService service;
+
+    @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<Environment>>> getSearch(@PathVariable("findType") String findType,
+                                                                           @RequestParam Map<String, String> queryMap) {
+        return service.getSearch(findType, queryMap);
+    }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<Environment>>> get(@RequestParam(value = "size", required = false) Integer size,

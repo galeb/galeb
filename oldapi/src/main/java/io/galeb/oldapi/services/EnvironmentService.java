@@ -84,6 +84,11 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return environment;
     }
 
+    @Override
+    public ResponseEntity<PagedResources<Resource<Environment>>> getSearch(String findType, Map<String, String> queryMap) {
+        return ResponseEntity.ok().build();
+    }
+
     public ResponseEntity<PagedResources<Resource<Environment>>> get(Integer size, Integer page) {
         String url = resourceUrlBase +
                 (size != null || page != null ? "?" : "") +

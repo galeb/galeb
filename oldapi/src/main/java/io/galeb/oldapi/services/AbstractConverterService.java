@@ -20,7 +20,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,4 +78,6 @@ public abstract class AbstractConverterService<T> {
         links.add(new Link("/" + getResourceName() + "/search", "search"));
         return links;
     }
+
+    public abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
 }

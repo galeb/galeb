@@ -16,9 +16,15 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.Account;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Dsl;
+import org.asynchttpclient.RequestBuilder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ExecutionException;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -27,16 +33,53 @@ import static org.asynchttpclient.Dsl.config;
 public class HttpClientService {
 
     private static final String USER_AGENT = "OLDAPI/1.0";
-    private boolean followRedirect = true;
-    private boolean keepAlive = true;
+    private final DefaultAsyncHttpClientConfig.Builder config = config()
+                                                                .setFollowRedirect(true)
+                                                                .setSoReuseAddress(true)
+                                                                .setKeepAlive(true)
+                                                                .setUseInsecureTrustManager(true)
+                                                                .setUserAgent(USER_AGENT);
+    private final AsyncHttpClient httpClient = asyncHttpClient(config);
 
-    public AsyncHttpClient httpClient() {
-        DefaultAsyncHttpClientConfig.Builder config = config()
-                .setFollowRedirect(followRedirect)
-                .setSoReuseAddress(true)
-                .setKeepAlive(keepAlive)
-                .setUseInsecureTrustManager(true)
-                .setUserAgent(USER_AGENT);
-        return asyncHttpClient(config);
+    private String extractApiToken(Account account) {
+        return account.getDetails().get("token");
+    }
+
+    public Response getResponse(String url) throws InterruptedException, ExecutionException {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = account.getUsername();
+        String password = extractApiToken(account); // extract token from description
+        return getResponse(url, username, password);
+    }
+
+    public Response getResponse(String url, String username, String password) throws InterruptedException, ExecutionException {
+        RequestBuilder requestBuilder = new RequestBuilder();
+        requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
+        requestBuilder.setUrl(url);
+        return new Response(httpClient.executeRequest(requestBuilder).get());
+    }
+
+    public static class Response implements io.galeb.oldapi.services.Response {
+
+        private final org.asynchttpclient.Response response;
+
+        Response(org.asynchttpclient.Response response) {
+            this.response = response;
+        }
+
+        @Override
+        public boolean hasResponseStatus() {
+            return response.hasResponseStatus();
+        }
+
+        @Override
+        public int getStatusCode() {
+            return response.getStatusCode();
+        }
+
+        @Override
+        public String getResponseBody() {
+            return response.getResponseBody();
+        }
     }
 }

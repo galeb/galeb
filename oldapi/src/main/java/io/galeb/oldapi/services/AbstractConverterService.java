@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractHttpService<T> {
+public abstract class AbstractConverterService<T> {
 
     protected final ObjectMapper mapper = new ObjectMapper();
 
-    AbstractHttpService() {
+    AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 

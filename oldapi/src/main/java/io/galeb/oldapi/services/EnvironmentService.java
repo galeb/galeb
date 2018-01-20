@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
-public class EnvironmentService extends AbstractHttpService<Environment> {
+public class EnvironmentService extends AbstractConverterService<Environment> {
 
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 

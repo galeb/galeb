@@ -17,7 +17,7 @@
 package io.galeb.oldapi.controllers;
 
 import io.galeb.oldapi.services.EnvironmentService;
-import io.galeb.oldapi.v1entities.Environment;
+import io.galeb.oldapi.entities.v1.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;

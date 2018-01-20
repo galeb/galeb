@@ -17,23 +17,15 @@
 package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.galeb.oldapi.v1entities.AbstractEntity;
-import io.galeb.oldapi.v1entities.Account;
-import io.galeb.oldapi.v1entities.Environment;
+import io.galeb.oldapi.entities.v1.Environment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.Dsl;
-import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -42,29 +34,21 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
-public class EnvironmentService {
+public class EnvironmentService extends AbstractHttpService<Environment> {
 
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 
-    private final String envClassName = Environment.class.getSimpleName().toLowerCase();
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final AsyncHttpClient httpClient;
-
     @Autowired
     public EnvironmentService(HttpClientService clientService) {
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        this.httpClient = clientService.httpClient();
+        super(clientService.httpClient());
     }
 
-    @SuppressWarnings("unchecked")
-    private PagedResources<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2Environments) {
-        Set<Resource<Environment>> v1Environments = v2Environments.stream().
+    @Override
+    protected Set<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2s) {
+        return v2s.stream().
                 map(resource -> {
                     try {
-                        io.galeb.core.entity.Environment v1Environment = mapper.readValue(mapper.writeValueAsString(resource), io.galeb.core.entity.Environment.class);
-                        Environment environment = new Environment(v1Environment.getName());
-                        environment.setId(v1Environment.getId());
-                        environment.setStatus(extractStatus());
+                        Environment environment = convertResource(resource);
                         List<Link> links = extractLinks(resource);
                         return new Resource<>(environment, links);
                     } catch (IOException e) {
@@ -72,52 +56,26 @@ public class EnvironmentService {
                     }
                     return null;
                 }).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        final List<Link> links = new ArrayList<>();
-        links.add(new Link("/" + envClassName + "?page=0&size=1000{&sort}", "self"));
-        links.add(new Link("/" + envClassName + "/search", "search"));
-        final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(9999, 0, v1Environments.size(), 1);
-        return new PagedResources<>(v1Environments, metadata, links);
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Link> extractLinks(LinkedHashMap resource) {
-        return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
-                .map(this::convertLink)
-                .collect(Collectors.toList());
-    }
-
-    @SuppressWarnings("unchecked")
-    private ArrayList<LinkedHashMap> jsonToList(String body) throws IOException {
-        return (ArrayList<LinkedHashMap>) ((LinkedHashMap) mapper.readValue(body, HashMap.class).get("_embedded")).get(envClassName);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Link convertLink(Map.Entry<String, Object> entry) {
-        String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
-                .replaceAll(".*/" + envClassName, "/" + envClassName);
-        return new Link(href, entry.getKey());
-    }
-
-    // TODO: Set Environment Status
-    private AbstractEntity.EntityStatus extractStatus() {
-        return AbstractEntity.EntityStatus.UNKNOWN;
+    @Override
+    protected Environment convertResource(LinkedHashMap resource) throws IOException {
+        io.galeb.core.entity.Environment v1Environment = mapper.readValue(mapper.writeValueAsString(resource), io.galeb.core.entity.Environment.class);
+        Environment environment = new Environment(v1Environment.getName());
+        environment.setStatus(extractStatus());
+        return environment;
     }
 
     public ResponseEntity<PagedResources<Resource<Environment>>> get() {
         String url = System.getenv("GALEB_API_URL") + "/" + envClassName + "?size=9999";
-        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = account.getName();
-        String password = extractApiToken(account); // extract token from description
-        RequestBuilder requestBuilder = new RequestBuilder();
-        requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
-        requestBuilder.setUrl(url);
         try {
-            Response response = httpClient.executeRequest(requestBuilder).get();
+            Response response = getResponse(url);
             String body;
             if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
                 final ArrayList<LinkedHashMap> v2Environments = jsonToList(body);
-                final PagedResources<Resource<Environment>> pagedResources = convertResources(v2Environments);
+                Set<Resource<Environment>> v1Environments = convertResources(v2Environments);
+                final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(9999, 0, v1Environments.size(), 1);
+                final PagedResources<Resource<Environment>> pagedResources = new PagedResources<>(v1Environments, metadata, getBaseLinks());
                 return ResponseEntity.ok(pagedResources);
             }
             return ResponseEntity.status(response.getStatusCode()).build();
@@ -125,10 +83,6 @@ public class EnvironmentService {
             LOGGER.error(e.getMessage(), e);
         }
         return ResponseEntity.badRequest().build();
-    }
-
-    private String extractApiToken(Account account) {
-        return account.getDescription().replaceAll(".*#", "");
     }
 
     public ResponseEntity<String> getWithParam(String param) {

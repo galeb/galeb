@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
 import java.util.HashSet;
 import java.util.Set;

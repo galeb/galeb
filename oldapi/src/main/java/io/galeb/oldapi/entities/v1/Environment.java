@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class Project extends AbstractEntity<Project> {
+public class Environment extends AbstractEntity<Environment> {
 
-    private static final long serialVersionUID = 5596582746795373018L;
+    private static final long serialVersionUID = 5596582746795373016L;
+
+    @JsonIgnore
+    private final Set<Farm> farms = new HashSet<>();
 
     @JsonIgnore
     private final Set<VirtualHost> virtualhosts = new HashSet<>();
@@ -34,25 +37,11 @@ public class Project extends AbstractEntity<Project> {
     @JsonIgnore
     private final Set<Pool> pools = new HashSet<>();
 
-    private final Set<Team> teams = new HashSet<>();
-
-    public Project(String name) {
+    public Environment(String name) {
         setName(name);
     }
 
-    protected Project() {
+    protected Environment() {
         //
-    }
-
-    public Set<Team> getTeams() {
-        return teams;
-    }
-
-    public Project setTeams(Set<Team> teams) {
-        if (teams != null) {
-            this.teams.clear();
-            this.teams.addAll(teams);
-        }
-        return this;
     }
 }

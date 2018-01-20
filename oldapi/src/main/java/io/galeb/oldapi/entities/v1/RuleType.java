@@ -13,14 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.galeb.oldapi.v1entities;
+
+package io.galeb.oldapi.entities.v1;
 
 import java.util.Set;
 
-public interface WithAliases<T> {
+public class RuleType extends AbstractEntity<RuleType> {
 
-    Set<String> getAliases();
+    private static final long serialVersionUID = 5596582746795373010L;
 
-    T setAliases(Set<String> aliases);
+    private Set<Rule> rules;
 
+    public RuleType(String name) {
+        setName(name);
+    }
+
+    protected RuleType() {
+        //
+    }
+
+    public Set<Rule> getRules() {
+        return rules;
+    }
+
+    public RuleType setRules(Set<Rule> rules) {
+        if (rules != null) {
+            this.rules.clear();
+            this.rules.addAll(rules);
+        }
+        return this;
+    }
 }

@@ -14,48 +14,45 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class Provider extends AbstractEntity<Provider> {
+public class Project extends AbstractEntity<Project> {
 
-    private static final long serialVersionUID = 5596582746795373019L;
+    private static final long serialVersionUID = 5596582746795373018L;
 
     @JsonIgnore
-    private final Set<Farm> farms = new HashSet<>();
+    private final Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    private String driver;
+    @JsonIgnore
+    private final Set<Target> targets = new HashSet<>();
 
-    private String provisioning;
+    @JsonIgnore
+    private final Set<Pool> pools = new HashSet<>();
 
-    public Provider(String name) {
+    private final Set<Team> teams = new HashSet<>();
+
+    public Project(String name) {
         setName(name);
     }
 
-    protected Provider() {
+    protected Project() {
         //
     }
 
-    public String getDriver() {
-        return driver;
+    public Set<Team> getTeams() {
+        return teams;
     }
 
-    public Provider setDriver(String driver) {
-        this.driver = driver;
+    public Project setTeams(Set<Team> teams) {
+        if (teams != null) {
+            this.teams.clear();
+            this.teams.addAll(teams);
+        }
         return this;
     }
-
-    public String getProvisioning() {
-        return provisioning;
-    }
-
-    public Provider setProvisioning(String provisioning) {
-        this.provisioning = provisioning;
-        return this;
-    }
-
 }

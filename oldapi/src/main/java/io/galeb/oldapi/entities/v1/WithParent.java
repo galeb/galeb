@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+public interface WithParent<T extends AbstractEntity<?>> {
 
-public abstract class AbstractEntitySyncronizable {
+    T getParent();
 
-    @JsonIgnore
-    public String getEnvName() { return "NULL"; }
-
-    protected AbstractEntity.EntityStatus getDynamicStatus() {
-        return AbstractEntity.EntityStatus.OK;
-    }
-
-    protected Farm getFakeFarm() {
-        return new Farm().setName("fake").setAutoReload(false);
-    }
 }

@@ -14,34 +14,20 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class Environment extends AbstractEntity<Environment> {
-
-    private static final long serialVersionUID = 5596582746795373016L;
+public abstract class AbstractEntitySyncronizable {
 
     @JsonIgnore
-    private final Set<Farm> farms = new HashSet<>();
+    public String getEnvName() { return "NULL"; }
 
-    @JsonIgnore
-    private final Set<VirtualHost> virtualhosts = new HashSet<>();
-
-    @JsonIgnore
-    private final Set<Target> targets = new HashSet<>();
-
-    @JsonIgnore
-    private final Set<Pool> pools = new HashSet<>();
-
-    public Environment(String name) {
-        setName(name);
+    protected AbstractEntity.EntityStatus getDynamicStatus() {
+        return AbstractEntity.EntityStatus.OK;
     }
 
-    protected Environment() {
-        //
+    protected Farm getFakeFarm() {
+        return new Farm().setName("fake").setAutoReload(false);
     }
 }

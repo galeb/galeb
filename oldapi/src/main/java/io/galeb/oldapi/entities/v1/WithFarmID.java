@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.v1entities;
+package io.galeb.oldapi.entities.v1;
 
-public interface WithParent<T extends AbstractEntity<?>> {
+public interface WithFarmID<T extends AbstractEntity<?>> {
 
-    T getParent();
+    long getFarmId();
+
+    T setFarmId(long farmId);
+
+    Farm getFarm();
 
 }

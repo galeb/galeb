@@ -18,6 +18,8 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.galeb.oldapi.entities.v1.Environment;
+import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

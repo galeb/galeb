@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.services;
+package io.galeb.oldapi.services.http;
 
 public interface Response {
 

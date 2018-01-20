@@ -18,8 +18,8 @@ package io.galeb.oldapi.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
-import io.galeb.oldapi.services.HttpClientService;
-import io.galeb.oldapi.services.Response;
+import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

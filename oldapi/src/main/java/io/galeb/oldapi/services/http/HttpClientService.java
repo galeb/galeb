@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.services;
+package io.galeb.oldapi.services.http;
 
 import io.galeb.core.entity.Account;
 import org.asynchttpclient.AsyncHttpClient;

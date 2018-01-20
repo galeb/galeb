@@ -30,7 +30,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -87,7 +94,13 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
             final Response response = httpClientService.getResponse(url);
             final String body;
             if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-                final PagedResources<Resource<Environment>> pagedResources = newPagedResourcesFromV2(jsonToList(body));
+                final Set<Resource<Environment>> v1Environments = convertResources(jsonToList(body));
+                int totalElements = v1Environments.size();
+                size = size != null ? size : 9999;
+                page = page != null ? page : 0;
+                final PagedResources.PageMetadata metadata =
+                        new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
+                final PagedResources<Resource<Environment>> pagedResources = new PagedResources<>(v1Environments, metadata, getBaseLinks());
                 return ResponseEntity.ok(pagedResources);
             }
             return ResponseEntity.status(response.getStatusCode()).build();
@@ -97,21 +110,20 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().build();
     }
 
-    private PagedResources<Resource<Environment>> newPagedResourcesFromV2(ArrayList<LinkedHashMap> v2Environments) {
-        Set<Resource<Environment>> v1Environments = convertResources(v2Environments);
-        final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(9999, 0, v1Environments.size(), 1);
-        return new PagedResources<>(v1Environments, metadata, getBaseLinks());
-    }
-
-    public ResponseEntity<String> getWithParam(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+    public ResponseEntity<Resource<Environment>> getWithParam(String id) {
+        String url = resourceUrlBase + "/" + id;
         try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
+            final Response response = httpClientService.getResponse(url);
+            final String body;
+            if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+                LinkedHashMap resource = mapper.readValue(body, LinkedHashMap.class);
+                return ResponseEntity.ok(new Resource<>(convertResource(resource), Collections.emptyList()));
+            }
+            return ResponseEntity.status(response.getStatusCode()).build();
+        } catch (InterruptedException | ExecutionException | IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return ResponseEntity.badRequest().body("{}");
+        return ResponseEntity.badRequest().build();
     }
     
     public ResponseEntity<String> post(String body) {
@@ -125,9 +137,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> postWithParam(String param, String body) {
+    public ResponseEntity<String> postWithParam(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -147,9 +159,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> putWithParam(String param, String body) {
+    public ResponseEntity<String> putWithParam(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -169,9 +181,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> deleteWithParam(String param) {
+    public ResponseEntity<String> deleteWithParam(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -191,9 +203,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> patchWithParam(String param, String body) {
+    public ResponseEntity<String> patchWithParam(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + param, body);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -213,9 +225,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> optionsWithParam(String param) {
+    public ResponseEntity<String> optionsWithParam(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -235,9 +247,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> headWithParam(String param) {
+    public ResponseEntity<String> headWithParam(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {
@@ -257,9 +269,9 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> traceWithParam(String param) {
+    public ResponseEntity<String> traceWithParam(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), param);
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
             return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
         } catch (JsonProcessingException e) {

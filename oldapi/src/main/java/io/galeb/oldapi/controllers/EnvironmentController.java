@@ -45,9 +45,9 @@ public class EnvironmentController {
         return service.get(size, page);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getWithParam(@PathVariable String param) {
-        return service.getWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Resource<Environment>> getWithParam(@PathVariable String id) {
+        return service.getWithParam(id);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,9 +55,9 @@ public class EnvironmentController {
         return service.post(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> postWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.postWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> postWithParam(@PathVariable String id, @RequestBody String body) {
+        return service.postWithParam(id, body);
     }
 
     @RequestMapping(method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,9 +65,9 @@ public class EnvironmentController {
         return service.put(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.putWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> putWithParam(@PathVariable String id, @RequestBody String body) {
+        return service.putWithParam(id, body);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,9 +75,9 @@ public class EnvironmentController {
         return service.delete();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteWithParam(@PathVariable String param) {
-        return service.deleteWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteWithParam(@PathVariable String id) {
+        return service.deleteWithParam(id);
     }
 
     @RequestMapping(method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,9 +85,9 @@ public class EnvironmentController {
         return service.patch(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> patchWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.patchWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> patchWithParam(@PathVariable String id, @RequestBody String body) {
+        return service.patchWithParam(id, body);
     }
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -95,9 +95,9 @@ public class EnvironmentController {
         return service.options();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> optionsWithParam(@PathVariable String param) {
-        return service.optionsWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> optionsWithParam(@PathVariable String id) {
+        return service.optionsWithParam(id);
     }
 
     @RequestMapping(method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -105,9 +105,9 @@ public class EnvironmentController {
         return service.head();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> headWithParam(@PathVariable String param) {
-        return service.headWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> headWithParam(@PathVariable String id) {
+        return service.headWithParam(id);
     }
 
     @RequestMapping(method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,9 +115,9 @@ public class EnvironmentController {
         return service.trace();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> traceWithParam(@PathVariable String param) {
-        return service.traceWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> traceWithParam(@PathVariable String id) {
+        return service.traceWithParam(id);
     }
 
 }

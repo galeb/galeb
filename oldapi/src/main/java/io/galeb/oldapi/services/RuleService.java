@@ -21,40 +21,53 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.entities.v1.Rule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Service
-public class RuleService {
+public class RuleService extends AbstractConverterService<Rule> {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleService.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public ResponseEntity<String> get() {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Rule.class.getSimpleName().toLowerCase(), "NULL");
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(Collections.singleton(emptyMap)));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
+    @Override
+    protected Set<Resource<Rule>> convertResources(ArrayList<LinkedHashMap> v2s) {
+        return null;
     }
 
-    public ResponseEntity<String> getWithParam(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Rule.class.getSimpleName().toLowerCase(), param);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
+    @Override
+    protected Rule convertResource(LinkedHashMap resource) throws IOException {
+        return null;
+    }
+
+    @Override
+    protected String getResourceName() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<PagedResources<Resource<Rule>>> getSearch(String findType, Map<String, String> queryMap) {
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<PagedResources<Resource<Rule>>> get(Integer size, Integer page) {
+        return ResponseEntity.ok().build();
+    }
+
+
+    public ResponseEntity<Resource<Rule>> getWithId(String param) {
+        return ResponseEntity.ok().build();
     }
     
     public ResponseEntity<String> post(String body) {
@@ -68,7 +81,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> postWithParam(String param, String body) {
+    public ResponseEntity<String> postWithId(String param, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase() + "/" + param, body);
         try {
@@ -90,7 +103,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> putWithParam(String param, String body) {
+    public ResponseEntity<String> putWithId(String param, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase() + "/" + param, body);
         try {
@@ -112,7 +125,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> deleteWithParam(String param) {
+    public ResponseEntity<String> deleteWithId(String param) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase(), param);
         try {
@@ -134,7 +147,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> patchWithParam(String param, String body) {
+    public ResponseEntity<String> patchWithId(String param, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase() + "/" + param, body);
         try {
@@ -156,7 +169,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> optionsWithParam(String param) {
+    public ResponseEntity<String> optionsWithId(String param) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase(), param);
         try {
@@ -178,7 +191,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> headWithParam(String param) {
+    public ResponseEntity<String> headWithId(String param) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase(), param);
         try {
@@ -200,7 +213,7 @@ public class RuleService {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> traceWithParam(String param) {
+    public ResponseEntity<String> traceWithId(String param) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Rule.class.getSimpleName().toLowerCase(), param);
         try {

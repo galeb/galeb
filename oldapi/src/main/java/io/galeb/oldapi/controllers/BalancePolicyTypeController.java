@@ -16,33 +16,46 @@
 
 package io.galeb.oldapi.controllers;
 
+import io.galeb.oldapi.entities.v1.BalancePolicyType;
 import io.galeb.oldapi.services.BalancePolicyTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @SuppressWarnings("unused")
 @RestController
 @RequestMapping("/balancepolicytype")
-public class BalancePolicyTypeController {
+public class BalancePolicyTypeController extends AbstractController<BalancePolicyType> {
 
     @Autowired
     private BalancePolicyTypeService service;
 
-    @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> get() {
-        return service.get();
+    @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> getSearch(@PathVariable("findType") String findType,
+                                                                                 @RequestParam Map<String, String> queryMap) {
+        return service.getSearch(findType, queryMap);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getWithParam(@PathVariable String param) {
-        return service.getWithParam(param);
+    @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> get(@RequestParam(value = "size", required = false) Integer size,
+                                                                           @RequestParam(value = "page", required = false) Integer page) {
+        return service.get(size, page);
+    }
+
+    @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Resource<BalancePolicyType>> getWithId(@PathVariable String id) {
+        return service.getWithId(id);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -50,9 +63,9 @@ public class BalancePolicyTypeController {
         return service.post(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> postWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.postWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> postWithId(@PathVariable String id, @RequestBody String body) {
+        return service.postWithId(id, body);
     }
 
     @RequestMapping(method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -60,9 +73,9 @@ public class BalancePolicyTypeController {
         return service.put(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.putWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> putWithId(@PathVariable String id, @RequestBody String body) {
+        return service.putWithId(id, body);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -70,9 +83,9 @@ public class BalancePolicyTypeController {
         return service.delete();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteWithParam(@PathVariable String param) {
-        return service.deleteWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteWithId(@PathVariable String id) {
+        return service.deleteWithId(id);
     }
 
     @RequestMapping(method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -80,9 +93,9 @@ public class BalancePolicyTypeController {
         return service.patch(body);
     }
 
-    @RequestMapping(value = "/{param:.+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> patchWithParam(@PathVariable String param, @RequestBody String body) {
-        return service.patchWithParam(param, body);
+    @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> patchWithId(@PathVariable String id, @RequestBody String body) {
+        return service.patchWithId(id, body);
     }
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -90,9 +103,9 @@ public class BalancePolicyTypeController {
         return service.options();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> optionsWithParam(@PathVariable String param) {
-        return service.optionsWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> optionsWithId(@PathVariable String id) {
+        return service.optionsWithId(id);
     }
 
     @RequestMapping(method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,9 +113,9 @@ public class BalancePolicyTypeController {
         return service.head();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> headWithParam(@PathVariable String param) {
-        return service.headWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> headWithId(@PathVariable String id) {
+        return service.headWithId(id);
     }
 
     @RequestMapping(method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,9 +123,9 @@ public class BalancePolicyTypeController {
         return service.trace();
     }
 
-    @RequestMapping(value = "/{param:.+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> traceWithParam(@PathVariable String param) {
-        return service.traceWithParam(param);
+    @RequestMapping(value = "/{id:\\d+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> traceWithId(@PathVariable String id) {
+        return service.traceWithId(id);
     }
 
 }

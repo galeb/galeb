@@ -89,6 +89,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.ok().build();
     }
 
+    @Override
     public ResponseEntity<PagedResources<Resource<Environment>>> get(Integer size, Integer page) {
         String url = resourceUrlBase +
                 (size != null || page != null ? "?" : "") +
@@ -115,7 +116,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<Resource<Environment>> getWithParam(String id) {
+    @Override
+    public ResponseEntity<Resource<Environment>> getWithId(String id) {
         String url = resourceUrlBase + "/" + id;
         try {
             final Response response = httpClientService.getResponse(url);
@@ -130,7 +132,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         }
         return ResponseEntity.badRequest().build();
     }
-    
+
+    @Override
     public ResponseEntity<String> post(String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
@@ -142,7 +145,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> postWithParam(String id, String body) {
+    @Override
+    public ResponseEntity<String> postWithId(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
@@ -153,6 +157,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> put(String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
@@ -164,7 +169,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> putWithParam(String id, String body) {
+    @Override
+    public ResponseEntity<String> putWithId(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
@@ -175,6 +181,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> delete() {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
@@ -186,7 +193,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> deleteWithParam(String id) {
+    @Override
+    public ResponseEntity<String> deleteWithId(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
@@ -197,6 +205,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> patch(String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), body);
@@ -208,7 +217,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> patchWithParam(String id, String body) {
+    @Override
+    public ResponseEntity<String> patchWithId(String id, String body) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase() + "/" + id, body);
         try {
@@ -219,6 +229,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> options() {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
@@ -230,7 +241,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> optionsWithParam(String id) {
+    @Override
+    public ResponseEntity<String> optionsWithId(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
@@ -241,6 +253,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> head() {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
@@ -252,7 +265,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> headWithParam(String id) {
+    @Override
+    public ResponseEntity<String> headWithId(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {
@@ -263,6 +277,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
+    @Override
     public ResponseEntity<String> trace() {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), "NULL");
@@ -274,7 +289,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().body("{}");
     }
 
-    public ResponseEntity<String> traceWithParam(String id) {
+    @Override
+    public ResponseEntity<String> traceWithId(String id) {
         Map<String, Object> emptyMap = new HashMap<>();
         emptyMap.put(Environment.class.getSimpleName().toLowerCase(), id);
         try {

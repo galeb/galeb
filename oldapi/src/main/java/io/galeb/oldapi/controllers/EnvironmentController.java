@@ -36,7 +36,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @SuppressWarnings("unused")
 @RestController
 @RequestMapping("/environment")
-public class EnvironmentController {
+public class EnvironmentController extends AbstractController<Environment> {
 
     @Autowired
     private EnvironmentService service;
@@ -54,8 +54,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Environment>> getWithParam(@PathVariable String id) {
-        return service.getWithParam(id);
+    public ResponseEntity<Resource<Environment>> getWithId(@PathVariable String id) {
+        return service.getWithId(id);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -64,8 +64,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> postWithParam(@PathVariable String id, @RequestBody String body) {
-        return service.postWithParam(id, body);
+    public ResponseEntity<String> postWithId(@PathVariable String id, @RequestBody String body) {
+        return service.postWithId(id, body);
     }
 
     @RequestMapping(method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,8 +74,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithParam(@PathVariable String id, @RequestBody String body) {
-        return service.putWithParam(id, body);
+    public ResponseEntity<String> putWithId(@PathVariable String id, @RequestBody String body) {
+        return service.putWithId(id, body);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -84,8 +84,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteWithParam(@PathVariable String id) {
-        return service.deleteWithParam(id);
+    public ResponseEntity<String> deleteWithId(@PathVariable String id) {
+        return service.deleteWithId(id);
     }
 
     @RequestMapping(method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,8 +94,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> patchWithParam(@PathVariable String id, @RequestBody String body) {
-        return service.patchWithParam(id, body);
+    public ResponseEntity<String> patchWithId(@PathVariable String id, @RequestBody String body) {
+        return service.patchWithId(id, body);
     }
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -104,8 +104,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> optionsWithParam(@PathVariable String id) {
-        return service.optionsWithParam(id);
+    public ResponseEntity<String> optionsWithId(@PathVariable String id) {
+        return service.optionsWithId(id);
     }
 
     @RequestMapping(method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -114,8 +114,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> headWithParam(@PathVariable String id) {
-        return service.headWithParam(id);
+    public ResponseEntity<String> headWithId(@PathVariable String id) {
+        return service.headWithId(id);
     }
 
     @RequestMapping(method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -124,8 +124,8 @@ public class EnvironmentController {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> traceWithParam(@PathVariable String id) {
-        return service.traceWithParam(id);
+    public ResponseEntity<String> traceWithId(@PathVariable String id) {
+        return service.traceWithId(id);
     }
 
 }

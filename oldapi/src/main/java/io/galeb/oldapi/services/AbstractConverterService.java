@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractConverterService<T> {
+public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected final ObjectMapper mapper = new ObjectMapper();
 
@@ -53,6 +53,40 @@ public abstract class AbstractConverterService<T> {
     protected abstract T convertResource(LinkedHashMap resource) throws IOException;
 
     protected abstract String getResourceName();
+
+    protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
+
+    protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Integer size, Integer page);
+
+    protected abstract ResponseEntity<Resource<T>> getWithId(String id);
+
+    protected abstract ResponseEntity<String> post(String body);
+
+    protected abstract ResponseEntity<String> postWithId(String id, String body);
+
+    protected abstract ResponseEntity<String> put(String body);
+
+    protected abstract ResponseEntity<String> putWithId(String id, String body);
+
+    protected abstract ResponseEntity<String> delete();
+
+    protected abstract ResponseEntity<String> deleteWithId(String id);
+
+    protected abstract ResponseEntity<String> patch(String body);
+
+    protected abstract ResponseEntity<String> patchWithId(String id, String body);
+
+    protected abstract ResponseEntity<String> options();
+
+    protected abstract ResponseEntity<String> optionsWithId(String id);
+
+    protected abstract ResponseEntity<String> head();
+
+    protected abstract ResponseEntity<String> headWithId(String id);
+
+    protected abstract ResponseEntity<String> trace();
+
+    protected abstract ResponseEntity<String> traceWithId(String id);
 
     @SuppressWarnings("unchecked")
     List<Link> extractLinks(LinkedHashMap resource) {
@@ -79,5 +113,4 @@ public abstract class AbstractConverterService<T> {
         return links;
     }
 
-    public abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
 }

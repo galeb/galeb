@@ -38,7 +38,7 @@ public class LinkProcessor {
 
     public Set<Link> pagedLinks(String resourceName, int size, int page) {
         final Set<Link> links = new HashSet<>();
-        links.add(new Link("/" + resourceName + "?page=0&size=" + size, "self"));
+        links.add(new Link("/" + resourceName + "?page=" + page + "&size=" + size, "self"));
         links.add(new Link("/" + resourceName + "/search", "search"));
         return links;
     }

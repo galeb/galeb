@@ -20,7 +20,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class LinkProcessor {
@@ -41,5 +44,26 @@ public class LinkProcessor {
         links.add(new Link("/" + resourceName + "?page=" + page + "&size=" + size, "self"));
         links.add(new Link("/" + resourceName + "/search", "search"));
         return links;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Link convertLink(Map.Entry<String, Object> entry, String resourceName) {
+        String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
+                .replaceAll(".*/" + resourceName, "/" + resourceName);
+        return new Link(href, entry.getKey());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<Link> extractLinks(LinkedHashMap resource, String resourceName) {
+        return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
+                .map((Map.Entry<String, Object> entry) -> convertLink(entry, resourceName))
+                .collect(Collectors.toSet());
+    }
+
+    public long extractId(Set<Link> links) {
+        return links.stream()
+                .filter(l -> "self".equals(l.getRel()))
+                .map(l -> l.getHref().replaceAll("^.*/", ""))
+                .mapToLong(Long::parseLong).findAny().orElse(0);
     }
 }

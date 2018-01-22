@@ -69,8 +69,8 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                 map(resource -> {
                     try {
                         Environment environment = convertResource(resource);
-                        Set<Link> links = extractLinks(resource);
-                        Long id = extractId(links);
+                        Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
+                        Long id = linkProcessor.extractId(links);
                         linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
                                      .add(links,"/" + resourceName + "/" + id + "/targets", "targets")
                                      .remove(links, "rulesordered");

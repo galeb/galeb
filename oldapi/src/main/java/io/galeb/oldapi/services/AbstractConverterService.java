@@ -36,21 +36,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    @SuppressWarnings("unchecked")
-    private Link convertLink(Map.Entry<String, Object> entry) {
-        String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
-                .replaceAll(".*/" + getResourceName(), "/" + getResourceName());
-        return new Link(href, entry.getKey());
-    }
-
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
-
-    protected long extractId(Set<Link> links) {
-        return links.stream()
-                    .filter(l -> "self".equals(l.getRel()))
-                    .map(l -> l.getHref().replaceAll("^.*/", ""))
-                    .mapToLong(Long::parseLong).findAny().orElse(0);
-    }
 
     protected abstract T convertResource(LinkedHashMap resource) throws IOException;
 
@@ -89,13 +75,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected abstract ResponseEntity<String> trace();
 
     protected abstract ResponseEntity<String> traceWithId(String id);
-
-    @SuppressWarnings("unchecked")
-    Set<Link> extractLinks(LinkedHashMap resource) {
-        return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
-                .map(this::convertLink)
-                .collect(Collectors.toSet());
-    }
 
     @SuppressWarnings("unchecked")
     ArrayList<LinkedHashMap> jsonToList(String body) throws IOException {

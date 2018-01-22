@@ -67,7 +67,12 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                 map(resource -> {
                     try {
                         Environment environment = convertResource(resource);
-                        List<Link> links = extractLinks(resource);
+                        List<Link> links = extractLinks(resource).stream()
+                                .filter(l -> !"rulesordered".equals(l.getRel())).collect(Collectors.toList());
+                        Long id = extractId(links);
+                        links.add(new Link("/" + resourceName + "/" + id + "/farms", "farms"));
+                        links.add(new Link("/" + resourceName + "/" + id + "/targets", "targets"));
+                        environment.setId(id);
                         return new Resource<>(environment, links);
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);

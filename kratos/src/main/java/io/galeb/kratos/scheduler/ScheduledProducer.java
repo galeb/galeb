@@ -9,6 +9,7 @@ import io.galeb.kratos.repository.PoolRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jms.core.JmsTemplate;
@@ -27,6 +28,7 @@ import java.util.stream.StreamSupport;
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Service
+@ConditionalOnProperty(value = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
 public class ScheduledProducer {
 

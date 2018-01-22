@@ -16,6 +16,11 @@ endpoints:
     shutdown:    { enabled: false }
     trace:       { enabled: false }
 
+app:
+    scheduling:
+        enabled: false
+
+
 spring:
     datasource:
         driverClassName: ${GALEB_DB_DRIVER:org.h2.Driver}

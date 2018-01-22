@@ -50,6 +50,13 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
 
+    protected long extractId(List<Link> links) {
+        return links.stream()
+                    .filter(l -> "self".equals(l.getRel()))
+                    .map(l -> l.getHref().replaceAll("^.*/", ""))
+                    .mapToLong(Long::parseLong).findAny().orElse(0);
+    }
+
     protected abstract T convertResource(LinkedHashMap resource) throws IOException;
 
     protected abstract String getResourceName();

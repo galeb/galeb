@@ -18,7 +18,7 @@ package io.galeb.oldapi.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.galeb.oldapi.entities.v1.Account;
+import io.galeb.core.entity.Account;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.data.domain.PageRequest;

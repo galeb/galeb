@@ -25,12 +25,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractConverterService<T extends AbstractEntity> {
@@ -50,7 +45,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
 
-    protected long extractId(List<Link> links) {
+    protected long extractId(Set<Link> links) {
         return links.stream()
                     .filter(l -> "self".equals(l.getRel()))
                     .map(l -> l.getHref().replaceAll("^.*/", ""))
@@ -96,10 +91,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected abstract ResponseEntity<String> traceWithId(String id);
 
     @SuppressWarnings("unchecked")
-    List<Link> extractLinks(LinkedHashMap resource) {
+    Set<Link> extractLinks(LinkedHashMap resource) {
         return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
                 .map(this::convertLink)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @SuppressWarnings("unchecked")
@@ -111,13 +106,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     // TODO: Set Environment Status
     AbstractEntity.EntityStatus extractStatus() {
         return AbstractEntity.EntityStatus.UNKNOWN;
-    }
-
-    List<Link> getBaseLinks() {
-        final List<Link> links = new ArrayList<>();
-        links.add(new Link("/" + getResourceName() + "?page=0&size=1000{&sort}", "self"));
-        links.add(new Link("/" + getResourceName() + "/search", "search"));
-        return links;
     }
 
 }

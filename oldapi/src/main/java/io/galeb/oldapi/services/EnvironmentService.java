@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.http.Response;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -49,11 +49,13 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     private final String resourceName = Environment.class.getSimpleName().toLowerCase();
     private final String resourceUrlBase = System.getenv("GALEB_API_URL") + "/" + resourceName;
     private final HttpClientService httpClientService;
+    private final LinkProcessor linkProcessor;
 
     @Autowired
-    public EnvironmentService(HttpClientService httpClientService) {
+    public EnvironmentService(HttpClientService httpClientService, LinkProcessor linkProcessor) {
         super();
         this.httpClientService = httpClientService;
+        this.linkProcessor = linkProcessor;
     }
 
     @Override
@@ -67,11 +69,11 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                 map(resource -> {
                     try {
                         Environment environment = convertResource(resource);
-                        List<Link> links = extractLinks(resource).stream()
-                                .filter(l -> !"rulesordered".equals(l.getRel())).collect(Collectors.toList());
+                        Set<Link> links = extractLinks(resource);
                         Long id = extractId(links);
-                        links.add(new Link("/" + resourceName + "/" + id + "/farms", "farms"));
-                        links.add(new Link("/" + resourceName + "/" + id + "/targets", "targets"));
+                        linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
+                                     .add(links,"/" + resourceName + "/" + id + "/targets", "targets")
+                                     .remove(links, "rulesordered");
                         environment.setId(id);
                         return new Resource<>(environment, links);
                     } catch (IOException e) {
@@ -111,7 +113,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                 page = page != null ? page : 0;
                 final PagedResources.PageMetadata metadata =
                         new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
-                final PagedResources<Resource<Environment>> pagedResources = new PagedResources<>(v1Environments, metadata, getBaseLinks());
+                final PagedResources<Resource<Environment>> pagedResources = new PagedResources<>(v1Environments, metadata, linkProcessor.pagedLinks(resourceName, size, page));
                 return ResponseEntity.ok(pagedResources);
             }
             return ResponseEntity.status(response.getStatusCode()).build();

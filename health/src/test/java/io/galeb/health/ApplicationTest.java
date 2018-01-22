@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Globo.com - ATeam
+ * Copyright (c) 2017-2017 Globo.com
  * All rights reserved.
  *
  * This source is subject to the Apache License, Version 2.0.
@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package io.galeb.health.suites;
+package io.galeb.health;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({})
-public class ManagerTestSuite {
+@SuppressWarnings("EmptyMethod")
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ApplicationTest {
+
+    @Test
+    public void contextLoads() {
+    }
 
 }

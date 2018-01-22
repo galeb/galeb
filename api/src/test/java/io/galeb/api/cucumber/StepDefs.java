@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.with;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -91,7 +93,6 @@ public class StepDefs {
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
 
-
     @PostConstruct
     public void init() {
         FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
@@ -123,13 +124,13 @@ public class StepDefs {
 
     @Given("^a REST client unauthenticated$")
     public void givenRestClientUnauthenticated() {
-        request = with().config(restAssuredConfig).contentType("application/json").auth().none();
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().none();
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
     @Given("^a REST client authenticated as (.*) with password (.*)$")
     public void givenRestClientAuthenticated(String login, String password) {
-        request = with().config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
     }
 

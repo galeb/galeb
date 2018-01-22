@@ -16,24 +16,43 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
-import org.springframework.hateoas.Link;
+import io.galeb.oldapi.entities.v1.Environment;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class AbstractConverterService<T extends AbstractEntity> {
 
-    protected final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    protected io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
+        return mapper.readValue(mapper.writeValueAsString(resource), klazz);
+    }
+
+    protected String getEmptyMap() throws JsonProcessingException {
+        return getEmptyMap(null);
+    }
+
+    protected String getEmptyMap(String body) throws JsonProcessingException {
+        return getEmptyMap(null, body);
+    }
+
+    protected String getEmptyMap(Long id, String body) throws JsonProcessingException {
+        Map<String, Object> emptyMap = new HashMap<>();
+        body = body != null ? body : "NULL";
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + (id != null ? "/" + id : ""), body);
+        return mapper.writeValueAsString(emptyMap);
     }
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
@@ -75,12 +94,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected abstract ResponseEntity<String> trace();
 
     protected abstract ResponseEntity<String> traceWithId(String id);
-
-    @SuppressWarnings("unchecked")
-    ArrayList<LinkedHashMap> jsonToList(String body) throws IOException {
-        return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                mapper.readValue(body, HashMap.class).get("_embedded")).get(getResourceName());
-    }
 
     // TODO: Set Environment Status
     AbstractEntity.EntityStatus extractStatus() {

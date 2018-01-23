@@ -65,9 +65,9 @@ public class PermissionService {
 
     public boolean allowView(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
+        if (entityClass == null) return false;
         if (criteria == null) {
-            Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
-            if (entityClass == null) return false;
             String criteriaName = entityClass.getSimpleName();
             String realCriteria = "ALL";
             if (isAdmin(account, entityClass.getSimpleName(), Action.VIEW.toString(), realCriteria)) {
@@ -83,7 +83,7 @@ public class PermissionService {
             auditService.logAccess(roleViewAll, roles, isViewAll, criteriaName, Action.VIEW.toString(), realCriteria, AuditService.AuditType.ROLE);
             return true; // audit only
         }
-        return allow(account, criteria, expressionOperations, Action.VIEW.toString());
+        return hasGlobal(criteria, entityClass) || allow(account, criteria, expressionOperations, Action.VIEW.toString());
     }
 
     @SuppressWarnings("unchecked")
@@ -104,6 +104,18 @@ public class PermissionService {
                 isAdmin(account, entityClass.getSimpleName(), action, criteria) ||
                 hasSelfRole(account, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
                 hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action);
+    }
+
+    private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {
+        if (criteria instanceof Long && entityClass != null) {
+            AbstractEntity entity = em.find(entityClass, (Long) criteria);
+            if (entity instanceof WithGlobal && ((WithGlobal) entity).getGlobal()) {
+                String criteriaName = entityClass.getSimpleName();
+                auditService.logAccess("", Collections.emptySet(), true, criteriaName, Action.VIEW.toString(), criteria, AuditType.GLOBAL);
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasContextRole(Object criteria, Object repositoryObj, String role, String entityClass, String action) {

@@ -39,7 +39,8 @@ public class AuditService {
     public enum AuditType {
         MYSELF      ("is myself?"),
         LOCAL_ADMIN ("is LocalAdmin?"),
-        ROLE        ("has role ");
+        ROLE        ("has role "),
+        GLOBAL      ("# Entity is global?");
 
         public String getMsg() {
             return msg;

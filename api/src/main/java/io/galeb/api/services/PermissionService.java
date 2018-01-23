@@ -124,6 +124,18 @@ public class PermissionService {
         return false;
     }
 
+    private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {
+        if (criteria instanceof Long && entityClass != null) {
+            AbstractEntity entity = em.find(entityClass, (Long) criteria);
+            if (entity instanceof WithGlobal && ((WithGlobal) entity).getGlobal()) {
+                String criteriaName = entityClass.getSimpleName();
+                auditService.logAccess("", Collections.emptySet(), true, criteriaName, Action.VIEW.toString(), criteria, AuditType.GLOBAL);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hasContextRole(Object criteria, Object repositoryObj, String role, String entityClass, String action) {
         WithRoles repository;
         if (repositoryObj instanceof WithRoles) {

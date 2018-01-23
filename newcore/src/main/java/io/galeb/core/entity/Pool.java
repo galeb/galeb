@@ -23,7 +23,7 @@ import java.util.*;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
-public class Pool extends AbstractEntity implements WithStatus {
+public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
 
     @ManyToMany(mappedBy = "pools")
     private Set<Rule> rules= new HashSet<>();
@@ -128,6 +128,7 @@ public class Pool extends AbstractEntity implements WithStatus {
         this.name = name;
     }
 
+    @Override
     public Boolean getGlobal() {
         return global;
     }

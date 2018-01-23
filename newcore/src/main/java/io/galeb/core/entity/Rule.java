@@ -23,7 +23,7 @@ import java.util.*;
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id" }) })
-public class Rule extends AbstractEntity implements WithStatus {
+public class Rule extends AbstractEntity implements WithStatus, WithGlobal {
 
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_pool_rule_id")),
@@ -77,6 +77,7 @@ public class Rule extends AbstractEntity implements WithStatus {
         this.matching = matching;
     }
 
+    @Override
     public Boolean getGlobal() {
         return global;
     }

@@ -16,36 +16,43 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
-import org.springframework.hateoas.Link;
+import io.galeb.oldapi.entities.v1.Environment;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public abstract class AbstractConverterService<T extends AbstractEntity> {
 
-    protected final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    @SuppressWarnings("unchecked")
-    private Link convertLink(Map.Entry<String, Object> entry) {
-        String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
-                .replaceAll(".*/" + getResourceName(), "/" + getResourceName());
-        return new Link(href, entry.getKey());
+    protected io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
+        return mapper.readValue(mapper.writeValueAsString(resource), klazz);
+    }
+
+    protected String getEmptyMap() throws JsonProcessingException {
+        return getEmptyMap(null);
+    }
+
+    protected String getEmptyMap(String body) throws JsonProcessingException {
+        return getEmptyMap(null, body);
+    }
+
+    protected String getEmptyMap(Long id, String body) throws JsonProcessingException {
+        Map<String, Object> emptyMap = new HashMap<>();
+        body = body != null ? body : "NULL";
+        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + (id != null ? "/" + id : ""), body);
+        return mapper.writeValueAsString(emptyMap);
     }
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
@@ -88,29 +95,9 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<String> traceWithId(String id);
 
-    @SuppressWarnings("unchecked")
-    List<Link> extractLinks(LinkedHashMap resource) {
-        return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
-                .map(this::convertLink)
-                .collect(Collectors.toList());
-    }
-
-    @SuppressWarnings("unchecked")
-    ArrayList<LinkedHashMap> jsonToList(String body) throws IOException {
-        return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                mapper.readValue(body, HashMap.class).get("_embedded")).get(getResourceName());
-    }
-
     // TODO: Set Environment Status
     AbstractEntity.EntityStatus extractStatus() {
         return AbstractEntity.EntityStatus.UNKNOWN;
-    }
-
-    List<Link> getBaseLinks() {
-        final List<Link> links = new ArrayList<>();
-        links.add(new Link("/" + getResourceName() + "?page=0&size=1000{&sort}", "self"));
-        links.add(new Link("/" + getResourceName() + "/search", "search"));
-        return links;
     }
 
 }

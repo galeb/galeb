@@ -17,8 +17,10 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Provider;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -46,6 +48,12 @@ public class ProviderService extends AbstractConverterService<Provider> {
     private final Provider providerInstance = new Provider("Default");
 
     private final Resource<Provider> resource = new Resource<>(providerInstance, links);
+    private final LinkProcessor linkProcessor;
+
+    @Autowired
+    public ProviderService(LinkProcessor linkProcessor) {
+        this.linkProcessor = linkProcessor;
+    }
 
     @Override
     protected Set<Resource<Provider>> convertResources(ArrayList<LinkedHashMap> v2s) {
@@ -71,9 +79,11 @@ public class ProviderService extends AbstractConverterService<Provider> {
 
     @Override
     public ResponseEntity<PagedResources<Resource<Provider>>> get(Integer size, Integer page) {
+        size = size != null ? size : 9999;
+        page = page != null ? page : 0;
         Set<Resource<Provider>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, getBaseLinks());
+        final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(resourceName, size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

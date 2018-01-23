@@ -17,8 +17,10 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.RuleType;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -46,6 +48,12 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
     private final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
 
     private final Resource<RuleType> resource = new Resource<>(ruleTypeUrlPath, links);
+    private final LinkProcessor linkProcessor;
+
+    @Autowired
+    public RuleTypeService(LinkProcessor linkProcessor) {
+        this.linkProcessor = linkProcessor;
+    }
 
     @Override
     protected Set<Resource<RuleType>> convertResources(ArrayList<LinkedHashMap> v2s) {
@@ -71,9 +79,11 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
 
     @Override
     public ResponseEntity<PagedResources<Resource<RuleType>>> get(Integer size, Integer page) {
+        size = size != null ? size : 9999;
+        page = page != null ? page : 0;
         Set<Resource<RuleType>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<RuleType>> pagedResources = new PagedResources<>(v1Resources, metadata, getBaseLinks());
+        final PagedResources<Resource<RuleType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(resourceName, size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

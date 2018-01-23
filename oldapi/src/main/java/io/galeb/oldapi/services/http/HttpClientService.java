@@ -16,6 +16,8 @@
 
 package io.galeb.oldapi.services.http;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -24,6 +26,10 @@ import org.asynchttpclient.RequestBuilder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -40,6 +46,11 @@ public class HttpClientService {
                                                                 .setUseInsecureTrustManager(true)
                                                                 .setUserAgent(USER_AGENT);
     private final AsyncHttpClient httpClient = asyncHttpClient(config);
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    public HttpClientService() {
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     private String extractApiToken(Account account) {
         return account.getDetails().get("token");
@@ -57,6 +68,26 @@ public class HttpClientService {
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<LinkedHashMap> getResponseListOfMap(String url, String resourceName) throws ExecutionException, InterruptedException, IOException {
+        final Response response = getResponse(url);
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
+                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+    }
+
+    public LinkedHashMap getResponseMap(String url) throws ExecutionException, InterruptedException, IOException {
+        final Response response = getResponse(url);
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return mapper.readValue(body, LinkedHashMap.class);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
     }
 
     private static class AsyncHttpClientResponse implements Response {

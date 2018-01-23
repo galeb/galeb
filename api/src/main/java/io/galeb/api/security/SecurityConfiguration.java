@@ -19,6 +19,7 @@ package io.galeb.api.security;
 import io.galeb.api.security.filter.InMemoryAccountFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -51,6 +52,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // @formatter:off
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
+            and().
+                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/accounts.*").denyAll().
+            and().
+                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/teams.*").denyAll().
+            and().
+                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/rolegroups.*").denyAll().
             and().
                 authorizeRequests().anyRequest().authenticated().
             and().

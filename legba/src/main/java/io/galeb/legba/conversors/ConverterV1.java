@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.legba.model.v1.RuleType;
+import org.springframework.util.StringUtils;
 
 import static com.google.common.hash.Hashing.sha256;
 
@@ -100,7 +101,7 @@ public class ConverterV1 implements Converter {
             p.getTargets().stream().forEach(t -> {
                 Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
                         .stream()
-                        .filter(hs -> (zoneId == null || hs.getSource().equals(zoneId)) && hs.getStatus().equals(HealthStatus.Status.HEALTHY))
+                        .filter(hs -> (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) && hs.getStatus().equals(HealthStatus.Status.HEALTHY))
                         .collect(Collectors.toSet());
                 healthStatusesOK.stream().forEach(hs -> {
                     keysFullHash.add(hs.getLastModifiedAt().toString());

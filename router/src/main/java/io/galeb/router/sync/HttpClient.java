@@ -44,6 +44,7 @@ public class HttpClient {
 
     private static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue();
     private static final String GROUP_ID = SystemEnv.GROUP_ID.getValue();
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     private final AsyncHttpClient asyncHttpClient;
 
@@ -63,6 +64,7 @@ public class HttpClient {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                     .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
+                    .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                     .setHeader(IF_NONE_MATCH_STRING, etag);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
@@ -124,6 +126,7 @@ public class HttpClient {
                 .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
                 .setHeader(X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
                 .setHeader(X_GALEB_LOCAL_IP, localIpsEncoded())
+                .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                 .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override

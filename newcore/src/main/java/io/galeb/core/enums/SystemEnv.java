@@ -36,7 +36,7 @@ public enum SystemEnv {
     /**
      * Network ID.
      */
-    ZONE_ID               ("ZONE_ID",               "UNDEF"),
+    ZONE_ID               ("ZONE_ID",               ""),
 
     /**
      * Syslog server host.

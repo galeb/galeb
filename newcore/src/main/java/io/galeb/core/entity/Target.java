@@ -16,6 +16,7 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.util.Assert;
 
@@ -50,6 +51,13 @@ public class Target extends AbstractEntity implements WithStatus {
         }
         this.pools.clear();
         this.pools.addAll(pools);
+    }
+
+    @JsonIgnore
+    public HealthStatus.Status healthStatusConsolidated() {
+        return this.healthStatus.stream().anyMatch(h -> h.getStatus().equals(HealthStatus.Status.HEALTHY)) ?
+               HealthStatus.Status.HEALTHY :
+               this.healthStatus.stream().map(HealthStatus::getStatus).findAny().orElse(HealthStatus.Status.UNKNOWN);
     }
 
     public Set<HealthStatus> getHealthStatus() {

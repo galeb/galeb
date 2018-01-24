@@ -66,11 +66,7 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
             and().
-                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/accounts.*").denyAll().
-            and().
-                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/teams.*").denyAll().
-            and().
-                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/rolegroups.*").denyAll().
+                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/(accounts|teams|rolegroups).*").denyAll().
             and().
                 authorizeRequests().anyRequest().authenticated().
             and().

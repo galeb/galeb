@@ -18,11 +18,14 @@ package io.galeb.core.entity.projections;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.galeb.core.entity.Account;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.core.config.Projection;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Projection(name = "apitoken", types = { Account.class })
 public interface ApiToken {
 
     @JsonProperty("apitoken")
+    @Value("#{@perm.allowView(target, null) ? target.apitoken : null}")
     String getApitoken();
 }

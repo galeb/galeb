@@ -65,8 +65,12 @@ public class PermissionService {
 
     public boolean allowView(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (expressionOperations == null && criteria instanceof Account) {
+            return account.getId() == ((Account) criteria).getId();
+        }
         if (criteria == null) {
             Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
+            LOGGER.warn("entityClass: " + entityClass);
             if (entityClass == null) return false;
             String criteriaName = entityClass.getSimpleName();
             String realCriteria = "ALL";
@@ -165,6 +169,7 @@ public class PermissionService {
     }
 
     private Class<? extends AbstractEntity> extractEntityClass(MethodSecurityExpressionOperations securityExpressionOperations) {
+        if (securityExpressionOperations == null) return null;
         Object o = securityExpressionOperations.getThis();
         // @formatter:off
         return  o instanceof AccountRepository ? Account.class :

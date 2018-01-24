@@ -65,10 +65,11 @@ public class PermissionService {
 
     public boolean allowView(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (expressionOperations == null && criteria instanceof Account) {
-            return account.getId() == ((Account) criteria).getId();
-        }
         Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
+        if (expressionOperations == null && criteria instanceof Account) {
+            entityClass = Account.class;
+            return isAdmin(account, entityClass.getSimpleName(), Action.VIEW.toString(), criteria) || account.getId() == ((Account) criteria).getId();
+        }
         if (entityClass == null) return false;
         if (criteria == null) {
             String criteriaName = entityClass.getSimpleName();
@@ -103,10 +104,12 @@ public class PermissionService {
             LOGGER.error("{} is not an instance of {}", repositoryObj, WithRoles.class.getSimpleName());
             return false;
         }
-        return  ((Account.class.equals(entityClass)) && !(criteria instanceof Account) && isMySelf(account, criteria, entityClass.getSimpleName(), action)) ||
-                isAdmin(account, entityClass.getSimpleName(), action, criteria) ||
-                hasSelfRole(account, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
-                hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action);
+        return (isAdmin(account, entityClass.getSimpleName(), action, criteria)) ||
+               (Account.class.equals(entityClass) &&
+                       isMySelf(account, criteria, entityClass.getSimpleName(), action)) ||
+               (!Account.class.equals(entityClass) &&
+                       (hasSelfRole(account, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
+                        hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action)));
     }
 
     private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {

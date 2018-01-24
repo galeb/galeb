@@ -17,6 +17,8 @@
 package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.galeb.core.entity.WithStatus;
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.utils.LinkProcessor;
@@ -57,6 +59,13 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     }
 
     @Override
+    AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
+        io.galeb.core.entity.Environment v2Environment = (io.galeb.core.entity.Environment) entity;
+        WithStatus.Status status = v2Environment.getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
+        return convertStatus(status);
+    }
+
+    @Override
     protected Set<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2s) {
         return v2s.stream().
                 map(resource -> {
@@ -80,7 +89,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     protected Environment convertResource(LinkedHashMap resource) throws IOException {
         io.galeb.core.entity.Environment v2Environment = (io.galeb.core.entity.Environment) mapToV2AbstractEntity(resource, io.galeb.core.entity.Environment.class);
         Environment environment = new Environment(v2Environment.getName());
-        environment.setStatus(extractStatus());
+        environment.setStatus(extractStatus(v2Environment));
         return environment;
     }
 

@@ -19,8 +19,9 @@ package io.galeb.oldapi.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.reflect.TypeToken;
+import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
-import io.galeb.oldapi.entities.v1.Environment;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import java.util.*;
 public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private final Class<? super T> entityClass = new TypeToken<T>(getClass()){}.getRawType();
 
     AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -51,7 +53,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected String getEmptyMap(Long id, String body) throws JsonProcessingException {
         Map<String, Object> emptyMap = new HashMap<>();
         body = body != null ? body : "NULL";
-        emptyMap.put(Environment.class.getSimpleName().toLowerCase() + (id != null ? "/" + id : ""), body);
+        emptyMap.put(entityClass.getSimpleName().toLowerCase() + (id != null ? "/" + id : ""), body);
         return mapper.writeValueAsString(emptyMap);
     }
 
@@ -95,9 +97,19 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<String> traceWithId(String id);
 
-    // TODO: Set Environment Status
-    AbstractEntity.EntityStatus extractStatus() {
-        return AbstractEntity.EntityStatus.UNKNOWN;
+    AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
+        return convertStatus(null);
+    }
+
+    AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {
+        if (status == null) return AbstractEntity.EntityStatus.UNKNOWN;
+        switch (status) {
+            case OK:      return AbstractEntity.EntityStatus.OK;
+            case DELETED: return AbstractEntity.EntityStatus.OK;
+            case PENDING: return AbstractEntity.EntityStatus.PENDING;
+            case UNKNOWN: return AbstractEntity.EntityStatus.UNKNOWN;
+            default:      return AbstractEntity.EntityStatus.UNKNOWN;
+        }
     }
 
 }

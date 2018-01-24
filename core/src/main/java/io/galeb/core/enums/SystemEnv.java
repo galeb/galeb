@@ -34,6 +34,11 @@ public enum SystemEnv {
     GROUP_ID              ("GROUP_ID",              "UNDEF"),
 
     /**
+     * Network ID.
+     */
+    ZONE_ID               ("ZONE_ID",               ""),
+
+    /**
      * Syslog server host.
      */
     SYSLOG_HOST           ("SYSLOG_HOST",           "127.0.0.1"),

@@ -38,7 +38,7 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 
-    protected abstract ResponseEntity<String> post(String body);
+    protected abstract ResponseEntity<Resource<T>> post(String body);
 
     protected abstract ResponseEntity<String> postWithId(String id, String body);
 

@@ -75,7 +75,7 @@ public class EnvironmentController extends AbstractController<Environment> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<Environment>> post(@RequestBody String body) {
         return service.post(body);
     }
 

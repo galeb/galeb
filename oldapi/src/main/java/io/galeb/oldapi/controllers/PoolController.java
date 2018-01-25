@@ -59,7 +59,7 @@ public class PoolController extends AbstractController<Pool> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<Pool>> post(@RequestBody String body) {
         return service.post(body);
     }
 

@@ -25,10 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -63,9 +65,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                         Environment environment = convertResource(resource, io.galeb.core.entity.Environment.class);
                         Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
                         Long id = linkProcessor.extractId(links);
-                        linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
-                                     .add(links,"/" + resourceName + "/" + id + "/targets", "targets")
-                                     .remove(links, "rulesordered");
+                        fixV1Links(links, id);
                         environment.setId(id);
                         return new Resource<>(environment, links);
                     } catch (IOException e) {
@@ -73,6 +73,12 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                     }
                     return null;
                 }).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    private void fixV1Links(Set<Link> links, Long id) {
+        linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
+                     .add(links,"/" + resourceName + "/" + id + "/targets", "targets")
+                     .remove(links, "rulesordered");
     }
 
     @Override
@@ -120,4 +126,27 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
+    public ResponseEntity<Resource<Environment>> post(String body) {
+        Environment environment = bodyToV1(body);
+        if (environment != null) {
+            try {
+                String result = httpClientService.post(resourceUrlBase, body);
+                if (result != null) {
+                    LinkedHashMap resource = stringToMap(result);
+                    Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
+                    long id = linkProcessor.extractId(links);
+                    Environment entityConverted = convertResource(resource, io.galeb.core.entity.Environment.class);
+                    entityConverted.setId(id);
+                    fixV1Links(links, id);
+                    String location = "/" + resourceName + "/" + id;
+                    return ResponseEntity.created(URI.create(location)).body(new Resource<>(entityConverted, links));
+                }
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
 }

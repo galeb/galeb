@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
@@ -47,6 +48,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
         return mapper.readValue(mapper.writeValueAsString(resource), klazz);
+    }
+
+    protected LinkedHashMap stringToMap(String strObj) throws IOException {
+        return  mapper.readValue(strObj, LinkedHashMap.class);
     }
 
     protected Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s) {
@@ -81,6 +86,20 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return v1Entity;
     }
 
+    protected String entityToString(T entity) throws JsonProcessingException {
+        return mapper.writeValueAsString(entity);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T bodyToV1(String body) {
+        try {
+            return (T) mapper.readValue(body, entityClass);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
     protected abstract String getResourceName();
 
     protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
@@ -89,7 +108,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 
-    public ResponseEntity<String> post(String body) {
+    public ResponseEntity<Resource<T>> post(String body) {
         return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();
     }
 

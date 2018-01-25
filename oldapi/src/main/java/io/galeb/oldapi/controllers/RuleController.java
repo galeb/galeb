@@ -58,7 +58,7 @@ public class RuleController extends AbstractController<Rule> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<Rule>> post(@RequestBody String body) {
         return service.post(body);
     }
 

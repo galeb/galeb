@@ -16,7 +16,6 @@
 
 package io.galeb.oldapi.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
@@ -47,21 +46,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
         return mapper.readValue(mapper.writeValueAsString(resource), klazz);
-    }
-
-    protected String getEmptyMap() throws JsonProcessingException {
-        return getEmptyMap(null);
-    }
-
-    protected String getEmptyMap(String body) throws JsonProcessingException {
-        return getEmptyMap(null, body);
-    }
-
-    protected String getEmptyMap(Long id, String body) throws JsonProcessingException {
-        Map<String, Object> emptyMap = new HashMap<>();
-        body = body != null ? body : "NULL";
-        emptyMap.put(entityClass.getSimpleName().toLowerCase() + (id != null ? "/" + id : ""), body);
-        return mapper.writeValueAsString(emptyMap);
     }
 
     protected Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s) {

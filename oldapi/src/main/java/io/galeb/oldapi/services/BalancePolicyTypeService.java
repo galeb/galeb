@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.BalancePolicyType;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -42,17 +43,16 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
     private static final Logger LOGGER = LogManager.getLogger(BalancePolicyTypeService.class);
 
     private final String resourceName = BalancePolicyType.class.getSimpleName().toLowerCase();
-
-    private final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
-
-    private final BalancePolicyType balancePolicyTypeInstance = new BalancePolicyType("Default");
-
-    private final Resource<BalancePolicyType> resource = new Resource<>(balancePolicyTypeInstance, links);
+    private final Resource<BalancePolicyType> resource;
     private final LinkProcessor linkProcessor;
 
     @Autowired
     public BalancePolicyTypeService(LinkProcessor linkProcessor) {
         this.linkProcessor = linkProcessor;
+        final BalancePolicyType balancePolicyTypeInstance = new BalancePolicyType("Default");
+        balancePolicyTypeInstance.setId(1L);
+        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        this.resource = new Resource<>(balancePolicyTypeInstance, links);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
     }
 
     @Override
-    protected BalancePolicyType convertResource(LinkedHashMap resource) throws IOException {
+    protected BalancePolicyType convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
         return null;
     }
 

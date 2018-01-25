@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Provider;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -42,17 +43,16 @@ public class ProviderService extends AbstractConverterService<Provider> {
     private static final Logger LOGGER = LogManager.getLogger(ProviderService.class);
 
     private final String resourceName = Provider.class.getSimpleName().toLowerCase();
-
-    private final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
-
-    private final Provider providerInstance = new Provider("Default");
-
-    private final Resource<Provider> resource = new Resource<>(providerInstance, links);
+    private final Resource<Provider> resource;
     private final LinkProcessor linkProcessor;
 
     @Autowired
     public ProviderService(LinkProcessor linkProcessor) {
         this.linkProcessor = linkProcessor;
+        final Provider providerInstance = new Provider("Default");
+        providerInstance.setId(1L);
+        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        this.resource = new Resource<>(providerInstance, links);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class ProviderService extends AbstractConverterService<Provider> {
     }
 
     @Override
-    protected Provider convertResource(LinkedHashMap resource) throws IOException {
+    protected Provider convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
         return null;
     }
 

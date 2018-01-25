@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.RuleType;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -42,17 +43,16 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
     private static final Logger LOGGER = LogManager.getLogger(RuleTypeService.class);
 
     private final String resourceName = RuleType.class.getSimpleName().toLowerCase();
-
-    private final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
-
-    private final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
-
-    private final Resource<RuleType> resource = new Resource<>(ruleTypeUrlPath, links);
+    private final Resource<RuleType> resource;
     private final LinkProcessor linkProcessor;
 
     @Autowired
     public RuleTypeService(LinkProcessor linkProcessor) {
         this.linkProcessor = linkProcessor;
+        final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
+        ruleTypeUrlPath.setId(1L);
+        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        this.resource = new Resource<>(ruleTypeUrlPath, links);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
     }
 
     @Override
-    protected RuleType convertResource(LinkedHashMap resource) throws IOException {
+    protected RuleType convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
         return null;
     }
 

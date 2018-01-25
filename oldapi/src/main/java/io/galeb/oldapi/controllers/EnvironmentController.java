@@ -16,8 +16,8 @@
 
 package io.galeb.oldapi.controllers;
 
-import io.galeb.oldapi.services.EnvironmentService;
-import io.galeb.oldapi.entities.v1.Environment;
+import io.galeb.oldapi.entities.v1.*;
+import io.galeb.oldapi.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -38,8 +38,24 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RequestMapping("/environment")
 public class EnvironmentController extends AbstractController<Environment> {
 
+    private final EnvironmentService service;
+    private final PoolService poolService;
+    private final FarmService farmService;
+    private final TargetService targetService;
+    private final VirtualHostService virtualHostService;
+
     @Autowired
-    private EnvironmentService service;
+    public EnvironmentController(EnvironmentService service,
+                                 PoolService poolService,
+                                 FarmService farmService,
+                                 TargetService targetService,
+                                 VirtualHostService virtualHostService) {
+        this.service = service;
+        this.poolService = poolService;
+        this.farmService = farmService;
+        this.targetService = targetService;
+        this.virtualHostService = virtualHostService;
+    }
 
     @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<Environment>>> getSearch(@PathVariable("findType") String findType,
@@ -127,5 +143,29 @@ public class EnvironmentController extends AbstractController<Environment> {
     public ResponseEntity<String> traceWithId(@PathVariable String id) {
         return service.traceWithId(id);
     }
+
+    // MAPPING TO MANY: pools, farms, targets & virtualhosts
+
+    @RequestMapping(value = "/{id:\\d+}/pools", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<Pool>>> getMapping(@PathVariable String id) {
+        return poolService.getSearch("findByEnviromentId", queryWithIdOnly(id));
+    }
+
+    @RequestMapping(value = "/{id:\\d+}/farms", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<Farm>>> getFarms(@PathVariable String id) {
+        return farmService.getSearch("findByEnviromentId", queryWithIdOnly(id));
+    }
+
+    @RequestMapping(value = "/{id:\\d+}/targets", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<Target>>> getTargets(@PathVariable String id) {
+        return targetService.getSearch("findByEnviromentId", queryWithIdOnly(id));
+    }
+
+    @RequestMapping(value = "/{id:\\d+}/virtualhosts", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PagedResources<Resource<VirtualHost>>> getVirtualhosts(@PathVariable String id) {
+        return virtualHostService.getSearch("findByEnviromentId", queryWithIdOnly(id));
+    }
+
+    // MAPPING TO ONE - NOT EXIST :)
 
 }

@@ -59,18 +59,11 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     }
 
     @Override
-    AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
-        io.galeb.core.entity.Environment v2Environment = (io.galeb.core.entity.Environment) entity;
-        WithStatus.Status status = v2Environment.getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
-        return convertStatus(status);
-    }
-
-    @Override
     protected Set<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2s) {
         return v2s.stream().
                 map(resource -> {
                     try {
-                        Environment environment = convertResource(resource);
+                        Environment environment = convertResource(resource, io.galeb.core.entity.Environment.class);
                         Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
                         Long id = linkProcessor.extractId(links);
                         linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
@@ -83,33 +76,6 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                     }
                     return null;
                 }).filter(Objects::nonNull).collect(Collectors.toSet());
-    }
-
-    @Override
-    protected Environment convertResource(LinkedHashMap resource) throws IOException {
-        io.galeb.core.entity.Environment v2Environment = (io.galeb.core.entity.Environment) mapToV2AbstractEntity(resource, io.galeb.core.entity.Environment.class);
-        Environment environment = new Environment(v2Environment.getName()) {
-            @Override
-            public Date getCreatedAt() {
-                return v2Environment.getCreatedAt();
-            }
-            @Override
-            public String getCreatedBy() {
-                return v2Environment.getCreatedBy();
-            }
-
-            @Override
-            public Date getLastModifiedAt() {
-                return v2Environment.getLastModifiedAt();
-            }
-
-            @Override
-            public String getLastModifiedBy() {
-                return v2Environment.getLastModifiedBy();
-            }
-        };
-        environment.setStatus(extractStatus(v2Environment));
-        return environment;
     }
 
     @Override
@@ -148,7 +114,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
             linkProcessor.add(links,"/" + resourceName + "/" + id + "/farms", "farms")
                          .add(links,"/" + resourceName + "/" + id + "/targets", "targets")
                          .remove(links, "rulesordered");
-            Environment environment = convertResource(resource);
+            Environment environment = convertResource(resource, io.galeb.core.entity.Environment.class);
             environment.setId(Long.parseLong(id));
             return ResponseEntity.ok(new Resource<>(environment, links));
         } catch (InterruptedException | ExecutionException | IOException e) {

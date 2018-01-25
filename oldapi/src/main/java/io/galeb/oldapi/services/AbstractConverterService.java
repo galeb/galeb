@@ -22,14 +22,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public abstract class AbstractConverterService<T extends AbstractEntity> {
+
+    private static final Logger LOGGER = LogManager.getLogger(AbstractConverterService.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Class<? super T> entityClass = new TypeToken<T>(getClass()){}.getRawType();
@@ -59,7 +65,33 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
 
-    protected abstract T convertResource(LinkedHashMap resource) throws IOException;
+    @SuppressWarnings("unchecked")
+    protected T convertResource(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
+        Object v2EntityObj = mapToV2AbstractEntity(resource, v2entityClass);
+        io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
+        String v2Name;
+        try {
+            Method getName = v2entityClass.getMethod("getName");
+            v2Name = (String) getName.invoke(v2Entity);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+            LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
+            v2Name = String.valueOf(v2Entity.getId());
+        }
+        T v1Entity = null;
+        try {
+            v1Entity = (T) entityClass.getConstructor(String.class).newInstance(v2Name);
+            v1Entity.setId(v2Entity.getId());
+            v1Entity.setCreatedAt(v2Entity.getCreatedAt());
+            v1Entity.setCreatedBy(v2Entity.getCreatedBy());
+            v1Entity.setLastModifiedAt(v2Entity.getLastModifiedAt());
+            v1Entity.setLastModifiedBy(v2Entity.getLastModifiedBy());
+            v1Entity.setVersion(v2Entity.getVersion());
+            v1Entity.setStatus(extractStatus(v2Entity));
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return v1Entity;
+    }
 
     protected abstract String getResourceName();
 
@@ -98,7 +130,11 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected abstract ResponseEntity<String> traceWithId(String id);
 
     AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
-        return AbstractEntity.EntityStatus.UNKNOWN;
+        WithStatus.Status v2Status = WithStatus.Status.OK;
+        if (entity instanceof WithStatus) {
+            v2Status = ((WithStatus)entity).getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
+        }
+        return convertStatus(v2Status);
     }
 
     AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {

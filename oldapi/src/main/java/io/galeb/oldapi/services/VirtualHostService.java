@@ -18,6 +18,7 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.VirtualHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +47,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     }
 
     @Override
-    protected VirtualHost convertResource(LinkedHashMap resource) throws IOException {
+    protected VirtualHost convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
         return null;
     }
 

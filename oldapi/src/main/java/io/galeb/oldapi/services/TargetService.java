@@ -18,6 +18,7 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Target;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +47,7 @@ public class TargetService extends AbstractConverterService<Target> {
     }
 
     @Override
-    protected Target convertResource(LinkedHashMap resource) throws IOException {
+    protected Target convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
         return null;
     }
 

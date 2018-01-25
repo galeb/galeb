@@ -16,7 +16,6 @@
 
 package io.galeb.oldapi.services;
 
-import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Provider;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
@@ -28,11 +27,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,16 +48,6 @@ public class ProviderService extends AbstractConverterService<Provider> {
         providerInstance.setId(1L);
         final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
         this.resource = new Resource<>(providerInstance, links);
-    }
-
-    @Override
-    protected Set<Resource<Provider>> convertResources(ArrayList<LinkedHashMap> v2s) {
-        return null;
-    }
-
-    @Override
-    protected Provider convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
-        return null;
     }
 
     @Override
@@ -91,59 +76,4 @@ public class ProviderService extends AbstractConverterService<Provider> {
         return ResponseEntity.ok(resource);
     }
 
-    public ResponseEntity<String> post(String body) {
-        return ResponseEntity.created(URI.create("http://localhost")).build();
-    }
-
-    public ResponseEntity<String> postWithId(String param, String body) {
-        return ResponseEntity.created(URI.create("http://localhost")).build();
-    }
-
-    public ResponseEntity<String> put(String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> putWithId(String param, String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> delete() {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> deleteWithId(String param) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> patch(String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> patchWithId(String param, String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> options() {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> optionsWithId(String param) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> head() {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> headWithId(String param) {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> trace() {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> traceWithId(String param) {
-        return ResponseEntity.noContent().build();
-    }
 }

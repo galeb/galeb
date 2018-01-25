@@ -16,7 +16,6 @@
 
 package io.galeb.oldapi.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Project;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -69,158 +67,5 @@ public class ProjectService extends AbstractConverterService<Project> {
     public ResponseEntity<Resource<Project>> getWithId(String param) {
         return ResponseEntity.ok().build();
     }
-    
-    public ResponseEntity<String> post(String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
 
-    public ResponseEntity<String> postWithId(String param, String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase() + "/" + param, body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> put(String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> putWithId(String param, String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase() + "/" + param, body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> delete() {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), "NULL");
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> deleteWithId(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), param);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> patch(String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> patchWithId(String param, String body) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase() + "/" + param, body);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> options() {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), "NULL");
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> optionsWithId(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), param);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> head() {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), "NULL");
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> headWithId(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), param);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> trace() {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), "NULL");
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
-
-    public ResponseEntity<String> traceWithId(String param) {
-        Map<String, Object> emptyMap = new HashMap<>();
-        emptyMap.put(Project.class.getSimpleName().toLowerCase(), param);
-        try {
-            return ResponseEntity.ok(mapper.writeValueAsString(emptyMap));
-        } catch (JsonProcessingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return ResponseEntity.badRequest().body("{}");
-    }
 }

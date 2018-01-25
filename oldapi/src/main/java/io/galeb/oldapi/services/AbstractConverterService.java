@@ -31,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.*;
 
 public abstract class AbstractConverterService<T extends AbstractEntity> {
@@ -63,7 +64,9 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return mapper.writeValueAsString(emptyMap);
     }
 
-    protected abstract Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s);
+    protected Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s) {
+        return Collections.emptySet();
+    }
 
     @SuppressWarnings("unchecked")
     protected T convertResource(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
@@ -101,33 +104,61 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 
-    protected abstract ResponseEntity<String> post(String body);
+    protected ResponseEntity<String> post(String body) {
+        return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();
+    }
 
-    protected abstract ResponseEntity<String> postWithId(String id, String body);
+    protected ResponseEntity<String> postWithId(String param, String body) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> put(String body);
+    protected ResponseEntity<String> put(String body) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> putWithId(String id, String body);
+    protected ResponseEntity<String> putWithId(String param, String body) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> delete();
+    protected ResponseEntity<String> delete() {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> deleteWithId(String id);
+    protected ResponseEntity<String> deleteWithId(String param) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> patch(String body);
+    protected ResponseEntity<String> patch(String body) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> patchWithId(String id, String body);
+    protected ResponseEntity<String> patchWithId(String param, String body) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> options();
+    protected ResponseEntity<String> options() {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> optionsWithId(String id);
+    protected ResponseEntity<String> optionsWithId(String param) {
+        return ResponseEntity.accepted().build();
+    }
 
-    protected abstract ResponseEntity<String> head();
+    protected ResponseEntity<String> head() {
+        return ResponseEntity.noContent().build();
+    }
 
-    protected abstract ResponseEntity<String> headWithId(String id);
+    protected ResponseEntity<String> headWithId(String param) {
+        return ResponseEntity.noContent().build();
+    }
 
-    protected abstract ResponseEntity<String> trace();
+    protected ResponseEntity<String> trace() {
+        return ResponseEntity.noContent().build();
+    }
 
-    protected abstract ResponseEntity<String> traceWithId(String id);
+    protected ResponseEntity<String> traceWithId(String param) {
+        return ResponseEntity.noContent().build();
+    }
 
     AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
         WithStatus.Status v2Status = WithStatus.Status.OK;

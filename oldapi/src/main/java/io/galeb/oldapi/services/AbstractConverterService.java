@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -93,11 +94,11 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     public ResponseEntity<String> postWithId(String param, String body) {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> put(String body) {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> putWithId(String param, String body) {
@@ -105,7 +106,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     public ResponseEntity<String> delete() {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> deleteWithId(String param) {
@@ -113,7 +114,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     public ResponseEntity<String> patch(String body) {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> patchWithId(String param, String body) {
@@ -121,11 +122,11 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     public ResponseEntity<String> options() {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> optionsWithId(String param) {
-        return ResponseEntity.accepted().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> head() {
@@ -133,15 +134,15 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     public ResponseEntity<String> headWithId(String param) {
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> trace() {
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> traceWithId(String param) {
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {

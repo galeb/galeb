@@ -104,59 +104,59 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 
-    protected ResponseEntity<String> post(String body) {
+    public ResponseEntity<String> post(String body) {
         return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();
     }
 
-    protected ResponseEntity<String> postWithId(String param, String body) {
+    public ResponseEntity<String> postWithId(String param, String body) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> put(String body) {
+    public ResponseEntity<String> put(String body) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> putWithId(String param, String body) {
+    public ResponseEntity<String> putWithId(String param, String body) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> delete() {
+    public ResponseEntity<String> delete() {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> deleteWithId(String param) {
+    public ResponseEntity<String> deleteWithId(String param) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> patch(String body) {
+    public ResponseEntity<String> patch(String body) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> patchWithId(String param, String body) {
+    public ResponseEntity<String> patchWithId(String param, String body) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> options() {
+    public ResponseEntity<String> options() {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> optionsWithId(String param) {
+    public ResponseEntity<String> optionsWithId(String param) {
         return ResponseEntity.accepted().build();
     }
 
-    protected ResponseEntity<String> head() {
+    public ResponseEntity<String> head() {
         return ResponseEntity.noContent().build();
     }
 
-    protected ResponseEntity<String> headWithId(String param) {
+    public ResponseEntity<String> headWithId(String param) {
         return ResponseEntity.noContent().build();
     }
 
-    protected ResponseEntity<String> trace() {
+    public ResponseEntity<String> trace() {
         return ResponseEntity.noContent().build();
     }
 
-    protected ResponseEntity<String> traceWithId(String param) {
+    public ResponseEntity<String> traceWithId(String param) {
         return ResponseEntity.noContent().build();
     }
 

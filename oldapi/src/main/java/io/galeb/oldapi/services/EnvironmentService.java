@@ -88,7 +88,26 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     @Override
     protected Environment convertResource(LinkedHashMap resource) throws IOException {
         io.galeb.core.entity.Environment v2Environment = (io.galeb.core.entity.Environment) mapToV2AbstractEntity(resource, io.galeb.core.entity.Environment.class);
-        Environment environment = new Environment(v2Environment.getName());
+        Environment environment = new Environment(v2Environment.getName()) {
+            @Override
+            public Date getCreatedAt() {
+                return v2Environment.getCreatedAt();
+            }
+            @Override
+            public String getCreatedBy() {
+                return v2Environment.getCreatedBy();
+            }
+
+            @Override
+            public Date getLastModifiedAt() {
+                return v2Environment.getLastModifiedAt();
+            }
+
+            @Override
+            public String getLastModifiedBy() {
+                return v2Environment.getLastModifiedBy();
+            }
+        };
         environment.setStatus(extractStatus(v2Environment));
         return environment;
     }

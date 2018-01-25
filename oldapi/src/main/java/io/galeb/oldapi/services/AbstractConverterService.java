@@ -98,11 +98,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     protected abstract ResponseEntity<String> traceWithId(String id);
 
     AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
-        return convertStatus(null);
+        return AbstractEntity.EntityStatus.UNKNOWN;
     }
 
     AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {
-        if (status == null) return AbstractEntity.EntityStatus.UNKNOWN;
         switch (status) {
             case OK:      return AbstractEntity.EntityStatus.OK;
             case DELETED: return AbstractEntity.EntityStatus.OK;

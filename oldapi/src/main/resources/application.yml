@@ -36,6 +36,9 @@ spring:
     profiles:
         active: production
 
+    session:
+        store-type: REDIS
+
 server:
     session:
         timeout: ${SESSION_TIMEOUT:1800}

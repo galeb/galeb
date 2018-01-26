@@ -91,7 +91,7 @@ public class HttpClientService {
         throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
     }
 
-    public String post(String url, String body) throws ExecutionException, InterruptedException {
+    public Response post(String url, String body) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
         String password = extractApiToken(account); // extract token from description
@@ -100,11 +100,7 @@ public class HttpClientService {
         requestBuilder.setUrl(url);
         requestBuilder.setBody(body);
         requestBuilder.setMethod(HttpMethod.POST.name());
-        Response response = new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return response.getResponseBody();
-        }
-        return null;
+        return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
     private static class AsyncHttpClientResponse implements Response {

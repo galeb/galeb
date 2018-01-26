@@ -18,6 +18,7 @@ package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.http.Response;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,17 +132,18 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         Environment environment = bodyToV1(body);
         if (environment != null) {
             try {
-                String result = httpClientService.post(resourceUrlBase, body);
-                if (result != null) {
-                    LinkedHashMap resource = stringToMap(result);
-                    Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
-                    long id = linkProcessor.extractId(links);
-                    Environment entityConverted = convertResource(resource, io.galeb.core.entity.Environment.class);
-                    entityConverted.setId(id);
-                    fixV1Links(links, id);
-                    String location = "/" + resourceName + "/" + id;
-                    return ResponseEntity.created(URI.create(location)).body(new Resource<>(entityConverted, links));
+                Response response = httpClientService.post(resourceUrlBase, body);
+                if (!response.hasResponseStatus() || response.getStatusCode() > 299 || (body = response.getResponseBody()) == null || body.isEmpty()) {
+                    return ResponseEntity.status(response.getStatusCode()).build();
                 }
+                LinkedHashMap resource = stringToMap(body);
+                Set<Link> links = linkProcessor.extractLinks(resource, resourceName);
+                long id = linkProcessor.extractId(links);
+                Environment entityConverted = convertResource(resource, io.galeb.core.entity.Environment.class);
+                entityConverted.setId(id);
+                fixV1Links(links, id);
+                String location = "/" + resourceName + "/" + id;
+                return ResponseEntity.created(URI.create(location)).body(new Resource<>(entityConverted, links));
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();

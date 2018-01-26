@@ -37,10 +37,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationProvider authenticationProvider;
-    private final LocalAdmin localAdmin;
+    private final LocalAdminService localAdmin;
 
     @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdmin localAdmin) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdminService localAdmin) {
         this.userDetailsService = userDetailsService;
         this.authenticationProvider = authenticationProvider;
         this.localAdmin = localAdmin;

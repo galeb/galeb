@@ -17,7 +17,7 @@
 package io.galeb.api.repository.custom;
 
 import com.google.common.reflect.TypeToken;
-import io.galeb.api.security.LocalAdmin;
+import io.galeb.api.security.LocalAdminService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Account;
@@ -82,7 +82,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         boolean isViewAll;
         boolean isView = false;
-        if (LocalAdmin.NAME.equals(account.getUsername())) {
+        if (LocalAdminService.NAME.equals(account.getUsername())) {
             isViewAll = true;
         } else {
             Set<String> roles = mergeRoles(-1L);

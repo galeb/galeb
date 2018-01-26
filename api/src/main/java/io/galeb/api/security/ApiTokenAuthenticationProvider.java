@@ -37,7 +37,7 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
     private CurrentUserDetailsService currentUserDetailsService;
 
     @Autowired
-    private LocalAdmin localAdmin;
+    private LocalAdminService localAdmin;
 
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
@@ -54,7 +54,7 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
         final UserDetails userDetails = retrieveUser(authentication.getName(), null);
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
-        if ((LocalAdmin.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials())) ||
+        if ((LocalAdminService.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials())) ||
                 ((Account) userDetails).getApitoken().equals(authentication.getCredentials())) {
             return token;
         }

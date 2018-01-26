@@ -20,21 +20,21 @@ import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.util.UUID;
 
 import static com.google.common.hash.Hashing.sha256;
 
-@Component
-public class LocalAdmin extends Account {
+@Service
+public class LocalAdminService extends Account {
 
-    private static final Logger LOGGER = LogManager.getLogger(LocalAdmin.class);
+    private static final Logger LOGGER = LogManager.getLogger(LocalAdminService.class);
 
     public static final String NAME = "admin";
 
-    public LocalAdmin(@Value("${auth.localtoken:UNDEF}") String localAdminToken) {
+    public LocalAdminService(@Value("${auth.localtoken:UNDEF}") String localAdminToken) {
         setUsername(NAME);
         if ("UNDEF".equals(localAdminToken)) {
             localAdminToken = sha256().hashString(UUID.randomUUID().toString(), Charset.defaultCharset()).toString();

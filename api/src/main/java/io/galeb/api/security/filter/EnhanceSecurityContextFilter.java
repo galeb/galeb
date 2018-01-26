@@ -16,7 +16,7 @@
 
 package io.galeb.api.security.filter;
 
-import io.galeb.api.security.LocalAdmin;
+import io.galeb.api.security.LocalAdminService;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.AuditService;
 import io.galeb.core.entity.Account;
@@ -44,12 +44,12 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LogManager.getLogger(EnhanceSecurityContextFilter.class);
 
     private final AccountDaoService accountDaoService;
-    private final LocalAdmin localAdmin;
+    private final LocalAdminService localAdmin;
     private final AuditService auditService;
     private final String login_key;
     private final String reject_key;
 
-    public EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdmin localAdmin, AuditService auditService, String login_key, String reject_key) {
+    public EnhanceSecurityContextFilter(AccountDaoService accountDaoService, LocalAdminService localAdmin, AuditService auditService, String login_key, String reject_key) {
         this.accountDaoService = accountDaoService;
         this.localAdmin = localAdmin;
         this.auditService = auditService;
@@ -68,7 +68,7 @@ public class EnhanceSecurityContextFilter extends OncePerRequestFilter {
                 Account account = null;
                 if (remoteUserObj instanceof String) {
                     String remoteUser = (String) remoteUserObj;
-                    if (LocalAdmin.NAME.equals(remoteUser)) {
+                    if (LocalAdminService.NAME.equals(remoteUser)) {
                         account = localAdmin;
                     } else if (details != null) {
                         final Map<String, String> newDetails = ((Map<String, Object>) authentication.getUserAuthentication().getDetails())

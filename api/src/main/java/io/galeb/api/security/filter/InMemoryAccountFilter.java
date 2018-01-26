@@ -16,7 +16,7 @@
 
 package io.galeb.api.security.filter;
 
-import io.galeb.core.services.LocalAdminService;
+import io.galeb.api.services.LocalAdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.BadCredentialsException;

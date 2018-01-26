@@ -17,7 +17,7 @@
 package io.galeb.api.repository.custom;
 
 import com.google.common.reflect.TypeToken;
-import io.galeb.core.services.LocalAdminService;
+import io.galeb.api.services.LocalAdminService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Account;

@@ -18,7 +18,6 @@ package io.galeb.api.services;
 
 import io.galeb.api.repository.*;
 import io.galeb.api.repository.custom.WithRoles;
-import io.galeb.core.services.LocalAdminService;
 import io.galeb.api.services.AuditService.AuditType;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.services;
+package io.galeb.api.services;
 
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;

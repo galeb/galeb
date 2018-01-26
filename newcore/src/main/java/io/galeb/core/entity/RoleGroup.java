@@ -64,7 +64,7 @@ public class RoleGroup extends AbstractEntity  {
 
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_team_id")),
-            inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_team_id")))
+            inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_team_rolegroup_id")))
     public Set<Team> teams;
 
     public String getName() {

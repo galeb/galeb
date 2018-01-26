@@ -23,6 +23,7 @@ import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.RequestBuilder;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -88,6 +89,18 @@ public class HttpClientService {
             return mapper.readValue(body, LinkedHashMap.class);
         }
         throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+    }
+
+    public Response post(String url, String body) throws ExecutionException, InterruptedException {
+        Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = account.getUsername();
+        String password = extractApiToken(account); // extract token from description
+        RequestBuilder requestBuilder = new RequestBuilder();
+        requestBuilder.setRealm(Dsl.basicAuthRealm("admin", "pass").setUsePreemptiveAuth(true));
+        requestBuilder.setUrl(url);
+        requestBuilder.setBody(body);
+        requestBuilder.setMethod(HttpMethod.POST.name());
+        return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
     private static class AsyncHttpClientResponse implements Response {

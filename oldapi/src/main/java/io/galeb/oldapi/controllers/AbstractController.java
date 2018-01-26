@@ -22,8 +22,15 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractController<T extends AbstractEntity> {
+
+    Map<String, String> queryWithIdOnly(String id) {
+        return Stream.of(id).collect(Collectors.toMap(i -> "id", Function.identity()));
+    }
 
     protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
 
@@ -31,7 +38,7 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 
-    protected abstract ResponseEntity<String> post(String body);
+    protected abstract ResponseEntity<Resource<T>> post(String body);
 
     protected abstract ResponseEntity<String> postWithId(String id, String body);
 

@@ -18,7 +18,7 @@ package io.galeb.api.services;
 
 import io.galeb.api.repository.*;
 import io.galeb.api.repository.custom.WithRoles;
-import io.galeb.api.security.LocalAdmin;
+import io.galeb.core.services.LocalAdminService;
 import io.galeb.api.services.AuditService.AuditType;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
@@ -164,7 +164,7 @@ public class PermissionService {
         if (hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria)) {
             return true;
         }
-        boolean result = LocalAdmin.NAME.equals(account.getUsername());
+        boolean result = LocalAdminService.NAME.equals(account.getUsername());
         auditService.logAccess(null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
         return result;
     }

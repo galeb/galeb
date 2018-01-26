@@ -27,11 +27,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,27 +38,16 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
     private static final Logger LOGGER = LogManager.getLogger(RuleTypeService.class);
 
     private final String resourceName = RuleType.class.getSimpleName().toLowerCase();
-
-    private final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
-
-    private final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
-
-    private final Resource<RuleType> resource = new Resource<>(ruleTypeUrlPath, links);
+    private final Resource<RuleType> resource;
     private final LinkProcessor linkProcessor;
 
     @Autowired
     public RuleTypeService(LinkProcessor linkProcessor) {
         this.linkProcessor = linkProcessor;
-    }
-
-    @Override
-    protected Set<Resource<RuleType>> convertResources(ArrayList<LinkedHashMap> v2s) {
-        return null;
-    }
-
-    @Override
-    protected RuleType convertResource(LinkedHashMap resource) throws IOException {
-        return null;
+        final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
+        ruleTypeUrlPath.setId(1L);
+        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        this.resource = new Resource<>(ruleTypeUrlPath, links);
     }
 
     @Override
@@ -90,60 +75,5 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
     public ResponseEntity<Resource<RuleType>> getWithId(String param) {
         return ResponseEntity.ok(resource);
     }
-    
-    public ResponseEntity<String> post(String body) {
-        return ResponseEntity.created(URI.create("http://localhost")).build();
-    }
 
-    public ResponseEntity<String> postWithId(String param, String body) {
-        return ResponseEntity.created(URI.create("http://localhost")).build();
-    }
-
-    public ResponseEntity<String> put(String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> putWithId(String param, String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> delete() {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> deleteWithId(String param) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> patch(String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> patchWithId(String param, String body) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> options() {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> optionsWithId(String param) {
-        return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> head() {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> headWithId(String param) {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> trace() {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> traceWithId(String param) {
-        return ResponseEntity.noContent().build();
-    }
 }

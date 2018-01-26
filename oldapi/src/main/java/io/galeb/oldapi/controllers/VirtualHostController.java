@@ -59,7 +59,7 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<VirtualHost>> post(@RequestBody String body) {
         return service.post(body);
     }
 

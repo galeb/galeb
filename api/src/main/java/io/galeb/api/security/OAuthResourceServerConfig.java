@@ -19,6 +19,7 @@ package io.galeb.api.security;
 import io.galeb.api.security.filter.EnhanceSecurityContextFilter;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.AuditService;
+import io.galeb.core.services.LocalAdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     private static final Logger LOGGER = LogManager.getLogger(OAuthResourceServerConfig.class);
 
-    private final LocalAdmin localAdmin;
+    private final LocalAdminService localAdmin;
     private final AccountDaoService accountDaoService;
     private final AuditService auditService;
     private final String login_key;
@@ -47,7 +48,7 @@ public class OAuthResourceServerConfig extends ResourceServerConfigurerAdapter {
 
     @Autowired
     public OAuthResourceServerConfig(
-            LocalAdmin localAdmin,
+            LocalAdminService localAdmin,
             AccountDaoService accountDaoService,
             AuditService auditService,
             @Value("${auth.login_key:login}") String login_key,

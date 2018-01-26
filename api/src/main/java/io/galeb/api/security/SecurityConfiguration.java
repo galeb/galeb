@@ -17,6 +17,7 @@
 package io.galeb.api.security;
 
 import io.galeb.api.security.filter.InMemoryAccountFilter;
+import io.galeb.core.services.LocalAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,10 +38,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationProvider authenticationProvider;
-    private final LocalAdmin localAdmin;
+    private final LocalAdminService localAdmin;
 
     @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdmin localAdmin) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdminService localAdmin) {
         this.userDetailsService = userDetailsService;
         this.authenticationProvider = authenticationProvider;
         this.localAdmin = localAdmin;

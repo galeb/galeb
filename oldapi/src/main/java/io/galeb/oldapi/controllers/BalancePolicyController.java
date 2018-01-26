@@ -59,7 +59,7 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<BalancePolicy>> post(@RequestBody String body) {
         return service.post(body);
     }
 

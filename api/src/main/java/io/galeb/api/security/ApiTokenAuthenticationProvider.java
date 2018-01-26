@@ -17,6 +17,7 @@
 package io.galeb.api.security;
 
 import io.galeb.core.entity.Account;
+import io.galeb.core.services.LocalAdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
     private CurrentUserDetailsService currentUserDetailsService;
 
     @Autowired
-    private LocalAdmin localAdmin;
+    private LocalAdminService localAdmin;
 
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
@@ -54,7 +55,7 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
         final UserDetails userDetails = retrieveUser(authentication.getName(), null);
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
-        if ((LocalAdmin.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials())) ||
+        if ((LocalAdminService.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials())) ||
                 ((Account) userDetails).getApitoken().equals(authentication.getCredentials())) {
             return token;
         }

@@ -79,20 +79,40 @@ public abstract class AbstractEntity<T extends AbstractEntity<?>> extends Abstra
         return createdBy;
     }
 
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public Date getCreatedAt() {
         return createdAt != null ? new Date(createdAt.getTime()) : null;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getLastModifiedBy() {
         return lastModifiedBy;
     }
 
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
+    }
+
     public Date getLastModifiedAt() {
         return lastModifiedAt != null ? new Date(lastModifiedAt.getTime()) : null;
     }
 
+    public void setLastModifiedAt(Date lastModifiedAt) {
+        this.lastModifiedAt = lastModifiedAt;
+    }
+
     public Long getVersion() {
         return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public String getName() {

@@ -59,7 +59,7 @@ public class ProjectController extends AbstractController<Project> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<Project>> post(@RequestBody String body) {
         return service.post(body);
     }
 

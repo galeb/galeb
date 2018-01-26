@@ -59,7 +59,7 @@ public class FarmController extends AbstractController<Farm> {
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> post(@RequestBody String body) {
+    public ResponseEntity<Resource<Farm>> post(@RequestBody String body) {
         return service.post(body);
     }
 

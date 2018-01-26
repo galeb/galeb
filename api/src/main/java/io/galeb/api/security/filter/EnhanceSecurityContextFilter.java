@@ -16,7 +16,7 @@
 
 package io.galeb.api.security.filter;
 
-import io.galeb.api.security.LocalAdminService;
+import io.galeb.core.services.LocalAdminService;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.AuditService;
 import io.galeb.core.entity.Account;

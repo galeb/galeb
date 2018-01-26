@@ -17,6 +17,7 @@
 package io.galeb.api.security;
 
 import io.galeb.api.security.filter.InMemoryAccountFilter;
+import io.galeb.core.services.LocalAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

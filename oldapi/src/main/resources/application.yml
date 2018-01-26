@@ -1,6 +1,9 @@
 auth:
     localtoken: ${LOCAL_TOKEN:UNDEF}
 
+api:
+    url: ${GALEB_API_URL:http://127.0.0.1:8000}
+
 build:
     project: '@project.artifactId@'
     timestamp: '@timestamp@'

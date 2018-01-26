@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.security;
 
+import io.galeb.oldapi.services.sec.LocalAdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,15 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
 
     private final CurrentUserDetailsService currentUserDetailsService;
     private final LdapAuthenticationService ldapAuthenticationService;
+    private final LocalAdminService localAdmin;
 
     @Autowired
-    public ApiTokenAuthenticationProvider(CurrentUserDetailsService currentUserDetailsService, LdapAuthenticationService ldapAuthenticationService) {
+    public ApiTokenAuthenticationProvider(CurrentUserDetailsService currentUserDetailsService,
+                                          LdapAuthenticationService ldapAuthenticationService,
+                                          LocalAdminService localAdmin) {
         this.currentUserDetailsService = currentUserDetailsService;
         this.ldapAuthenticationService = ldapAuthenticationService;
+        this.localAdmin = localAdmin;
     }
 
     @Override
@@ -53,8 +58,9 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
             LOGGER.error(errMsg);
             throw new SecurityException(errMsg);
         }
+        boolean isAdmin = LocalAdminService.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials());
         boolean ldapCheckOk = ldapAuthenticationService.check(authentication.getName(), (String) authentication.getCredentials());
-        if (ldapCheckOk) {
+        if (isAdmin || ldapCheckOk) {
             final UserDetails userDetails = retrieveUser(authentication.getName(), null);
             if (userDetails.getUsername() != null) {
                 return new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());

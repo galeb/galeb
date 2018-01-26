@@ -19,6 +19,7 @@ package io.galeb.oldapi.services.http;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
+import io.galeb.oldapi.services.sec.LocalAdminService;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Dsl;
@@ -54,6 +55,7 @@ public class HttpClientService {
     }
 
     private String extractApiToken(Account account) {
+        if (LocalAdminService.NAME.equals(account.getUsername())) return account.getPassword();
         return account.getDetails().get("token");
     }
 
@@ -96,7 +98,7 @@ public class HttpClientService {
         String username = account.getUsername();
         String password = extractApiToken(account); // extract token from description
         RequestBuilder requestBuilder = new RequestBuilder();
-        requestBuilder.setRealm(Dsl.basicAuthRealm("admin", "pass").setUsePreemptiveAuth(true));
+        requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
         requestBuilder.setBody(body);
         requestBuilder.setMethod(HttpMethod.POST.name());

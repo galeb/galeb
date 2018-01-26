@@ -20,9 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.http.Response;
+import io.galeb.oldapi.services.sec.LocalAdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -35,19 +37,27 @@ public class ApiAccountService {
 
     private static final Logger LOGGER = LogManager.getLogger(ApiAccountService.class);
 
+    @Value("${api.url}")
+    private String apiUrl;
+
     private final ObjectMapper mapper = new ObjectMapper();
     private final HttpClientService httpClientService;
+    private final LocalAdminService localAdmin;
 
     @Autowired
-    public ApiAccountService(HttpClientService httpClientService) {
+    public ApiAccountService(HttpClientService httpClientService, LocalAdminService localAdmin) {
         this.httpClientService = httpClientService;
+        this.localAdmin = localAdmin;
     }
 
     @SuppressWarnings("unchecked")
     public Account find(String username) {
-        String adminLogin = System.getenv("GALEB_API_ADMIN_NAME");
-        String adminPass = System.getenv("GALEB_API_ADMIN_PASS");
-        String url = System.getenv("GALEB_API_URL") + "/account/search/findByUsername?username=" + username + "&projection=apitoken";
+        if (LocalAdminService.NAME.equals(username)) {
+            return localAdmin;
+        }
+        String adminLogin = LocalAdminService.NAME;
+        String adminPass = localAdmin.getPassword();
+        String url = apiUrl + "/account/search/findByUsername?username=" + username + "&projection=apitoken";
 
         Account account = null;
         try {

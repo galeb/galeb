@@ -21,6 +21,8 @@ import com.jayway.restassured.config.RedirectConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.ValidatableResponse;
 import com.jayway.restassured.specification.RequestSpecification;
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -32,8 +34,6 @@ import io.galeb.core.entity.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flywaydb.core.Flyway;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,7 +41,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -53,7 +52,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.with;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -85,6 +83,9 @@ public class StepDefs {
     @Value("${auth.localtoken}")
     private String localAdminToken;
 
+    private String userLocal;
+    private String tokenLocal;
+
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
     private RequestSpecification request;
@@ -93,30 +94,49 @@ public class StepDefs {
     private RedirectConfig redirectConfig = RestAssuredConfig.config().getRedirectConfig().followRedirects(false);
     private RestAssuredConfig restAssuredConfig = RestAssuredConfig.config().redirect(redirectConfig);
 
-    @PostConstruct
-    public void init() {
+    @Before
+    public void init() throws Throwable {
+        LOGGER.info("Initializing FLYWAY...");
         FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
+        FLYWAY.clean();
         FLYWAY.migrate();
+        createUsers();
+        LOGGER.info("Finish FLYWAY!");
     }
 
-    @Transactional
-    public void ddeleteAll() {
-        Stream.of(
-                Account.class, BalancePolicy.class, Environment.class, HealthCheck.class, HealthStatus.class,
-                Pool.class, Project.class, RoleGroup.class, Rule.class, RuleOrdered.class,
-                Target.class, Team.class, VirtualhostGroup.class, VirtualHost.class
-        ).forEach(c -> {
-            em.joinTransaction();
-            Query query = em.createQuery("DELETE FROM " + c.getSimpleName());
-            query.executeUpdate();
-        });
+    private void createUsers() throws Throwable {
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic("admin", "pass");
+
+        Map<String, String> mapAccountJson = new HashMap<>();
+        mapAccountJson.put("username", "userlocal");
+        mapAccountJson.put("email", "userlocal@userlocal.com");
+        requestJsonBodyHas(mapAccountJson);
+        sendMethodPath("POST", "/account");
+        System.out.println(response.extract().body().jsonPath().get().toString());
+
+        Map<String, String> mapTeamJson = new HashMap<>();
+        mapTeamJson.put("name", "teamlocal");
+        mapTeamJson.put("accounts", "[Account=userlocal]");
+        requestJsonBodyHas(mapTeamJson);
+        sendMethodPath("POST", "/team");
+
+        Map<String, String> mapRoleGroupJson = new HashMap<>();
+        mapRoleGroupJson.put("teams", "[Team=teamlocal]");
+        requestJsonBodyHas(mapRoleGroupJson);
+        sendMethodPath("PATCH", "/rolegroup/2");
+
+        sendMethodPath("GET", "/account/1?projection=apitoken");
+        tokenLocal = response.extract().body().jsonPath().get("apitoken").toString();
+        userLocal = "userlocal";
+
+        LOGGER.info("Created user with rolegroup LOCAL_ADMIN and saved the token");
     }
 
-    @AfterClass
+    @After
     @Transactional
-    //@Given("^reset")
     public void reset(){
-        ddeleteAll();
+        LOGGER.info("Resetting FLYWAY...");
+        FLYWAY.clean();
         response = null;
         request = null;
     }
@@ -132,6 +152,12 @@ public class StepDefs {
     public void givenRestClientAuthenticated(String login, String password) {
         request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
+    }
+
+    @Given("^a REST client authenticated with token and role LOCAL_ADMIN$")
+    public void givenRestClientAuthenticatedWithToken() {
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(userLocal, tokenLocal);
+        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated with token");
     }
 
     @When("^request json body has:$")
@@ -152,6 +178,7 @@ public class StepDefs {
                 }
             });
             String json = jsonParser.toJson(jsonComponentsProcessed);
+            System.out.println(json);
             request.body(json);
         }
     }
@@ -176,6 +203,7 @@ public class StepDefs {
     @And("^send (.+) (.+)$")
     public void sendMethodPath(String method, String path) {
         URI fullUrl = URI.create(processFullUrl(path));
+        System.out.println(fullUrl.toString());
         switch (method) {
             case "GET":
                 response = request.get(fullUrl).then();
@@ -196,6 +224,7 @@ public class StepDefs {
             default:
                 break;
         }
+        System.out.println(response.extract().body().jsonPath().get().toString());
     }
 
     @Then("^the response status is (\\d+)$")
@@ -238,19 +267,26 @@ public class StepDefs {
         String id = "0";
         String entityClass = dataWithTypeAndName.substring(0, keyPos);
         String entityName = dataWithTypeAndName.substring(keyPos + 1, dataWithTypeAndName.length());
-        String jpqlFindByName ="SELECT e FROM " + entityClass + " e WHERE e.name = '" + entityName + "'";
+        String fieldName = entityClass.equals(Account.class.getSimpleName()) ? "username" : "name";
+        String attrName = "e";
+        if (entityClass.equals(VirtualhostGroup.class.getSimpleName())) {
+            entityClass = VirtualHost.class.getSimpleName();
+            attrName = "e.virtualhostgroup";
+        }
+
+        String jpqlFindByName ="SELECT " + attrName + " FROM " + entityClass + " e WHERE e." + fieldName + " = '" + entityName + "'";
         Query query = em.createQuery(jpqlFindByName);
         AbstractEntity entity = null;
 
         try {
             entity = (AbstractEntity) query.getSingleResult();
         } catch (NoResultException e) {
-            LOGGER.warn("CUCUMBER: " + dataWithTypeAndName + "NOT FOUND (" + e.getMessage() + ")");
+            LOGGER.warn("CUCUMBER: " + dataWithTypeAndName + " NOT FOUND (" + e.getMessage() + ")");
         } finally {
             if (entity != null) {
                 id = String.valueOf(entity.getId());
             } else {
-                LOGGER.warn("CUCUMBER: " + dataWithTypeAndName + "NOT FOUND");
+                LOGGER.warn("CUCUMBER: " + dataWithTypeAndName + " NOT FOUND");
             }
         }
         return id;

@@ -45,11 +45,6 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
     }
 
     @Override
-    public Set<String> roles(Object criteria) {
-        return Collections.emptySet();
-    }
-
-    @Override
     protected long getProjectId(Object criteria) {
         VirtualhostGroup virtualhostGroup = null;
         long projectId = -1L;

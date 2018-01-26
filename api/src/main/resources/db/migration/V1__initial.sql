@@ -346,8 +346,8 @@ CREATE TABLE `rolegroup_teams` (
   `rolegroup_id` bigint(20) NOT NULL,
   `team_id` bigint(20) NOT NULL,
   PRIMARY KEY (`rolegroup_id`,`team_id`),
-  KEY `FK_account_team_id` (`team_id`),
-  CONSTRAINT `FK_account_team_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`),
+  KEY `FK_team_rolegroup_id` (`team_id`),
+  CONSTRAINT `FK_team_rolegroup_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`),
   CONSTRAINT `FK_rolegroup_team_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;

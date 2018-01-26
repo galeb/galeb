@@ -81,12 +81,12 @@ public class EnvironmentController extends AbstractController<Environment> {
 
     @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> postWithId(@PathVariable String id, @RequestBody String body) {
-        return service.postWithId(id, body);
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> put(@RequestBody String body) {
-        return service.put(body);
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -96,7 +96,7 @@ public class EnvironmentController extends AbstractController<Environment> {
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> delete() {
-        return service.delete();
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -106,7 +106,7 @@ public class EnvironmentController extends AbstractController<Environment> {
 
     @RequestMapping(method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> patch(@RequestBody String body) {
-        return service.patch(body);
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -116,12 +116,12 @@ public class EnvironmentController extends AbstractController<Environment> {
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> options() {
-        return service.options();
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> optionsWithId(@PathVariable String id) {
-        return service.optionsWithId(id);
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -131,17 +131,17 @@ public class EnvironmentController extends AbstractController<Environment> {
 
     @RequestMapping(value = "/{id:\\d+}", method = HEAD, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> headWithId(@PathVariable String id) {
-        return service.headWithId(id);
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> trace() {
-        return service.trace();
+        return service.methodNotAllowed();
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> traceWithId(@PathVariable String id) {
-        return service.traceWithId(id);
+        return service.methodNotAllowed();
     }
 
     // MAPPING TO MANY: pools, farms, targets & virtualhosts

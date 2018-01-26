@@ -102,6 +102,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     protected abstract String getResourceName();
 
+    public ResponseEntity<String> methodNotAllowed() {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+    }
+
     protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
 
     protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Integer size, Integer page);
@@ -112,56 +116,20 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();
     }
 
-    public ResponseEntity<String> postWithId(String param, String body) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> put(String body) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> putWithId(String param, String body) {
+    public ResponseEntity<String> putWithId(String id, String body) {
         return ResponseEntity.accepted().build();
     }
 
-    public ResponseEntity<String> delete() {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> deleteWithId(String param) {
+    public ResponseEntity<String> deleteWithId(String id) {
         return ResponseEntity.accepted().build();
     }
 
-    public ResponseEntity<String> patch(String body) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> patchWithId(String param, String body) {
+    public ResponseEntity<String> patchWithId(String id, String body) {
         return ResponseEntity.accepted().build();
-    }
-
-    public ResponseEntity<String> options() {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> optionsWithId(String param) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     public ResponseEntity<String> head() {
         return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> headWithId(String param) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> trace() {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<String> traceWithId(String param) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
     AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {

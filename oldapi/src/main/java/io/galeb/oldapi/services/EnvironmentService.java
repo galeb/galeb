@@ -23,6 +23,7 @@ import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -42,15 +43,16 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 
     private final String resourceName = Environment.class.getSimpleName().toLowerCase();
-    private final String resourceUrlBase = System.getenv("GALEB_API_URL") + "/" + resourceName;
+    private final String resourceUrlBase;
     private final HttpClientService httpClientService;
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public EnvironmentService(HttpClientService httpClientService, LinkProcessor linkProcessor) {
+    public EnvironmentService(HttpClientService httpClientService, LinkProcessor linkProcessor, @Value("${api.url}") String apiUrl) {
         super();
         this.httpClientService = httpClientService;
         this.linkProcessor = linkProcessor;
+        this.resourceUrlBase = apiUrl + "/" + resourceName;
     }
 
     @Override

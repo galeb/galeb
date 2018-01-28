@@ -37,7 +37,6 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleTypeService.class);
 
-    private final String resourceName = RuleType.class.getSimpleName().toLowerCase();
     private final Resource<RuleType> resource;
     private final LinkProcessor linkProcessor;
 
@@ -46,13 +45,8 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
         this.linkProcessor = linkProcessor;
         final RuleType ruleTypeUrlPath = new RuleType("UrlPath");
         ruleTypeUrlPath.setId(1L);
-        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
         this.resource = new Resource<>(ruleTypeUrlPath, links);
-    }
-
-    @Override
-    protected String getResourceName() {
-        return resourceName;
     }
 
     @Override
@@ -68,7 +62,7 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
         page = page != null ? page : 0;
         Set<Resource<RuleType>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<RuleType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(resourceName, size, page));
+        final PagedResources<Resource<RuleType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

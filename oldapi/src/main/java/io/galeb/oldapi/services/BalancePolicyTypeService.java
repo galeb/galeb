@@ -37,7 +37,6 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
 
     private static final Logger LOGGER = LogManager.getLogger(BalancePolicyTypeService.class);
 
-    private final String resourceName = BalancePolicyType.class.getSimpleName().toLowerCase();
     private final Resource<BalancePolicyType> resource;
     private final LinkProcessor linkProcessor;
 
@@ -46,13 +45,8 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
         this.linkProcessor = linkProcessor;
         final BalancePolicyType balancePolicyTypeInstance = new BalancePolicyType("Default");
         balancePolicyTypeInstance.setId(1L);
-        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
         this.resource = new Resource<>(balancePolicyTypeInstance, links);
-    }
-
-    @Override
-    protected String getResourceName() {
-        return resourceName;
     }
 
     @Override
@@ -68,7 +62,7 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
         page = page != null ? page : 0;
         Set<Resource<BalancePolicyType>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<BalancePolicyType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(resourceName, size, page));
+        final PagedResources<Resource<BalancePolicyType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

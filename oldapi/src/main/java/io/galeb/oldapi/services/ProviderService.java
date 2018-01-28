@@ -37,7 +37,6 @@ public class ProviderService extends AbstractConverterService<Provider> {
 
     private static final Logger LOGGER = LogManager.getLogger(ProviderService.class);
 
-    private final String resourceName = Provider.class.getSimpleName().toLowerCase();
     private final Resource<Provider> resource;
     private final LinkProcessor linkProcessor;
 
@@ -46,13 +45,8 @@ public class ProviderService extends AbstractConverterService<Provider> {
         this.linkProcessor = linkProcessor;
         final Provider providerInstance = new Provider("Default");
         providerInstance.setId(1L);
-        final List<Link> links = Collections.singletonList(new Link("/" + resourceName + "/1", "self"));
+        final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
         this.resource = new Resource<>(providerInstance, links);
-    }
-
-    @Override
-    protected String getResourceName() {
-        return resourceName;
     }
 
     @Override
@@ -68,7 +62,7 @@ public class ProviderService extends AbstractConverterService<Provider> {
         page = page != null ? page : 0;
         Set<Resource<Provider>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(resourceName, size, page));
+        final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

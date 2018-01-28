@@ -100,17 +100,25 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         }
     }
 
-    protected abstract String getResourceName();
+    public String getResourceName() {
+        return entityClass.getSimpleName().toLowerCase();
+    }
 
     public ResponseEntity<String> methodNotAllowed() {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
-    protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
+    public ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap) {
+        return ResponseEntity.ok().build();
+    }
 
-    protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Integer size, Integer page);
+    public ResponseEntity<PagedResources<Resource<T>>> get(Integer size, Integer page) {
+        return ResponseEntity.ok().build();
+    }
 
-    protected abstract ResponseEntity<Resource<T>> getWithId(String id);
+    public ResponseEntity<Resource<T>> getWithId(String param) {
+        return ResponseEntity.ok().build();
+    }
 
     public ResponseEntity<Resource<T>> post(String body) {
         return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();

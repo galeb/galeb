@@ -13,14 +13,8 @@ server {
 
     # To allow POST on static pages
     error_page 405 =200 $uri;
-
-    error_page 500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
 }
 EOF
-
 
 mkdir -p html/user
 cat <<EOF > html/user/index.json

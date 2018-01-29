@@ -120,7 +120,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
 
     @Override
     public ResponseEntity<Resource<Environment>> post(String body) {
-        Environment environment = bodyToV1(body);
+        Environment environment = stringToEntityV1(body);
         if (environment != null) {
             try {
                 Response response = httpClientService.post(resourceUrlBase, body);

@@ -105,14 +105,14 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
     }
 
-    protected String entityToString(T entity) throws JsonProcessingException {
+    protected String entityV1ToString(T entity) throws JsonProcessingException {
         return mapper.writeValueAsString(entity);
     }
 
     @SuppressWarnings("unchecked")
-    protected T bodyToV1(String body) {
+    protected T stringToEntityV1(String str) {
         try {
-            return (T) mapper.readValue(body, entityClass);
+            return (T) mapper.readValue(str, entityClass);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return null;

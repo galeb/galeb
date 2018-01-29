@@ -4,6 +4,7 @@ services:
 
   mysql:
     image: mysql:5.6
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: galeb_api
@@ -12,23 +13,26 @@ services:
 
   redis:
     image: redis:3.2.6-alpine
+    container_name: redis
     command: redis-server --appendonly yes
     ports:
       - 6379:6379
 
   ldap:
     image: tuxmonteiro/ldap-mock:latest
+    container_name: ldap
     ports:
       - 3890:3890
 
   broker:
-      image: vromero/activemq-artemis:1.5.4
-      ports:
-        - "61616:61616"
-        - "8161:8161"
-      environment:
-        - ARTEMIS_USERNAME=guest
-        - ARTEMIS_PASSWORD=guest
-        - ARTEMIS_MIN_MEMORY=512M
-        - ARTEMIS_MAX_MEMORY=1024M
-        - ARTEMIS_PERF_JOURNAL=AUTO
+    image: vromero/activemq-artemis:1.5.4
+    container_name: broker
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      - ARTEMIS_USERNAME=guest
+      - ARTEMIS_PASSWORD=guest
+      - ARTEMIS_MIN_MEMORY=512M
+      - ARTEMIS_MAX_MEMORY=1024M
+      - ARTEMIS_PERF_JOURNAL=AUTO

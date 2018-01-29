@@ -86,7 +86,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
                 (size != null && page != null ? "&" : "") +
                 (page != null ? "page=" + page : "");
         try {
-            final Set<Resource<Environment>> v1Environments = convertResources(httpClientService.getResponseListOfMap(url, getResourceName()));
+            final Set<Resource<Environment>> v1Environments = convertResources(extractArrayOfMapsFromBody(getResourceName(), httpClientService.getResponse(url)));
             int totalElements = v1Environments.size();
             size = size != null ? size : 9999;
             page = page != null ? page : 0;
@@ -104,7 +104,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     public ResponseEntity<Resource<Environment>> getWithId(String id) {
         String url = resourceUrlBase + "/" + id;
         try {
-            LinkedHashMap resource = httpClientService.getResponseMap(url);
+            LinkedHashMap resource = extractMapFromBody(httpClientService.getResponse(url));
             Set<Link> links = linkProcessor.extractLinks(resource, getResourceName());
             linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/farms", "farms")
                          .add(links,"/" + getResourceName() + "/" + id + "/targets", "targets")

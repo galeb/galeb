@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
+import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.hateoas.PagedResources;
@@ -84,6 +85,24 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
             LOGGER.error(e.getMessage(), e);
         }
         return v1Entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<LinkedHashMap> extractArrayOfMapsFromBody(String resourceName, Response response) throws IOException {
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
+                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+    }
+
+    public LinkedHashMap extractMapFromBody(Response response) throws IOException {
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return mapper.readValue(body, LinkedHashMap.class);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
     }
 
     protected String entityToString(T entity) throws JsonProcessingException {

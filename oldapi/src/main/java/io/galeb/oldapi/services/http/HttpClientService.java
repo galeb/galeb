@@ -54,15 +54,10 @@ public class HttpClientService {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    private String extractApiToken(Account account) {
-        if (LocalAdminService.NAME.equals(account.getUsername())) return account.getPassword();
-        return account.getDetails().get("token");
-    }
-
     public Response getResponse(String url) throws InterruptedException, ExecutionException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
-        String password = extractApiToken(account); // extract token from description
+        String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
         return getResponse(url, username, password);
     }
 
@@ -73,30 +68,10 @@ public class HttpClientService {
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
-    @SuppressWarnings("unchecked")
-    public ArrayList<LinkedHashMap> getResponseListOfMap(String url, String resourceName) throws ExecutionException, InterruptedException, IOException {
-        final Response response = getResponse(url);
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    public LinkedHashMap getResponseMap(String url) throws ExecutionException, InterruptedException, IOException {
-        final Response response = getResponse(url);
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return mapper.readValue(body, LinkedHashMap.class);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
     public Response post(String url, String body) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
-        String password = extractApiToken(account); // extract token from description
+        String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
         RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);

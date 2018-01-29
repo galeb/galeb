@@ -16,8 +16,6 @@
 
 package io.galeb.oldapi.services.http;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
 import io.galeb.oldapi.services.sec.LocalAdminService;
 import org.asynchttpclient.AsyncHttpClient;
@@ -28,10 +26,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -48,11 +42,6 @@ public class HttpClientService {
                                                                 .setUseInsecureTrustManager(true)
                                                                 .setUserAgent(USER_AGENT);
     private final AsyncHttpClient httpClient = asyncHttpClient(config);
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    public HttpClientService() {
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     public Response getResponse(String url) throws InterruptedException, ExecutionException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

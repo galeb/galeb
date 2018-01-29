@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthcheckController {
 
-    @GetMapping(value = "/healthcheck")
+    @GetMapping(value = "/healthcheck.html")
     @ResponseBody
     public String healthcheck() {
         return "WORKING";

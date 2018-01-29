@@ -14,6 +14,36 @@
       "name": "build.timestamp",
       "type": "java.lang.String",
       "description": "Maven build.timestamp."
+    },
+    {
+      "name": "api.url",
+      "type": "java.lang.String",
+      "description": "API microservice URL."
+    },
+    {
+      "name": "auth.localtoken",
+      "type": "java.lang.String",
+      "description": "API LocalAdmin token/credential."
+    },
+    {
+      "name": "ldap.url",
+      "type": "java.lang.String",
+      "description": "LDAP Url."
+    },
+    {
+      "name": "ldap.userdn",
+      "type": "java.lang.String",
+      "description": "LDAP UserDN."
+    },
+    {
+      "name": "ldap.pass",
+      "type": "java.lang.String",
+      "description": "LDAP UserDB password."
+    },
+    {
+      "name": "ldap.base",
+      "type": "java.lang.String",
+      "description": "LDAP Base."
     }
   ]
 }

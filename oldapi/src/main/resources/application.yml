@@ -4,6 +4,12 @@ auth:
 api:
     url: ${GALEB_API_URL:http://127.0.0.1:8000}
 
+ldap:
+    url: ${GALEB_LDAP_URL:ldap://127.0.0.1:3890}
+    userdn: ${GALEB_LDAP_USER:UNDEF}
+    pass: ${GALEB_LDAP_PASS:UNDEF}
+    base: ${GALEB_LDAP_BASE:UNDEF}
+
 build:
     project: '@project.artifactId@'
     timestamp: '@timestamp@'

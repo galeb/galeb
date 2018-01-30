@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
+import io.galeb.core.entity.Account;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.services.http.HttpClientService;
@@ -200,12 +201,16 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         Object v2EntityObj = mapToV2AbstractEntity(resource, v2entityClass);
         io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
         String v2Name;
-        try {
-            Method getName = v2entityClass.getMethod("getName");
-            v2Name = (String) getName.invoke(v2Entity);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-            LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
-            v2Name = String.valueOf(v2Entity.getId());
+        if (v2Entity instanceof Account) {
+            v2Name = ((Account) v2Entity).getUsername();
+        } else {
+            try {
+                Method getName = v2entityClass.getMethod("getName");
+                v2Name = (String) getName.invoke(v2Entity);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+                LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
+                v2Name = String.valueOf(v2Entity.getId());
+            }
         }
         T v1Entity = null;
         try {

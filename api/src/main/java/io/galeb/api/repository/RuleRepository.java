@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.RuleRepositoryCustom;
 import io.galeb.core.entity.Rule;
 import org.springframework.data.domain.Page;
@@ -30,18 +31,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#rule, #this)")
     Rule save(@Param("rule") Rule rule);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Rule findOne(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Rule> findAll(Pageable pageable);
 }

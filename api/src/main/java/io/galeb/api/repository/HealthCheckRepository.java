@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.HealthCheckRepositoryCustom;
 import io.galeb.core.entity.HealthCheck;
 import org.springframework.data.domain.Page;
@@ -30,18 +31,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long>, HealthCheckRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#healthcheck, #this)")
     HealthCheck save(@Param("healthcheck") HealthCheck healthcheck);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     HealthCheck findOne(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<HealthCheck> findAll(Pageable pageable);
 }

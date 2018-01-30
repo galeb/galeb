@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.VirtualHostRepositoryCustom;
 import io.galeb.core.entity.VirtualHost;
 import org.springframework.data.domain.Page;
@@ -30,18 +31,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long>, VirtualHostRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#virtualhost, #this)")
     VirtualHost save(@Param("virtualhost") VirtualHost virtualhost);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     VirtualHost findOne(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<VirtualHost> findAll(Pageable pageable);
 }

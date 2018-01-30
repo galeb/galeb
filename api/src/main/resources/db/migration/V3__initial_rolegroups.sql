@@ -103,10 +103,11 @@ INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@A, 'VIRTUALHOSTGROUP_V
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@A, 'VIRTUALHOSTGROUP_ADMIN');
 COMMIT;
 START TRANSACTION;
-INSERT INTO rolegroup (created_at, created_by, last_modified_at, last_modified_by, version, quarantine, name) VALUES (NOW(), 'system', NOW(), 'system', 0, false, 'LOCAL_ADMIN');
-SELECT @B:=id FROM rolegroup WHERE rolegroup.name = 'LOCAL_ADMIN';
+INSERT INTO rolegroup (created_at, created_by, last_modified_at, last_modified_by, version, quarantine, name) VALUES (NOW(), 'system', NOW(), 'system', 0, false, 'TEAM_ADMIN');
+SELECT @B:=id FROM rolegroup WHERE rolegroup.name = 'TEAM_ADMIN';
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'ACCOUNT_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'ACCOUNT_VIEW');
+INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'ACCOUNT_VIEW_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'BALANCEPOLICY_VIEW');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'BALANCEPOLICY_VIEW_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'ENVIRONMENT_VIEW');
@@ -149,8 +150,8 @@ INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'VIRTUALHOSTGROUP_S
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'VIRTUALHOSTGROUP_SAVE_ALL');
 COMMIT;
 START TRANSACTION;
-INSERT INTO rolegroup (created_at, created_by, last_modified_at, last_modified_by, version, quarantine, name) VALUES (NOW(), 'system', NOW(), 'system', 0, false, 'USER');
-SELECT @C:=id FROM rolegroup WHERE rolegroup.name = 'USER';
+INSERT INTO rolegroup (created_at, created_by, last_modified_at, last_modified_by, version, quarantine, name) VALUES (NOW(), 'system', NOW(), 'system', 0, false, 'TEAM_USER');
+SELECT @C:=id FROM rolegroup WHERE rolegroup.name = 'TEAM_USER';
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@C, 'ACCOUNT_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@C, 'ACCOUNT_VIEW');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@C, 'BALANCEPOLICY_VIEW');

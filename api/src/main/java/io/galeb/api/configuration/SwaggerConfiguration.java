@@ -1,5 +1,6 @@
 package io.galeb.api.configuration;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -19,7 +20,7 @@ public class SwaggerConfiguration {
         public Docket api() {
             return new Docket(DocumentationType.SWAGGER_2)
                     .select()
-                    .apis(RequestHandlerSelectors.any())
+                    .apis(RequestHandlerSelectors.withMethodAnnotation(ExposeFilterSwagger.class))
                     .paths(PathSelectors.regex("^/(?!(swagger|v2|webjars)).*"))
                     .build();
         }

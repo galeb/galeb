@@ -68,3 +68,6 @@ security:
         resource:
             userInfoUri: ${OAUTH_USERINFO:http://localhost/user}
             filter-order: 99
+
+flyway:
+    enabled: ${FLYWAY_ENABLED:false}

@@ -104,11 +104,9 @@ public class PermissionService {
             return false;
         }
         return (isAdmin(account, entityClass.getSimpleName(), action, criteria)) ||
-               (Account.class.equals(entityClass) &&
-                       isMySelf(account, criteria, entityClass.getSimpleName(), action)) ||
-               (!Account.class.equals(entityClass) &&
+                       isMySelf(account, criteria, entityClass.getSimpleName(), action) ||
                        (hasSelfRole(account, role + "_ALL", entityClass.getSimpleName(), action, criteria) ||
-                        hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action)));
+                        hasContextRole(criteria, repository, role, entityClass.getSimpleName(), action));
     }
 
     private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {

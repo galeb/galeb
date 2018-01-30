@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.jayway.restassured.RestAssured.with;
 import static org.hamcrest.Matchers.equalTo;
@@ -83,8 +82,8 @@ public class StepDefs {
     @Value("${auth.localtoken}")
     private String localAdminToken;
 
-    private String userLocal;
-    private String tokenLocal;
+    private String userTeamAdmin;
+    private String tokenUserTeamAdmin;
 
     private static final Gson jsonParser = new GsonBuilder().setPrettyPrinting().create();
 
@@ -112,7 +111,6 @@ public class StepDefs {
         mapAccountJson.put("email", "userlocal@userlocal.com");
         requestJsonBodyHas(mapAccountJson);
         sendMethodPath("POST", "/account");
-        System.out.println(response.extract().body().jsonPath().get().toString());
 
         Map<String, String> mapTeamJson = new HashMap<>();
         mapTeamJson.put("name", "teamlocal");
@@ -126,10 +124,10 @@ public class StepDefs {
         sendMethodPath("PATCH", "/rolegroup/2");
 
         sendMethodPath("GET", "/account/1?projection=apitoken");
-        tokenLocal = response.extract().body().jsonPath().get("apitoken").toString();
-        userLocal = "userlocal";
+        tokenUserTeamAdmin = response.extract().body().jsonPath().get("apitoken").toString();
+        userTeamAdmin = "userlocal";
 
-        LOGGER.info("Created user with rolegroup LOCAL_ADMIN and saved the token");
+        LOGGER.info("Created user with rolegroup TEAM_ADMIN and saved the token");
     }
 
     @After
@@ -148,15 +146,28 @@ public class StepDefs {
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
+    @Given("^a REST client authenticated with (.*)$")
+    public void givenRestClientAuthenticatedAs(String login) {
+        givenRestClientAuthenticated("admin", "pass");
+
+        sendMethodPath("GET", "/account/search/findByUsername?username=" + login);
+        String idAccount = response.extract().body().jsonPath().get("id").toString();
+        sendMethodPath("GET", "/account/"+ idAccount + "?projection=apitoken");
+        String tokenAccount = response.extract().body().jsonPath().get("apitoken").toString();
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, tokenAccount);
+
+        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated as "+login+" with token " + tokenAccount);
+    }
+
     @Given("^a REST client authenticated as (.*) with password (.*)$")
     public void givenRestClientAuthenticated(String login, String password) {
         request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
     }
 
-    @Given("^a REST client authenticated with token and role LOCAL_ADMIN$")
+    @Given("^a REST client authenticated with token and role TEAM_ADMIN$")
     public void givenRestClientAuthenticatedWithToken() {
-        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(userLocal, tokenLocal);
+        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(userTeamAdmin, tokenUserTeamAdmin);
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated with token");
     }
 
@@ -178,7 +189,6 @@ public class StepDefs {
                 }
             });
             String json = jsonParser.toJson(jsonComponentsProcessed);
-            System.out.println(json);
             request.body(json);
         }
     }
@@ -203,7 +213,6 @@ public class StepDefs {
     @And("^send (.+) (.+)$")
     public void sendMethodPath(String method, String path) {
         URI fullUrl = URI.create(processFullUrl(path));
-        System.out.println(fullUrl.toString());
         switch (method) {
             case "GET":
                 response = request.get(fullUrl).then();
@@ -224,7 +233,6 @@ public class StepDefs {
             default:
                 break;
         }
-        System.out.println(response.extract().body().jsonPath().get().toString());
     }
 
     @Then("^the response status is (\\d+)$")

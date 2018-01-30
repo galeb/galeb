@@ -13,7 +13,7 @@ Feature: Flux
     And send POST /balancepolicy
     Then the response status is 201
     # Create projOne
-    Given a REST client authenticated with token and role LOCAL_ADMIN
+    Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
       | name  | projOne |
       | teams | [Team=teamlocal] |

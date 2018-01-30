@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.AccountRepositoryCustom;
 import io.galeb.core.entity.Account;
 import org.springframework.data.domain.Page;
@@ -30,18 +31,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface AccountRepository extends JpaRepository<Account, Long>, AccountRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#account, #this)")
     Account save(@Param("account") Account account);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Account findOne(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Account> findAll(Pageable pageable);
 

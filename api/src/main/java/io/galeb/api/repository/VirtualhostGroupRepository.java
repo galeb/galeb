@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.VirtualhostGroupRepositoryCustom;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
@@ -34,21 +35,26 @@ import java.util.Collection;
 public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGroup, Long>, VirtualhostGroupRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @RestResource(exported = false)
     @PreAuthorize("@perm.allowSave(#virtualhostgroup, #this)")
     VirtualhostGroup save(@Param("virtualhostgroup") VirtualhostGroup virtualhostgroup);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     VirtualhostGroup findOne(@Param("id") Long id);
 
+    @ExposeFilterSwagger
     VirtualhostGroup findByVirtualhostsIn(@Param("virtualhosts") Collection<VirtualHost> virtualhosts);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<VirtualhostGroup> findAll(Pageable pageable);
 }

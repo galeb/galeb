@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.BalancePolicyRepositoryCustom;
 import io.galeb.core.entity.BalancePolicy;
 import org.springframework.data.domain.Page;
@@ -30,16 +31,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Long>, BalancePolicyRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#balancepolicy, #this)")
     BalancePolicy save(@Param("balancepolicy") BalancePolicy balancepolicy);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     Page<BalancePolicy> findByName(@Param("name") String name, Pageable pageable);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<BalancePolicy> findAll(Pageable pageable);
 }

@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
 import io.galeb.core.entity.Environment;
 import org.springframework.data.domain.Page;
@@ -34,13 +35,16 @@ import java.util.Set;
 public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#environment, #this)")
     Environment save(@Param("environment") Environment environment);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
+    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.pools as p " +
@@ -48,6 +52,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "WHERE t.id = :targetId")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
+    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.virtualhosts as v " +
@@ -56,6 +61,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "WHERE ro.id = :ruleorderedId")
     Set<Environment> findAllByRuleOrderedId(@Param("ruleorderedId") long ruleorderedId);
 
+    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.pools as p " +
@@ -66,6 +72,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     Page<Environment> findByName(@Param("name") String name, Pageable pageable);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findAll(Pageable pageable);
 }

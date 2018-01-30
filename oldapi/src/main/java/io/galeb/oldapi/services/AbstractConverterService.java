@@ -169,10 +169,9 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {
         switch (status) {
-            case OK:      return AbstractEntity.EntityStatus.OK;
+            case OK:
             case DELETED: return AbstractEntity.EntityStatus.OK;
             case PENDING: return AbstractEntity.EntityStatus.PENDING;
-            case UNKNOWN: return AbstractEntity.EntityStatus.UNKNOWN;
             default:      return AbstractEntity.EntityStatus.UNKNOWN;
         }
     }

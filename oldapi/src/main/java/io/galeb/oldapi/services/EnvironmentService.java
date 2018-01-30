@@ -55,7 +55,7 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     }
 
     @Override
-    protected Set<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2s) {
+    Set<Resource<Environment>> convertResources(ArrayList<LinkedHashMap> v2s) {
         return v2s.stream().
                 map(resource -> {
                     try {

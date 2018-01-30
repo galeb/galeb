@@ -47,82 +47,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    protected io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
-        return mapper.readValue(mapper.writeValueAsString(resource), klazz);
-    }
-
-    protected LinkedHashMap stringToMap(String strObj) throws IOException {
-        return  mapper.readValue(strObj, LinkedHashMap.class);
-    }
-
-    protected Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s) {
-        return Collections.emptySet();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected T convertResource(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        Object v2EntityObj = mapToV2AbstractEntity(resource, v2entityClass);
-        io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
-        String v2Name;
-        try {
-            Method getName = v2entityClass.getMethod("getName");
-            v2Name = (String) getName.invoke(v2Entity);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-            LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
-            v2Name = String.valueOf(v2Entity.getId());
-        }
-        T v1Entity = null;
-        try {
-            v1Entity = (T) entityClass.getConstructor(String.class).newInstance(v2Name);
-            v1Entity.setId(v2Entity.getId());
-            v1Entity.setCreatedAt(v2Entity.getCreatedAt());
-            v1Entity.setCreatedBy(v2Entity.getCreatedBy());
-            v1Entity.setLastModifiedAt(v2Entity.getLastModifiedAt());
-            v1Entity.setLastModifiedBy(v2Entity.getLastModifiedBy());
-            v1Entity.setVersion(v2Entity.getVersion());
-            v1Entity.setStatus(extractStatus(v2Entity));
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return v1Entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    public ArrayList<LinkedHashMap> extractArrayOfMapsFromBody(String resourceName, Response response) throws IOException {
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    public LinkedHashMap extractMapFromBody(Response response) throws IOException {
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return mapper.readValue(body, LinkedHashMap.class);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    protected String entityV1ToString(T entity) throws JsonProcessingException {
-        return mapper.writeValueAsString(entity);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected T stringToEntityV1(String str) {
-        try {
-            return (T) mapper.readValue(str, entityClass);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            return null;
-        }
-    }
-
-    public String getResourceName() {
-        return entityClass.getSimpleName().toLowerCase();
-    }
-
     public ResponseEntity<String> methodNotAllowed() {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
@@ -159,7 +83,83 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return ResponseEntity.noContent().build();
     }
 
-    AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
+    private io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
+        return mapper.readValue(mapper.writeValueAsString(resource), klazz);
+    }
+
+    LinkedHashMap stringToMap(String strObj) throws IOException {
+        return  mapper.readValue(strObj, LinkedHashMap.class);
+    }
+
+    Set<Resource<T>> convertResources(ArrayList<LinkedHashMap> v2s) {
+        return Collections.emptySet();
+    }
+
+    @SuppressWarnings("unchecked")
+    T convertResource(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
+        Object v2EntityObj = mapToV2AbstractEntity(resource, v2entityClass);
+        io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
+        String v2Name;
+        try {
+            Method getName = v2entityClass.getMethod("getName");
+            v2Name = (String) getName.invoke(v2Entity);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+            LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
+            v2Name = String.valueOf(v2Entity.getId());
+        }
+        T v1Entity = null;
+        try {
+            v1Entity = (T) entityClass.getConstructor(String.class).newInstance(v2Name);
+            v1Entity.setId(v2Entity.getId());
+            v1Entity.setCreatedAt(v2Entity.getCreatedAt());
+            v1Entity.setCreatedBy(v2Entity.getCreatedBy());
+            v1Entity.setLastModifiedAt(v2Entity.getLastModifiedAt());
+            v1Entity.setLastModifiedBy(v2Entity.getLastModifiedBy());
+            v1Entity.setVersion(v2Entity.getVersion());
+            v1Entity.setStatus(extractStatus(v2Entity));
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return v1Entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    ArrayList<LinkedHashMap> extractArrayOfMapsFromBody(String resourceName, Response response) throws IOException {
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
+                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+    }
+
+    LinkedHashMap extractMapFromBody(Response response) throws IOException {
+        String body = null;
+        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+            return mapper.readValue(body, LinkedHashMap.class);
+        }
+        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+    }
+
+    String entityV1ToString(T entity) throws JsonProcessingException {
+        return mapper.writeValueAsString(entity);
+    }
+
+    @SuppressWarnings("unchecked")
+    T stringToEntityV1(String str) {
+        try {
+            return (T) mapper.readValue(str, entityClass);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    String getResourceName() {
+        return entityClass.getSimpleName().toLowerCase();
+    }
+
+    private AbstractEntity.EntityStatus extractStatus(io.galeb.core.entity.AbstractEntity entity) {
         WithStatus.Status v2Status = WithStatus.Status.OK;
         if (entity instanceof WithStatus) {
             v2Status = ((WithStatus)entity).getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
@@ -167,7 +167,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return convertStatus(v2Status);
     }
 
-    AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {
+    private AbstractEntity.EntityStatus convertStatus(WithStatus.Status status) {
         switch (status) {
             case OK:
             case DELETED: return AbstractEntity.EntityStatus.OK;

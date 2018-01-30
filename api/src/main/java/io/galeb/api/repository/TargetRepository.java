@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository;
 
+import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.TargetRepositoryCustom;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
@@ -33,20 +34,25 @@ import java.util.Collection;
 public interface TargetRepository extends JpaRepository<Target, Long>, TargetRepositoryCustom {
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#target, #this)")
     Target save(@Param("target") Target target);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Target findOne(@Param("id") Long id);
 
     @Override
+    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Target> findAll(Pageable pageable);
 
+    @ExposeFilterSwagger
     Page<Target> findByNameAndPoolsIn(@Param("name") String name, @Param("pools") Collection<Pool> pools, Pageable page);
 }

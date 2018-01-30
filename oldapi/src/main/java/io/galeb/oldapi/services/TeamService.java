@@ -16,31 +16,23 @@
 
 package io.galeb.oldapi.services;
 
-import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Team;
+import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Set;
 
 @Service
 public class TeamService extends AbstractConverterService<Team> {
 
     private static final Logger LOGGER = LogManager.getLogger(TeamService.class);
 
-    @Override
-    protected Set<Resource<Team>> convertResources(ArrayList<LinkedHashMap> v2s) {
-        return null;
+    @Autowired
+    public TeamService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
+        super(linkProcessor, httpClientService);
+        this.resourceUrlBase = apiUrl + "/" + getResourceName();
     }
-
-    @Override
-    protected Team convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
-        return null;
-    }
-
 }

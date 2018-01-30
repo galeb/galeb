@@ -50,17 +50,17 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<BalancePolicy>>> get(@RequestParam(value = "size", required = false) Integer size,
                                                                        @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page);
+        return service.get(size, page, io.galeb.core.entity.BalancePolicy.class);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicy>> getWithId(@PathVariable String id) {
-        return service.getWithId(id);
+        return service.getWithId(id, io.galeb.core.entity.BalancePolicy.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicy>> post(@RequestBody String body) {
-        return service.post(body);
+        return service.post(body, io.galeb.core.entity.BalancePolicy.class);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +75,7 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicy>> putWithId(@PathVariable String id, @RequestBody String body) {
-        return service.putWithId(id, body);
+        return service.putWithId(id, body, io.galeb.core.entity.BalancePolicy.class);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

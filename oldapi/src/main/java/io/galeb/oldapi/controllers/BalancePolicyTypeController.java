@@ -50,17 +50,17 @@ public class BalancePolicyTypeController extends AbstractController<BalancePolic
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> get(@RequestParam(value = "size", required = false) Integer size,
                                                                            @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page);
+        return service.get(size, page, null);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicyType>> getWithId(@PathVariable String id) {
-        return service.getWithId(id);
+        return service.getWithId(id, null);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicyType>> post(@RequestBody String body) {
-        return service.post(body);
+        return service.post(body, null);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +75,7 @@ public class BalancePolicyTypeController extends AbstractController<BalancePolic
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<BalancePolicyType>> putWithId(@PathVariable String id, @RequestBody String body) {
-        return service.putWithId(id, body);
+        return service.putWithId(id, body, null);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

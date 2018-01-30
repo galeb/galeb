@@ -40,7 +40,7 @@ public class Project extends AbstractEntity<Project> {
         setName(name);
     }
 
-    protected Project() {
+    public Project() {
         //
     }
 

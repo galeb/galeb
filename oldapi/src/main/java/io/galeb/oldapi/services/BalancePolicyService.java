@@ -16,31 +16,24 @@
 
 package io.galeb.oldapi.services;
 
-import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.BalancePolicy;
+import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.hateoas.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Set;
 
 @Service
 public class BalancePolicyService extends AbstractConverterService<BalancePolicy> {
 
     private static final Logger LOGGER = LogManager.getLogger(BalancePolicyService.class);
 
-    @Override
-    protected Set<Resource<BalancePolicy>> convertResources(ArrayList<LinkedHashMap> v2s) {
-        return null;
-    }
-
-    @Override
-    protected BalancePolicy convertResource(LinkedHashMap resource, Class<? extends AbstractEntity> v2entityClass) throws IOException {
-        return null;
+    @Autowired
+    public BalancePolicyService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
+        super(linkProcessor, httpClientService);
+        this.resourceUrlBase = apiUrl + "/" + getResourceName();
     }
 
 }

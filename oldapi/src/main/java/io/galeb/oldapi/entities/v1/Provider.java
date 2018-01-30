@@ -36,7 +36,7 @@ public class Provider extends AbstractEntity<Provider> {
         setName(name);
     }
 
-    protected Provider() {
+    public Provider() {
         //
     }
 

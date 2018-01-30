@@ -51,7 +51,7 @@ public class Pool extends AbstractEntity<Pool> implements WithFarmID<Pool> {
         setName(name);
     }
 
-    protected Pool() {
+    public Pool() {
         //
     }
 

@@ -28,7 +28,7 @@ public class RuleType extends AbstractEntity<RuleType> {
         setName(name);
     }
 
-    protected RuleType() {
+    public RuleType() {
         //
     }
 

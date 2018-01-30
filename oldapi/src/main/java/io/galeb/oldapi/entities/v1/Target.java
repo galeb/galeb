@@ -42,7 +42,7 @@ public class Target extends AbstractEntity<Target> implements WithFarmID<Target>
         setName(name);
     }
 
-    protected Target() {
+    public Target() {
         //
     }
 

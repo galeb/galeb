@@ -52,7 +52,7 @@ public class VirtualHost extends AbstractEntity<VirtualHost> implements WithFarm
         this.project = project;
     }
 
-    protected VirtualHost() {
+    public VirtualHost() {
         //
     }
 

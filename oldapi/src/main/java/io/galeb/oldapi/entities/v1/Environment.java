@@ -41,7 +41,7 @@ public class Environment extends AbstractEntity<Environment> {
         setName(name);
     }
 
-    protected Environment() {
+    public Environment() {
         //
     }
 }

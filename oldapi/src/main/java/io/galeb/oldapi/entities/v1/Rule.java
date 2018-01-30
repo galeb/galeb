@@ -60,7 +60,7 @@ public class Rule extends AbstractEntity<Rule> implements WithFarmID<Rule>, With
         this.pool = pool;
     }
 
-    protected Rule() {
+    public Rule() {
         //
     }
 

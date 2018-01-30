@@ -52,7 +52,7 @@ public class Farm extends AbstractEntity<Farm> {
         this.provider = provider;
     }
 
-    protected Farm() {
+    public Farm() {
         //
     }
 

@@ -16,11 +16,14 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.BalancePolicyType;
+import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -41,23 +44,25 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public BalancePolicyTypeService(LinkProcessor linkProcessor) {
+    public BalancePolicyTypeService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
+        super(linkProcessor, httpClientService);
         this.linkProcessor = linkProcessor;
         final BalancePolicyType balancePolicyTypeInstance = new BalancePolicyType("Default");
         balancePolicyTypeInstance.setId(1L);
         final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
         this.resource = new Resource<>(balancePolicyTypeInstance, links);
+        this.resourceUrlBase = apiUrl + "/" + getResourceName();
     }
 
     @Override
     public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> getSearch(String findType, Map<String, String> queryMap) {
         if ("findByName".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         if ("findByNameContaining".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
-        return get(0, 0);
+        return get(0, 0, null);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> get(Integer size, Integer page) {
+    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> get(Integer size, Integer page, Class<? extends AbstractEntity> v2entityClass) {
         size = size != null ? size : 9999;
         page = page != null ? page : 0;
         Set<Resource<BalancePolicyType>> v1Resources = Collections.singleton(resource);
@@ -66,7 +71,7 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
         return ResponseEntity.ok(pagedResources);
     }
 
-    public ResponseEntity<Resource<BalancePolicyType>> getWithId(String param) {
+    public ResponseEntity<Resource<BalancePolicyType>> getWithId(String param, Class<? extends AbstractEntity> v2entityClass) {
         return ResponseEntity.ok(resource);
     }
 

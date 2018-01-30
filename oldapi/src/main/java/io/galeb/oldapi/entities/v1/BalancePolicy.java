@@ -36,7 +36,7 @@ public class BalancePolicy extends AbstractEntity<BalancePolicy> {
         this.balancePolicyType = balancePolicyType;
     }
 
-    protected BalancePolicy() {
+    public BalancePolicy() {
         // Hibernate Requirement
     }
 

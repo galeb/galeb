@@ -73,7 +73,7 @@ public class RuleController extends AbstractController<Rule> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<Rule>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body);
     }
 

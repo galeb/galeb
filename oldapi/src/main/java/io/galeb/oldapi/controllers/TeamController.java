@@ -74,7 +74,7 @@ public class TeamController extends AbstractController<Team> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<Team>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body);
     }
 

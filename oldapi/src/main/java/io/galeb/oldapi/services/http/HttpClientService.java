@@ -57,7 +57,7 @@ public class HttpClientService {
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
-    public Response post(String url, String body) throws ExecutionException, InterruptedException {
+    public Response createOrUpdate(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
         String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
@@ -65,8 +65,16 @@ public class HttpClientService {
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
         requestBuilder.setBody(body);
-        requestBuilder.setMethod(HttpMethod.POST.name());
+        requestBuilder.setMethod(method.name());
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
+    }
+
+    public Response post(String url, String body) throws ExecutionException, InterruptedException {
+        return createOrUpdate(url, body, HttpMethod.POST);
+    }
+
+    public Response put(String url, String body) throws ExecutionException, InterruptedException {
+        return createOrUpdate(url, body, HttpMethod.PUT);
     }
 
     private static class AsyncHttpClientResponse implements Response {

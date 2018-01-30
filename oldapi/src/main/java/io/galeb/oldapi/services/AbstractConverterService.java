@@ -19,14 +19,18 @@ package io.galeb.oldapi.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.services.http.Response;
+import io.galeb.oldapi.services.utils.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -67,20 +71,55 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return ResponseEntity.created(URI.create("http://localhost/" + getResourceName() + "/1")).build();
     }
 
-    public ResponseEntity<String> putWithId(String id, String body) {
-        return ResponseEntity.accepted().build();
+    public ResponseEntity<Resource<T>> putWithId(String id, String body) {
+        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<String> deleteWithId(String id) {
-        return ResponseEntity.accepted().build();
+    public ResponseEntity<Void> deleteWithId(String id) {
+        return ResponseEntity.noContent().build();
     }
 
-    public ResponseEntity<String> patchWithId(String id, String body) {
-        return ResponseEntity.accepted().build();
+    public ResponseEntity<Void> patchWithId(String id, String body) {
+        return ResponseEntity.noContent().build();
     }
 
     public ResponseEntity<String> head() {
         return ResponseEntity.noContent().build();
+    }
+
+    ResponseEntity<Resource<T>> buildResource(Response response, long id, HttpMethod method, LinkProcessor linkProcessor, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
+        LinkedHashMap resource = extractMapFromBody(response);
+        if (resource.get("error") != null) {
+            throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", error:" + resource.get("error") + ")");
+        }
+        Set<Link> links = linkProcessor.extractLinks(resource, getResourceName());
+        long idEntity = id > -1 ? id : linkProcessor.extractId(links);
+        T entityConverted = convertResource(resource, v2entityClass);
+        entityConverted.setId(idEntity);
+        fixV1Links(links, idEntity);
+
+        final Resource<T> body = new Resource<>(entityConverted, links);
+        switch (method) {
+            case POST:
+                String location = "/" + getResourceName() + "/" + id;
+                return ResponseEntity.created(URI.create(location)).body(body);
+            case PUT:
+                return ResponseEntity.accepted().body(body);
+            case GET:
+                return ResponseEntity.ok(body);
+        }
+        throw new IllegalArgumentException("Method " + method + " not supported");
+    }
+
+    PagedResources<Resource<T>> buildPagedResources(Integer size, Integer page, Set<Resource<T>> resources, LinkProcessor linkProcessor) {
+        int totalElements = resources.size();
+        final PagedResources.PageMetadata metadata =
+                new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
+        return new PagedResources<>(resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
+    }
+
+    void fixV1Links(Set<Link> links, Long id) {
+        //
     }
 
     private io.galeb.core.entity.AbstractEntity mapToV2AbstractEntity(LinkedHashMap resource, Class<? extends io.galeb.core.entity.AbstractEntity> klazz) throws IOException {
@@ -133,12 +172,17 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
     }
 
-    LinkedHashMap extractMapFromBody(Response response) throws IOException {
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return mapper.readValue(body, LinkedHashMap.class);
+    @SuppressWarnings("unchecked")
+    LinkedHashMap extractMapFromBody(Response response) {
+        String body = "";
+        try {
+            if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
+                return mapper.readValue(body, LinkedHashMap.class);
+            }
+        } catch (IOException e) {
+            body = e.getMessage();
         }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
+        return new LinkedHashMap(ImmutableMap.of("error", Optional.ofNullable(body).orElse("UNKNOWN")));
     }
 
     String entityV1ToString(T entity) throws JsonProcessingException {

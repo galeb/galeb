@@ -74,7 +74,7 @@ public class ProviderController extends AbstractController<Provider> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<Provider>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body);
     }
 

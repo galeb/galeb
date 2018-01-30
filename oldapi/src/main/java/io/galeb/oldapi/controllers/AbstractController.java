@@ -44,15 +44,15 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<String> put(String body);
 
-    protected abstract ResponseEntity<String> putWithId(String id, String body);
+    protected abstract ResponseEntity<Resource<T>> putWithId(String id, String body);
 
     protected abstract ResponseEntity<String> delete();
 
-    protected abstract ResponseEntity<String> deleteWithId(String id);
+    protected abstract ResponseEntity<Void> deleteWithId(String id);
 
     protected abstract ResponseEntity<String> patch(String body);
 
-    protected abstract ResponseEntity<String> patchWithId(String id, String body);
+    protected abstract ResponseEntity<Void> patchWithId(String id, String body);
 
     protected abstract ResponseEntity<String> options();
 

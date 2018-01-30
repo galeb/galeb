@@ -16,8 +16,6 @@
 
 package io.galeb.oldapi.services.http;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.entity.Account;
 import io.galeb.oldapi.services.sec.LocalAdminService;
 import org.asynchttpclient.AsyncHttpClient;
@@ -28,10 +26,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -48,21 +42,11 @@ public class HttpClientService {
                                                                 .setUseInsecureTrustManager(true)
                                                                 .setUserAgent(USER_AGENT);
     private final AsyncHttpClient httpClient = asyncHttpClient(config);
-    private final ObjectMapper mapper = new ObjectMapper();
-
-    public HttpClientService() {
-        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
-
-    private String extractApiToken(Account account) {
-        if (LocalAdminService.NAME.equals(account.getUsername())) return account.getPassword();
-        return account.getDetails().get("token");
-    }
 
     public Response getResponse(String url) throws InterruptedException, ExecutionException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
-        String password = extractApiToken(account); // extract token from description
+        String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
         return getResponse(url, username, password);
     }
 
@@ -73,36 +57,24 @@ public class HttpClientService {
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
-    @SuppressWarnings("unchecked")
-    public ArrayList<LinkedHashMap> getResponseListOfMap(String url, String resourceName) throws ExecutionException, InterruptedException, IOException {
-        final Response response = getResponse(url);
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                    mapper.readValue(body, HashMap.class).get("_embedded")).get(resourceName);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    public LinkedHashMap getResponseMap(String url) throws ExecutionException, InterruptedException, IOException {
-        final Response response = getResponse(url);
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return mapper.readValue(body, LinkedHashMap.class);
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    public Response post(String url, String body) throws ExecutionException, InterruptedException {
+    public Response createOrUpdate(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
-        String password = extractApiToken(account); // extract token from description
+        String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
         RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
         requestBuilder.setBody(body);
-        requestBuilder.setMethod(HttpMethod.POST.name());
+        requestBuilder.setMethod(method.name());
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
+    }
+
+    public Response post(String url, String body) throws ExecutionException, InterruptedException {
+        return createOrUpdate(url, body, HttpMethod.POST);
+    }
+
+    public Response put(String url, String body) throws ExecutionException, InterruptedException {
+        return createOrUpdate(url, body, HttpMethod.PUT);
     }
 
     private static class AsyncHttpClientResponse implements Response {

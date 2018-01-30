@@ -52,7 +52,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(new InMemoryAccountFilter(), BasicAuthenticationFilter.class);
         // @formatter:off
         http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
+                .authorizeRequests().regexMatchers("^/swagger.*", "^/webjars/.*", "^/v2/api.*").permitAll().
+            and().
+                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
             and().
                 authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/(accounts|teams|rolegroups).*").denyAll().
             and().

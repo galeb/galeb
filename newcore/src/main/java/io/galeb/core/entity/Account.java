@@ -216,4 +216,10 @@ public class Account extends AbstractEntity implements UserDetails {
     public String toString() {
         return username;
     }
+
+    @JsonIgnore
+    public String extractApiTokenFromDetails(boolean usePassword) {
+        if (usePassword) return getPassword();
+        return getDetails().get("token");
+    }
 }

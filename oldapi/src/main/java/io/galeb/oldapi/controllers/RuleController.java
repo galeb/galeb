@@ -83,7 +83,7 @@ public class RuleController extends AbstractController<Rule> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteWithId(@PathVariable String id) {
+    public ResponseEntity<Void> deleteWithId(@PathVariable String id) {
         return service.deleteWithId(id);
     }
 
@@ -93,7 +93,7 @@ public class RuleController extends AbstractController<Rule> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> patchWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Void> patchWithId(@PathVariable String id, @RequestBody String body) {
         return service.patchWithId(id, body);
     }
 

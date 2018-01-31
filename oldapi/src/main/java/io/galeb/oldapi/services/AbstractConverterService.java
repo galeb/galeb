@@ -16,9 +16,11 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
 import io.galeb.core.entity.Account;
@@ -37,8 +39,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -60,6 +64,27 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         this.httpClientService = httpClientService;
 
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
+    Set<String> validAttributesV1() {
+        Set<String> result = new HashSet<>();
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(JsonIgnore.class)) {
+                if (LOGGER.isDebugEnabled()) LOGGER.debug(getResourceName() + ": " + field.getName() + " IGNORED.");
+                continue;
+            }
+            if (Modifier.isStatic(field.getModifiers())) {
+                if (LOGGER.isDebugEnabled()) LOGGER.debug(getResourceName() + ": " + field.getName() + " IS STATIC. IGNORED.");
+                continue;
+            }
+            if (field.getType().isInstance(Collection.class)) {
+                if (LOGGER.isDebugEnabled()) LOGGER.warn(getResourceName() + ": " + field.getName() + " IS COLLECTIONS. Not implemented yet.");
+                continue;
+            }
+            result.add(field.getName());
+        }
+        return result;
     }
 
     public ResponseEntity<String> methodNotAllowed() {
@@ -100,7 +125,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         T entity = stringToEntityV1(body);
         if (entity != null) {
             try {
-                Response response = httpClientService.post(resourceUrlBase, body);
+                Response response = httpClientService.post(resourceUrlBase, convertFromV1ToV2(body));
                 return buildResource(response, -1, HttpMethod.POST, v2entityClass);
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -114,7 +139,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         T entity = stringToEntityV1(body);
         if (entity != null) {
             try {
-                Response response = httpClientService.put(resourceUrlBase + "/" + id, body);
+                Response response = httpClientService.put(resourceUrlBase + "/" + id, convertFromV1ToV2(body));
                 return buildResource(response, Long.parseLong(id), HttpMethod.PUT, v2entityClass);
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -252,8 +277,14 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         return new LinkedHashMap(ImmutableMap.of("error", Optional.ofNullable(body).orElse("UNKNOWN")));
     }
 
-    String entityV1ToString(T entity) throws JsonProcessingException {
-        return mapper.writeValueAsString(entity);
+    String entityToString(Object entity) {
+
+        try {
+            return mapper.writeValueAsString(entity);
+        } catch (JsonProcessingException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -285,6 +316,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
             case PENDING: return AbstractEntity.EntityStatus.PENDING;
             default:      return AbstractEntity.EntityStatus.UNKNOWN;
         }
+    }
+
+    String convertFromV1ToV2(String body) {
+        return body;
     }
 
 }

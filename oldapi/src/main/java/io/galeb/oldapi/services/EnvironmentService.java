@@ -16,6 +16,8 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.galeb.core.exceptions.BadRequestException;
 import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.utils.LinkProcessor;
@@ -24,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -47,6 +50,28 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
         linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/farms", "farms")
                      .add(links,"/" + getResourceName() + "/" + id + "/targets", "targets")
                      .remove(links, "rulesordered");
+    }
+
+    @Override
+    public ResponseEntity<Void> patchWithId(String id, String body) {
+        Environment environment = stringToEntityV1(body);
+        LOGGER.warn(entityToString(environment));
+
+        validAttributesV1().forEach(a -> LOGGER.warn(getResourceName() + ": " + a));
+        return super.patchWithId(id, body);
+    }
+
+    @Override
+    protected String convertFromV1ToV2(String body) {
+        Environment environmentV1 = stringToEntityV1(body);
+        io.galeb.core.entity.Environment environmentV2 = new io.galeb.core.entity.Environment();
+        environmentV2.setName(environmentV1.getName());
+
+        String newBody = entityToString(environmentV2);
+        if (newBody != null) {
+            return newBody;
+        }
+        throw new BadRequestException("body fail");
     }
 
 }

@@ -23,17 +23,28 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class PoolService extends AbstractConverterService<Pool> {
 
     private static final Logger LOGGER = LogManager.getLogger(PoolService.class);
+    private final LinkProcessor linkProcessor;
 
     @Autowired
     public PoolService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
         super(linkProcessor, httpClientService);
         this.resourceUrlBase = apiUrl + "/" + getResourceName();
+        this.linkProcessor = linkProcessor;
+    }
+
+    @Override
+    protected void fixV1Links(Set<Link> links, Long id) {
+        linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/balancePolicy", "balancePolicy")
+                .remove(links, "balancepolicy");
     }
 
 }

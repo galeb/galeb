@@ -31,6 +31,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,14 +54,21 @@ public class FarmService extends AbstractConverterService<Farm> {
         this.linkProcessor = linkProcessor;
     }
 
+    private Farm convertEnvToFarm(io.galeb.oldapi.entities.v1.Environment environment) {
+        Farm farm = new Farm();
+        farm.setName(environment.getName());
+        farm.setId(environment.getId());
+        farm.setCreatedAt(environment.getCreatedAt());
+        farm.setCreatedBy(environment.getCreatedBy());
+        farm.setLastModifiedAt(environment.getLastModifiedAt());
+        farm.setLastModifiedBy(environment.getLastModifiedBy());
+        farm.setStatus(environment.getStatus());
+        return farm;
+    }
+
     @Override
     void fixV1Links(Set<Link> links, Long id) {
-        linkProcessor.remove(links, "farms")
-                     .remove(links, "pools")
-                     .remove(links, "targets")
-                     .remove(links, "environment")
-                     .remove(links, "virtualhosts")
-                     .add(links, "/" + getResourceName() + "/" + id + "/environment", "environment")
+        linkProcessor.add(links, "/" + getResourceName() + "/" + id + "/environment", "environment")
                      .add(links, "/" + getResourceName() + "/" + id + "/provider", "provider");
     }
 
@@ -69,24 +77,37 @@ public class FarmService extends AbstractConverterService<Farm> {
         size = size == null ? 99999 : size;
         page = page == null ? 0 : page;
         Set<Resource<Farm>> resources = environmentService.get(size, page, Environment.class).getBody().getContent().stream().map(r -> {
-            Farm farm = new Farm();
             io.galeb.oldapi.entities.v1.Environment environment = r.getContent();
-            farm.setName(environment.getName());
-            farm.setId(environment.getId());
-            farm.setCreatedAt(environment.getCreatedAt());
-            farm.setCreatedBy(environment.getCreatedBy());
-            farm.setLastModifiedAt(environment.getLastModifiedAt());
-            farm.setLastModifiedBy(environment.getLastModifiedBy());
-            farm.setStatus(environment.getStatus());
-            Set<Link> links = new HashSet<>(r.getLinks());
+            Farm farm = convertEnvToFarm(environment);
+            Set<Link> links = new HashSet<>();
             fixV1Links(links, farm.getId());
-            List<Link> newLinks = links.stream().map(l -> {
-                String newHref = l.getHref().replaceAll("/environment/", "/farm/");
-                return new Link(newHref, l.getRel());
-            }).collect(Collectors.toList());
-            return new Resource<>(farm, newLinks);
+            return new Resource<>(farm, links);
         }).collect(Collectors.toSet());
         PagedResources<Resource<Farm>> pagedResources = buildPagedResources(size, page, resources);
         return ResponseEntity.ok(pagedResources);
+    }
+
+    @Override
+    public ResponseEntity<Resource<Farm>> getWithId(String id, Class<? extends AbstractEntity> v2entityClass) {
+        ResponseEntity<Resource<io.galeb.oldapi.entities.v1.Environment>> environmentResourceResponse = environmentService.getWithId(id, Environment.class);
+        final Resource<io.galeb.oldapi.entities.v1.Environment> environmentResource;
+        if (environmentResourceResponse == null || (environmentResource = environmentResourceResponse.getBody()) == null ) {
+            return ResponseEntity.notFound().build();
+        }
+        io.galeb.oldapi.entities.v1.Environment environment = environmentResource.getContent();
+        Set<Link> links = new HashSet<>();
+        fixV1Links(links, Long.parseLong(id));
+        Farm farm = convertEnvToFarm(environment);
+        return ResponseEntity.ok(new Resource<>(farm, links));
+    }
+
+    @Override
+    public ResponseEntity<Resource<Farm>> post(String body, Class<? extends AbstractEntity> v2entityClass) {
+        return ResponseEntity.created(URI.create("/farm")).build();
+    }
+
+    @Override
+    public ResponseEntity<Resource<Farm>> putWithId(String id, String body, Class<? extends AbstractEntity> v2entityClass) {
+        return ResponseEntity.noContent().build();
     }
 }

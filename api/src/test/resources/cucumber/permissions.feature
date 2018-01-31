@@ -1,3 +1,4 @@
+@ignore
 Feature: Account Support
     The manager have than
     to support REST standard
@@ -34,13 +35,13 @@ Feature: Account Support
         | accounts         | [Account=accountOne]      |
       And send PATCH /team/3
       Then the response status is 200
-      Given a REST client authenticated with accountOne
+      Given a REST client authenticated as accountOne with token
       When request json body has:
         | name     | projectOne              |
         | teams         | [Team=teamOne]      |
       And send POST /project
       Then the response status is 201
-      Given a REST client authenticated with accountOne
+      Given a REST client authenticated as accountOne with token
       When request json body has:
         | name     | projectTwo              |
         | teams         | [Team=teamTwo]      |

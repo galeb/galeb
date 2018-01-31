@@ -25,9 +25,8 @@ import org.junit.runner.RunWith;
         monochrome = true,
         plugin= {"pretty", "json:target/cucumber.json", "html:target/cucumber"},
         glue = {"io.galeb"},
-        //features= {"classpath:cucumber"},
-        tags={"~@ignore"},
-        features={"src/test/resources/cucumber/permissions.feature"}
+        features= {"classpath:cucumber"},
+        tags={"~@ignore"}
 )
 public class CucumberTest {
 }

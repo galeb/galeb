@@ -1,3 +1,4 @@
+@ignore
 Feature: Flux
   Scenario: Flux
     # Create environment envOne

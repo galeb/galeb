@@ -146,7 +146,7 @@ public class StepDefs {
         LOGGER.info("Using "+RestAssured.class.getName()+" unauthenticated");
     }
 
-    @Given("^a REST client authenticated with (.*)$")
+    @Given("^a REST client authenticated as (.*) with token$")
     public void givenRestClientAuthenticatedAs(String login) {
         givenRestClientAuthenticated("admin", "pass");
 

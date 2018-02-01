@@ -18,12 +18,10 @@ package io.galeb.oldapi.services;
 
 import io.galeb.core.exceptions.BadRequestException;
 import io.galeb.oldapi.entities.v1.Environment;
-import io.galeb.oldapi.services.http.HttpClientService;
-import io.galeb.oldapi.services.utils.LinkProcessor;
+import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -38,26 +36,16 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public EnvironmentService(HttpClientService httpClientService, LinkProcessor linkProcessor, @Value("${api.url}") String apiUrl) {
-        super(linkProcessor, httpClientService);
-        this.resourceUrlBase = apiUrl + "/" + getResourceName();
+    public EnvironmentService(LinkProcessor linkProcessor) {
+        super();
         this.linkProcessor = linkProcessor;
     }
 
     @Override
-    protected void fixV1Links(Set<Link> links, Long id) {
+    protected void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
         linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/farms", "farms")
                      .add(links,"/" + getResourceName() + "/" + id + "/targets", "targets")
                      .remove(links, "rulesordered");
-    }
-
-    @Override
-    public ResponseEntity<Void> patchWithId(String id, String body) {
-        Environment environment = convertFromJsonStringToV1(body);
-        LOGGER.warn(convertFromObjectToJsonString(environment));
-
-        validAttributesV1().forEach(a -> LOGGER.warn(getResourceName() + ": " + a));
-        return super.patchWithId(id, body);
     }
 
     @Override

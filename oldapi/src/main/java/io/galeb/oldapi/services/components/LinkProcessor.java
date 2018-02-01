@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.services.utils;
+package io.galeb.oldapi.services.components;
 
 import org.springframework.hateoas.Link;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class LinkProcessor {
 
     public LinkProcessor add(Set<Link> links, String href, String relName) {

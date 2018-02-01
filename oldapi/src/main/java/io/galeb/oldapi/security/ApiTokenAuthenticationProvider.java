@@ -59,14 +59,17 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
             throw new SecurityException(errMsg);
         }
         boolean isAdmin = LocalAdminService.NAME.equals(authentication.getName()) && localAdmin.check((String) authentication.getCredentials());
-        boolean ldapCheckOk = ldapAuthenticationService.check(authentication.getName(), (String) authentication.getCredentials());
-        if (isAdmin || ldapCheckOk) {
+        if (isAdmin || isLdapCheckOk(authentication)) {
             final UserDetails userDetails = retrieveUser(authentication.getName(), null);
             if (userDetails.getUsername() != null) {
                 return new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
             }
         }
         throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+    }
+
+    private boolean isLdapCheckOk(Authentication authentication) {
+        return ldapAuthenticationService.check(authentication.getName(), (String) authentication.getCredentials());
     }
 
     @Override

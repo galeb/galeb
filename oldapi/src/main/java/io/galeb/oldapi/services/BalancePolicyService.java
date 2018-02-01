@@ -17,12 +17,10 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.BalancePolicy;
-import io.galeb.oldapi.services.http.HttpClientService;
-import io.galeb.oldapi.services.utils.LinkProcessor;
+import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
@@ -32,17 +30,17 @@ import java.util.Set;
 public class BalancePolicyService extends AbstractConverterService<BalancePolicy> {
 
     private static final Logger LOGGER = LogManager.getLogger(BalancePolicyService.class);
+
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public BalancePolicyService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
-        super(linkProcessor, httpClientService);
-        this.resourceUrlBase = apiUrl + "/" + getResourceName();
+    public BalancePolicyService(LinkProcessor linkProcessor) {
+        super();
         this.linkProcessor = linkProcessor;
     }
 
     @Override
-    protected void fixV1Links(Set<Link> links, Long id) {
+    protected void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
         linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/balancePolicyType", "balancePolicyType");
     }
 

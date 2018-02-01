@@ -34,7 +34,7 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
 
-    protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Integer size, Integer page);
+    protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Map<String, String> queryMap);
 
     protected abstract ResponseEntity<Resource<T>> getWithId(String id);
 

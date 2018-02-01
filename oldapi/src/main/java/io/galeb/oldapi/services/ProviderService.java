@@ -18,12 +18,10 @@ package io.galeb.oldapi.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Provider;
-import io.galeb.oldapi.services.http.HttpClientService;
-import io.galeb.oldapi.services.utils.LinkProcessor;
+import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -44,27 +42,26 @@ public class ProviderService extends AbstractConverterService<Provider> {
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public ProviderService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
-        super(linkProcessor, httpClientService);
+    public ProviderService(LinkProcessor linkProcessor) {
+        super();
         this.linkProcessor = linkProcessor;
         final Provider providerInstance = new Provider("Default");
         providerInstance.setId(1L);
         final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
         this.resource = new Resource<>(providerInstance, links);
-        this.resourceUrlBase = apiUrl + "/" + getResourceName();
     }
 
     @Override
     public ResponseEntity<PagedResources<Resource<Provider>>> getSearch(String findType, Map<String, String> queryMap) {
         if ("findByName".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         if ("findByNameContaining".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
-        return get(0, 0, null);
+        return get(null, queryMap);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Provider>>> get(Integer size, Integer page, Class<? extends AbstractEntity> v2entityClass) {
-        size = size != null ? size : 9999;
-        page = page != null ? page : 0;
+    public ResponseEntity<PagedResources<Resource<Provider>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+        int size = getSizeRequest(queryMap);
+        int page = getPageRequest(queryMap);
         Set<Resource<Provider>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
         final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));

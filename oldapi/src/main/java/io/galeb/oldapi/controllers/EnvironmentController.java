@@ -64,9 +64,8 @@ public class EnvironmentController extends AbstractController<Environment> {
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Environment>>> get(@RequestParam(value = "size", required = false) Integer size,
-                                                                     @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page, io.galeb.core.entity.Environment.class);
+    public ResponseEntity<PagedResources<Resource<Environment>>> get(@RequestParam Map<String, String> queryMap) {
+        return service.get(io.galeb.core.entity.Environment.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)

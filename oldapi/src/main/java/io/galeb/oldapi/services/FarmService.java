@@ -19,12 +19,10 @@ package io.galeb.oldapi.services;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.oldapi.entities.v1.Farm;
-import io.galeb.oldapi.services.http.HttpClientService;
-import io.galeb.oldapi.services.utils.LinkProcessor;
+import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -44,13 +42,9 @@ public class FarmService extends AbstractConverterService<Farm> {
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public FarmService(LinkProcessor linkProcessor,
-                       HttpClientService httpClientService,
-                       EnvironmentService environmentService,
-                       @Value("${api.url}") String apiUrl) {
-        super(linkProcessor, httpClientService);
+    public FarmService(LinkProcessor linkProcessor, EnvironmentService environmentService) {
+        super();
         this.environmentService = environmentService;
-        this.resourceUrlBase = apiUrl + "/" + getResourceName();
         this.linkProcessor = linkProcessor;
     }
 
@@ -67,20 +61,20 @@ public class FarmService extends AbstractConverterService<Farm> {
     }
 
     @Override
-    void fixV1Links(Set<Link> links, Long id) {
+    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
         linkProcessor.add(links, "/" + getResourceName() + "/" + id + "/environment", "environment")
                      .add(links, "/" + getResourceName() + "/" + id + "/provider", "provider");
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Farm>>> get(Integer size, Integer page, Class<? extends AbstractEntity> v2entityClass) {
-        size = size == null ? 99999 : size;
-        page = page == null ? 0 : page;
-        Set<Resource<Farm>> resources = environmentService.get(size, page, Environment.class).getBody().getContent().stream().map(r -> {
+    public ResponseEntity<PagedResources<Resource<Farm>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+        int size = getSizeRequest(queryMap);
+        int page = getPageRequest(queryMap);
+        Set<Resource<Farm>> resources = environmentService.get(Environment.class, queryMap).getBody().getContent().stream().map(r -> {
             io.galeb.oldapi.entities.v1.Environment environment = r.getContent();
             Farm farm = convertEnvToFarm(environment);
             Set<Link> links = new HashSet<>();
-            fixV1Links(links, farm.getId());
+            convertFromV2LinksToV1Links(links, farm.getId());
             return new Resource<>(farm, links);
         }).collect(Collectors.toSet());
         PagedResources<Resource<Farm>> pagedResources = buildPagedResources(size, page, resources);
@@ -96,7 +90,7 @@ public class FarmService extends AbstractConverterService<Farm> {
         }
         io.galeb.oldapi.entities.v1.Environment environment = environmentResource.getContent();
         Set<Link> links = new HashSet<>();
-        fixV1Links(links, Long.parseLong(id));
+        convertFromV2LinksToV1Links(links, Long.parseLong(id));
         Farm farm = convertEnvToFarm(environment);
         return ResponseEntity.ok(new Resource<>(farm, links));
     }

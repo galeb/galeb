@@ -48,9 +48,8 @@ public class RuleController extends AbstractController<Rule> {
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Rule>>> get(@RequestParam(value = "size", required = false) Integer size,
-                                                              @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page, io.galeb.core.entity.Rule.class);
+    public ResponseEntity<PagedResources<Resource<Rule>>> get(@RequestParam Map<String, String> queryMap) {
+        return service.get(io.galeb.core.entity.Rule.class, queryMap);
     }
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<Rule>> getWithId(@PathVariable String id) {

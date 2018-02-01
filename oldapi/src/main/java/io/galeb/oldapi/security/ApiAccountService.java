@@ -69,9 +69,9 @@ public class ApiAccountService {
                 String self = (String) ((HashMap<String, Object>)((HashMap<String, Object>)((HashMap<String, Object>) json)
                                 .get("_links")).get("self")).get("href");
 
-                /**
+                // /**
                 LOGGER.warn("TOKEN: " + token + " / SELF: " + self);
-                */
+                // */
 
                 account = new Account();
                 account.setUsername(username);

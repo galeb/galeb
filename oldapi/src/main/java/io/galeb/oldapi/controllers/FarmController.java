@@ -48,9 +48,8 @@ public class FarmController extends AbstractController<Farm> {
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Farm>>> get(@RequestParam(value = "size", required = false) Integer size,
-                                                              @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page, null);
+    public ResponseEntity<PagedResources<Resource<Farm>>> get(@RequestParam Map<String, String> queryMap) {
+        return service.get(null, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)

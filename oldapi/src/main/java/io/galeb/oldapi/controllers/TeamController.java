@@ -48,9 +48,8 @@ public class TeamController extends AbstractController<Team> {
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Team>>> get(@RequestParam(value = "size", required = false) Integer size,
-                                                              @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page, io.galeb.core.entity.Team.class);
+    public ResponseEntity<PagedResources<Resource<Team>>> get(@RequestParam Map<String, String> queryMap) {
+        return service.get(io.galeb.core.entity.Team.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -18,6 +18,8 @@ package io.galeb.oldapi.services.http;
 
 import io.galeb.core.entity.Account;
 import io.galeb.oldapi.services.sec.LocalAdminService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Dsl;
@@ -34,7 +36,10 @@ import static org.asynchttpclient.Dsl.config;
 @Service
 public class HttpClientService {
 
+    private static final Logger LOGGER = LogManager.getLogger(HttpClientService.class);
+
     private static final String USER_AGENT = "OLDAPI/1.0";
+
     private final DefaultAsyncHttpClientConfig.Builder config = config()
                                                                 .setFollowRedirect(true)
                                                                 .setSoReuseAddress(true)

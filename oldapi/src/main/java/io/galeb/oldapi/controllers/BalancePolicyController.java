@@ -48,9 +48,8 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<BalancePolicy>>> get(@RequestParam(value = "size", required = false) Integer size,
-                                                                       @RequestParam(value = "page", required = false) Integer page) {
-        return service.get(size, page, io.galeb.core.entity.BalancePolicy.class);
+    public ResponseEntity<PagedResources<Resource<BalancePolicy>>> get(@RequestParam Map<String, String> queryMap) {
+        return service.get(io.galeb.core.entity.BalancePolicy.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)

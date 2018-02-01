@@ -17,12 +17,10 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Account;
-import io.galeb.oldapi.services.http.HttpClientService;
-import io.galeb.oldapi.services.utils.LinkProcessor;
+import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +34,13 @@ public class AccountService extends AbstractConverterService<Account> {
     private final LinkProcessor linkProcessor;
 
     @Autowired
-    public AccountService(LinkProcessor linkProcessor, HttpClientService httpClientService, @Value("${api.url}") String apiUrl) {
-        super(linkProcessor, httpClientService);
-        this.resourceUrlBase = apiUrl + "/" + getResourceName();
+    public AccountService(LinkProcessor linkProcessor) {
+        super();
         this.linkProcessor = linkProcessor;
     }
 
     @Override
-    protected void fixV1Links(Set<Link> links, Long id) {
+    protected void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
         linkProcessor.remove(links, "rolegroups");
     }
 

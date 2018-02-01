@@ -16,7 +16,6 @@
 
 package io.galeb.oldapi.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.galeb.core.exceptions.BadRequestException;
 import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.services.http.HttpClientService;
@@ -54,20 +53,20 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
 
     @Override
     public ResponseEntity<Void> patchWithId(String id, String body) {
-        Environment environment = stringToEntityV1(body);
-        LOGGER.warn(entityToString(environment));
+        Environment environment = convertFromJsonStringToV1(body);
+        LOGGER.warn(convertFromObjectToJsonString(environment));
 
         validAttributesV1().forEach(a -> LOGGER.warn(getResourceName() + ": " + a));
         return super.patchWithId(id, body);
     }
 
     @Override
-    protected String convertFromV1ToV2(String body) {
-        Environment environmentV1 = stringToEntityV1(body);
+    protected String convertFromJsonStringV1ToJsonStringV2(String body) {
+        Environment environmentV1 = convertFromJsonStringToV1(body);
         io.galeb.core.entity.Environment environmentV2 = new io.galeb.core.entity.Environment();
         environmentV2.setName(environmentV1.getName());
 
-        String newBody = entityToString(environmentV2);
+        String newBody = convertFromObjectToJsonString(environmentV2);
         if (newBody != null) {
             return newBody;
         }

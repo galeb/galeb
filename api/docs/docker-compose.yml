@@ -15,3 +15,8 @@ services:
     command: redis-server --appendonly yes
     ports:
       - 6379:6379
+
+  fake-oauth2:
+    image: tuxmonteiro/galeb-fake-oauth2
+    ports:
+      - 9000:9000

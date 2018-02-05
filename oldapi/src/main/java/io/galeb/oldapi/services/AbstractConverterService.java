@@ -47,7 +47,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public abstract class AbstractConverterService<T extends AbstractEntity> implements LinkProcessor {
+public abstract class AbstractConverterService<T extends AbstractEntity> implements LinkProcessor, HttpMethods<T> {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractConverterService.class);
 
@@ -92,14 +92,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // HTTP METHODS
 
-    public ResponseEntity<String> methodNotAllowed() {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
-    }
-
-    public ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap) {
-        return ResponseEntity.ok().build();
-    }
-
+    @Override
     public ResponseEntity<PagedResources<Resource<T>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         int size = getSizeRequest(queryMap);
         int page = getPageRequest(queryMap);
@@ -115,6 +108,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
     public ResponseEntity<Resource<T>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         String url = resourceUrlBase + "/" + id;
         try {
@@ -126,6 +120,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
     public ResponseEntity<Resource<T>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         T entity = convertFromJsonStringToV1(body);
         if (entity != null) {
@@ -140,6 +135,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
     public ResponseEntity<Resource<T>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         T entity = convertFromJsonStringToV1(body);
         if (entity != null) {
@@ -152,18 +148,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
             }
         }
         return ResponseEntity.badRequest().build();
-    }
-
-    public ResponseEntity<Void> deleteWithId(String id) {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<Void> patchWithId(String id, String body) {
-        return ResponseEntity.noContent().build();
-    }
-
-    public ResponseEntity<String> head() {
-        return ResponseEntity.noContent().build();
     }
 
     // common

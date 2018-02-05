@@ -49,17 +49,17 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<VirtualHost>>> get(@RequestParam Map<String, String> queryMap) {
-        return service.get(io.galeb.core.entity.VirtualHost.class, queryMap);
+        return service.get(io.galeb.core.entity.VirtualhostGroup.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<VirtualHost>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, io.galeb.core.entity.VirtualHost.class);
+        return service.getWithId(id, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<VirtualHost>> post(@RequestBody String body) {
-        return service.post(body, io.galeb.core.entity.VirtualHost.class);
+        return service.post(body, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,7 +74,7 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource<VirtualHost>> putWithId(@PathVariable String id, @RequestBody String body) {
-        return service.putWithId(id, body, io.galeb.core.entity.VirtualHost.class);
+        return service.putWithId(id, body, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
     @RequestMapping(method = DELETE, produces = MediaType.APPLICATION_JSON_VALUE)

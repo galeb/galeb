@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.core.entity.VirtualhostGroup;
 import io.galeb.oldapi.entities.v1.VirtualHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     private static final Logger LOGGER = LogManager.getLogger(VirtualHostService.class);
 
     private static final String[] ADD_REL = {"ruleDefault", "rules"};
-    private static final String[] DEL_REL = {"rulesOrdered", "virtualhostgroup"};
+    private static final String[] DEL_REL = {"rulesOrdered", "virtualhostgroup", "virtualhosts"};
 
     @Override
     String[] addRel() {
@@ -39,4 +40,8 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return DEL_REL;
     }
 
+    @Override
+    String getResourceName() {
+        return VirtualhostGroup.class.getSimpleName().toLowerCase();
+    }
 }

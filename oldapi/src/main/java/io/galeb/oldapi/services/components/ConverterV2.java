@@ -149,12 +149,10 @@ public class ConverterV2 implements LinkProcessor {
         try {
             json = mapper.readTree(response.getResponseBody());
         } catch (IOException e) {
-            LOGGER.error(e);
             return new RawJsonHalData().setStatus(responseStatus).setError(e.getMessage());
         }
         if (responseStatus < 100 || responseStatus > 399) {
             String error = response.getResponseBody();
-            LOGGER.error(error);
             return new RawJsonHalData().setStatus(responseStatus).setError(error);
         }
         JsonNode links = null;
@@ -180,7 +178,7 @@ public class ConverterV2 implements LinkProcessor {
             if (error.toLowerCase().contains("no content to map")) {
                 throw new NotFoundException();
             }
-            throw new BadRequestException();
+            throw new BadRequestException(error);
         }
         V2JsonHalData v2JsonHal = new V2JsonHalData();
         Map<String, String> links = new HashMap<>();

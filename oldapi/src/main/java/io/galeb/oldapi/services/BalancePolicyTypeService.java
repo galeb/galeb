@@ -49,23 +49,24 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> getSearch(String findType, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>>> getSearch(String findType, Map<String, String> queryMap) {
         if ("findByName".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         if ("findByNameContaining".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         return get(null, queryMap);
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
-    public ResponseEntity<PagedResources<Resource<BalancePolicyType>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         int size = getSizeRequest(queryMap);
         int page = getPageRequest(queryMap);
-        Set<Resource<BalancePolicyType>> v1Resources = Collections.singleton(resource);
+        Set<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<BalancePolicyType>> pagedResources = new PagedResources<>(v1Resources, metadata, pagedLinks(getResourceName(), size, page));
+        final PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> pagedResources = new PagedResources<>(v1Resources, metadata, pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 
-    public ResponseEntity<Resource<BalancePolicyType>> getWithId(String param, Class<? extends AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String param, Class<? extends AbstractEntity> v2entityClass) {
         return ResponseEntity.ok(resource);
     }
 

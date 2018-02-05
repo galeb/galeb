@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.services;
 
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -29,23 +30,23 @@ public interface HttpMethods<T> {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
-    default ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap) {
+    default ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(String findType, Map<String, String> queryMap) {
         return ResponseEntity.ok().build();
     }
 
-    default ResponseEntity<PagedResources<Resource<T>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+    default ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         return ResponseEntity.badRequest().build();
     }
 
-    default ResponseEntity<Resource<T>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    default ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.badRequest().build();
     }
 
-    default ResponseEntity<Resource<T>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    default ResponseEntity<Resource<? extends AbstractEntity>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.badRequest().build();
     }
 
-    default ResponseEntity<Resource<T>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    default ResponseEntity<Resource<? extends AbstractEntity>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.badRequest().build();
     }
 

@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.controllers;
 
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Team;
 import io.galeb.oldapi.services.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,23 +43,23 @@ public class TeamController extends AbstractController<Team> {
     private TeamService service;
 
     @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Team>>> getSearch(@PathVariable("findType") String findType,
-                                                                    @RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(@PathVariable("findType") String findType,
+                                                                                        @RequestParam Map<String, String> queryMap) {
         return service.getSearch(findType, queryMap);
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Team>>> get(@RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(@RequestParam Map<String, String> queryMap) {
         return service.get(io.galeb.core.entity.Team.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Team>> getWithId(@PathVariable String id) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id) {
         return service.getWithId(id, io.galeb.core.entity.Team.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Team>> post(@RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(@RequestBody String body) {
         return service.post(body, io.galeb.core.entity.Team.class);
     }
 
@@ -73,7 +74,7 @@ public class TeamController extends AbstractController<Team> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Team>> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body, io.galeb.core.entity.Team.class);
     }
 

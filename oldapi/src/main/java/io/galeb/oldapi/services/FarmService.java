@@ -17,7 +17,7 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.core.entity.AbstractEntity;
-import io.galeb.core.entity.Environment;
+import io.galeb.oldapi.entities.v1.Environment;
 import io.galeb.oldapi.entities.v1.Farm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +52,7 @@ public class FarmService extends AbstractConverterService<Farm> {
         return ADD_REL;
     }
 
-    private Farm convertEnvToFarm(io.galeb.oldapi.entities.v1.Environment environment) {
+    private Farm convertEnvToFarm(Environment environment) {
         Farm farm = new Farm();
         farm.setName(environment.getName());
         farm.setId(environment.getId());
@@ -65,41 +65,42 @@ public class FarmService extends AbstractConverterService<Farm> {
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Farm>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         int size = getSizeRequest(queryMap);
         int page = getPageRequest(queryMap);
-        Set<Resource<Farm>> resources = environmentService.get(Environment.class, queryMap).getBody().getContent().stream().map(r -> {
-            io.galeb.oldapi.entities.v1.Environment environment = r.getContent();
+        Set<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> resources = environmentService.get(io.galeb.core.entity.Environment.class, queryMap).getBody().getContent().stream().map(r -> {
+            Environment environment = (Environment) r.getContent();
             Farm farm = convertEnvToFarm(environment);
             Set<Link> links = new HashSet<>();
-            convertFromV2LinksToV1Links(links, farm.getId());
+            v2LinksToV1Links(links, farm.getId());
             return new Resource<>(farm, links);
         }).collect(Collectors.toSet());
-        PagedResources<Resource<Farm>> pagedResources = buildPagedResources(size, page, resources);
+        PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> pagedResources = buildPagedResources(size, page, resources);
         return ResponseEntity.ok(pagedResources);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public ResponseEntity<Resource<Farm>> getWithId(String id, Class<? extends AbstractEntity> v2entityClass) {
-        ResponseEntity<Resource<io.galeb.oldapi.entities.v1.Environment>> environmentResourceResponse = environmentService.getWithId(id, Environment.class);
-        final Resource<io.galeb.oldapi.entities.v1.Environment> environmentResource;
-        if (environmentResourceResponse == null || (environmentResource = environmentResourceResponse.getBody()) == null ) {
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String id, Class<? extends AbstractEntity> v2entityClass) {
+        ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> environmentResourceResponse = environmentService.getWithId(id, io.galeb.core.entity.Environment.class);
+        final Resource<Environment> environmentResource;
+        if (environmentResourceResponse == null || (environmentResource = (Resource<Environment>) environmentResourceResponse.getBody()) == null ) {
             return ResponseEntity.notFound().build();
         }
-        io.galeb.oldapi.entities.v1.Environment environment = environmentResource.getContent();
+        Environment environment = environmentResource.getContent();
         Set<Link> links = new HashSet<>();
-        convertFromV2LinksToV1Links(links, Long.parseLong(id));
+        v2LinksToV1Links(links, Long.parseLong(id));
         Farm farm = convertEnvToFarm(environment);
         return ResponseEntity.ok(new Resource<>(farm, links));
     }
 
     @Override
-    public ResponseEntity<Resource<Farm>> post(String body, Class<? extends AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> post(String body, Class<? extends AbstractEntity> v2entityClass) {
         return ResponseEntity.created(URI.create("/farm")).build();
     }
 
     @Override
-    public ResponseEntity<Resource<Farm>> putWithId(String id, String body, Class<? extends AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> putWithId(String id, String body, Class<? extends AbstractEntity> v2entityClass) {
         return ResponseEntity.noContent().build();
     }
 }

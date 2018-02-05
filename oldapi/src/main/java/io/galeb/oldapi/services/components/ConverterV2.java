@@ -21,15 +21,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterators;
+import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.exceptions.BadRequestException;
 import io.galeb.oldapi.exceptions.NotFoundException;
 import io.galeb.oldapi.services.LinkProcessor;
-import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -42,16 +43,13 @@ public class ConverterV2 implements LinkProcessor {
     private static final Logger LOGGER = LogManager.getLogger(ConverterV2.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final HttpClientService httpClientService;
 
     @Value("${api.url}")
     private String apiUrl;
 
-    @Autowired
-    public ConverterV2(HttpClientService httpClientService) {
+    public ConverterV2() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.httpClientService = httpClientService;
     }
 
     private class RawJsonHalData {
@@ -111,15 +109,15 @@ public class ConverterV2 implements LinkProcessor {
     }
 
     public class V2JsonHalData {
-        private List<? extends io.galeb.core.entity.AbstractEntity> v2entities = new ArrayList<>();
+        private List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities = new ArrayList<>();
         private Map<String, String> links = new HashMap<>();
         private Map<String, String> metadata = new HashMap<>();
 
-        public List<? extends io.galeb.core.entity.AbstractEntity> getV2entities() {
+        public List<Resource<? extends io.galeb.core.entity.AbstractEntity>> getV2entities() {
             return v2entities;
         }
 
-        public V2JsonHalData setV2entities(List<? extends io.galeb.core.entity.AbstractEntity> v2entities) {
+        public V2JsonHalData setV2entities(List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities) {
             this.v2entities = v2entities;
             return this;
         }
@@ -183,7 +181,7 @@ public class ConverterV2 implements LinkProcessor {
         V2JsonHalData v2JsonHal = new V2JsonHalData();
         Map<String, String> links = new HashMap<>();
         Map<String, String> metadata = new HashMap<>();
-        List<? extends io.galeb.core.entity.AbstractEntity> v2entityCollection = new ArrayList<>();
+        List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entityCollection = new ArrayList<>();
         final JsonNode page;
         if ((page = rawJsonHalData.getPage()) != null) {
             metadata.put("size", String.valueOf(page.has("size") ? page.get("size").asInt() : 0));
@@ -199,7 +197,10 @@ public class ConverterV2 implements LinkProcessor {
         if (!(nodes = rawJsonHalData.getNodes()).isEmpty()) {
             v2entityCollection = nodes.stream().map(n -> {
                 try {
-                    return mapper.readValue(n.toString(), v2Class);
+                    AbstractEntity v2 = mapper.readValue(n.toString(), v2Class);
+                    List<Link> entityLinks = new ArrayList<>();
+                    n.get("_links").fields().forEachRemaining(l -> entityLinks.add(new Link(l.getValue().get("href").asText(), l.getKey())));
+                    return new Resource<>(v2, entityLinks);
                 } catch (IOException e) {
                     return null;
                 }
@@ -208,11 +209,9 @@ public class ConverterV2 implements LinkProcessor {
         return v2JsonHal.setLinks(links).setMetadata(metadata).setV2entities(v2entityCollection);
     }
 
-    public String getApiUrl() {
-        return apiUrl;
-    }
-
-    public HttpClientService getHttpClientService() {
-        return httpClientService;
+    public Set<Link> extractLinks(V2JsonHalData v2JsonHalData, String resourceName) {
+        return v2JsonHalData.getLinks().entrySet().stream()
+                .map(e -> new Link(e.getValue().replaceAll(".*/" + resourceName, "/" + resourceName), e.getKey()))
+                .collect(Collectors.toSet());
     }
 }

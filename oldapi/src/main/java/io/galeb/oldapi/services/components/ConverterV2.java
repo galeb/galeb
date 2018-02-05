@@ -17,22 +17,22 @@
 package io.galeb.oldapi.services.components;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.galeb.core.entity.Account;
-import io.galeb.core.entity.WithStatus;
-import io.galeb.oldapi.entities.v1.AbstractEntity;
+import com.google.common.collect.Iterators;
+import io.galeb.oldapi.exceptions.BadRequestException;
+import io.galeb.oldapi.exceptions.NotFoundException;
 import io.galeb.oldapi.services.LinkProcessor;
+import io.galeb.oldapi.services.http.HttpClientService;
+import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,101 +42,179 @@ public class ConverterV2 implements LinkProcessor {
     private static final Logger LOGGER = LogManager.getLogger(ConverterV2.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private final HttpClientService httpClientService;
 
-    private Class<? super AbstractEntity> entityClass;
+    @Value("${api.url}")
+    private String apiUrl;
 
     @Autowired
-    public ConverterV2() {
+    public ConverterV2(HttpClientService httpClientService) {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        this.httpClientService = httpClientService;
     }
 
-    String getResourceName() {
-        return entityClass.getSimpleName().toLowerCase();
-    }
+    private class RawJsonHalData {
+        private List<JsonNode> nodes;
+        private JsonNode links;
+        private JsonNode page;
+        private int status;
+        private String error;
 
-    @SuppressWarnings("unchecked")
-    public void setV1Class(Class<?> entityClass) {
-        this.entityClass = (Class<? super AbstractEntity>) entityClass;
-    }
-
-    private io.galeb.core.entity.AbstractEntity convertFromV2MapToV2(LinkedHashMap map, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        return mapper.readValue(mapper.writeValueAsString(map), v2entityClass);
-    }
-
-    public void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        //
-    }
-
-    public Set<Resource<?>> convertFromV2ListOfMapsToV1Resources(ArrayList<LinkedHashMap> listOfMapsV2, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        return listOfMapsV2.stream().
-                map(resource -> {
-                    try {
-                        AbstractEntity<?> v1Entity = convertFromV2MapToV1(resource, v2entityClass);
-                        Set<Link> links = extractLinks(resource, getResourceName());
-                        Long id = extractIdFromSelfLink(links);
-                        convertFromV2LinksToV1Links(links, id);
-                        v1Entity.setId(id);
-                        return new Resource<>(v1Entity, links);
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    }
-                    return null;
-                }).filter(Objects::nonNull).collect(Collectors.toSet());
-    }
-
-    public AbstractEntity<?> convertFromV2MapToV1(LinkedHashMap v2Map, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        Object v2EntityObj = convertFromV2MapToV2(v2Map, v2entityClass);
-        io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
-        return convertFromV2ToV1(v2Entity, v2entityClass);
-    }
-
-    @SuppressWarnings({"unchecked", "Duplicates"})
-    public AbstractEntity<?> convertFromV2ToV1(io.galeb.core.entity.AbstractEntity v2Entity, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        String v2Name;
-        if (v2Entity instanceof Account) {
-            v2Name = ((Account) v2Entity).getUsername();
-        } else {
-            try {
-                Method getName = v2entityClass.getMethod("getName");
-                v2Name = (String) getName.invoke(v2Entity);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-                LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
-                v2Name = String.valueOf(v2Entity.getId());
-            }
+        RawJsonHalData() {
+            this(Collections.emptyList());
         }
-        AbstractEntity<?> v1Entity = null;
+
+        RawJsonHalData(List<JsonNode> nodes) {
+            this.nodes = nodes;
+        }
+
+        List<JsonNode> getNodes() {
+            return nodes;
+        }
+
+        JsonNode getLinks() {
+            return links;
+        }
+
+        RawJsonHalData setLinks(JsonNode links) {
+            this.links = links;
+            return this;
+        }
+
+        JsonNode getPage() {
+            return page;
+        }
+
+        RawJsonHalData setPage(JsonNode page) {
+            this.page = page;
+            return this;
+        }
+
+        int getStatus() {
+            return status;
+        }
+
+        RawJsonHalData setStatus(int status) {
+            this.status = status;
+            return this;
+        }
+
+        String getError() {
+            return error;
+        }
+
+        RawJsonHalData setError(String error) {
+            this.error = error;
+            return this;
+        }
+    }
+
+    public class V2JsonHalData {
+        private List<? extends io.galeb.core.entity.AbstractEntity> v2entities = new ArrayList<>();
+        private Map<String, String> links = new HashMap<>();
+        private Map<String, String> metadata = new HashMap<>();
+
+        public List<? extends io.galeb.core.entity.AbstractEntity> getV2entities() {
+            return v2entities;
+        }
+
+        public V2JsonHalData setV2entities(List<? extends io.galeb.core.entity.AbstractEntity> v2entities) {
+            this.v2entities = v2entities;
+            return this;
+        }
+
+        public Map<String, String> getLinks() {
+            return links;
+        }
+
+        public V2JsonHalData setLinks(Map<String, String> links) {
+            this.links.putAll(links);
+            return this;
+        }
+
+        public Map<String, String> getMetadata() {
+            return metadata;
+        }
+
+        public V2JsonHalData setMetadata(Map<String, String> metadata) {
+            this.metadata.putAll(metadata);
+            return this;
+        }
+    }
+
+    private RawJsonHalData toRawJsonHal(Response response) {
+        JsonNode json;
+        int responseStatus = response.hasResponseStatus() ? response.getStatusCode() : -1;
         try {
-            v1Entity = (AbstractEntity<?>) entityClass.getConstructor().newInstance();
-            v1Entity.setName(v2Name);
-            v1Entity.setId(v2Entity.getId());
-            v1Entity.setCreatedAt(v2Entity.getCreatedAt());
-            v1Entity.setCreatedBy(v2Entity.getCreatedBy());
-            v1Entity.setLastModifiedAt(v2Entity.getLastModifiedAt());
-            v1Entity.setLastModifiedBy(v2Entity.getLastModifiedBy());
-            v1Entity.setVersion(v2Entity.getVersion());
-            v1Entity.setStatus(extractV1StatusFromV2(v2Entity));
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            LOGGER.error(e.getMessage(), e);
+            json = mapper.readTree(response.getResponseBody());
+        } catch (IOException e) {
+            LOGGER.error(e);
+            return new RawJsonHalData().setStatus(responseStatus).setError(e.getMessage());
         }
-        return v1Entity;
+        if (responseStatus < 100 || responseStatus > 399) {
+            String error = response.getResponseBody();
+            LOGGER.error(error);
+            return new RawJsonHalData().setStatus(responseStatus).setError(error);
+        }
+        JsonNode links = null;
+        JsonNode page = null;
+        List<JsonNode> nodes = new ArrayList<>();
+        if (json.has("links")) links = json.get("links");
+        if (json.has("_links")) links = json.get("_links");
+        if (json.has("page")) page = json.get("page");
+        if (json.has("_embedded")) json = json.get("_embedded").fields().next().getValue();
+        if (json.isArray()) {
+            nodes.addAll(Arrays.asList(Iterators.toArray(json.elements(), JsonNode.class)));
+        } else {
+            nodes.add(json);
+        }
+        return new RawJsonHalData(nodes).setLinks(links).setPage(page).setStatus(responseStatus);
     }
 
-    @SuppressWarnings("Duplicates")
-    public AbstractEntity.EntityStatus toV1Status(WithStatus.Status status) {
-        switch (status) {
-            case OK:
-            case DELETED: return AbstractEntity.EntityStatus.OK;
-            case PENDING: return AbstractEntity.EntityStatus.PENDING;
-            default:      return AbstractEntity.EntityStatus.UNKNOWN;
+    public V2JsonHalData toV2JsonHal(Response response, Class<? extends io.galeb.core.entity.AbstractEntity> v2Class) {
+        RawJsonHalData rawJsonHalData = toRawJsonHal(response);
+        String error = rawJsonHalData == null ? "RAW JSON IS NULL" : rawJsonHalData.getError();
+        if (error != null) {
+            LOGGER.error(error);
+            if (error.toLowerCase().contains("no content to map")) {
+                throw new NotFoundException();
+            }
+            throw new BadRequestException();
         }
+        V2JsonHalData v2JsonHal = new V2JsonHalData();
+        Map<String, String> links = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
+        List<? extends io.galeb.core.entity.AbstractEntity> v2entityCollection = new ArrayList<>();
+        final JsonNode page;
+        if ((page = rawJsonHalData.getPage()) != null) {
+            metadata.put("size", String.valueOf(page.has("size") ? page.get("size").asInt() : 0));
+            metadata.put("total_elements", String.valueOf(page.has("total_elements") ? page.get("total_elements").asInt() :0));
+            metadata.put("total_pages", String.valueOf(page.has("total_pages") ? page.get("total_pages").asInt() : 0));
+            metadata.put("number", String.valueOf(page.has("number") ? page.get("number").asInt() : 0));
+        }
+        final JsonNode rawLinks;
+        if ((rawLinks = rawJsonHalData.getLinks()) != null) {
+            rawLinks.fieldNames().forEachRemaining(f -> links.put(f, rawLinks.get(f).get("href").asText()));
+        }
+        final List<JsonNode> nodes;
+        if (!(nodes = rawJsonHalData.getNodes()).isEmpty()) {
+            v2entityCollection = nodes.stream().map(n -> {
+                try {
+                    return mapper.readValue(n.toString(), v2Class);
+                } catch (IOException e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+        }
+        return v2JsonHal.setLinks(links).setMetadata(metadata).setV2entities(v2entityCollection);
     }
 
-    private AbstractEntity.EntityStatus extractV1StatusFromV2(io.galeb.core.entity.AbstractEntity entity) {
-        WithStatus.Status v2Status = WithStatus.Status.OK;
-        if (entity instanceof WithStatus) {
-            v2Status = ((WithStatus)entity).getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
-        }
-        return toV1Status(v2Status);
+    public String getApiUrl() {
+        return apiUrl;
+    }
+
+    public HttpClientService getHttpClientService() {
+        return httpClientService;
     }
 }

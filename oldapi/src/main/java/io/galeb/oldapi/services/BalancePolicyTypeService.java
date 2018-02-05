@@ -18,7 +18,6 @@ package io.galeb.oldapi.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.oldapi.entities.v1.BalancePolicyType;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +38,10 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
     private static final Logger LOGGER = LogManager.getLogger(BalancePolicyTypeService.class);
 
     private final Resource<BalancePolicyType> resource;
-    private final LinkProcessor linkProcessor;
 
     @Autowired
-    public BalancePolicyTypeService(LinkProcessor linkProcessor) {
+    public BalancePolicyTypeService() {
         super();
-        this.linkProcessor = linkProcessor;
         final BalancePolicyType balancePolicyTypeInstance = new BalancePolicyType("Default");
         balancePolicyTypeInstance.setId(1L);
         final List<Link> links = Collections.singletonList(new Link("/" + getResourceName() + "/1", "self"));
@@ -64,7 +61,7 @@ public class BalancePolicyTypeService extends AbstractConverterService<BalancePo
         int page = getPageRequest(queryMap);
         Set<Resource<BalancePolicyType>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<BalancePolicyType>> pagedResources = new PagedResources<>(v1Resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
+        final PagedResources<Resource<BalancePolicyType>> pagedResources = new PagedResources<>(v1Resources, metadata, pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
+import io.galeb.oldapi.services.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,19 +37,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class ConverterV2 {
+public class ConverterV2 implements LinkProcessor {
 
     private static final Logger LOGGER = LogManager.getLogger(ConverterV2.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final LinkProcessor linkProcessor;
-
     private Class<? super AbstractEntity> entityClass;
 
     @Autowired
-    public ConverterV2(LinkProcessor linkProcessor) {
-        this.linkProcessor = linkProcessor;
+    public ConverterV2() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
@@ -75,8 +73,8 @@ public class ConverterV2 {
                 map(resource -> {
                     try {
                         AbstractEntity<?> v1Entity = convertFromV2MapToV1(resource, v2entityClass);
-                        Set<Link> links = linkProcessor.extractLinks(resource, getResourceName());
-                        Long id = linkProcessor.extractId(links);
+                        Set<Link> links = extractLinks(resource, getResourceName());
+                        Long id = extractIdFromSelfLink(links);
                         convertFromV2LinksToV1Links(links, id);
                         v1Entity.setId(id);
                         return new Resource<>(v1Entity, links);

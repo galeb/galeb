@@ -25,7 +25,6 @@ import com.google.common.reflect.TypeToken;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
@@ -48,15 +47,12 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public abstract class AbstractConverterService<T extends AbstractEntity> {
+public abstract class AbstractConverterService<T extends AbstractEntity> implements LinkProcessor {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractConverterService.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Class<? super T> entityClass = new TypeToken<T>(getClass()){}.getRawType();
-
-    @Autowired
-    private LinkProcessor linkProcessor;
 
     @Autowired
     private HttpClientService httpClientService;
@@ -185,8 +181,8 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         if (resource.get("error") != null) {
             throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", error:" + resource.get("error") + ")");
         }
-        Set<Link> links = linkProcessor.extractLinks(resource, getResourceName());
-        long idEntity = id > -1 ? id : linkProcessor.extractId(links);
+        Set<Link> links = extractLinks(resource, getResourceName());
+        long idEntity = id > -1 ? id : extractIdFromSelfLink(links);
         T entityConverted = convertFromV2MapToV1(resource, v2entityClass);
         entityConverted.setId(idEntity);
         convertFromV2LinksToV1Links(links, idEntity);
@@ -208,7 +204,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
         int totalElements = resources.size();
         final PagedResources.PageMetadata metadata =
                 new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
-        return new PagedResources<>(resources, metadata, linkProcessor.pagedLinks(getResourceName(), size, page));
+        return new PagedResources<>(resources, metadata, pagedLinks(getResourceName(), size, page));
     }
 
     @SuppressWarnings("unchecked")
@@ -277,8 +273,8 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     // v2 -> v1
 
     void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        for (String rel : addRel()) linkProcessor.add(links, "/" + getResourceName() + "/" + id + "/" + rel, rel);
-        for (String rel: delRel()) linkProcessor.remove(links, rel);
+        for (String rel : addRel()) addLink(links, "/" + getResourceName() + "/" + id + "/" + rel, rel);
+        for (String rel: delRel()) removeLink(links, rel);
     }
 
     Set<Resource<T>> convertFromV2ListOfMapsToV1Resources(ArrayList<LinkedHashMap> listOfMapsV2, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
@@ -286,8 +282,8 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
                 map(resource -> {
                     try {
                         T v1Entity = convertFromV2MapToV1(resource, v2entityClass);
-                        Set<Link> links = linkProcessor.extractLinks(resource, getResourceName());
-                        Long id = linkProcessor.extractId(links);
+                        Set<Link> links = extractLinks(resource, getResourceName());
+                        Long id = extractIdFromSelfLink(links);
                         convertFromV2LinksToV1Links(links, id);
                         v1Entity.setId(id);
                         return new Resource<>(v1Entity, links);

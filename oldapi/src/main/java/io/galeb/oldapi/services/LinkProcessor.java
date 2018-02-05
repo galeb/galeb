@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.galeb.oldapi.services.components;
+package io.galeb.oldapi.services;
 
 import org.springframework.hateoas.Link;
-import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -25,21 +24,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-public class LinkProcessor {
+public interface LinkProcessor {
 
-    public LinkProcessor add(Set<Link> links, String href, String relName) {
-        remove(links, href);
+    default void addLink(Set<Link> links, String href, String relName) {
+        removeLink(links, href);
         links.add(new Link(href, relName));
-        return this;
     }
 
-    public LinkProcessor remove(Set<Link> links, String relName) {
+    default void removeLink(Set<Link> links, String relName) {
         links.removeIf(l -> l.getRel().equals(relName));
-        return this;
     }
 
-    public Set<Link> pagedLinks(String resourceName, int size, int page) {
+    default Set<Link> pagedLinks(String resourceName, int size, int page) {
         final Set<Link> links = new HashSet<>();
         links.add(new Link("/" + resourceName + "?page=" + page + "&size=" + size, "self"));
         links.add(new Link("/" + resourceName + "/search", "search"));
@@ -47,20 +43,20 @@ public class LinkProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    public Link convertLink(Map.Entry<String, Object> entry, String resourceName) {
+    default Link convertLink(Map.Entry<String, Object> entry, String resourceName) {
         String href = ((LinkedHashMap<String, String>) entry.getValue()).get("href")
                 .replaceAll(".*/" + resourceName, "/" + resourceName);
         return new Link(href, entry.getKey());
     }
 
     @SuppressWarnings("unchecked")
-    public Set<Link> extractLinks(LinkedHashMap resource, String resourceName) {
+    default Set<Link> extractLinks(LinkedHashMap resource, String resourceName) {
         return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
                 .map((Map.Entry<String, Object> entry) -> convertLink(entry, resourceName))
                 .collect(Collectors.toSet());
     }
 
-    public long extractId(Set<Link> links) {
+    default long extractIdFromSelfLink(Set<Link> links) {
         return links.stream()
                 .filter(l -> "self".equals(l.getRel()))
                 .map(l -> l.getHref().replaceAll("^.*/", ""))

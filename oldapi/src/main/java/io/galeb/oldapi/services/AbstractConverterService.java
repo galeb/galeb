@@ -78,7 +78,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
 
     // internals
 
-    private String fullUrlWithSizeAndPage(Integer size, Integer page) {
+    private String fullUrlWithSizeAndPage(int size, int page) {
         return resourceUrlBase + "?size=" + size + "&page=" + page;
     }
 
@@ -171,6 +171,14 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     }
 
     // common
+
+    String[] addRel() {
+        return new String[0];
+    }
+
+    String[] delRel() {
+        return new String[0];
+    }
 
     private ResponseEntity<Resource<T>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
         LinkedHashMap resource = convertFromV2ResponseToMap(response);
@@ -269,7 +277,8 @@ public abstract class AbstractConverterService<T extends AbstractEntity> {
     // v2 -> v1
 
     void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        //
+        for (String rel : addRel()) linkProcessor.add(links, "/" + getResourceName() + "/" + id + "/" + rel, rel);
+        for (String rel: delRel()) linkProcessor.remove(links, rel);
     }
 
     Set<Resource<T>> convertFromV2ListOfMapsToV1Resources(ArrayList<LinkedHashMap> listOfMapsV2, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {

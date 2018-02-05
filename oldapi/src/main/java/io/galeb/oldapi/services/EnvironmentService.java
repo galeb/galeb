@@ -18,34 +18,26 @@ package io.galeb.oldapi.services;
 
 import io.galeb.core.exceptions.BadRequestException;
 import io.galeb.oldapi.entities.v1.Environment;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class EnvironmentService extends AbstractConverterService<Environment> {
 
     private static final Logger LOGGER = LogManager.getLogger(EnvironmentService.class);
 
-    private final LinkProcessor linkProcessor;
+    private static final String[] ADD_REL = {"farms", "targets"};
+    private static final String[] DEL_REL = {"rulesordered"};
 
-    @Autowired
-    public EnvironmentService(LinkProcessor linkProcessor) {
-        super();
-        this.linkProcessor = linkProcessor;
+    @Override
+    String[] addRel() {
+        return ADD_REL;
     }
 
     @Override
-    protected void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/farms", "farms")
-                     .add(links,"/" + getResourceName() + "/" + id + "/targets", "targets")
-                     .remove(links, "rulesordered");
+    String[] delRel() {
+        return DEL_REL;
     }
 
     @Override

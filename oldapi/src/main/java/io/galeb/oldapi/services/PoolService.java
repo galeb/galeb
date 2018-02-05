@@ -17,32 +17,26 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Pool;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class PoolService extends AbstractConverterService<Pool> {
 
     private static final Logger LOGGER = LogManager.getLogger(PoolService.class);
 
-    private final LinkProcessor linkProcessor;
+    private static final String[] ADD_REL = {"balancePolicy"};
+    private static final String[] DEL_REL = {"balancepolicy"};
 
-    @Autowired
-    public PoolService(LinkProcessor linkProcessor) {
-        super();
-        this.linkProcessor = linkProcessor;
+    @Override
+    String[] addRel() {
+        return ADD_REL;
     }
 
     @Override
-    protected void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/balancePolicy", "balancePolicy")
-                .remove(links, "balancepolicy");
+    String[] delRel() {
+        return DEL_REL;
     }
 
 }

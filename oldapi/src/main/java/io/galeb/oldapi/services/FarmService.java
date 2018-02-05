@@ -19,7 +19,6 @@ package io.galeb.oldapi.services;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.oldapi.entities.v1.Farm;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +37,19 @@ public class FarmService extends AbstractConverterService<Farm> {
 
     private static final Logger LOGGER = LogManager.getLogger(FarmService.class);
 
+    private static final String[] ADD_REL = {"environment", "provider"};
+
     private final EnvironmentService environmentService;
-    private final LinkProcessor linkProcessor;
 
     @Autowired
-    public FarmService(LinkProcessor linkProcessor, EnvironmentService environmentService) {
+    public FarmService(EnvironmentService environmentService) {
         super();
         this.environmentService = environmentService;
-        this.linkProcessor = linkProcessor;
+    }
+
+    @Override
+    String[] addRel() {
+        return ADD_REL;
     }
 
     private Farm convertEnvToFarm(io.galeb.oldapi.entities.v1.Environment environment) {
@@ -58,12 +62,6 @@ public class FarmService extends AbstractConverterService<Farm> {
         farm.setLastModifiedBy(environment.getLastModifiedBy());
         farm.setStatus(environment.getStatus());
         return farm;
-    }
-
-    @Override
-    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.add(links, "/" + getResourceName() + "/" + id + "/environment", "environment")
-                     .add(links, "/" + getResourceName() + "/" + id + "/provider", "provider");
     }
 
     @Override

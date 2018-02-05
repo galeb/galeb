@@ -17,34 +17,26 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Rule;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class RuleService extends AbstractConverterService<Rule> {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleService.class);
 
-    private final LinkProcessor linkProcessor;
+    private static final String[] ADD_DEL = {"parents", "ruleType", "defaultIn"};
+    private static final String[] DEL_REL = {"rulesOrdered", "project"};
 
-    @Autowired
-    public RuleService(LinkProcessor linkProcessor) {
-        super();
-        this.linkProcessor = linkProcessor;
+    @Override
+    String[] addRel() {
+        return ADD_DEL;
     }
 
     @Override
-    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/parents", "parents")
-                     .add(links,"/" + getResourceName() + "/" + id + "/ruleType", "ruleType")
-                     .add(links,"/" + getResourceName() + "/" + id + "/defaultIn", "defaultIn")
-                     .remove(links, "rulesOrdered")
-                     .remove(links, "project");
+    String[] delRel() {
+        return DEL_REL;
     }
+
 }

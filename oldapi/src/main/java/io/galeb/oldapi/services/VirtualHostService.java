@@ -17,34 +17,26 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.VirtualHost;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class VirtualHostService extends AbstractConverterService<VirtualHost> {
 
     private static final Logger LOGGER = LogManager.getLogger(VirtualHostService.class);
 
-    private final LinkProcessor linkProcessor;
+    private static final String[] ADD_REL = {"ruleDefault", "rules"};
+    private static final String[] DEL_REL = {"rulesOrdered", "virtualhostgroup"};
 
-    @Autowired
-    public VirtualHostService(LinkProcessor linkProcessor) {
-        super();
-        this.linkProcessor = linkProcessor;
+    @Override
+    String[] addRel() {
+        return ADD_REL;
     }
 
     @Override
-    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.add(links,"/" + getResourceName() + "/" + id + "/ruleDefault", "ruleDefault")
-                     .add(links,"/" + getResourceName() + "/" + id + "/rules", "rules")
-                     .remove(links, "rulesOrdered")
-                     .remove(links, "virtualhostgroup");
+    String[] delRel() {
+        return DEL_REL;
     }
 
 }

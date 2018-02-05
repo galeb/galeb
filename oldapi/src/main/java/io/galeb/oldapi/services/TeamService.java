@@ -17,30 +17,19 @@
 package io.galeb.oldapi.services;
 
 import io.galeb.oldapi.entities.v1.Team;
-import io.galeb.oldapi.services.components.LinkProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class TeamService extends AbstractConverterService<Team> {
 
     private static final Logger LOGGER = LogManager.getLogger(TeamService.class);
 
-    private final LinkProcessor linkProcessor;
-
-    @Autowired
-    public TeamService(LinkProcessor linkProcessor) {
-        super();
-        this.linkProcessor = linkProcessor;
-    }
+    private static final String[] DEL_REL = {"rolegroups"};
 
     @Override
-    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        linkProcessor.remove(links, "rolegroups");
+    String[] delRel() {
+        return DEL_REL;
     }
 }

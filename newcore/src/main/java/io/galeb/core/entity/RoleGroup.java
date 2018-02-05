@@ -55,17 +55,17 @@ public class RoleGroup extends AbstractEntity  {
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_account_id")),
             inverseJoinColumns = @JoinColumn(name = "account_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_rolegroup_id")))
-    public Set<Account> accounts;
+    public Set<Account> accounts = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_project_id")),
             inverseJoinColumns = @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_project_rolegroup_id")))
-    public Set<Project> projects;
+    public Set<Project> projects = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_team_id")),
             inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_team_rolegroup_id")))
-    public Set<Team> teams;
+    public Set<Team> teams = new HashSet<>();
 
     public String getName() {
         return name;

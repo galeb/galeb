@@ -3,7 +3,7 @@ Feature: Account Support
     The manager have than
     to support REST standard
 
-    Scenario:
+    Scenario: Account with multiple team
       Given a REST client authenticated as admin with password pass
       When request json body has:
         | username     | accountOne              |
@@ -47,3 +47,4 @@ Feature: Account Support
         | teams         | [Team=teamTwo]      |
       And send POST /project
       Then the response status is 201
+

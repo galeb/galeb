@@ -30,6 +30,10 @@ public interface HttpMethods<T> {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
+    default ResponseEntity<Void> notContent() {
+        return ResponseEntity.noContent().build();
+    }
+
     default ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(String findType, Map<String, String> queryMap) {
         return ResponseEntity.ok().build();
     }

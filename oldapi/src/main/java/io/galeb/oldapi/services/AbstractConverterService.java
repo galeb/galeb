@@ -177,14 +177,18 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         }
 
         final Resource<AbstractEntity> body = new Resource<>(entityConverted, v2links);
+        return processResource(id, method, body);
+    }
+
+    ResponseEntity<Resource<? extends AbstractEntity>> processResource(long id, HttpMethod method, Resource<? extends AbstractEntity> resource) {
         switch (method) {
             case POST:
                 String location = "/" + getResourceName() + "/" + id;
-                return ResponseEntity.created(URI.create(location)).body(body);
+                return ResponseEntity.created(URI.create(location)).body(resource);
             case PUT:
                 return ResponseEntity.noContent().build();
             case GET:
-                return ResponseEntity.ok(body);
+                return ResponseEntity.ok(resource);
         }
         throw new IllegalArgumentException("Method " + method + " not supported");
     }

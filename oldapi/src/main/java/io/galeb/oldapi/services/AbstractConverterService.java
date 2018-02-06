@@ -18,6 +18,7 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.reflect.TypeToken;
@@ -167,8 +168,8 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         Set<Link> v2links = converterV2.extractLinks(v2JsonHalData, getResourceName());
         Optional<AbstractEntity> v1Entities = v2JsonHalData.getV2entities().stream().map(v2 -> converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass)).findAny();
         AbstractEntity entityConverted;
+        long idEntity = id > -1 ? id : extractIdFromSelfLink(v2links);
         if (v1Entities.isPresent()) {
-            long idEntity = id > -1 ? id : extractIdFromSelfLink(v2links);
             entityConverted = v1Entities.get();
             entityConverted.setId(idEntity);
             v2LinksToV1Links(v2links, idEntity);
@@ -177,7 +178,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         }
 
         final Resource<AbstractEntity> body = new Resource<>(entityConverted, v2links);
-        return processResource(id, method, body);
+        return processResource(idEntity, method, body);
     }
 
     ResponseEntity<Resource<? extends AbstractEntity>> processResource(long id, HttpMethod method, Resource<? extends AbstractEntity> resource) {
@@ -198,6 +199,15 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         final PagedResources.PageMetadata metadata =
                 new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
         return new PagedResources<>(resources, metadata, pagedLinks(getResourceName(), size, page));
+    }
+
+    JsonNode convertFromJsonStrToJsonNode(Object obj) {
+        try {
+            return mapper.readTree(convertFromObjectToJsonString(obj));
+        } catch (IOException e) {
+            LOGGER.error(e);
+        }
+        return null;
     }
 
     String convertFromObjectToJsonString(Object obj) {

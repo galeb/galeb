@@ -239,7 +239,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     void v2LinksToV1Links(Set<Link> v2links, Long id) {
-        for (String rel : addRel()) addLink(v2links, "/" + getResourceName() + "/" + id + "/" + rel, rel);
+        removeLink(v2links, "self");
+        String v1resourceName = entityClass.getSimpleName().toLowerCase();
+        addLink(v2links, "/" + v1resourceName + "/" + id, "self");
+        for (String rel : addRel()) addLink(v2links, "/" + v1resourceName + "/" + id + "/" + rel, rel);
         for (String rel: delRel()) removeLink(v2links, rel);
     }
 

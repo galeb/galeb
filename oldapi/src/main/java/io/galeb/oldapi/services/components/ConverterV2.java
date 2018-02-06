@@ -109,15 +109,15 @@ public class ConverterV2 implements LinkProcessor {
     }
 
     public class V2JsonHalData {
-        private List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities = new ArrayList<>();
+        private List<Resource<? extends AbstractEntity>> v2entities = new ArrayList<>();
         private Map<String, String> links = new HashMap<>();
         private Map<String, String> metadata = new HashMap<>();
 
-        public List<Resource<? extends io.galeb.core.entity.AbstractEntity>> getV2entities() {
+        public List<Resource<? extends AbstractEntity>> getV2entities() {
             return v2entities;
         }
 
-        public V2JsonHalData setV2entities(List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities) {
+        public V2JsonHalData setV2entities(List<Resource<? extends AbstractEntity>> v2entities) {
             this.v2entities = v2entities;
             return this;
         }
@@ -168,7 +168,7 @@ public class ConverterV2 implements LinkProcessor {
         return new RawJsonHalData(nodes).setLinks(links).setPage(page).setStatus(responseStatus);
     }
 
-    public V2JsonHalData toV2JsonHal(Response response, Class<? extends io.galeb.core.entity.AbstractEntity> v2Class) {
+    public V2JsonHalData toV2JsonHal(Response response, Class<? extends AbstractEntity> v2Class) {
         RawJsonHalData rawJsonHalData = toRawJsonHal(response);
         String error = rawJsonHalData == null ? "RAW JSON IS NULL" : rawJsonHalData.getError();
         if (error != null) {
@@ -181,7 +181,7 @@ public class ConverterV2 implements LinkProcessor {
         V2JsonHalData v2JsonHal = new V2JsonHalData();
         Map<String, String> links = new HashMap<>();
         Map<String, String> metadata = new HashMap<>();
-        List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entityCollection = new ArrayList<>();
+        List<Resource<? extends AbstractEntity>> v2entityCollection = new ArrayList<>();
         final JsonNode page;
         if ((page = rawJsonHalData.getPage()) != null) {
             metadata.put("size", String.valueOf(page.has("size") ? page.get("size").asInt() : 0));
@@ -213,5 +213,14 @@ public class ConverterV2 implements LinkProcessor {
         return v2JsonHalData.getLinks().entrySet().stream()
                 .map(e -> new Link(e.getValue().replaceAll(".*/" + resourceName, "/" + resourceName), e.getKey()))
                 .collect(Collectors.toSet());
+    }
+
+    public AbstractEntity convertJsonStringToV2(String jsonStr, Class<? extends AbstractEntity> v2Class) {
+        try {
+            return mapper.readValue(jsonStr, v2Class);
+        } catch (IOException e) {
+            LOGGER.error(e);
+            return null;
+        }
     }
 }

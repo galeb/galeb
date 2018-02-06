@@ -55,18 +55,18 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     private final Class<? super T> entityClass = new TypeToken<T>(getClass()){}.getRawType();
 
     @Autowired
-    private HttpClientService httpClientService;
+    protected HttpClientService httpClientService;
 
     @Autowired
-    private ConverterV1 converterV1;
+    protected ConverterV1 converterV1;
 
     @Autowired
-    private ConverterV2 converterV2;
+    protected ConverterV2 converterV2;
 
     @Value("${api.url}")
-    String apiUrl;
+    protected String apiUrl;
 
-    private String resourceUrlBase;
+    protected String resourceUrlBase;
 
     AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -80,7 +80,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // internals
 
-    private String fullUrlWithSizeAndPage(int size, int page) {
+    String fullUrlWithSizeAndPage(int size, int page) {
         return resourceUrlBase + "?size=" + size + "&page=" + page;
     }
 
@@ -162,7 +162,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // common
 
-    private ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
+    ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
         ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
         Set<Link> v2links = converterV2.extractLinks(v2JsonHalData, getResourceName());
         Optional<AbstractEntity> v1Entities = v2JsonHalData.getV2entities().stream().map(v2 -> converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass)).findAny();

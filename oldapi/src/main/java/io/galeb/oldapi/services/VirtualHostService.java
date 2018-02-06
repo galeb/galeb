@@ -47,8 +47,8 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
 
     private static final Logger LOGGER = LogManager.getLogger(VirtualHostService.class);
 
-    private static final String[] ADD_REL = {"ruleDefault", "rules"};
-    private static final String[] DEL_REL = {"rulesOrdered", "virtualhostgroup", "virtualhosts"};
+    private static final String[] ADD_REL = {"ruleDefault", "rules", "project", "environment"};
+    private static final String[] DEL_REL = {"rulesordered", "virtualhostgroup", "virtualhosts"};
 
     @Override
     String[] addRel() {

@@ -30,7 +30,7 @@ public interface HttpMethods<T> {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
     }
 
-    default ResponseEntity<Void> notContent() {
+    default ResponseEntity<Void> noContent() {
         return ResponseEntity.noContent().build();
     }
 

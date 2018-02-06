@@ -132,24 +132,24 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
 
     @RequestMapping(value = "/{id:\\d+}/rules", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> getRules(@PathVariable String id) {
-        return service.notContent();
+        return service.noContent();
     }
 
     // MAPPING TO ONE - project, environment & ruleDefault
 
     @RequestMapping(value = "/{id:\\d+}/project", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> getProject(@PathVariable String id) {
-        return service.notContent();
+        return service.noContent();
     }
 
     @RequestMapping(value = "/{id:\\d+}/environment", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> getEnvironment(@PathVariable String id) {
-        return service.notContent();
+        return service.noContent();
     }
 
     @RequestMapping(value = "/{id:\\d+}/ruleDefault", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> getRuleDefault(@PathVariable String id) {
-        return service.notContent();
+        return service.noContent();
     }
 
 }

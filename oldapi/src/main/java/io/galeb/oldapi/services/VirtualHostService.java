@@ -85,22 +85,16 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             VirtualHost virtualhostV1 = (VirtualHost) converterV1.v2ToV1(v2.getContent(), v2entityClass, VirtualHost.class);
             Long vhgid = virtualhostV1.getId();
             if (envname == null || envname.isEmpty()) {
-                String urlEnvsFromVirtualhostGroupId = apiUrl + "/custom-search/environment/findAllByVirtualhostgroupId?vhgid=" + vhgid;
-                Response allEnvsResponse = httpClientService.getResponse(urlEnvsFromVirtualhostGroupId);
-                ConverterV2.V2JsonHalData envJsonHalData = converterV2.toV2JsonHal(allEnvsResponse, io.galeb.core.entity.Environment.class);
-                if (envJsonHalData.getV2entities() == null || envJsonHalData.getV2entities().size() > 1) {
+                List<io.galeb.core.entity.Environment> environments = extractEnvironmentsFromVirtuahostGroupId(vhgid);
+                if (environments == null || environments.size() > 1) {
                     throw new BadRequestException("Virtualhost ID " + vhgid + ": param 'environment' is mandatory. Ignoring.");
                 }
-                envname = envJsonHalData.getV2entities().stream()
-                        .map(e -> ((io.galeb.core.entity.Environment) e.getContent()).getName())
-                        .findAny().orElse("UNDEF");
+                envname = environments.stream().map(io.galeb.core.entity.Environment::getName).findAny().orElse("UNDEF");
             }
-            String rulesOrderedUrl = apiUrl + "/ruleordered/search/findByVirtualhostgroup_IdAndEnvironment_Name?vhgid=" + vhgid + "&envname=" + envname;
-            String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
-            ConverterV2.V2JsonHalData rulesOrderedJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(rulesOrderedUrl), RuleOrdered.class);
-            ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
-            Set<RuleOrder> rulesOrdered = extractRuleOrders(rulesOrderedJsonHalData);
-            LinkedList<String> virtualhostNames = extractVirtualhostNames(virtualhostsJsonHalData);
+            Set<RuleOrder> rulesOrdered = extractRulesOrderedByEnvironment(envname, vhgid);
+            LinkedList<? extends io.galeb.core.entity.AbstractEntity> virtualhosts = extractVirtualhostsByEnvironment(envname, vhgid);
+            LinkedList<String> virtualhostNames = virtualhosts.stream().map(v -> ((io.galeb.core.entity.VirtualHost)v).getName()).collect(Collectors.toCollection(LinkedList::new));
+
             if (virtualhostNames == null || virtualhostNames.isEmpty()) {
                 throw new IllegalArgumentException("VirtualhostNames is empty");
             }
@@ -114,11 +108,31 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return null;
     }
 
-    private LinkedList<String> extractVirtualhostNames(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
+    private List<io.galeb.core.entity.Environment> extractEnvironmentsFromVirtuahostGroupId(Long vhgid) throws InterruptedException, ExecutionException {
+        String urlEnvsFromVirtualhostGroupId = apiUrl + "/custom-search/environment/findAllByVirtualhostgroupId?vhgid=" + vhgid;
+        Response allEnvsResponse = httpClientService.getResponse(urlEnvsFromVirtualhostGroupId);
+        ConverterV2.V2JsonHalData envJsonHalData = converterV2.toV2JsonHal(allEnvsResponse, io.galeb.core.entity.Environment.class);
+        return envJsonHalData.getV2entities().stream()
+                        .map(r -> (io.galeb.core.entity.Environment)r.getContent())
+                        .collect(Collectors.toList());
+    }
+
+    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhostsByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
+        String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
+        ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
+        return extractVirtualhost(virtualhostsJsonHalData);
+    }
+
+    private Set<RuleOrder> extractRulesOrderedByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
+        String rulesOrderedUrl = apiUrl + "/ruleordered/search/findByVirtualhostgroup_IdAndEnvironment_Name?vhgid=" + vhgid + "&envname=" + envname;
+        ConverterV2.V2JsonHalData rulesOrderedJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(rulesOrderedUrl), RuleOrdered.class);
+        return extractRuleOrders(rulesOrderedJsonHalData);
+    }
+
+    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhost(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
         return virtualhostsJsonHalData.getV2entities().stream()
                 .map(Resource::getContent)
                 .sorted(Comparator.comparingLong(io.galeb.core.entity.AbstractEntity::getId))
-                .map(e -> ((io.galeb.core.entity.VirtualHost) e).getName())
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -224,6 +238,15 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 projectV2.setId(projectId);
                 v2.setProject(projectV2);
                 // TODO: Get preexistent environments
+                /*
+                List<io.galeb.core.entity.Environment> environments = new ArrayList<>();
+                try {
+                    environments.addAll(extractEnvironmentsFromVirtuahostGroupId(virtualHost.getId()));
+                } catch (InterruptedException | ExecutionException e) {
+                    LOGGER.error(e);
+                }
+                v2.setEnvironments(new HashSet<>(environments));
+                 */
                 v2.setEnvironments(Collections.singleton(environmentV2));
                 return v2;
             }).collect(Collectors.toList());

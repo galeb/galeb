@@ -32,10 +32,6 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       And send POST /team
       Then the response status is 201
       When request json body has:
-        | accounts         | [Account=accountOne,Account=accountTwo]      |
-      And send PATCH RoleGroup=USER_DEFAULT
-      Then the response status is 200
-      When request json body has:
         | accounts         | [Account=accountSuperAdmin]      |
       And send PATCH RoleGroup=SUPER_ADMIN
       Then the response status is 200

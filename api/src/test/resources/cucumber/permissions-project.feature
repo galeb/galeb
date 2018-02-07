@@ -47,11 +47,6 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       Then the response status is 201
       Given a REST client authenticated as admin with password pass
       When request json body has:
-        | projects     | [Project=projectOne] |
-      And send PATCH RoleGroup=PROJECT_DEFAULT
-      Then the response status is 200
-      Given a REST client authenticated as admin with password pass
-      When request json body has:
         | teams     | [Team=teamOne,Team=teamTwo] |
       And send PATCH RoleGroup=TEAM_DEFAULT
       Then the response status is 200

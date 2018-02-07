@@ -24,7 +24,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.Set;
 
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "rolegroup", collectionResourceRel = "rolegroup", itemResourceRel = "rolegroup")
@@ -34,6 +37,10 @@ public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long>, Rol
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#rolegroup, #this)")
     RoleGroup save(@Param("rolegroup") RoleGroup rolegroup);
+
+    @Override
+    @RestResource(exported = false)
+    RoleGroup saveByPass(@Param("rolegroup") RoleGroup roleGroup);
 
     @Override
     @ExposeFilterSwagger
@@ -49,4 +56,6 @@ public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long>, Rol
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<RoleGroup> findAll(Pageable pageable);
+
+    RoleGroup findByName(@Param("name") String name);
 }

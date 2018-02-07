@@ -78,35 +78,40 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     }
 
     private Resource<VirtualHost> convertVirtualhostToV1(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass,
-                                                         Resource<? extends io.galeb.core.entity.AbstractEntity> v2, String envname)
-                                                            throws ExecutionException, InterruptedException {
-        Set<Link> links = new HashSet<>(v2.getLinks());
-        v2LinksToV1Links(links, v2.getContent().getId());
-        VirtualHost virtualhostV1 = (VirtualHost) converterV1.v2ToV1(v2.getContent(), v2entityClass, VirtualHost.class);
-        Long vhgid = virtualhostV1.getId();
-        if (envname == null || envname.isEmpty()) {
-            String urlEnvsFromVirtualhostGroupId = apiUrl + "/custom-search/environment/findAllByVirtualhostgroupId?vhgid=" + vhgid;
-            Response allEnvsResponse = httpClientService.getResponse(urlEnvsFromVirtualhostGroupId);
-            ConverterV2.V2JsonHalData envJsonHalData = converterV2.toV2JsonHal(allEnvsResponse, io.galeb.core.entity.Environment.class);
-            if (envJsonHalData.getV2entities() == null || envJsonHalData.getV2entities().size() > 1) {
-                throw new BadRequestException("param 'environment' is mandatory");
+                                                         Resource<? extends io.galeb.core.entity.AbstractEntity> v2, String envname) {
+        try {
+            Set<Link> links = new HashSet<>(v2.getLinks());
+            v2LinksToV1Links(links, v2.getContent().getId());
+            VirtualHost virtualhostV1 = (VirtualHost) converterV1.v2ToV1(v2.getContent(), v2entityClass, VirtualHost.class);
+            Long vhgid = virtualhostV1.getId();
+            if (envname == null || envname.isEmpty()) {
+                String urlEnvsFromVirtualhostGroupId = apiUrl + "/custom-search/environment/findAllByVirtualhostgroupId?vhgid=" + vhgid;
+                Response allEnvsResponse = httpClientService.getResponse(urlEnvsFromVirtualhostGroupId);
+                ConverterV2.V2JsonHalData envJsonHalData = converterV2.toV2JsonHal(allEnvsResponse, io.galeb.core.entity.Environment.class);
+                if (envJsonHalData.getV2entities() == null || envJsonHalData.getV2entities().size() > 1) {
+                    throw new BadRequestException("Virtualhost ID " + vhgid + ": param 'environment' is mandatory. Ignoring.");
+                }
+                envname = envJsonHalData.getV2entities().stream()
+                        .map(e -> ((io.galeb.core.entity.Environment) e.getContent()).getName())
+                        .findAny().orElse("UNDEF");
             }
-            envname = envJsonHalData.getV2entities().stream()
-                    .map(e -> ((io.galeb.core.entity.Environment)e.getContent()).getName())
-                    .findAny().orElse("UNDEF");
+            String rulesOrderedUrl = apiUrl + "/ruleordered/search/findByVirtualhostgroup_IdAndEnvironment_Name?vhgid=" + vhgid + "&envname=" + envname;
+            String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
+            ConverterV2.V2JsonHalData rulesOrderedJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(rulesOrderedUrl), RuleOrdered.class);
+            ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
+            Set<RuleOrder> rulesOrdered = extractRuleOrders(rulesOrderedJsonHalData);
+            LinkedList<String> virtualhostNames = extractVirtualhostNames(virtualhostsJsonHalData);
+            if (virtualhostNames == null || virtualhostNames.isEmpty()) {
+                throw new IllegalArgumentException("VirtualhostNames is empty");
+            }
+            virtualhostV1.setRulesOrdered(rulesOrdered);
+            virtualhostV1.setName(virtualhostNames.getFirst());
+            virtualhostV1.setAliases(new HashSet<>(virtualhostNames));
+            return new Resource<>(virtualhostV1, links);
+        } catch (Exception e) {
+            LOGGER.error(e);
         }
-        //v2.getLink("rulesordered").getHref();
-        String rulesOrderedUrl = apiUrl + "/ruleordered/search/findByVirtualhostgroup_IdAndEnvironment_Name?vhgid=" + vhgid + "&envname=" + envname;
-        //v2.getLink("virtualhosts").getHref();
-        String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
-        ConverterV2.V2JsonHalData rulesOrderedJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(rulesOrderedUrl), RuleOrdered.class);
-        ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
-        Set<RuleOrder> rulesOrdered = extractRuleOrders(rulesOrderedJsonHalData);
-        LinkedList<String> virtualhostNames = extractVirtualhostNames(virtualhostsJsonHalData);
-        virtualhostV1.setRulesOrdered(rulesOrdered);
-        virtualhostV1.setName(virtualhostNames.getFirst());
-        virtualhostV1.setAliases(new HashSet<>(virtualhostNames));
-        return new Resource<>(virtualhostV1, links);
+        return null;
     }
 
     private LinkedList<String> extractVirtualhostNames(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
@@ -163,7 +168,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                     .map(v2 -> {
                         try {
                             return convertVirtualhostToV1(v2entityClass, v2, envname);
-                        } catch (ExecutionException | InterruptedException e) {
+                        } catch (IllegalArgumentException e) {
                             LOGGER.error(e);
                         }
                         return null;
@@ -181,13 +186,13 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
 
     @Override
     public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        String envname = queryMap.get("environment");
         String url = resourceUrlBase + "/" + id;
         try {
             Response response = httpClientService.getResponse(url);
             ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
             Optional<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2Resource = v2JsonHalData.getV2entities().stream().findAny();
             if (v2Resource.isPresent()) {
+                String envname = queryMap.get("environment");
                 Resource<VirtualHost> v1 = convertVirtualhostToV1(v2entityClass, v2Resource.get(), envname);
                 return processResource(Long.parseLong(id), HttpMethod.GET, v1);
             }

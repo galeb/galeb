@@ -199,7 +199,10 @@ public class ConverterV2 implements LinkProcessor {
                 try {
                     AbstractEntity v2 = mapper.readValue(n.toString(), v2Class);
                     List<Link> entityLinks = new ArrayList<>();
-                    n.get("_links").fields().forEachRemaining(l -> entityLinks.add(new Link(l.getValue().get("href").asText(), l.getKey())));
+                    JsonNode v2links = n.get("_links");
+                    if (v2links != null) {
+                        v2links.fields().forEachRemaining(l -> entityLinks.add(new Link(l.getValue().get("href").asText(), l.getKey())));
+                    }
                     return new Resource<>(v2, entityLinks);
                 } catch (IOException e) {
                     return null;

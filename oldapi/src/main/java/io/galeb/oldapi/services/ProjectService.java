@@ -16,10 +16,26 @@
 
 package io.galeb.oldapi.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Project;
+import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService extends AbstractConverterService<Project> {
@@ -27,7 +43,7 @@ public class ProjectService extends AbstractConverterService<Project> {
     private static final Logger LOGGER = LogManager.getLogger(ProjectService.class);
 
     private static final String[] ADD_REL = {"targets"};
-    private static final String[] DEL_REL = {"rolegroups"};
+    private static final String[] DEL_REL = {"rolegroups","project","rules"};
 
     @Override
     String[] addRel() {
@@ -37,6 +53,50 @@ public class ProjectService extends AbstractConverterService<Project> {
     @Override
     String[] delRel() {
         return DEL_REL;
+    }
+
+    private JsonNode rebuildProjectV2Json(io.galeb.core.entity.Project project) {
+        ArrayNode arrayOfTeams = new ArrayNode(JsonNodeFactory.instance);
+        JsonNode jsonNodeAlias = convertFromJsonStrToJsonNode(project);
+        for (io.galeb.core.entity.Team e: project.getTeams()) {
+            arrayOfTeams.add("http://localhost/team/" + e.getId());
+        }
+        ((ObjectNode) jsonNodeAlias).replace("teams", arrayOfTeams);
+        return jsonNodeAlias;
+    }
+
+    @Override
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        Project projectV1 = convertFromJsonStringToV1(body);
+        if (projectV1 != null) {
+            try {
+                io.galeb.core.entity.Project projectV2 = new io.galeb.core.entity.Project();
+                projectV2.setName(projectV1.getName());
+                Set<io.galeb.core.entity.Team> v2Teams = projectV1.getTeams().stream()
+                        .map(teamUrl -> {
+                            try {
+                                long teamId = Long.parseLong(teamUrl.replaceAll("^.*/", ""));
+                                io.galeb.core.entity.Team teamV2 = new io.galeb.core.entity.Team();
+                                teamV2.setId(teamId);
+                                return teamV2;
+                            } catch (Exception ignored) { }
+                            return null;
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet());
+
+                projectV2.setTeams(v2Teams);
+
+                JsonNode jsonNode = rebuildProjectV2Json(projectV2);
+                String projectResourcePath = Project.class.getSimpleName().toLowerCase();
+                Response response = httpClientService.post(apiUrl + "/" + projectResourcePath, jsonNode.toString());
+                return processResponse(response, -1, HttpMethod.POST, v2entityClass);
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 }

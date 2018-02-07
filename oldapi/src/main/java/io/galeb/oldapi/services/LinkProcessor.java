@@ -18,10 +18,7 @@ package io.galeb.oldapi.services;
 
 import org.springframework.hateoas.Link;
 
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface LinkProcessor {
@@ -53,6 +50,12 @@ public interface LinkProcessor {
     default Set<Link> extractLinks(LinkedHashMap resource, String resourceName) {
         return ((LinkedHashMap<String, Object>) resource.get("_links")).entrySet().stream()
                 .map((Map.Entry<String, Object> entry) -> convertLink(entry, resourceName))
+                .collect(Collectors.toSet());
+    }
+
+    default Set<Link> extractLinks(List<Link> links, String resourceName) {
+        return links.stream()
+                .map(e -> new Link(e.getHref().replaceAll(".*/" + resourceName, "/" + resourceName), e.getRel()))
                 .collect(Collectors.toSet());
     }
 

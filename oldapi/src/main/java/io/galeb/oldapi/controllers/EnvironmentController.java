@@ -58,23 +58,24 @@ public class EnvironmentController extends AbstractController<Environment> {
     }
 
     @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Environment>>> getSearch(@PathVariable("findType") String findType,
-                                                                           @RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(@PathVariable("findType") String findType,
+                                                                                        @RequestParam Map<String, String> queryMap) {
         return service.getSearch(findType, queryMap);
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Environment>>> get(@RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(@RequestParam Map<String, String> queryMap) {
         return service.get(io.galeb.core.entity.Environment.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Environment>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, io.galeb.core.entity.Environment.class);
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id,
+                                                                        @RequestParam Map<String, String> queryMap) {
+        return service.getWithId(id, queryMap, io.galeb.core.entity.Environment.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Environment>> post(@RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(@RequestBody String body) {
         return service.post(body, io.galeb.core.entity.Environment.class);
     }
 
@@ -89,7 +90,7 @@ public class EnvironmentController extends AbstractController<Environment> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<Environment>> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body, io.galeb.core.entity.Environment.class);
     }
 
@@ -146,22 +147,22 @@ public class EnvironmentController extends AbstractController<Environment> {
     // MAPPING TO MANY: pools, farms, targets & virtualhosts
 
     @RequestMapping(value = "/{id:\\d+}/pools", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Pool>>> getMapping(@PathVariable String id) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getMapping(@PathVariable String id) {
         return poolService.getSearch("findByEnviromentId", queryWithIdOnly(id));
     }
 
     @RequestMapping(value = "/{id:\\d+}/farms", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Farm>>> getFarms(@PathVariable String id) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getFarms(@PathVariable String id) {
         return farmService.getSearch("findByEnviromentId", queryWithIdOnly(id));
     }
 
     @RequestMapping(value = "/{id:\\d+}/targets", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<Target>>> getTargets(@PathVariable String id) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getTargets(@PathVariable String id) {
         return targetService.getSearch("findByEnviromentId", queryWithIdOnly(id));
     }
 
     @RequestMapping(value = "/{id:\\d+}/virtualhosts", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<VirtualHost>>> getVirtualhosts(@PathVariable String id) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getVirtualhosts(@PathVariable String id) {
         return virtualHostService.getSearch("findByEnviromentId", queryWithIdOnly(id));
     }
 

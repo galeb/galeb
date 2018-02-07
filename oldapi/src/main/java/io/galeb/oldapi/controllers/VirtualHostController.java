@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.controllers;
 
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.VirtualHost;
 import io.galeb.oldapi.services.VirtualHostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,23 +43,24 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
     private VirtualHostService service;
 
     @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<VirtualHost>>> getSearch(@PathVariable("findType") String findType,
-                                                                           @RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(@PathVariable("findType") String findType,
+                                                                                        @RequestParam Map<String, String> queryMap) {
         return service.getSearch(findType, queryMap);
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<VirtualHost>>> get(@RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(@RequestParam Map<String, String> queryMap) {
         return service.get(io.galeb.core.entity.VirtualhostGroup.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<VirtualHost>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, io.galeb.core.entity.VirtualhostGroup.class);
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id,
+                                                                        @RequestParam Map<String, String> queryMap) {
+        return service.getWithId(id, queryMap, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<VirtualHost>> post(@RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(@RequestBody String body) {
         return service.post(body, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
@@ -73,7 +75,7 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<VirtualHost>> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body, io.galeb.core.entity.VirtualhostGroup.class);
     }
 
@@ -125,6 +127,30 @@ public class VirtualHostController extends AbstractController<VirtualHost> {
     @RequestMapping(value = "/{id:\\d+}", method = TRACE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> traceWithId(@PathVariable String id) {
         return service.methodNotAllowed();
+    }
+
+    // MAPPING TO MANY: rules
+
+    @RequestMapping(value = "/{id:\\d+}/rules", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> getRules(@PathVariable String id) {
+        return service.noContent();
+    }
+
+    // MAPPING TO ONE - project, environment & ruleDefault
+
+    @RequestMapping(value = "/{id:\\d+}/project", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> getProject(@PathVariable String id) {
+        return service.noContent();
+    }
+
+    @RequestMapping(value = "/{id:\\d+}/environment", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> getEnvironment(@PathVariable String id) {
+        return service.noContent();
+    }
+
+    @RequestMapping(value = "/{id:\\d+}/ruleDefault", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> getRuleDefault(@PathVariable String id) {
+        return service.noContent();
     }
 
 }

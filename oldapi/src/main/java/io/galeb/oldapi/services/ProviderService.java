@@ -16,7 +16,7 @@
 
 package io.galeb.oldapi.services;
 
-import io.galeb.core.entity.AbstractEntity;
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.Provider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,23 +49,23 @@ public class ProviderService extends AbstractConverterService<Provider> {
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Provider>>> getSearch(String findType, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(String findType, Map<String, String> queryMap) {
         if ("findByName".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         if ("findByNameContaining".equals(findType) && !"Default".equals(queryMap.get("name"))) return ResponseEntity.notFound().build();
         return get(null, queryMap);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Provider>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         int size = getSizeRequest(queryMap);
         int page = getPageRequest(queryMap);
-        Set<Resource<Provider>> v1Resources = Collections.singleton(resource);
+        Set<Resource<? extends AbstractEntity>> v1Resources = Collections.singleton(resource);
         final PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(1, 0, 1, 1);
-        final PagedResources<Resource<Provider>> pagedResources = new PagedResources<>(v1Resources, metadata, pagedLinks(getResourceName(), size, page));
+        final PagedResources<Resource<? extends AbstractEntity>> pagedResources = new PagedResources<>(v1Resources, metadata, pagedLinks(getResourceName(), size, page));
         return ResponseEntity.ok(pagedResources);
     }
 
-    public ResponseEntity<Resource<Provider>> getWithId(String param, Class<? extends AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String param, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.ok(resource);
     }
 

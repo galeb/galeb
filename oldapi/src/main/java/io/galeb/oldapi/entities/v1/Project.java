@@ -34,7 +34,7 @@ public class Project extends AbstractEntity<Project> {
     @JsonIgnore
     private final Set<Pool> pools = new HashSet<>();
 
-    private final Set<Team> teams = new HashSet<>();
+    private final Set<String> teams = new HashSet<>();
 
     public Project(String name) {
         setName(name);
@@ -44,11 +44,11 @@ public class Project extends AbstractEntity<Project> {
         //
     }
 
-    public Set<Team> getTeams() {
+    public Set<String> getTeams() {
         return teams;
     }
 
-    public Project setTeams(Set<Team> teams) {
+    public Project setTeams(Set<String> teams) {
         if (teams != null) {
             this.teams.clear();
             this.teams.addAll(teams);

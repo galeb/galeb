@@ -42,13 +42,17 @@ public class EnvironmentService extends AbstractConverterService<Environment> {
 
     @Override
     protected String convertFromJsonStringV1ToJsonStringV2(String body) {
-        Environment environmentV1 = convertFromJsonStringToV1(body);
-        io.galeb.core.entity.Environment environmentV2 = new io.galeb.core.entity.Environment();
-        environmentV2.setName(environmentV1.getName());
+        try {
+            Environment environmentV1 = convertFromJsonStringToV1(body);
+            io.galeb.core.entity.Environment environmentV2 = new io.galeb.core.entity.Environment();
+            environmentV2.setName(environmentV1.getName());
 
-        String newBody = convertFromObjectToJsonString(environmentV2);
-        if (newBody != null) {
-            return newBody;
+            String newBody = convertFromObjectToJsonString(environmentV2);
+            if (newBody != null) {
+                return newBody;
+            }
+        } catch (Exception e) {
+            LOGGER.error(e);
         }
         throw new BadRequestException("body fail");
     }

@@ -16,6 +16,7 @@
 
 package io.galeb.oldapi.controllers;
 
+import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.entities.v1.BalancePolicy;
 import io.galeb.oldapi.services.BalancePolicyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,23 +43,24 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
     private BalancePolicyService service;
 
     @RequestMapping(value = "/search/{findType:findBy.+}",method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<BalancePolicy>>> getSearch(@PathVariable("findType") String findType,
-                                                                             @RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(@PathVariable("findType") String findType,
+                                                                                        @RequestParam Map<String, String> queryMap) {
         return service.getSearch(findType, queryMap);
     }
 
     @RequestMapping(method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PagedResources<Resource<BalancePolicy>>> get(@RequestParam Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(@RequestParam Map<String, String> queryMap) {
         return service.get(io.galeb.core.entity.BalancePolicy.class, queryMap);
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<BalancePolicy>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, io.galeb.core.entity.BalancePolicy.class);
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id,
+                                                                        @RequestParam Map<String, String> queryMap) {
+        return service.getWithId(id, queryMap, io.galeb.core.entity.BalancePolicy.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<BalancePolicy>> post(@RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(@RequestBody String body) {
         return service.post(body, io.galeb.core.entity.BalancePolicy.class);
     }
 
@@ -73,7 +75,7 @@ public class BalancePolicyController extends AbstractController<BalancePolicy> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<BalancePolicy>> putWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(@PathVariable String id, @RequestBody String body) {
         return service.putWithId(id, body, io.galeb.core.entity.BalancePolicy.class);
     }
 

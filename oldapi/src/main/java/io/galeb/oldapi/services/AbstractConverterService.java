@@ -18,13 +18,13 @@ package io.galeb.oldapi.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.TypeToken;
-import io.galeb.core.entity.Account;
-import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
+import io.galeb.oldapi.services.components.ConverterV1;
+import io.galeb.oldapi.services.components.ConverterV2;
 import io.galeb.oldapi.services.http.HttpClientService;
 import io.galeb.oldapi.services.http.Response;
 import org.apache.logging.log4j.LogManager;
@@ -40,10 +40,11 @@ import org.springframework.http.ResponseEntity;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -55,12 +56,18 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     private final Class<? super T> entityClass = new TypeToken<T>(getClass()){}.getRawType();
 
     @Autowired
-    private HttpClientService httpClientService;
+    protected HttpClientService httpClientService;
+
+    @Autowired
+    protected ConverterV1 converterV1;
+
+    @Autowired
+    protected ConverterV2 converterV2;
 
     @Value("${api.url}")
-    String apiUrl;
+    protected String apiUrl;
 
-    private String resourceUrlBase;
+    protected String resourceUrlBase;
 
     AbstractConverterService() {
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -74,7 +81,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // internals
 
-    private String fullUrlWithSizeAndPage(int size, int page) {
+    String fullUrlWithSizeAndPage(int size, int page) {
         return resourceUrlBase + "?size=" + size + "&page=" + page;
     }
 
@@ -86,30 +93,34 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return Integer.valueOf(Optional.ofNullable(queryMap.get("size")).orElse("99999"));
     }
 
-    private LinkedHashMap convertJsonStringToMap(String strObj) throws IOException {
-        return  mapper.readValue(strObj, LinkedHashMap.class);
-    }
-
     // HTTP METHODS
 
     @Override
-    public ResponseEntity<PagedResources<Resource<T>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
+    public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
         int size = getSizeRequest(queryMap);
         int page = getPageRequest(queryMap);
         String url = fullUrlWithSizeAndPage(size, page);
         try {
             Response response = httpClientService.getResponse(url);
-            final Set<Resource<T>> resources = convertFromV2ListOfMapsToV1Resources(convertFromResponseToV2ListOfMaps(response), v2entityClass);
-            final PagedResources<Resource<T>> pagedResources = buildPagedResources(size, page, resources);
+            ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
+            Set<Resource<? extends AbstractEntity>> v1Entities = v2JsonHalData.getV2entities().stream()
+                    .map(v2 -> {
+                        Set<Link> v2links = extractLinks(v2.getLinks(), getResourceName());
+                        v2LinksToV1Links(v2links, v2.getContent().getId());
+                        return new Resource<>(converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass), v2links);
+                    })
+                    .collect(Collectors.toSet());
+
+            final PagedResources<Resource<? extends AbstractEntity>> pagedResources = buildPagedResources(size, page, v1Entities);
             return ResponseEntity.ok(pagedResources);
-        } catch (InterruptedException | ExecutionException | IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
         }
         return ResponseEntity.badRequest().build();
     }
 
     @Override
-    public ResponseEntity<Resource<T>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         String url = resourceUrlBase + "/" + id;
         try {
             Response response = httpClientService.getResponse(url);
@@ -121,7 +132,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     @Override
-    public ResponseEntity<Resource<T>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         T entity = convertFromJsonStringToV1(body);
         if (entity != null) {
             try {
@@ -136,7 +147,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     @Override
-    public ResponseEntity<Resource<T>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         T entity = convertFromJsonStringToV1(body);
         if (entity != null) {
             try {
@@ -152,56 +163,51 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // common
 
-    String[] addRel() {
-        return new String[0];
-    }
-
-    String[] delRel() {
-        return new String[0];
-    }
-
-    private ResponseEntity<Resource<T>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        LinkedHashMap resource = convertFromV2ResponseToMap(response);
-        if (resource.get("error") != null) {
-            throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", error:" + resource.get("error") + ")");
+    ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
+        ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
+        Set<Link> v2links = converterV2.extractLinks(v2JsonHalData, getResourceName());
+        Optional<AbstractEntity> v1Entities = v2JsonHalData.getV2entities().stream().map(v2 -> converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass)).findAny();
+        AbstractEntity entityConverted;
+        long idEntity = id > -1 ? id : extractIdFromSelfLink(v2links);
+        if (v1Entities.isPresent()) {
+            entityConverted = v1Entities.get();
+            entityConverted.setId(idEntity);
+            v2LinksToV1Links(v2links, idEntity);
+        } else {
+            throw new RuntimeException("Server error");
         }
-        Set<Link> links = extractLinks(resource, getResourceName());
-        long idEntity = id > -1 ? id : extractIdFromSelfLink(links);
-        T entityConverted = convertFromV2MapToV1(resource, v2entityClass);
-        entityConverted.setId(idEntity);
-        convertFromV2LinksToV1Links(links, idEntity);
 
-        final Resource<T> body = new Resource<>(entityConverted, links);
+        final Resource<AbstractEntity> body = new Resource<>(entityConverted, v2links);
+        return processResource(idEntity, method, body);
+    }
+
+    ResponseEntity<Resource<? extends AbstractEntity>> processResource(long id, HttpMethod method, Resource<? extends AbstractEntity> resource) {
         switch (method) {
             case POST:
                 String location = "/" + getResourceName() + "/" + id;
-                return ResponseEntity.created(URI.create(location)).body(body);
+                return ResponseEntity.created(URI.create(location)).body(resource);
             case PUT:
                 return ResponseEntity.noContent().build();
             case GET:
-                return ResponseEntity.ok(body);
+                return ResponseEntity.ok(resource);
         }
         throw new IllegalArgumentException("Method " + method + " not supported");
     }
 
-    PagedResources<Resource<T>> buildPagedResources(int size, int page, Set<Resource<T>> resources) {
+    PagedResources<Resource<? extends AbstractEntity>> buildPagedResources(int size, int page, Set<Resource<? extends AbstractEntity>> resources) {
         int totalElements = resources.size();
         final PagedResources.PageMetadata metadata =
                 new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
         return new PagedResources<>(resources, metadata, pagedLinks(getResourceName(), size, page));
     }
 
-    @SuppressWarnings("unchecked")
-    private LinkedHashMap convertFromV2ResponseToMap(Response response) {
-        String body = "";
+    JsonNode convertFromJsonStrToJsonNode(Object obj) {
         try {
-            if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-                return convertJsonStringToMap(body);
-            }
+            return mapper.readTree(convertFromObjectToJsonString(obj));
         } catch (IOException e) {
-            body = e.getMessage();
+            LOGGER.error(e);
         }
-        return new LinkedHashMap(ImmutableMap.of("error", Optional.ofNullable(body).orElse("UNKNOWN")));
+        return null;
     }
 
     String convertFromObjectToJsonString(Object obj) {
@@ -231,24 +237,6 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // v1 -> v2
 
-    @SuppressWarnings("unchecked")
-    ArrayList<LinkedHashMap> convertFromResponseToV2ListOfMaps(Response response) throws IOException {
-        String body = null;
-        if (response.hasResponseStatus() && response.getStatusCode() <= 299 && (body = response.getResponseBody()) != null && !body.isEmpty()) {
-            return (ArrayList<LinkedHashMap>) ((LinkedHashMap)
-                    mapper.readValue(body, HashMap.class).get("_embedded")).get(getResourceName());
-        }
-        throw new IOException("HTTP Response FAIL (status:" + response.getStatusCode() + ", body:" + body + ")");
-    }
-
-    private AbstractEntity.EntityStatus extractV1StatusFromV2(io.galeb.core.entity.AbstractEntity entity) {
-        WithStatus.Status v2Status = WithStatus.Status.OK;
-        if (entity instanceof WithStatus) {
-            v2Status = ((WithStatus)entity).getStatus().entrySet().stream().map(Map.Entry::getValue).findAny().orElse(WithStatus.Status.UNKNOWN);
-        }
-        return convertFromV2StatusToV1Status(v2Status);
-    }
-
     String convertFromJsonStringV1ToJsonStringV2(String body) {
         // DEFAULT: Body not changed
         return body;
@@ -256,79 +244,20 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // v2 -> v1
 
-    void convertFromV2LinksToV1Links(Set<Link> links, Long id) {
-        for (String rel : addRel()) addLink(links, "/" + getResourceName() + "/" + id + "/" + rel, rel);
-        for (String rel: delRel()) removeLink(links, rel);
+    String[] addRel() {
+        return new String[0];
     }
 
-    Set<Resource<T>> convertFromV2ListOfMapsToV1Resources(ArrayList<LinkedHashMap> listOfMapsV2, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        return listOfMapsV2.stream().
-                map(resource -> {
-                    try {
-                        T v1Entity = convertFromV2MapToV1(resource, v2entityClass);
-                        Set<Link> links = extractLinks(resource, getResourceName());
-                        Long id = extractIdFromSelfLink(links);
-                        convertFromV2LinksToV1Links(links, id);
-                        v1Entity.setId(id);
-                        return new Resource<>(v1Entity, links);
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    }
-                    return null;
-                }).filter(Objects::nonNull).collect(Collectors.toSet());
+    String[] delRel() {
+        return new String[0];
     }
 
-    T convertFromV2MapToV1(LinkedHashMap v2Map, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        Object v2EntityObj = convertFromV2MapToV2(v2Map, v2entityClass);
-        io.galeb.core.entity.AbstractEntity v2Entity = v2entityClass.cast(v2EntityObj);
-        return convertFromV2ToV1(v2Entity, v2entityClass);
-    }
-
-    @SuppressWarnings({"unchecked", "Duplicates"})
-    T convertFromV2ToV1(io.galeb.core.entity.AbstractEntity v2Entity, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        String v2Name;
-        if (v2Entity instanceof Account) {
-            v2Name = ((Account) v2Entity).getUsername();
-        } else {
-            try {
-                Method getName = v2entityClass.getMethod("getName");
-                v2Name = (String) getName.invoke(v2Entity);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
-                LOGGER.warn(v2entityClass.getSimpleName() + " has not name. Using ID instead.");
-                v2Name = String.valueOf(v2Entity.getId());
-            }
-        }
-        T v1Entity = null;
-        try {
-            v1Entity = (T) entityClass.getConstructor().newInstance();
-            v1Entity.setName(v2Name);
-            v1Entity.setId(v2Entity.getId());
-            v1Entity.setCreatedAt(v2Entity.getCreatedAt());
-            v1Entity.setCreatedBy(v2Entity.getCreatedBy());
-            v1Entity.setLastModifiedAt(v2Entity.getLastModifiedAt());
-            v1Entity.setLastModifiedBy(v2Entity.getLastModifiedBy());
-            v1Entity.setVersion(v2Entity.getVersion());
-            v1Entity.setStatus(extractV1StatusFromV2(v2Entity));
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return v1Entity;
-    }
-
-    @SuppressWarnings("Duplicates")
-    private AbstractEntity.EntityStatus convertFromV2StatusToV1Status(WithStatus.Status status) {
-        switch (status) {
-            case OK:
-            case DELETED: return AbstractEntity.EntityStatus.OK;
-            case PENDING: return AbstractEntity.EntityStatus.PENDING;
-            default:      return AbstractEntity.EntityStatus.UNKNOWN;
-        }
-    }
-
-    // v2
-
-    private io.galeb.core.entity.AbstractEntity convertFromV2MapToV2(LinkedHashMap map, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
-        return mapper.readValue(mapper.writeValueAsString(map), v2entityClass);
+    void v2LinksToV1Links(Set<Link> v2links, Long id) {
+        removeLink(v2links, "self");
+        String v1resourceName = entityClass.getSimpleName().toLowerCase();
+        addLink(v2links, "/" + v1resourceName + "/" + id, "self");
+        for (String rel : addRel()) addLink(v2links, "/" + v1resourceName + "/" + id + "/" + rel, rel);
+        for (String rel: delRel()) removeLink(v2links, rel);
     }
 
 }

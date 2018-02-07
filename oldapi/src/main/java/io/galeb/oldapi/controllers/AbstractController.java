@@ -32,19 +32,19 @@ public abstract class AbstractController<T extends AbstractEntity> {
         return Stream.of(id).collect(Collectors.toMap(i -> "id", Function.identity()));
     }
 
-    protected abstract ResponseEntity<PagedResources<Resource<T>>> getSearch(String findType, Map<String, String> queryMap);
+    protected abstract ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> getSearch(String findType, Map<String, String> queryMap);
 
-    protected abstract ResponseEntity<PagedResources<Resource<T>>> get(Map<String, String> queryMap);
+    protected abstract ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Map<String, String> queryMap);
 
-    protected abstract ResponseEntity<Resource<T>> getWithId(String id);
+    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap);
 
-    protected abstract ResponseEntity<Resource<T>> post(String body);
+    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> post(String body);
 
     protected abstract ResponseEntity<String> postWithId(String id, String body);
 
     protected abstract ResponseEntity<String> put(String body);
 
-    protected abstract ResponseEntity<Resource<T>> putWithId(String id, String body);
+    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> putWithId(String id, String body);
 
     protected abstract ResponseEntity<String> delete();
 

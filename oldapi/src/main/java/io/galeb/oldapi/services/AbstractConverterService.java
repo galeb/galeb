@@ -105,7 +105,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
             ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
             Set<Resource<? extends AbstractEntity>> v1Entities = v2JsonHalData.getV2entities().stream()
                     .map(v2 -> {
-                        Set<Link> v2links = new HashSet<>(v2.getLinks());
+                        Set<Link> v2links = extractLinks(v2.getLinks(), getResourceName());
                         v2LinksToV1Links(v2links, v2.getContent().getId());
                         return new Resource<>(converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass), v2links);
                     })

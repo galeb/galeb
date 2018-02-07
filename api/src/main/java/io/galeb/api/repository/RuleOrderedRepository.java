@@ -49,4 +49,8 @@ public interface RuleOrderedRepository extends JpaRepository<RuleOrdered, Long>,
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<RuleOrdered> findAll(Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<RuleOrdered> findByVirtualhostgroup_IdAndEnvironment_Name(@Param("vhgid") Long vhgid, @Param("envname") String envname, Pageable pageable);
 }

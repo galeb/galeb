@@ -57,4 +57,8 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long>,
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<VirtualHost> findByNameContaining(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualHost> findByVirtualhostgroup_IdAndEnvironments_Name(@Param("vhgid") Long vhgid, @Param("envname") String envname, Pageable pageable);
 }

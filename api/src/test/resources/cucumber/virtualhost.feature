@@ -1,4 +1,3 @@
-@ignore
 @virtualhost
 Feature: VirtualHost Support
   The manager have than

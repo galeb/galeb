@@ -1,4 +1,3 @@
-@ignore
 Feature: Flux
   Scenario: Flux
     # Create environment envOne
@@ -109,7 +108,3 @@ Feature: Flux
       | pools  | [Pool=poolTwo] |
     And send POST /target
     Then the response status is 201
-
-
-
-

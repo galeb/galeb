@@ -96,7 +96,7 @@ public class ProviderController extends AbstractController<Provider> {
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> patchWithId(@PathVariable String id, @RequestBody String body) {
-        return service.patchWithId(id, body);
+        return service.patchWithId(id, body, null);
     }
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)

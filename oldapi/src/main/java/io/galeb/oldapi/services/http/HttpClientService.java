@@ -90,6 +90,10 @@ public class HttpClientService {
         return createOrUpdate(url, body, HttpMethod.PUT);
     }
 
+    public Response patch(String url, String body) throws ExecutionException, InterruptedException {
+        return createOrUpdate(url, body, HttpMethod.PATCH);
+    }
+
     private static class AsyncHttpClientResponse implements Response {
 
         private final org.asynchttpclient.Response response;

@@ -120,7 +120,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     @Override
-    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         String url = resourceUrlBase + "/" + id;
         try {
             Response response = httpClientService.getResponse(url);

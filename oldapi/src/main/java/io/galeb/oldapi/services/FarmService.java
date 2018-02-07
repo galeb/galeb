@@ -81,8 +81,8 @@ public class FarmService extends AbstractConverterService<Farm> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String id, Class<? extends AbstractEntity> v2entityClass) {
-        ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> environmentResourceResponse = environmentService.getWithId(id, io.galeb.core.entity.Environment.class);
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String id, Map<String, String> queryMap, Class<? extends AbstractEntity> v2entityClass) {
+        ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> environmentResourceResponse = environmentService.getWithId(id, queryMap, io.galeb.core.entity.Environment.class);
         final Resource<Environment> environmentResource;
         if (environmentResourceResponse == null || (environmentResource = (Resource<Environment>) environmentResourceResponse.getBody()) == null ) {
             return ResponseEntity.notFound().build();

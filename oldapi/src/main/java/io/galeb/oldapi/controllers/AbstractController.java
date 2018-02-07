@@ -36,7 +36,7 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Map<String, String> queryMap);
 
-    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id);
+    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap);
 
     protected abstract ResponseEntity<Resource<? extends AbstractEntity>> post(String body);
 

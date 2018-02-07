@@ -65,7 +65,7 @@ public class ProviderService extends AbstractConverterService<Provider> {
         return ResponseEntity.ok(pagedResources);
     }
 
-    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String param, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String param, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.ok(resource);
     }
 

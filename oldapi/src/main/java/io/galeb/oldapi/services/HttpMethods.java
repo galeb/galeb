@@ -42,7 +42,7 @@ public interface HttpMethods<T> {
         return ResponseEntity.badRequest().build();
     }
 
-    default ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    default ResponseEntity<Resource<? extends AbstractEntity>> getWithId(String id, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.badRequest().build();
     }
 

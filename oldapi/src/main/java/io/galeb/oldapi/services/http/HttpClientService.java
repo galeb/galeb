@@ -28,7 +28,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
@@ -62,7 +64,13 @@ public class HttpClientService {
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
-    public Response createOrUpdate(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
+    public Response getResponse(String url, Map<String, String> query) throws ExecutionException, InterruptedException {
+        String queryStr = query.entrySet().stream().map(m -> m.getKey() + "=" + m.getValue()).collect(Collectors.joining("&"));
+        url = url + (queryStr != null && !queryStr.isEmpty() ? "?" + queryStr : "");
+        return getResponse(url);
+    }
+
+    private Response createOrUpdate(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
         String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description

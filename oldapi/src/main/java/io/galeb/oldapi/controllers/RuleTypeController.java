@@ -54,8 +54,9 @@ public class RuleTypeController extends AbstractController<RuleType> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, null);
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id,
+                                                                        @RequestParam Map<String, String> queryMap) {
+        return service.getWithId(id, queryMap, null);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)

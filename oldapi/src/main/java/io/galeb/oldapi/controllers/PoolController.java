@@ -54,8 +54,9 @@ public class PoolController extends AbstractController<Pool> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id) {
-        return service.getWithId(id, io.galeb.core.entity.Pool.class);
+    public ResponseEntity<Resource<? extends AbstractEntity>> getWithId(@PathVariable String id,
+                                                                        @RequestParam Map<String, String> queryMap) {
+        return service.getWithId(id, queryMap, io.galeb.core.entity.Pool.class);
     }
 
     @RequestMapping(method = POST, produces = MediaType.APPLICATION_JSON_VALUE)

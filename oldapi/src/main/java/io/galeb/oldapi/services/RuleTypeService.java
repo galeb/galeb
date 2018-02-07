@@ -66,7 +66,7 @@ public class RuleTypeService extends AbstractConverterService<RuleType> {
         return ResponseEntity.ok(pagedResources);
     }
 
-    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String param, Class<? extends AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> getWithId(String param, Map<String, String> queryMap, Class<? extends AbstractEntity> v2entityClass) {
         return ResponseEntity.ok(resource);
     }
 

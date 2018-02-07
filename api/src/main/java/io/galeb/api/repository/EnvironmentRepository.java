@@ -28,6 +28,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "unchecked"})
@@ -60,6 +61,15 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join vp.rulesordered as ro " +
             "WHERE ro.id = :ruleorderedId")
     Set<Environment> findAllByRuleOrderedId(@Param("ruleorderedId") long ruleorderedId);
+
+    @ExposeFilterSwagger
+    @RestResource(exported = false)
+    @Query(value = "SELECT DISTINCT e FROM Environment as e " +
+            "inner join e.virtualhosts as v " +
+            "inner join v.virtualhostgroup as vp " +
+            "WHERE vp.id = :vhgid")
+    @PreAuthorize("@perm.allowView(null , #this)")
+    List<Environment> findAllByVirtualhostgroupId(@Param("vhgid") long vhgid);
 
     @ExposeFilterSwagger
     @RestResource(exported = false)

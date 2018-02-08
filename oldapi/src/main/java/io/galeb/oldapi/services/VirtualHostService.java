@@ -237,24 +237,12 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 environmentV2.setId(environmentId);
                 projectV2.setId(projectId);
                 v2.setProject(projectV2);
-                // TODO: Get preexistent environments
-                /*
-                List<io.galeb.core.entity.Environment> environments = new ArrayList<>();
-                try {
-                    environments.addAll(extractEnvironmentsFromVirtuahostGroupId(virtualHost.getId()));
-                } catch (InterruptedException | ExecutionException e) {
-                    LOGGER.error(e);
-                }
-                v2.setEnvironments(new HashSet<>(environments));
-                 */
                 v2.setEnvironments(Collections.singleton(environmentV2));
                 return v2;
             }).collect(Collectors.toList());
 
-
             io.galeb.core.entity.VirtualHost virtualhostV2 = new io.galeb.core.entity.VirtualHost();
             virtualhostV2.setName(virtualHost.getName());
-            // TODO: Get preexistent environments
             virtualhostV2.setEnvironments(Collections.singleton(environmentV2));
             virtualhostV2.setProject(projectV2);
 

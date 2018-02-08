@@ -66,8 +66,6 @@ public class FarmService extends AbstractConverterService<Farm> {
 
     @Override
     public ResponseEntity<PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>>> get(Class<? extends AbstractEntity> v2entityClass, Map<String, String> queryMap) {
-        int size = getSizeRequest(queryMap);
-        int page = getPageRequest(queryMap);
         Set<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> resources = environmentService.get(io.galeb.core.entity.Environment.class, queryMap).getBody().getContent().stream().map(r -> {
             Environment environment = (Environment) r.getContent();
             Farm farm = convertEnvToFarm(environment);
@@ -75,7 +73,7 @@ public class FarmService extends AbstractConverterService<Farm> {
             v2LinksToV1Links(links, farm.getId());
             return new Resource<>(farm, links);
         }).collect(Collectors.toSet());
-        PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> pagedResources = buildPagedResources(size, page, resources);
+        PagedResources<Resource<? extends io.galeb.oldapi.entities.v1.AbstractEntity>> pagedResources = buildPagedResources(resources, queryMap);
         return ResponseEntity.ok(pagedResources);
     }
 

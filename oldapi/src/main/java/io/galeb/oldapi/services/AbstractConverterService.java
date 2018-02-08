@@ -80,7 +80,9 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     // internals
 
-    String fullUrlWithSizeAndPage(int size, int page) {
+    String fullUrlWithSizeAndPage(Map<String, String> queryMap) {
+        int size = getSizeRequest(queryMap);
+        int page = getPageRequest(queryMap);
         return resourceUrlBase + "?size=" + size + "&page=" + page;
     }
 
@@ -96,9 +98,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     @Override
     public ResponseEntity<PagedResources<Resource<? extends AbstractEntity>>> get(Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, Map<String, String> queryMap) {
-        int size = getSizeRequest(queryMap);
-        int page = getPageRequest(queryMap);
-        String url = fullUrlWithSizeAndPage(size, page);
+        String url = fullUrlWithSizeAndPage(queryMap);
         try {
             Response response = httpClientService.getResponse(url);
             ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
@@ -110,7 +110,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
                     })
                     .collect(Collectors.toSet());
 
-            final PagedResources<Resource<? extends AbstractEntity>> pagedResources = buildPagedResources(size, page, v1Entities);
+            final PagedResources<Resource<? extends AbstractEntity>> pagedResources = buildPagedResources(v1Entities, queryMap);
             return ResponseEntity.ok(pagedResources);
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
@@ -208,8 +208,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         throw new IllegalArgumentException("Method " + method + " not supported");
     }
 
-    PagedResources<Resource<? extends AbstractEntity>> buildPagedResources(int size, int page, Set<Resource<? extends AbstractEntity>> resources) {
+    PagedResources<Resource<? extends AbstractEntity>> buildPagedResources(Set<Resource<? extends AbstractEntity>> resources, Map<String, String> queryMap) {
         int totalElements = resources.size();
+        int size = getSizeRequest(queryMap);
+        int page = getPageRequest(queryMap);
         final PagedResources.PageMetadata metadata =
                 new PagedResources.PageMetadata(size, page, totalElements, Math.max(1, totalElements / size));
         return new PagedResources<>(resources, metadata, pagedLinks(getResourceName(), size, page));

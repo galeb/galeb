@@ -1,3 +1,4 @@
+@ignore
 Feature: Flux
   Scenario: Flux
     # Create environment envOne
@@ -80,7 +81,6 @@ Feature: Flux
     Then the response status is 201
     # Create ruleordered roOne
     When request json body has:
-      | name  | roOne |
       | order | 1     |
       | rule  | Rule=ruleOne |
       | environment  | Environment=EnvOne |
@@ -89,7 +89,6 @@ Feature: Flux
     Then the response status is 201
     # Create ruleordered roTwo
     When request json body has:
-      | name  | roTwo |
       | order | 3     |
       | rule  | Rule=ruleOne |
       | environment  | Environment=EnvOne |

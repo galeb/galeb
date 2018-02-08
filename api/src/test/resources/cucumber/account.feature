@@ -1,3 +1,4 @@
+@ignore
 @account
 Feature: Account Support
     The manager have than

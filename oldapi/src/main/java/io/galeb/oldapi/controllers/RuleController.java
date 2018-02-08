@@ -95,7 +95,7 @@ public class RuleController extends AbstractController<Rule> {
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> patchWithId(@PathVariable String id, @RequestBody String body) {
-        return service.patchWithId(id, body);
+        return service.patchWithId(id, body, io.galeb.core.entity.Rule.class);
     }
 
     @RequestMapping(method = OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -161,6 +161,21 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
+    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        T entity = convertFromJsonStringToV1(body);
+        if (entity != null) {
+            try {
+                Response response = httpClientService.put(resourceUrlBase + "/" + id, convertFromJsonStringV1ToJsonStringV2(body));
+                processResponse(response, Long.parseLong(id), HttpMethod.PATCH, v2entityClass);
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     // common
 
     ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {

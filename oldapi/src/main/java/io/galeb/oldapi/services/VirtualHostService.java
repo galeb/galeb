@@ -277,11 +277,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             VirtualhostGroup virtualhostGroup = extractVirtualhostGroup(apiUrl + "/" + getResourceName() + "/" + id);
             VirtualHost virtualhostV1FromV2 = (VirtualHost) converterV1.v2ToV1(virtualhostGroup, v2entityClass, VirtualHost.class);
             JsonNode v1BE = convertFromJsonObjToJsonNode(virtualhostV1FromV2);
-
-            v1FE.fields().forEachRemaining(e -> {
-                ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
-            });
-
+            v1FE.fields().forEachRemaining(e -> ((ObjectNode) v1BE).replace(e.getKey(), e.getValue()));
             putWithId(id, v1BE.toString(), v2entityClass);
             return ResponseEntity.noContent().build();
         } catch (InterruptedException | ExecutionException e) {

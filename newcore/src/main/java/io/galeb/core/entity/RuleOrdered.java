@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Entity
-@Table(name = "ruleordered")
+@Table(name = "ruleordered", uniqueConstraints = { @UniqueConstraint(name = "UK_order__rule_id__virtualhostgroup_id__environment_id", columnNames = { "rule_order", "virtualhostgroup_rule_ordered_id", "rule_rule_ordered_id", "environment_id" }) })
 public class RuleOrdered extends AbstractEntity implements WithStatus, Comparable<RuleOrdered> {
 
     private static final long serialVersionUID = 1L;

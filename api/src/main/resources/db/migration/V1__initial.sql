@@ -417,6 +417,7 @@ CREATE TABLE `ruleordered` (
   `rule_rule_ordered_id` bigint(20) NOT NULL,
   `virtualhostgroup_rule_ordered_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_order__rule_id__virtualhostgroup_id__environment_id` (`rule_order`,`virtualhostgroup_rule_ordered_id`,`rule_rule_ordered_id`, `environment_id`),
   KEY `FK_ruleordered_environment` (`environment_id`),
   KEY `FK_rule_rule_ordered` (`rule_rule_ordered_id`),
   KEY `FK_virtualhostgroup_rule_ordered` (`virtualhostgroup_rule_ordered_id`),

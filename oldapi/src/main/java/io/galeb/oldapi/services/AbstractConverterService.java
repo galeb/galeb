@@ -216,13 +216,17 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return new PagedResources<>(resources, metadata, pagedLinks(getResourceName(), size, page));
     }
 
-    JsonNode convertFromJsonStrToJsonNode(Object obj) {
+    JsonNode convertFromJsonStrToJsonNode(String jsonStr) {
         try {
-            return mapper.readTree(convertFromObjectToJsonString(obj));
+            return mapper.readTree(jsonStr);
         } catch (IOException e) {
             LOGGER.error(e);
         }
         return null;
+    }
+
+    JsonNode convertFromJsonObjToJsonNode(Object obj) {
+        return convertFromJsonStrToJsonNode(convertFromObjectToJsonString(obj));
     }
 
     String convertFromObjectToJsonString(Object obj) {

@@ -1,4 +1,3 @@
-@ignore
 Feature: Flux
   Scenario: Flux
     # Create environment envOne
@@ -98,12 +97,12 @@ Feature: Flux
     # Create target targetOne
     When request json body has:
       | name  | targetOne |
-      | pools  | [Pool=poolOne] |
+      | pool  | Pool=poolOne |
     And send POST /target
     Then the response status is 201
     # Create target targetTwo
     When request json body has:
       | name  | targetTwo |
-      | pools  | [Pool=poolTwo] |
+      | pool  | Pool=poolTwo |
     And send POST /target
     Then the response status is 201

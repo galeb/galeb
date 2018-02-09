@@ -101,22 +101,6 @@ CREATE TABLE `environment` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `healthcheck_headers`
---
-
-DROP TABLE IF EXISTS `healthcheck_headers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `healthcheck_headers` (
-  `healthcheck_id` bigint(20) NOT NULL,
-  `headers` varchar(255) DEFAULT NULL,
-  `headers_key` varchar(255) NOT NULL,
-  PRIMARY KEY (`healthcheck_id`,`headers_key`),
-  CONSTRAINT `FK_headers_healthcheck_id` FOREIGN KEY (`healthcheck_id`) REFERENCES `healthcheck` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `health_status`
 --
 
@@ -167,6 +151,22 @@ CREATE TABLE `healthcheck` (
   `tcp_only` bit(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_healthcheck_name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `healthcheck_headers`
+--
+
+DROP TABLE IF EXISTS `healthcheck_headers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `healthcheck_headers` (
+  `healthcheck_id` bigint(20) NOT NULL,
+  `headers` varchar(255) DEFAULT NULL,
+  `headers_key` varchar(255) NOT NULL,
+  PRIMARY KEY (`healthcheck_id`,`headers_key`),
+  CONSTRAINT `FK_headers_healthcheck_id` FOREIGN KEY (`healthcheck_id`) REFERENCES `healthcheck` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -347,8 +347,8 @@ CREATE TABLE `rolegroup_teams` (
   `team_id` bigint(20) NOT NULL,
   PRIMARY KEY (`rolegroup_id`,`team_id`),
   KEY `FK_team_rolegroup_id` (`team_id`),
-  CONSTRAINT `FK_team_rolegroup_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`),
-  CONSTRAINT `FK_rolegroup_team_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`)
+  CONSTRAINT `FK_rolegroup_team_id` FOREIGN KEY (`rolegroup_id`) REFERENCES `rolegroup` (`id`),
+  CONSTRAINT `FK_team_rolegroup_id` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -417,7 +417,7 @@ CREATE TABLE `ruleordered` (
   `rule_rule_ordered_id` bigint(20) NOT NULL,
   `virtualhostgroup_rule_ordered_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_order__rule_id__virtualhostgroup_id__environment_id` (`rule_order`,`virtualhostgroup_rule_ordered_id`,`rule_rule_ordered_id`, `environment_id`),
+  UNIQUE KEY `UK_order__rule_id__virtualhostgroup_id__environment_id` (`rule_order`,`virtualhostgroup_rule_ordered_id`,`rule_rule_ordered_id`,`environment_id`),
   KEY `FK_ruleordered_environment` (`environment_id`),
   KEY `FK_rule_rule_ordered` (`rule_rule_ordered_id`),
   KEY `FK_virtualhostgroup_rule_ordered` (`virtualhostgroup_rule_ordered_id`),
@@ -444,25 +444,11 @@ CREATE TABLE `target` (
   `quarantine` bit(1) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_target_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `target_pools`
---
-
-DROP TABLE IF EXISTS `target_pools`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `target_pools` (
-  `target_id` bigint(20) NOT NULL,
   `pool_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`target_id`,`pool_id`),
-  KEY `FK_target_pool_id` (`pool_id`),
-  CONSTRAINT `FK_pool_target_id` FOREIGN KEY (`target_id`) REFERENCES `target` (`id`),
-  CONSTRAINT `FK_target_pool_id` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_target_name_pool_id` (`name`,`pool_id`),
+  KEY `FK_target_pool` (`pool_id`),
+  CONSTRAINT `FK_target_pool` FOREIGN KEY (`pool_id`) REFERENCES `pool` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -545,8 +531,8 @@ CREATE TABLE `virtualhost_environments` (
   `environment_id` bigint(20) NOT NULL,
   PRIMARY KEY (`virtualhost_id`,`environment_id`),
   KEY `FK_virtualhost_environment_id` (`environment_id`),
-  CONSTRAINT `FK_virtualhost_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
-  CONSTRAINT `FK_environment_virtualhost_id` FOREIGN KEY (`virtualhost_id`) REFERENCES `virtualhost` (`id`)
+  CONSTRAINT `FK_environment_virtualhost_id` FOREIGN KEY (`virtualhost_id`) REFERENCES `virtualhost` (`id`),
+  CONSTRAINT `FK_virtualhost_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -579,4 +565,4 @@ CREATE TABLE `virtualhostgroup` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-01-17 16:40:40
+-- Dump completed on 2018-02-09 15:05:48

@@ -140,6 +140,7 @@ INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TARGET_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TARGET_SAVE_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TARGET_DELETE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TARGET_VIEW');
+INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TARGET_VIEW_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TEAM_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'TEAM_VIEW');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@B, 'VIRTUALHOST_SAVE');

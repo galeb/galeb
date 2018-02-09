@@ -32,7 +32,7 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Environment environment;
 
-    @ManyToMany(mappedBy = "pools")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "pool", cascade = CascadeType.REMOVE)
     private Set<Target> targets = new HashSet<>();
 
     @ManyToOne(optional = false)

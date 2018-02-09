@@ -24,13 +24,12 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name", columnNames = { "name" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name_pool_id", columnNames = { "name", "pool_id" }) })
 public class Target extends AbstractEntity implements WithStatus {
 
-    @ManyToMany(cascade = CascadeType.REMOVE)
-    @JoinTable(joinColumns=@JoinColumn(name = "target_id", foreignKey = @ForeignKey(name="FK_pool_target_id")),
-            inverseJoinColumns=@JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool_id")))
-    private Set<Pool> pools = new HashSet<>();
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool"))
+    private Pool pool;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "target", cascade = CascadeType.REMOVE)
     private Set<HealthStatus> healthStatus = new HashSet<>();
@@ -41,16 +40,12 @@ public class Target extends AbstractEntity implements WithStatus {
     @Transient
     private Map<Long, Status> status = new HashMap<>();
 
-    public Set<Pool> getPools() {
-        return pools;
+    public Pool getPool() {
+        return pool;
     }
 
-    public void setPools(Set<Pool> pools) {
-        if (pools == null || pools.isEmpty()) {
-            throw new BadRequestException("Pool(s) undefined");
-        }
-        this.pools.clear();
-        this.pools.addAll(pools);
+    public void setPools(Pool pool) {
+        this.pool = pool;
     }
 
     @JsonIgnore

@@ -18,7 +18,6 @@ package io.galeb.api.repository;
 
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.TargetRepositoryCustom;
-import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,8 +25,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
-
-import java.util.Collection;
 
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "target", collectionResourceRel = "target", itemResourceRel = "target")
@@ -54,5 +51,11 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     Page<Target> findAll(Pageable pageable);
 
     @ExposeFilterSwagger
-    Page<Target> findByNameAndPoolsIn(@Param("name") String name, @Param("pools") Collection<Pool> pools, Pageable page);
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Target> findByName(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Target> findByNameContaining(@Param("name") String name, Pageable pageable);
+
 }

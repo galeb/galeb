@@ -49,4 +49,13 @@ public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositor
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Rule> findAll(Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Rule> findByName(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Rule> findByNameContaining(@Param("name") String name, Pageable pageable);
+
 }

@@ -22,7 +22,7 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name_project_id", columnNames = { "name", "project_id" }) })
+@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name", columnNames = { "name" }) })
 public class Rule extends AbstractEntity implements WithStatus, WithGlobal {
 
     @ManyToMany

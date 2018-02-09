@@ -373,7 +373,7 @@ CREATE TABLE `rule` (
   `name` varchar(255) NOT NULL,
   `project_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_rule_name_project_id` (`name`,`project_id`),
+  UNIQUE KEY `UK_rule_name` (`name`),
   KEY `FK_rule_project` (`project_id`),
   CONSTRAINT `FK_rule_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;

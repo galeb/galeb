@@ -1,3 +1,4 @@
+@ignore
 Feature: RuleOrdered tests
   Background:
     Given a REST client authenticated as admin with password pass

@@ -37,7 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -183,6 +182,15 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 .getContent();
     }
 
+    private io.galeb.core.entity.Environment extractEnvironmentById(Long envId) throws InterruptedException, ExecutionException {
+        String url = apiUrl + "/environment/" + envId;
+        return (io.galeb.core.entity.Environment) converterV2.toV2JsonHal(httpClientService.getResponse(url), io.galeb.core.entity.Environment.class)
+                .getV2entities()
+                .stream().findAny()
+                .orElse(new Resource<>(new io.galeb.core.entity.Environment(), Collections.emptyList()))
+                .getContent();
+    }
+
     private Rule extractRule(String ruleUrl) throws InterruptedException, ExecutionException {
         return (Rule) converterV2.toV2JsonHal(httpClientService.getResponse(ruleUrl), Rule.class)
                 .getV2entities()
@@ -203,18 +211,17 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             if (project == null) {
                 throw new BadRequestException("Project is mandatory");
             }
-            io.galeb.core.entity.Environment environmentV2 = new io.galeb.core.entity.Environment();
-            environmentV2.setId(environment.getId());
-
-            io.galeb.core.entity.Project projectV2 = new io.galeb.core.entity.Project();
-            projectV2.setId(project.getId());
-
-            io.galeb.core.entity.VirtualHost virtualhostV2 = new io.galeb.core.entity.VirtualHost();
-            virtualhostV2.setName(virtualHost.getName());
-            virtualhostV2.setProject(projectV2);
-            virtualhostV2.setEnvironments(Collections.singleton(environmentV2));
-
             try {
+                io.galeb.core.entity.Environment environmentV2 = extractEnvironmentById(extractIdFromName(environment));
+
+                io.galeb.core.entity.Project projectV2 = new io.galeb.core.entity.Project();
+                projectV2.setId(extractIdFromName(project));
+
+                io.galeb.core.entity.VirtualHost virtualhostV2 = new io.galeb.core.entity.VirtualHost();
+                virtualhostV2.setName(virtualHost.getName());
+                virtualhostV2.setProject(projectV2);
+                virtualhostV2.setEnvironments(Collections.singleton(environmentV2));
+
                 JsonNode jsonNode = rebuildVirtualhostV2Json(virtualhostV2);
                 Response response = sendMethodRequest(method, jsonNode);
                 ConverterV2.V2JsonHalData virtualhostJsonHal = converterV2.toV2JsonHal(response, io.galeb.core.entity.VirtualHost.class);
@@ -225,8 +232,12 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                     JsonNode jsonNodeAlias = rebuildVirtualhostV2Json(v2Alias);
                     sendMethodRequest(method, jsonNodeAlias);
                 }
-                return processResponse(response, -1, method, v2entityClass);
-            } catch (ExecutionException | InterruptedException | IOException e) {
+
+                Map<String, String> queryMap = new HashMap<>();
+                queryMap.put("environment", environmentV2.getName());
+                return getWithId(String.valueOf(virtualhostGroup.getId()), queryMap, v2entityClass);
+
+            } catch (ExecutionException | InterruptedException e) {
                 LOGGER.error(e.getMessage(), e);
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
             }
@@ -234,15 +245,21 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return ResponseEntity.badRequest().build();
     }
 
+    private Long extractIdFromName(AbstractEntity<?> entityV1) {
+        return Long.parseLong(entityV1.getName().replaceAll(".*/", ""));
+    }
+
+    // TODO: PUT not work if name is changed
     private Response sendMethodRequest(HttpMethod method, JsonNode jsonNode) throws InterruptedException, ExecutionException {
         String virtualhostResourcePath = VirtualHost.class.getSimpleName().toLowerCase();
         if (method == HttpMethod.PUT) {
-            Response responseV2 = httpClientService.getResponse(virtualhostResourcePath + "/search/findByName?name=" + jsonNode.get("name"));
+            String urlBase = apiUrl + "/" + virtualhostResourcePath;
+            Response responseV2 = httpClientService.getResponse(urlBase + "/search/findByName?name=" + jsonNode.get("name"));
             ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(responseV2, io.galeb.core.entity.VirtualHost.class);
             List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities = v2JsonHalData.getV2entities();
             if (v2entities != null && !v2entities.isEmpty()) {
                 long vh2Id = v2entities.stream().findAny().get().getContent().getId();
-                return httpClientService.put(apiUrl + "/" + virtualhostResourcePath + "/" + vh2Id, jsonNode.toString());
+                return httpClientService.put(urlBase + "/" + vh2Id, jsonNode.toString());
             }
         }
         return httpClientService.post(apiUrl + "/" + virtualhostResourcePath, jsonNode.toString());
@@ -314,12 +331,12 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
 
     @Override
     public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        JsonNode v1FE = convertFromJsonStrToJsonNode(body);
         ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
         VirtualHost virtualHost = (VirtualHost) responseV1BE.getBody().getContent();
         if (virtualHost != null) {
             JsonNode v1BE = convertFromJsonObjToJsonNode(virtualHost);
             if (v1BE != null) {
+                JsonNode v1FE = convertFromJsonStrToJsonNode(body);
                 v1FE.fields().forEachRemaining(e -> ((ObjectNode) v1BE).replace(e.getKey(), e.getValue()));
                 putWithId(id, v1BE.toString(), v2entityClass);
                 return ResponseEntity.noContent().build();

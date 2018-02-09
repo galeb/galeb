@@ -1,5 +1,5 @@
 @ignore
-Feature: Rule tests
+Feature: Pool tests
   Background:
     # Create environment envOne
     Given a REST client authenticated as admin with password pass
@@ -23,12 +23,12 @@ Feature: Rule tests
     # Create pool poolOne
     When request json body has:
       | name  | poolOne |
-      | environment  | Environment=EnvOne |
+      | environment  | Environment=envOne |
       | balancepolicy  | BalancePolicy=balancePolicyOne |
       | project  | Project=projOne |
     And send POST /pool
     Then the response status is 201
-        # Create rule ruleOne
+    # Create rule ruleOne
     When request json body has:
       | name  | ruleOne |
       | matching  | / |
@@ -37,101 +37,95 @@ Feature: Rule tests
     And send POST /rule
     Then the response status is 201
 
-  Scenario: Should does not create duplicate rule
+  Scenario: Should have balance policy on create rule
     Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
-      | name  | ruleOne |
-      | matching  | / |
-      | pools  | [Pool=poolOne] |
+      | name  | poolTwo |
+      | environment  | Environment=envOne |
       | project  | Project=projOne |
-    And send POST /rule
+    And send POST /pool
     Then the response status is 409
 
-  Scenario: Should create rule in another pool and another project
+  Scenario: Should have envinronment on create rule
     Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
-      | name  | projTwo |
-      | teams | [Team=teamlocal] |
-    And send POST /project
-    Then the response status is 201
+      | name  | poolTwo |
+      | balancepolicy  | BalancePolicy=balancePolicyOne |
+      | project  | Project=projOne |
+    And send POST /pool
+    Then the response status is 409
+
+  Scenario: Should have project on create rule
+    Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
       | name  | poolTwo |
       | environment  | Environment=envOne |
       | balancepolicy  | BalancePolicy=balancePolicyOne |
-      | project  | Project=projTwo |
     And send POST /pool
-    When request json body has:
-      | name  | ruleTwo |
-      | matching  | / |
-      | pools  | [Pool=poolTwo] |
-      | project  | Project=projTwo |
-    And send POST /rule
-    Then the response status is 201
+    Then the response status is 409
 
-  Scenario: Should create rule with same pool and another project
+  Scenario: Create duplicated Pool
     Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
-      | name  | projTwo |
-      | teams | [Team=teamlocal] |
-    And send POST /project
-    Then the response status is 201
-    When request json body has:
-      | name  | ruleTwo |
-      | matching  | / |
-      | pools  | [Pool=poolOne] |
-      | project  | Project=projTwo |
-    And send POST /rule
-    Then the response status is 201
+      | name  | poolOne |
+      | environment  | Environment=envOne |
+      | balancepolicy  | BalancePolicy=balancePolicyOne |
+      | project  | Project=projOne |
+    And send POST /pool
+    Then the response status is 409
 
-  Scenario: Get null Rule
+  Scenario: Get Pool
     Given a REST client authenticated with token and role TEAM_ADMIN
-    When send GET Rule=NULL
+    When send GET Pool=poolOne
+    Then the response status is 200
+    And property name contains poolOne
+
+  Scenario: Get null Pool
+    Given a REST client authenticated with token and role TEAM_ADMIN
+    When send GET Pool=NULL
     Then the response status is 404
 
-  Scenario: Update all fields of Rule
+  Scenario: Update Pool
     Given a REST client authenticated with token and role TEAM_ADMIN
     When request json body has:
-      | name  | projTwo |
-      | teams | [Team=teamlocal] |
-    And send POST /project
-    Then the response status is 201
-    When request json body has:
-      | name  | poolTwo |
-      | environment  | Environment=envOne |
-      | balancepolicy  | BalancePolicy=balancePolicyOne |
-      | project  | Project=projTwo |
-    And send POST /pool
-    Then the response status is 201
-    When request json body has:
-      | name  | ruleTwo |
-      | matching  | /match |
-      | global  | true |
-      | pools  | [Pool=poolTwo] |
-    And send PATCH /rule/1
+      | name        | poolOneChanged            |
+      | environment | Environment=envOne |
+      | project     | Project=projOne    |
+    And send PUT Pool=poolOne
     Then the response status is 200
-    When send GET Rule=ruleTwo
+    Given a REST client authenticated with token and role TEAM_ADMIN
+    When send GET Pool=poolOneChanged
     Then the response status is 200
-    And property name contains ruleTwo
-    And property matching contains /match
-    And property global contains true
-    When send GET /rule/1/pools/2
+    And property name contains poolOneChanged
+
+  Scenario: Update name field of Pool
+    Given a REST client authenticated with token and role TEAM_ADMIN
+    When request json body has:
+      | name | poolTwo |
+    And send PATCH Pool=poolOne
+    Then the response status is 200
+    When send GET Pool=poolTwo
     Then the response status is 200
     And property name contains poolTwo
 
-  Scenario: Should delete rule
+  Scenario: Delete Pool
     Given a REST client authenticated with token and role TEAM_ADMIN
-    And send DELETE /rule/1
+    When send DELETE Pool=poolOne
     Then the response status is 204
-    And send GET Rule=ruleOne
+    When send GET Pool=poolOne
     Then the response status is 200
     And the response search at 'status.1' equal to DELETED
+    When send GET Environment=envOne
+    Then the response status is 200
+    When send GET Project=projOne
+    Then the response status is 200
 
-  Scenario: Search Rule by Name
+  Scenario: Search Pool by Name
     Given a REST client authenticated with token and role TEAM_ADMIN
-    When send GET /rule/search/findByName?name=ruleOne
-    Then the response search at '_embedded.rule[0].name' equal to ruleOne
+    When send GET /pool/search/findByName?name=poolOne
+    Then the response search at '_embedded.pool[0].name' equal to poolOne
 
-  Scenario: Search Rule by NameContaining
+  Scenario: Search Pool by NameContaining
     Given a REST client authenticated with token and role TEAM_ADMIN
-    When send GET /rule/search/findByNameContaining?name=One
-    Then the response search at '_embedded.rule[0].name' equal to ruleOne
+    When send GET /pool/search/findByNameContaining?name=One
+    Then the response search at '_embedded.pool[0].name' equal to poolOne

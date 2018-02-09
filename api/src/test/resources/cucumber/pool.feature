@@ -1,4 +1,3 @@
-@ignore
 Feature: Pool tests
   Background:
     # Create environment envOne

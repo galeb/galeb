@@ -1,4 +1,3 @@
-@ignore
 Feature: Rule tests
   Background:
     # Create environment envOne

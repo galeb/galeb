@@ -113,8 +113,9 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 }
                 envname = environments.stream().map(io.galeb.core.entity.Environment::getName).findAny().orElse("UNDEF");
             }
-            Set<RuleOrder> rulesOrdered = extractRulesOrderedByEnvironment(envname, vhgid);
-            LinkedList<? extends io.galeb.core.entity.AbstractEntity> virtualhosts = extractVirtualhostsByEnvironment(envname, vhgid);
+        Set<RuleOrder> rulesOrdered;
+        rulesOrdered = extractRulesOrderedByEnvironment(envname, vhgid);
+        LinkedList<? extends io.galeb.core.entity.AbstractEntity> virtualhosts = extractVirtualhostsByEnvironment(envname, vhgid);
             LinkedList<String> virtualhostNames = virtualhosts.stream().map(v -> ((io.galeb.core.entity.VirtualHost)v).getName()).collect(Collectors.toCollection(LinkedList::new));
 
             if (virtualhostNames == null || virtualhostNames.isEmpty()) {
@@ -124,7 +125,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             virtualhostV1.setName(virtualhostNames.getFirst());
             virtualhostV1.setAliases(new HashSet<>(virtualhostNames));
             return new Resource<>(virtualhostV1, links);
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e);
         }
         return null;
@@ -256,7 +257,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                     .map(v2 -> {
                         try {
                             return convertVirtualhostToV1(v2entityClass, v2, envname);
-                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalArgumentException | BadRequestException e) {
                             LOGGER.error(e);
                         }
                         return null;

@@ -51,7 +51,16 @@ public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGro
     VirtualhostGroup findOne(@Param("id") Long id);
 
     @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
     VirtualhostGroup findByVirtualhostsIn(@Param("virtualhosts") Collection<VirtualHost> virtualhosts);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    VirtualhostGroup findByVirtualhosts_Id(@Param("vid") Long vid);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    VirtualhostGroup findByVirtualhosts_Name(@Param("name") String name);
 
     @Override
     @ExposeFilterSwagger

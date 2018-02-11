@@ -38,6 +38,7 @@ public class VirtualHost extends AbstractEntity<VirtualHost> implements WithFarm
     @JsonIgnore
     private long farmId;
 
+    @JsonProperty("rulesOrdered")
     private final Set<RuleOrder> rulesOrdered = new HashSet<>();
 
     private Rule ruleDefault;

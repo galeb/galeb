@@ -70,28 +70,32 @@ public class HttpClientService {
         return getResponse(url);
     }
 
-    private Response createOrUpdate(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
+    private Response doMethod(String url, String body, HttpMethod method) throws ExecutionException, InterruptedException {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = account.getUsername();
         String password = account.extractApiTokenFromDetails(LocalAdminService.NAME.equals(username)); // extract token from description
         RequestBuilder requestBuilder = new RequestBuilder();
         requestBuilder.setRealm(Dsl.basicAuthRealm(username, password).setUsePreemptiveAuth(true));
         requestBuilder.setUrl(url);
-        requestBuilder.setBody(body);
+        if (method != HttpMethod.DELETE) requestBuilder.setBody(body);
         requestBuilder.setMethod(method.name());
         return new AsyncHttpClientResponse(httpClient.executeRequest(requestBuilder).get());
     }
 
     public Response post(String url, String body) throws ExecutionException, InterruptedException {
-        return createOrUpdate(url, body, HttpMethod.POST);
+        return doMethod(url, body, HttpMethod.POST);
     }
 
     public Response put(String url, String body) throws ExecutionException, InterruptedException {
-        return createOrUpdate(url, body, HttpMethod.PUT);
+        return doMethod(url, body, HttpMethod.PUT);
     }
 
     public Response patch(String url, String body) throws ExecutionException, InterruptedException {
-        return createOrUpdate(url, body, HttpMethod.PATCH);
+        return doMethod(url, body, HttpMethod.PATCH);
+    }
+
+    public Response delete(String url) throws ExecutionException, InterruptedException {
+        return doMethod(url, null, HttpMethod.DELETE);
     }
 
     private static class AsyncHttpClientResponse implements Response {

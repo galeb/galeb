@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.VirtualhostGroup;
+import io.galeb.core.entity.WithStatus;
 import io.galeb.oldapi.entities.v1.*;
 import io.galeb.oldapi.exceptions.BadRequestException;
 import io.galeb.oldapi.services.components.ConverterV2;
@@ -40,6 +41,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class VirtualHostService extends AbstractConverterService<VirtualHost> {
@@ -64,22 +67,15 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return VirtualhostGroup.class.getSimpleName().toLowerCase();
     }
 
-    private List<io.galeb.core.entity.VirtualHost> makeAliasesV2(VirtualHost virtualHost, io.galeb.core.entity.Project projectV2, io.galeb.core.entity.Environment environmentV2) {
-        Environment environment = virtualHost.getEnvironment();
-        Project project = virtualHost.getProject();
-        return virtualHost.getAliases().stream().map(alias -> {
+    private Stream<io.galeb.core.entity.VirtualHost> buildVirtualhostsV2Alias(Set<String> aliases, VirtualhostGroup virtualhostGroup, io.galeb.core.entity.Project projectV2, Set<io.galeb.core.entity.Environment> environmentsV2) {
+        return aliases.stream().map(alias -> {
             io.galeb.core.entity.VirtualHost v2 = new io.galeb.core.entity.VirtualHost();
             v2.setName(alias);
-
-            long environmentId = Long.parseLong(environment.getName().replaceAll("^.*/", ""));
-            long projectId = Long.parseLong(project.getName().replaceAll("^.*/", ""));
-
-            environmentV2.setId(environmentId);
-            projectV2.setId(projectId);
             v2.setProject(projectV2);
-            v2.setEnvironments(Collections.singleton(environmentV2));
+            v2.setEnvironments(environmentsV2);
+            v2.setVirtualhostgroup(virtualhostGroup);
             return v2;
-        }).collect(Collectors.toList());
+        });
     }
 
     private JsonNode rebuildVirtualhostV2Json(io.galeb.core.entity.VirtualHost virtualHost) {
@@ -122,6 +118,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             }
             virtualhostV1.setRulesOrdered(rulesOrdered);
             virtualhostV1.setName(virtualhostNames.getFirst());
+            virtualhostNames.remove(virtualhostNames.getFirst());
             virtualhostV1.setAliases(new HashSet<>(virtualhostNames));
             return new Resource<>(virtualhostV1, links);
         } catch (InterruptedException | ExecutionException e) {
@@ -142,7 +139,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhostsByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
         String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
         ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
-        return extractVirtualhost(virtualhostsJsonHalData);
+        return extractVirtualhosts(virtualhostsJsonHalData);
     }
 
     private Set<RuleOrder> extractRulesOrderedByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
@@ -151,7 +148,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return extractRuleOrders(rulesOrderedJsonHalData);
     }
 
-    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhost(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
+    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhosts(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
         return virtualhostsJsonHalData.getV2entities().stream()
                 .map(Resource::getContent)
                 .sorted(Comparator.comparingLong(io.galeb.core.entity.AbstractEntity::getId))
@@ -199,7 +196,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 .getContent();
     }
 
-    private ResponseEntity<Resource<? extends AbstractEntity>> doMethod(String body, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    private ResponseEntity<Resource<? extends AbstractEntity>> postInternal(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         VirtualHost virtualHost = convertFromJsonStringToV1(body);
 
         if (virtualHost != null) {
@@ -218,20 +215,23 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 projectV2.setId(extractIdFromName(project));
 
                 io.galeb.core.entity.VirtualHost virtualhostV2 = new io.galeb.core.entity.VirtualHost();
+                final Long v1id;
+                if ((v1id = virtualHost.getId()) != null) virtualhostV2.setId(v1id);
                 virtualhostV2.setName(virtualHost.getName());
                 virtualhostV2.setProject(projectV2);
                 virtualhostV2.setEnvironments(Collections.singleton(environmentV2));
 
                 JsonNode jsonNode = rebuildVirtualhostV2Json(virtualhostV2);
-                Response response = sendMethodRequest(method, jsonNode);
+                Response response = sendMethodRequest(HttpMethod.POST, jsonNode);
+                if (response == null) {
+                    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+                }
                 ConverterV2.V2JsonHalData virtualhostJsonHal = converterV2.toV2JsonHal(response, io.galeb.core.entity.VirtualHost.class);
                 String virtualhostgroupUrl = virtualhostJsonHal.getLinks().get("virtualhostgroup");
                 VirtualhostGroup virtualhostGroup = extractVirtualhostGroup(virtualhostgroupUrl);
-                for (io.galeb.core.entity.VirtualHost v2Alias: makeAliasesV2(virtualHost, projectV2, environmentV2)) {
-                    v2Alias.setVirtualhostgroup(virtualhostGroup);
-                    JsonNode jsonNodeAlias = rebuildVirtualhostV2Json(v2Alias);
-                    sendMethodRequest(method, jsonNodeAlias);
-                }
+
+                buildVirtualhostsV2Alias(virtualHost.getAliases(), virtualhostGroup, projectV2, Collections.singleton(environmentV2))
+                        .forEach(v2Alias -> sendMethodRequest(HttpMethod.POST, rebuildVirtualhostV2Json(v2Alias)));
 
                 Map<String, String> queryMap = new HashMap<>();
                 queryMap.put("environment", environmentV2.getName());
@@ -245,24 +245,92 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return ResponseEntity.badRequest().build();
     }
 
+    private ResponseEntity<Resource<? extends AbstractEntity>> putInternal(String bodyWithId, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        try {
+            JsonNode jsonNode = convertFromJsonStrToJsonNode(bodyWithId);
+            long id = jsonNode.get("id").asLong();
+
+            VirtualHost virtualhostV1Current = (VirtualHost) getWithId(String.valueOf(id), Collections.emptyMap(), v2entityClass).getBody().getContent();
+
+            if (jsonNode.has("aliases") && jsonNode.get("aliases") != null) {
+                VirtualHost virtualhostV1 = convertFromJsonStringToV1(bodyWithId);
+
+                if (virtualhostV1 != null) {
+                    Environment environment = virtualhostV1.getEnvironment();
+                    if (environment == null) {
+                        throw new BadRequestException("Environment is mandatory");
+                    }
+                    Project project = virtualhostV1.getProject();
+                    if (project == null) {
+                        throw new BadRequestException("Project is mandatory");
+                    }
+                    io.galeb.core.entity.Environment environmentV2 = extractEnvironmentById(extractIdFromName(environment));
+
+                    io.galeb.core.entity.Project projectV2 = new io.galeb.core.entity.Project();
+                    projectV2.setId(extractIdFromName(project));
+
+                    Set<String> aliasesToAdd = virtualhostV1.getAliases().stream().filter(a -> !virtualhostV1Current.getAliases().contains(a)).collect(Collectors.toSet());
+                    VirtualhostGroup virtualhostGroup = extractVirtualhostGroup(apiUrl + "/virtualhostgroup/" + id);
+                    buildVirtualhostsV2Alias(aliasesToAdd, virtualhostGroup, projectV2, Collections.singleton(environmentV2))
+                            .forEach(v2Alias -> sendMethodRequest(HttpMethod.POST, rebuildVirtualhostV2Json(v2Alias)));
+
+                    virtualhostV1Current.getAliases().stream().filter(a -> !virtualhostV1.getAliases().contains(a)).forEach(alias -> {
+                        try {
+                            String urlVhSearch = apiUrl + "/virtualhost/search/findByName?name=" + alias;
+                            Response responseSearch = httpClientService.getResponse(urlVhSearch);
+                            ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(responseSearch, io.galeb.core.entity.VirtualHost.class);
+                            long idVirtualhost = v2JsonHalData.getV2entities().stream().findAny().get().getContent().getId();
+                            httpClientService.delete(apiUrl + "/virtualhost/" + idVirtualhost);
+                        } catch (ExecutionException | InterruptedException e) {
+                            LOGGER.error(e.getMessage(), e);
+                        }
+                    });
+                }
+
+            }
+
+            // TODO: Need hide DELETE (included aliases)
+            return getWithId(String.valueOf(id), Collections.emptyMap(), v2entityClass);
+
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    private List<String> extractVirtualhostNames(String bodyWithId, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws InterruptedException, ExecutionException {
+        JsonNode jsonNode = convertFromJsonStrToJsonNode(bodyWithId);
+        String virtualhostgroupUrl = apiUrl + "/" + getResourceName() + "/" + jsonNode.get("id");
+        ConverterV2.V2JsonHalData v2Vhg = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostgroupUrl + "/" + jsonNode.get("id")), v2entityClass);
+        ConverterV2.V2JsonHalData v2Virtualhosts = converterV2.toV2JsonHal(httpClientService.getResponse(v2Vhg.getLinks().get("virtualhosts")), io.galeb.core.entity.VirtualHost.class);
+        return extractVirtualhosts(v2Virtualhosts).stream()
+                .map(v -> ((io.galeb.core.entity.VirtualHost)v).getName()).collect(Collectors.toList());
+    }
+
     private Long extractIdFromName(AbstractEntity<?> entityV1) {
         return Long.parseLong(entityV1.getName().replaceAll(".*/", ""));
     }
 
-    // TODO: PUT not work if name is changed
-    private Response sendMethodRequest(HttpMethod method, JsonNode jsonNode) throws InterruptedException, ExecutionException {
-        String virtualhostResourcePath = VirtualHost.class.getSimpleName().toLowerCase();
-        if (method == HttpMethod.PUT) {
-            String urlBase = apiUrl + "/" + virtualhostResourcePath;
-            Response responseV2 = httpClientService.getResponse(urlBase + "/search/findByName?name=" + jsonNode.get("name"));
-            ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(responseV2, io.galeb.core.entity.VirtualHost.class);
-            List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities = v2JsonHalData.getV2entities();
-            if (v2entities != null && !v2entities.isEmpty()) {
-                long vh2Id = v2entities.stream().findAny().get().getContent().getId();
-                return httpClientService.put(urlBase + "/" + vh2Id, jsonNode.toString());
+    private Response sendMethodRequest(HttpMethod method, JsonNode jsonNode) {
+        try {
+            String virtualhostResourcePath = VirtualHost.class.getSimpleName().toLowerCase();
+            if (method == HttpMethod.PUT) {
+                LOGGER.warn(jsonNode.toString());
+                String urlBase = apiUrl + "/" + virtualhostResourcePath;
+                Response responseV2 = httpClientService.getResponse(urlBase + "/" + jsonNode.get("id"));
+                ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(responseV2, io.galeb.core.entity.VirtualHost.class);
+                List<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2entities = v2JsonHalData.getV2entities();
+                if (v2entities != null && !v2entities.isEmpty()) {
+                    long vh2Id = v2entities.stream().findAny().get().getContent().getId();
+                    return httpClientService.put(urlBase + "/" + vh2Id, jsonNode.toString());
+                }
             }
+            return httpClientService.post(apiUrl + "/" + virtualhostResourcePath, jsonNode.toString());
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error(e);
         }
-        return httpClientService.post(apiUrl + "/" + virtualhostResourcePath, jsonNode.toString());
+        return null;
     }
 
     private ResponseEntity<?> getInternal(String id, Map<String, String> queryMap, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass, String url) throws InterruptedException, ExecutionException {
@@ -273,8 +341,8 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             Set<Resource<? extends AbstractEntity>> v1Entities = v2JsonHalData.getV2entities().stream()
                     .map(v2 -> {
                         try {
-                            return convertVirtualhostToV1(v2entityClass, v2, envname);
-                        } catch (IllegalArgumentException | BadRequestException e) {
+                            if (notDeleted(v2)) return convertVirtualhostToV1(v2entityClass, v2, envname);
+                        } catch (InterruptedException | ExecutionException | IllegalArgumentException | BadRequestException e) {
                             LOGGER.error(e);
                         }
                         return null;
@@ -286,12 +354,19 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
             return ResponseEntity.ok(pagedResources);
         } else {
             Optional<Resource<? extends io.galeb.core.entity.AbstractEntity>> v2Resource = v2JsonHalData.getV2entities().stream().findAny();
-            if (v2Resource.isPresent()) {
+            if (v2Resource.isPresent() && notDeleted(v2Resource.get())) {
                 Resource<VirtualHost> v1 = convertVirtualhostToV1(v2entityClass, v2Resource.get(), envname);
                 return processResource(Long.parseLong(id), HttpMethod.GET, v1);
             }
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    private boolean notDeleted(Resource<? extends io.galeb.core.entity.AbstractEntity> v2) throws InterruptedException, ExecutionException {
+        Response responseV2 = httpClientService.getResponse(apiUrl + "/virtualhost/" + v2.getContent().getId());
+        ConverterV2.V2JsonHalData v2JsonDataWithStatus = converterV2.toV2JsonHal(responseV2, io.galeb.core.entity.VirtualHost.class);
+        io.galeb.core.entity.AbstractEntity v2WithStatus = v2JsonDataWithStatus.getV2entities().stream().findAny().get().getContent();
+        return !((WithStatus) v2WithStatus).getStatus().containsValue(WithStatus.Status.DELETED);
     }
 
     @Override
@@ -320,13 +395,13 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
 
     @Override
     public ResponseEntity<Resource<? extends AbstractEntity>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        return doMethod(body, HttpMethod.POST, v2entityClass);
+        return postInternal(body, v2entityClass);
     }
 
     @Override
     public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         String bodyWithId = ((ObjectNode)convertFromJsonStrToJsonNode(body)).put("id", Long.parseLong(id)).toString();
-        return doMethod(bodyWithId, HttpMethod.PUT, v2entityClass);
+        return putInternal(bodyWithId, v2entityClass);
     }
 
     @Override

@@ -16,14 +16,17 @@
 
 package io.galeb.oldapi.entities.v1;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
 public class RuleOrder implements Serializable {
 
+    @JsonProperty("ruleId")
     private Long ruleId;
 
+    @JsonProperty("ruleOrder")
     private Integer ruleOrder;
 
     public RuleOrder() {

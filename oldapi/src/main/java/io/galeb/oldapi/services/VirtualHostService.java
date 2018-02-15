@@ -42,7 +42,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Service
 public class VirtualHostService extends AbstractConverterService<VirtualHost> {
@@ -136,7 +135,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                         .collect(Collectors.toList());
     }
 
-    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhostsByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
+    private LinkedList<io.galeb.core.entity.VirtualHost> extractVirtualhostsByEnvironment(String envname, Long vhgid) throws InterruptedException, ExecutionException {
         String virtualhostsUrl = apiUrl + "/virtualhost/search/findByVirtualhostgroup_IdAndEnvironments_Name?vhgid=" + vhgid + "&envname=" + envname;
         ConverterV2.V2JsonHalData virtualhostsJsonHalData = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostsUrl), io.galeb.core.entity.VirtualHost.class);
         return extractVirtualhosts(virtualhostsJsonHalData);
@@ -148,10 +147,11 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
         return extractRuleOrders(rulesOrderedJsonHalData);
     }
 
-    private LinkedList<? extends io.galeb.core.entity.AbstractEntity> extractVirtualhosts(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
+    private LinkedList<io.galeb.core.entity.VirtualHost> extractVirtualhosts(ConverterV2.V2JsonHalData virtualhostsJsonHalData) {
         return virtualhostsJsonHalData.getV2entities().stream()
                 .map(Resource::getContent)
                 .sorted(Comparator.comparingLong(io.galeb.core.entity.AbstractEntity::getId))
+                .map(v -> (io.galeb.core.entity.VirtualHost)v)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
@@ -222,7 +222,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 virtualhostV2.setEnvironments(Collections.singleton(environmentV2));
 
                 JsonNode jsonNode = rebuildVirtualhostV2Json(virtualhostV2);
-                Response response = sendMethodRequest(HttpMethod.POST, jsonNode);
+                Response response = httpClientService.post(apiUrl + "/virtualhost", jsonNode.toString());
                 if (response == null) {
                     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
                 }
@@ -231,7 +231,13 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                 VirtualhostGroup virtualhostGroup = extractVirtualhostGroup(virtualhostgroupUrl);
 
                 buildVirtualhostsV2Alias(virtualHost.getAliases(), virtualhostGroup, projectV2, Collections.singleton(environmentV2))
-                        .forEach(v2Alias -> sendMethodRequest(HttpMethod.POST, rebuildVirtualhostV2Json(v2Alias)));
+                        .forEach(v2Alias -> {
+                            try {
+                                httpClientService.post(apiUrl + "/virtualhost", v2Alias.toString());
+                            } catch (ExecutionException | InterruptedException e) {
+                                LOGGER.error(e);
+                            }
+                        });
 
                 Map<String, String> queryMap = new HashMap<>();
                 queryMap.put("environment", environmentV2.getName());
@@ -272,7 +278,13 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
                     Set<String> aliasesToAdd = virtualhostV1.getAliases().stream().filter(a -> !virtualhostV1Current.getAliases().contains(a)).collect(Collectors.toSet());
                     VirtualhostGroup virtualhostGroup = extractVirtualhostGroup(apiUrl + "/virtualhostgroup/" + id);
                     buildVirtualhostsV2Alias(aliasesToAdd, virtualhostGroup, projectV2, Collections.singleton(environmentV2))
-                            .forEach(v2Alias -> sendMethodRequest(HttpMethod.POST, rebuildVirtualhostV2Json(v2Alias)));
+                            .forEach(v2Alias -> {
+                                try {
+                                    httpClientService.post(apiUrl + "/virtualhost", v2Alias.toString());
+                                } catch (ExecutionException | InterruptedException e) {
+                                    LOGGER.error(e);
+                                }
+                            });
 
                     virtualhostV1Current.getAliases().stream().filter(a -> !virtualhostV1.getAliases().contains(a)).forEach(alias -> {
                         try {
@@ -302,10 +314,10 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     private List<String> extractVirtualhostNames(String bodyWithId, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws InterruptedException, ExecutionException {
         JsonNode jsonNode = convertFromJsonStrToJsonNode(bodyWithId);
         String virtualhostgroupUrl = apiUrl + "/" + getResourceName() + "/" + jsonNode.get("id");
-        ConverterV2.V2JsonHalData v2Vhg = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostgroupUrl + "/" + jsonNode.get("id")), v2entityClass);
+        ConverterV2.V2JsonHalData v2Vhg = converterV2.toV2JsonHal(httpClientService.getResponse(virtualhostgroupUrl), v2entityClass);
         ConverterV2.V2JsonHalData v2Virtualhosts = converterV2.toV2JsonHal(httpClientService.getResponse(v2Vhg.getLinks().get("virtualhosts")), io.galeb.core.entity.VirtualHost.class);
         return extractVirtualhosts(v2Virtualhosts).stream()
-                .map(v -> ((io.galeb.core.entity.VirtualHost)v).getName()).collect(Collectors.toList());
+                .map(io.galeb.core.entity.VirtualHost::getName).collect(Collectors.toList());
     }
 
     private Long extractIdFromName(AbstractEntity<?> entityV1) {

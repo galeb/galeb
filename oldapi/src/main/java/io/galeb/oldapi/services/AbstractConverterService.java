@@ -106,7 +106,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
                     .map(v2 -> {
                         Set<Link> v2links = extractLinks(v2.getLinks(), getResourceName());
                         v2LinksToV1Links(v2links, v2.getContent().getId());
-                        return new Resource<>(converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass), v2links);
+                        return new Resource<>(convertV2toV1(v2.getContent(), v2entityClass), v2links);
                     })
                     .collect(Collectors.toSet());
 
@@ -180,7 +180,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {
         ConverterV2.V2JsonHalData v2JsonHalData = converterV2.toV2JsonHal(response, v2entityClass);
         Set<Link> v2links = converterV2.extractLinks(v2JsonHalData, getResourceName());
-        Optional<AbstractEntity> v1Entities = v2JsonHalData.getV2entities().stream().map(v2 -> converterV1.v2ToV1(v2.getContent(), v2entityClass, entityClass)).findAny();
+        Optional<AbstractEntity> v1Entities = v2JsonHalData.getV2entities().stream().map(v2 -> convertV2toV1(v2.getContent(), v2entityClass)).findAny();
         AbstractEntity entityConverted;
         long idEntity = id > -1 ? id : extractIdFromSelfLink(v2links);
         if (v1Entities.isPresent()) {
@@ -201,6 +201,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
                 String location = "/" + getResourceName() + "/" + id;
                 return ResponseEntity.created(URI.create(location)).body(resource);
             case PUT:
+            case PATCH:
                 return ResponseEntity.noContent().build();
             case GET:
                 return ResponseEntity.ok(resource);
@@ -278,6 +279,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         addLink(v2links, "/" + v1resourceName + "/" + id, "self");
         for (String rel : addRel()) addLink(v2links, "/" + v1resourceName + "/" + id + "/" + rel, rel);
         for (String rel: delRel()) removeLink(v2links, rel);
+    }
+
+    public AbstractEntity convertV2toV1(io.galeb.core.entity.AbstractEntity v2Entity, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        return converterV1.v2ToV1(v2Entity, v2entityClass, entityClass);
     }
 
 }

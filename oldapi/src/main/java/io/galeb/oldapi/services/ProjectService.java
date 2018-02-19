@@ -33,6 +33,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -106,6 +107,54 @@ public class ProjectService extends AbstractConverterService<Project> {
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @Override
+    public ResponseEntity<Resource<? extends AbstractEntity>> putWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
+        AbstractEntity entity = responseV1BE.getBody().getContent();
+        if (entity != null) {
+            try {
+                JsonNode v1BE = convertFromJsonObjToJsonNode(entity);
+                if (v1BE != null) {
+                    JsonNode v1FE = convertFromJsonStrToJsonNode(body);
+                    v1FE.fields().forEachRemaining(e -> {
+                        ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
+                    });
+                    String projectResourcePath = Project.class.getSimpleName().toLowerCase();
+                    Response response = httpClientService.put(apiUrl + "/" + projectResourcePath + "/" + id, v1BE.toString());
+                    processResponse(response, -1, HttpMethod.PUT, v2entityClass);
+                }
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.badRequest().build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
+        AbstractEntity entity = responseV1BE.getBody().getContent();
+        if (entity != null) {
+            try {
+                JsonNode v1BE = convertFromJsonObjToJsonNode(entity);
+                if (v1BE != null) {
+                    JsonNode v1FE = convertFromJsonStrToJsonNode(body);
+                    v1FE.fields().forEachRemaining(e -> {
+                        ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
+                    });
+                    String projectResourcePath = Project.class.getSimpleName().toLowerCase();
+                    Response response = httpClientService.patch(apiUrl + "/" + projectResourcePath + "/" + id, v1BE.toString());
+                    processResponse(response, -1, HttpMethod.PATCH, v2entityClass);
+                }
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.badRequest().build();
             }
         }
         return ResponseEntity.badRequest().build();

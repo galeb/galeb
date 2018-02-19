@@ -82,6 +82,14 @@ public class ProjectService extends AbstractConverterService<Project> {
     }
 
     @Override
+    public AbstractEntity convertV2toV1(io.galeb.core.entity.AbstractEntity v2Entity, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+        Project projectV1 = (Project) super.convertV2toV1(v2Entity, v2entityClass);
+        Set<String> teams = ((io.galeb.core.entity.Project) v2Entity).getTeams().stream().map(t -> "http://localhost/team/" + String.valueOf(t.getId())).collect(Collectors.toSet());
+        projectV1.setTeams(teams);
+        return projectV1;
+    }
+
+    @Override
     public ResponseEntity<Resource<? extends AbstractEntity>> post(String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         Project projectV1 = convertFromJsonStringToV1(body);
 

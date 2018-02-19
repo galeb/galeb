@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.reflect.TypeToken;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
 import io.galeb.oldapi.services.components.ConverterV1;
@@ -41,6 +42,7 @@ import org.springframework.http.ResponseEntity;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -162,14 +164,17 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
 
     @Override
     public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
-        T entity = convertFromJsonStringToV1(body);
+        ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
+        AbstractEntity entity = responseV1BE.getBody().getContent();
         if (entity != null) {
-            try {
-                Response response = httpClientService.put(resourceUrlBase + "/" + id, convertFromJsonStringV1ToJsonStringV2(body));
-                processResponse(response, Long.parseLong(id), HttpMethod.PATCH, v2entityClass);
-            } catch (ExecutionException | InterruptedException | IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            JsonNode v1BE = convertFromJsonObjToJsonNode(entity);
+            if (v1BE != null) {
+                JsonNode v1FE = convertFromJsonStrToJsonNode(body);
+                v1FE.fields().forEachRemaining(e -> {
+                    ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
+                });
+                putWithId(id, v1BE.toString(), v2entityClass);
+                return ResponseEntity.noContent().build();
             }
         }
         return ResponseEntity.badRequest().build();

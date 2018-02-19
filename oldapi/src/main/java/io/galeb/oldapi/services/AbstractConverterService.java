@@ -180,6 +180,20 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
         return ResponseEntity.badRequest().build();
     }
 
+    @Override
+    public ResponseEntity<Void> deleteWithId(String id) {
+        if (id != null) {
+            try {
+                httpClientService.delete(resourceUrlBase + "/" + id);
+                return ResponseEntity.noContent().build();
+            } catch (ExecutionException | InterruptedException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+            }
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     // common
 
     ResponseEntity<Resource<? extends AbstractEntity>> processResponse(Response response, long id, HttpMethod method, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) throws IOException {

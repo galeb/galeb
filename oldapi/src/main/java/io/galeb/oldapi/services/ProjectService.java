@@ -57,12 +57,12 @@ public class ProjectService extends AbstractConverterService<Project> {
 
     private JsonNode rebuildProjectV2Json(io.galeb.core.entity.Project project) {
         ArrayNode arrayOfTeams = new ArrayNode(JsonNodeFactory.instance);
-        JsonNode jsonNodeTeams = convertFromJsonObjToJsonNode(project);
+        JsonNode jsonNodeProject = convertFromJsonObjToJsonNode(project);
         for (io.galeb.core.entity.Team team: project.getTeams()) {
             arrayOfTeams.add("http://localhost/team/" + team.getId());
         }
-        ((ObjectNode) jsonNodeTeams).replace("teams", arrayOfTeams);
-        return jsonNodeTeams;
+        ((ObjectNode) jsonNodeProject).replace("teams", arrayOfTeams);
+        return jsonNodeProject;
     }
 
     @Override

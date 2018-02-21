@@ -190,7 +190,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     public ResponseEntity<Void> deleteWithId(String id) {
         if (id != null) {
             try {
-                httpClientService.delete(resourceUrlBase + "/" + id);
+                Response response = httpClientService.delete(resourceUrlBase + "/" + id);
+                if (response.getStatusCode() != 204) {
+                    throw new BadRequestException(response.getResponseBody());
+                }
                 return ResponseEntity.noContent().build();
             } catch (ExecutionException | InterruptedException e) {
                 LOGGER.error(e.getMessage(), e);

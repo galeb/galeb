@@ -52,7 +52,7 @@ public abstract class AbstractController<T extends AbstractEntity> {
 
     protected abstract ResponseEntity<String> patch(String body);
 
-    protected abstract ResponseEntity<Void> patchWithId(String id, String body);
+    protected abstract ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body);
 
     protected abstract ResponseEntity<String> options();
 

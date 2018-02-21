@@ -46,7 +46,7 @@ spring:
     jpa:
         database-platform: ${GALEB_DB_DIALECT:org.hibernate.dialect.H2Dialect}
         hibernate:
-            ddl-auto: ${DDL_MODE:create-drop}
+            ddl-auto: ${DDL_MODE:none}
         properties:
             hibernate:
                 format_sql: ${FORMAT_SQL:false}
@@ -56,5 +56,11 @@ spring:
     main:
         banner-mode: 'off'
 
+    redis:
+        url: ${REDIS_URL:redis://127.0.0.1:6379}
+
     profiles:
         active: development
+
+    flyway:
+        enabled: ${FLYWAY_ENABLED:true}

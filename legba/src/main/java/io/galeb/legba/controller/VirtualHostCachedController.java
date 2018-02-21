@@ -49,13 +49,13 @@ public class VirtualHostCachedController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envid, actualVersion);
+        String cache = versionService.getCache(envid, zoneId, actualVersion);
         if (cache == null) {
             Converter converter = ConverterBuilder.getConversor(apiVersion);
             String numRouters = String.valueOf(routersService.get(envid, routerGroupId));
             List<VirtualHost> list = copyService.getVirtualHosts(envid);
             cache = converter.convertToString(list, numRouters, actualVersion, zoneId, envid);
-            versionService.setCache(cache, envid, actualVersion);
+            versionService.setCache(cache, envid, zoneId, actualVersion);
         }
         if ("".equals(cache)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

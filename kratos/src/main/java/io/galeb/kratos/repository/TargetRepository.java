@@ -11,7 +11,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(exported = false)
 public interface TargetRepository extends JpaRepository<Target, Long> {
 
-    @Query("SELECT t FROM Target t INNER JOIN t.pools p WHERE p.environment.name = :env")
+    @Query("SELECT t FROM Target t INNER JOIN t.pool p WHERE p.environment.name = :env")
     Page<Target> findByEnvironmentName(@Param("env") String env, Pageable pageable);
 
 }

@@ -2,6 +2,8 @@ package io.galeb.kratos.queue;
 
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;
+import io.galeb.core.services.ChangesService;
+import io.galeb.core.services.VersionService;
 import io.galeb.kratos.repository.HealthStatusRepository;
 import io.galeb.kratos.repository.TargetRepository;
 import org.apache.commons.logging.Log;
@@ -9,6 +11,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CallbackConsumer {
@@ -20,6 +24,11 @@ public class CallbackConsumer {
     private final HealthStatusRepository healthStatusRepository;
     private final TargetRepository targetRepository;
 
+    @Autowired
+    private ChangesService changesService;
+
+    @Autowired
+    private VersionService versionService;
 
     @Autowired
     public CallbackConsumer(HealthStatusRepository healthStatusRepository, TargetRepository targetRepository) {
@@ -35,11 +44,18 @@ public class CallbackConsumer {
                 if (tempHealthStatus == null) {
                     tempHealthStatus = healthStatus;
                     Target target = targetRepository.findOne(healthStatus.getTarget().getId());
+                    System.out.println("ID TARGET FIND: "+ healthStatus.getTarget().getId());
+                    System.out.println("TARGET FIND: "+ target);
                     tempHealthStatus.setTarget(target);
                 }
+
                 tempHealthStatus.setStatus(healthStatus.getStatus());
                 tempHealthStatus.setStatusDetailed(healthStatus.getStatusDetailed());
                 healthStatusRepository.save(tempHealthStatus);
+
+                Target target = tempHealthStatus.getTarget();
+                tempHealthStatus.getTarget().getAllEnvironments().forEach(e ->
+                        changesService.register(e, target, String.valueOf(versionService.incrementVersion(e.getId()))));
                 LOGGER.warn("HealthStatus [source: " + tempHealthStatus.getSource() +  "] (from target " + tempHealthStatus.getTarget().getName() + ") updated.");
             }
         } catch (Exception e) {

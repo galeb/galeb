@@ -134,7 +134,7 @@ public class RoutersServiceTest {
         target = new Target();
         target.setLastModifiedAt(new Date());
         target.setName("target-name");
-        target.setPools(pool);
+        target.setPool(pool);
         entityManager.persist(target);
 
         changesService.register(env, target, versionOldest);

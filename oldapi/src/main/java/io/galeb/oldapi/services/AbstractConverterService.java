@@ -164,7 +164,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     @Override
-    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
         AbstractEntity entity = responseV1BE.getBody().getContent();
         if (entity != null) {
@@ -176,7 +176,7 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
                         ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
                     });
                     Response response = httpClientService.patch(resourceUrlBase + "/" + id, v1BE.toString());
-                    processResponse(response, Long.parseLong(id), HttpMethod.PATCH, v2entityClass);
+                    return processResponse(response, Long.parseLong(id), HttpMethod.PATCH, v2entityClass);
                 }
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);

@@ -417,7 +417,7 @@ public class VirtualHostService extends AbstractConverterService<VirtualHost> {
     }
 
     @Override
-    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
         VirtualHost virtualHost = (VirtualHost) responseV1BE.getBody().getContent();
         if (virtualHost != null) {

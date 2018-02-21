@@ -126,7 +126,7 @@ public class ProjectService extends AbstractConverterService<Project> {
                     });
                     String projectResourcePath = Project.class.getSimpleName().toLowerCase();
                     Response response = httpClientService.put(apiUrl + "/" + projectResourcePath + "/" + id, v1BE.toString());
-                    processResponse(response, -1, HttpMethod.PUT, v2entityClass);
+                    return processResponse(response, -1, HttpMethod.PUT, v2entityClass);
                 }
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -137,7 +137,7 @@ public class ProjectService extends AbstractConverterService<Project> {
     }
 
     @Override
-    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
         AbstractEntity entity = responseV1BE.getBody().getContent();
         if (entity != null) {

@@ -58,7 +58,7 @@ public interface HttpMethods<T> {
         return ResponseEntity.noContent().build();
     }
 
-    default ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    default ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         return ResponseEntity.noContent().build();
     }
 

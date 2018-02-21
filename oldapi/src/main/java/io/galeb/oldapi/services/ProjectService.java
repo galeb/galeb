@@ -150,7 +150,7 @@ public class ProjectService extends AbstractConverterService<Project> {
                     });
                     String projectResourcePath = Project.class.getSimpleName().toLowerCase();
                     Response response = httpClientService.patch(apiUrl + "/" + projectResourcePath + "/" + id, v1BE.toString());
-                    processResponse(response, -1, HttpMethod.PATCH, v2entityClass);
+                    return processResponse(response, -1, HttpMethod.PATCH, v2entityClass);
                 }
             } catch (ExecutionException | InterruptedException | IOException e) {
                 LOGGER.error(e.getMessage(), e);

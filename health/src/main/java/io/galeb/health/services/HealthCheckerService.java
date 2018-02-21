@@ -70,7 +70,7 @@ public class HealthCheckerService {
     }
 
     public void check(Target target) {
-        Pool pool = target.getPools().stream().findAny().orElse(null);
+        Pool pool = target.getPool();
         if (pool != null) {
             final String poolName = pool.getName();
             final String hcPath = Optional.ofNullable(pool.getHcPath()).orElse("/");

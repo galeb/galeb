@@ -51,5 +51,11 @@ spring:
     main:
         banner-mode: 'off'
 
+    redis:
+        url: ${REDIS_URL:redis://127.0.0.1:6379}
+
     profiles:
         active: production
+
+    flyway:
+        enabled: ${FLYWAY_ENABLED:false}

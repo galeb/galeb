@@ -30,15 +30,17 @@ public class VersionService {
     /**
      * Description arguments:
      * {0} - Environment Id
+     * {1} - Zone Id
      */
-    private static final String FORMAT_KEY_VERSION = "version:{0}";
+    private static final String FORMAT_KEY_VERSION = "version:{0}:{1}";
 
     /**
      * Description arguments:
      * {0} - Environment Id
+     * {1} - Zone Id
      * {1} - Version number
      */
-    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}";
+    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}";
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -51,12 +53,12 @@ public class VersionService {
         return version;
     }
 
-    public String getCache(String envid, String version) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envid, version));
+    public String getCache(String envid, String zoneId, String version) {
+        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envid, zoneId, version));
     }
 
-    public void setCache(String cache, String envid, String version) {
-        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envid, version), cache, 5, TimeUnit.MINUTES);
+    public void setCache(String cache, String envid, String zoneId, String version) {
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envid, zoneId, version), cache, 5, TimeUnit.MINUTES);
     }
 
     public Long incrementVersion(Object envId) {

@@ -1,5 +1,6 @@
 package io.galeb.legba.services;
 
+import io.galeb.core.entity.*;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
@@ -8,8 +9,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +45,9 @@ public class RoutersService {
 
     @Autowired
     private VersionService versionService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public Set<JsonSchema.Env> get() {
         return get(null);
@@ -94,6 +104,7 @@ public class RoutersService {
         return numRouters;
     }
 
+    @Transactional
     public void put(String routerGroupId, String routerLocalIP, String version, String envid) {
         try {
             String key = MessageFormat.format(FORMAT_KEY_VERSION, envid, routerGroupId, routerLocalIP);
@@ -125,6 +136,15 @@ public class RoutersService {
             }
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
-        changesService.removeAllWithOldestVersion(envid, versionRouter);
+
+        changesService.listEntitiesWithOldestVersion(envid, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
+            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(StringUtils.capitalize(entry.getKey()))).forEach(entry -> {
+                String entityClass = StringUtils.capitalize(entry.getKey());
+                String entityId = entry.getValue();
+                Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId");
+                query.setParameter("entityId", Long.parseLong(entityId)).executeUpdate();
+            });
+            changesService.delete(mapOfEntities.getKey());
+        });
     }
 }

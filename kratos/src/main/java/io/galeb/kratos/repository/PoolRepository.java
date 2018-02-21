@@ -11,6 +11,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface PoolRepository extends JpaRepository<Pool, Long> {
 
     @Query("SELECT p FROM Pool p INNER JOIN p.targets t WHERE t.id = :targetId")
-    Set<Pool> findAllByTargetId(@Param("targetId") long targetId);
+    Pool findByTargetId(@Param("targetId") long targetId);
 
 }

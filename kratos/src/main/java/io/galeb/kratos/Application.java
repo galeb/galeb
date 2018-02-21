@@ -28,7 +28,7 @@ import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"io.galeb.core.entity"})
-@ComponentScan(basePackages = {"io.galeb.core.configuration", "io.galeb.kratos"}, excludeFilters = {@Filter(type = ASSIGNABLE_TYPE, value = {RedisConfiguration.class})})
+@ComponentScan(basePackages = {"io.galeb.core.configuration", "io.galeb.core.services", "io.galeb.kratos"})
 @EnableJpaRepositories(basePackages = "io.galeb.kratos.repository")
 public class Application {
 

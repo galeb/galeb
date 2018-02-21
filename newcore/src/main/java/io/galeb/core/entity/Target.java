@@ -44,7 +44,7 @@ public class Target extends AbstractEntity implements WithStatus {
         return pool;
     }
 
-    public void setPools(Pool pool) {
+    public void setPool(Pool pool) {
         this.pool = pool;
     }
 

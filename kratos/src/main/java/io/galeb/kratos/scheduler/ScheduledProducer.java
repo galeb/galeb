@@ -80,10 +80,10 @@ public class ScheduledProducer {
     }
 
     private Target getTargetInformation(Target t) {
-        Set<Pool> pools = poolRepository.findAllByTargetId(t.getId());
+        Pool pool = poolRepository.findByTargetId(t.getId());
         Target newTarget = new Target();
         newTarget.setName(t.getName());
-        newTarget.setPools(pools);
+        newTarget.setPool(pool);
         newTarget.setHealthStatus(t.getHealthStatus());
         newTarget.setId(t.getId());
         newTarget.setLastModifiedAt(t.getLastModifiedAt());

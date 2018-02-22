@@ -1,6 +1,0 @@
-#!/bin/bash
-chmod 777 -R /opt/galeb/kratos/logs || true
-mkdir -p /opt/logs/galeb || true
-ln -sf /opt/galeb/kratos/logs /opt/logs/galeb/kratos
-ln -sf /opt/galeb/kratos/lib/wrapper/bin/initscript /etc/init.d/galeb-kratos
-/usr/bin/systemctl enable galeb-kratos || true

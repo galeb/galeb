@@ -1,6 +1,0 @@
-#!/bin/bash
-chmod 777 -R /opt/galeb/api/logs || true
-mkdir -p /opt/logs/galeb || true
-ln -sf /opt/galeb/api/logs /opt/logs/galeb/api
-ln -sf /opt/galeb/api/lib/wrapper/bin/initscript /etc/init.d/galeb-api
-/usr/bin/systemctl enable galeb-api || true

@@ -1,6 +1,0 @@
-#!/bin/bash
-chmod 777 -R /opt/galeb/legba/logs || true
-mkdir -p /opt/logs/galeb || true
-ln -sf /opt/galeb/legba/logs /opt/logs/galeb/legba
-ln -sf /opt/galeb/legba/lib/wrapper/bin/initscript /etc/init.d/galeb-legba
-/usr/bin/systemctl enable galeb-legba || true

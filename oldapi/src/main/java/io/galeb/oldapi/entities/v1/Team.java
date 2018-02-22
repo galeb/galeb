@@ -23,15 +23,15 @@ public class Team extends AbstractEntity<Team> {
 
     private static final long serialVersionUID = -4278444359290384175L;
 
-    private final Set<Account> accounts = new HashSet<>();
+    private final Set<String> accounts = new HashSet<>();
 
     private final Set<Project> projects = new HashSet<>();
 
-    public Set<Account> getAccounts() {
+    public Set<String> getAccounts() {
         return accounts;
     }
 
-    public Team setAccounts(Set<Account> accounts) {
+    public Team setAccounts(Set<String> accounts) {
         if (accounts != null) {
             this.accounts.clear();
             this.accounts.addAll(accounts);

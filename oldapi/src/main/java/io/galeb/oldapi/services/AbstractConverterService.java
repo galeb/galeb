@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.reflect.TypeToken;
 import io.galeb.oldapi.entities.v1.AbstractEntity;
+import io.galeb.oldapi.exceptions.BadRequestException;
 import io.galeb.oldapi.services.components.ConverterV1;
 import io.galeb.oldapi.services.components.ConverterV2;
 import io.galeb.oldapi.services.http.HttpClientService;
@@ -163,18 +164,23 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     }
 
     @Override
-    public ResponseEntity<Void> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(String id, String body, Class<? extends io.galeb.core.entity.AbstractEntity> v2entityClass) {
         ResponseEntity<Resource<? extends AbstractEntity>> responseV1BE = getWithId(id, Collections.emptyMap(), v2entityClass);
         AbstractEntity entity = responseV1BE.getBody().getContent();
         if (entity != null) {
-            JsonNode v1BE = convertFromJsonObjToJsonNode(entity);
-            if (v1BE != null) {
-                JsonNode v1FE = convertFromJsonStrToJsonNode(body);
-                v1FE.fields().forEachRemaining(e -> {
-                    ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
-                });
-                putWithId(id, v1BE.toString(), v2entityClass);
-                return ResponseEntity.noContent().build();
+            try {
+                JsonNode v1BE = convertFromJsonObjToJsonNode(entity);
+                if (v1BE != null) {
+                    JsonNode v1FE = convertFromJsonStrToJsonNode(body);
+                    v1FE.fields().forEachRemaining(e -> {
+                        ((ObjectNode) v1BE).replace(e.getKey(), e.getValue());
+                    });
+                    Response response = httpClientService.patch(resourceUrlBase + "/" + id, v1BE.toString());
+                    return processResponse(response, Long.parseLong(id), HttpMethod.PATCH, v2entityClass);
+                }
+            } catch (ExecutionException | InterruptedException | IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return ResponseEntity.badRequest().build();
             }
         }
         return ResponseEntity.badRequest().build();
@@ -184,7 +190,10 @@ public abstract class AbstractConverterService<T extends AbstractEntity> impleme
     public ResponseEntity<Void> deleteWithId(String id) {
         if (id != null) {
             try {
-                httpClientService.delete(resourceUrlBase + "/" + id);
+                Response response = httpClientService.delete(resourceUrlBase + "/" + id);
+                if (response.getStatusCode() != 204) {
+                    throw new BadRequestException(response.getResponseBody());
+                }
                 return ResponseEntity.noContent().build();
             } catch (ExecutionException | InterruptedException e) {
                 LOGGER.error(e.getMessage(), e);

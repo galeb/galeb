@@ -95,7 +95,7 @@ public class RuleTypeController extends AbstractController<RuleType> {
     }
 
     @RequestMapping(value = "/{id:\\d+}", method = PATCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> patchWithId(@PathVariable String id, @RequestBody String body) {
+    public ResponseEntity<Resource<? extends AbstractEntity>> patchWithId(@PathVariable String id, @RequestBody String body) {
         return service.patchWithId(id, body, null);
     }
 

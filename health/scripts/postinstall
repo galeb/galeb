@@ -1,6 +1,0 @@
-#!/bin/bash
-chmod 777 -R /opt/galeb/health/logs || true
-mkdir -p /opt/logs/galeb || true
-ln -sf /opt/galeb/health/logs /opt/logs/galeb/health
-ln -sf /opt/galeb/health/lib/wrapper/bin/initscript /etc/init.d/galeb-health
-/usr/bin/systemctl enable galeb-health || true

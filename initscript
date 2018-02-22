@@ -23,25 +23,22 @@
 #             script's ability to control the application.
 
 # SO adjust
-[ -x "/opt/galeb/health/scripts/sysctl.sh" ] && sudo /opt/galeb/health/scripts/sysctl.sh > /dev/null 2>&1 || true
-
-# CONFD
-[ -x "/opt/galeb/health/lib/confd" ] && sudo /opt/galeb/health/lib/confd -onetime -backend env -confdir=/opt/galeb/health/conf/confd || true
+[ -x "/opt/galeb/scripts/sysctl.sh" ] && sudo /opt/galeb/scripts/sysctl.sh > /dev/null 2>&1 || true
 
 # Application
-APP_NAME="galeb-health"
-APP_LONG_NAME="galeb-health"
+APP_NAME="galeb"
+APP_LONG_NAME="galeb"
 
 # Wrapper
-WRAPPER_CMD="/opt/galeb/health/lib/wrapper/bin/wrapper"
-WRAPPER_CONF="/opt/galeb/health/conf/wrapper.conf"
+WRAPPER_CMD="/opt/galeb/lib/wrapper/bin/wrapper"
+WRAPPER_CONF="/opt/galeb/conf/wrapper.conf"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.
 PRIORITY=
 
 # Location of the pid file.
-PIDDIR="/opt/galeb/health/logs"
+PIDDIR="/opt/galeb/logs"
 
 # PIDFILE_CHECK_PID tells the script to double check whether the pid in the pid
 #  file actually exists and belongs to this application.  When not set, only

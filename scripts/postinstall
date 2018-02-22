@@ -1,0 +1,6 @@
+#!/bin/bash
+chmod 777 -R /opt/galeb/logs || true
+mkdir -p /opt/logs/galeb || true
+ln -sf /opt/galeb/logs /opt/logs/galeb
+ln -sf /opt/galeb/lib/wrapper/bin/initscript /etc/init.d/galeb
+/usr/bin/systemctl enable galeb || true

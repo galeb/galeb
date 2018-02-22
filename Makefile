@@ -18,7 +18,7 @@ clean:
 
 dist: galeb
 	type fpm > /dev/null 2>&1 && \
-    for service in router health ; do \
+    for service in router health api kratos legba oldapi ; do \
         old=$$(pwd) && \
         cd $$service/target && \
         mkdir -p lib conf logs/tmp && \
@@ -26,13 +26,12 @@ dist: galeb
         echo "#version ${VERSION}" > VERSION && \
         git show --summary >> VERSION && \
         cp -av ../../../wrapper . && \
-        cp -av ../../../confd/confd-0.11.0-linux-amd64 confd && \
-        cp -av ../../confd ../conf/confd || true  && \
         cp -v ../../wrapper.conf ../conf/ && \
         [ -f ../../log4j.xml ] && cp -v ../../log4j.xml ../conf/ || true && \
+        cp -av ../../../scripts ../ || true  && \
         cp -av ../../scripts ../ || true  && \
         cp -v ../galeb-$$service-${VERSION}-SNAPSHOT.jar galeb-$$service.jar && \
-        cp -av ../../initscript wrapper/bin/ && \
+        cp -av ../../../initscript wrapper/bin/ && \
         cd .. && \
         fpm -s dir \
             -t rpm \
@@ -41,7 +40,7 @@ dist: galeb
             --iteration ${RELEASE}.el7 \
             -a noarch \
             --rpm-os linux \
-            --prefix /opt/galeb/$$service \
+            --prefix /opt/galeb \
             -m '<galeb@corp.globo.com>' \
             --vendor 'Globo.com' \
             --description 'Galeb $$service service' \

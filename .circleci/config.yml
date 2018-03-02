@@ -23,7 +23,7 @@ jobs:
                 name: Build package
                 command: |
                   export GALEB_VERSION=$(cat /tmp/galeb_version)
-                  mvn package
+                  mvn package -DskipTests
 
             - save_cache:
                 paths:

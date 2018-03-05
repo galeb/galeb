@@ -58,4 +58,8 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Target> findByNameContaining(@Param("name") String name, Pageable pageable);
 
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Target> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
+
 }

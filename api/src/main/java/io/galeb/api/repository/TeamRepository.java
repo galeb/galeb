@@ -51,10 +51,17 @@ public interface TeamRepository extends JpaRepository<Team, Long>, TeamRepositor
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Team> findAll(Pageable pageable);
 
-    Team findByName(@Param("name") String var1);
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Team> findByName(@Param("name") String name, Pageable pageable);
 
-    Iterable<Team> findByNameContaining(@Param("name") String name);
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Team> findByNameContaining(@Param("name") String name, Pageable pageable);
 
-//    Iterable<Team> findByNameContainingWithSize(@Param("name") String name, @Param("size") int size);
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Team> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
+
 }
 

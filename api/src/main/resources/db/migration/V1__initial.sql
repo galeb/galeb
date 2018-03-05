@@ -186,7 +186,7 @@ CREATE TABLE `pool` (
   `last_modified_by` varchar(255) NOT NULL,
   `quarantine` bit(1) DEFAULT NULL,
   `version` bigint(20) DEFAULT NULL,
-  `global` bit(1) DEFAULT NULL,
+  `global` bit(1) DEFAULT 0,
   `hc_body` varchar(255) DEFAULT NULL,
   `hc_host` varchar(255) DEFAULT NULL,
   `hc_http_method` int(11) DEFAULT NULL,
@@ -414,16 +414,16 @@ CREATE TABLE `ruleordered` (
   `version` bigint(20) DEFAULT NULL,
   `rule_order` int(11) NOT NULL,
   `environment_id` bigint(20) NOT NULL,
-  `rule_rule_ordered_id` bigint(20) NOT NULL,
-  `virtualhostgroup_rule_ordered_id` bigint(20) NOT NULL,
+  `rule_ruleordered_id` bigint(20) NOT NULL,
+  `virtualhostgroup_ruleordered_id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UK_order__rule_id__virtualhostgroup_id__environment_id` (`rule_order`,`virtualhostgroup_rule_ordered_id`,`rule_rule_ordered_id`,`environment_id`),
+  UNIQUE KEY `UK_order__rule_id__virtualhostgroup_id__environment_id` (`rule_order`,`virtualhostgroup_ruleordered_id`,`rule_ruleordered_id`,`environment_id`),
   KEY `FK_ruleordered_environment` (`environment_id`),
-  KEY `FK_rule_rule_ordered` (`rule_rule_ordered_id`),
-  KEY `FK_virtualhostgroup_rule_ordered` (`virtualhostgroup_rule_ordered_id`),
-  CONSTRAINT `FK_rule_rule_ordered` FOREIGN KEY (`rule_rule_ordered_id`) REFERENCES `rule` (`id`),
+  KEY `FK_rule_ruleordered` (`rule_ruleordered_id`),
+  KEY `FK_virtualhostgroup_ruleordered` (`virtualhostgroup_ruleordered_id`),
+  CONSTRAINT `FK_rule_ruleordered` FOREIGN KEY (`rule_ruleordered_id`) REFERENCES `rule` (`id`),
   CONSTRAINT `FK_ruleordered_environment` FOREIGN KEY (`environment_id`) REFERENCES `environment` (`id`),
-  CONSTRAINT `FK_virtualhostgroup_rule_ordered` FOREIGN KEY (`virtualhostgroup_rule_ordered_id`) REFERENCES `virtualhostgroup` (`id`)
+  CONSTRAINT `FK_virtualhostgroup_ruleordered` FOREIGN KEY (`virtualhostgroup_ruleordered_id`) REFERENCES `virtualhostgroup` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

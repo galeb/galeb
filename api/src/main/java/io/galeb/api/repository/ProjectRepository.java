@@ -52,4 +52,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
 
     @ExposeFilterSwagger
     Page<Project> findByName(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    Page<Project> findByNameContaining(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    Page<Project> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
 }

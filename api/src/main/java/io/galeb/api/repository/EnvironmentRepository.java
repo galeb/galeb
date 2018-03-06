@@ -79,10 +79,18 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "WHERE r.id = :ruleId")
     Set<Environment> findAllByRuleId(@Param("ruleId") long ruleId);
 
-    Page<Environment> findByName(@Param("name") String name, Pageable pageable);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findAll(Pageable pageable);
+
+    @ExposeFilterSwagger
+    Page<Environment> findByName(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    Page<Environment> findByNameContaining(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    Page<Environment> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
 }

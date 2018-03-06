@@ -46,7 +46,7 @@ jobs:
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do
                         if [ "x$GITHUB_TOKEN" != "x" -a "x$BINTRAY_USER" != "x" -a "x$BINTRAY_TOKEN" != "x" ]; then
                           curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -H'content-type: application/x-redhat-package-manager' --data-binary @$pkg ${upload}?name=${pkg}
-                          curl -v -L -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/x84_64/
+                          curl -v -L -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/x86_64/
                         else
                           echo "ERROR: one or more envs undefined"
                         fi

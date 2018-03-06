@@ -86,11 +86,14 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     Page<Environment> findAll(Pageable pageable);
 
     @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findByName(@Param("name") String name, Pageable pageable);
 
     @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findByNameContaining(@Param("name") String name, Pageable pageable);
 
     @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
 }

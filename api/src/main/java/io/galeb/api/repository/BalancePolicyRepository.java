@@ -40,7 +40,19 @@ public interface BalancePolicyRepository extends JpaRepository<BalancePolicy, Lo
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
     Page<BalancePolicy> findByName(@Param("name") String name, Pageable pageable);
+
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<BalancePolicy> findByNameContaining(@Param("name") String name, Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<BalancePolicy> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
+
 
     @Override
     @ExposeFilterSwagger

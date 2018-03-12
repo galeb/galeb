@@ -31,7 +31,7 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
 
     @ManyToOne
     @JsonProperty("virtualhostgroup")
-    @JoinColumn(name = "virtualhostgroup_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhostgroup_ruleordered"))
+    @JoinColumn(name = "virtualhostgroup_ruleordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhostgroup_ruleordered"))
     private VirtualhostGroup virtualhostgroup;
 
     @JsonProperty("order")

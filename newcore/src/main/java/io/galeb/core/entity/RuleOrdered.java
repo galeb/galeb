@@ -24,14 +24,14 @@ import java.util.Map;
 import java.util.Objects;
 
 @Entity
-@Table(name = "ruleordered", uniqueConstraints = { @UniqueConstraint(name = "UK_order__rule_id__virtualhostgroup_id__environment_id", columnNames = { "rule_order", "virtualhostgroup_rule_ordered_id", "rule_rule_ordered_id", "environment_id" }) })
+@Table(name = "ruleordered", uniqueConstraints = { @UniqueConstraint(name = "UK_order__rule_id__virtualhostgroup_id__environment_id", columnNames = { "rule_order", "virtualhostgroup_ruleordered_id", "rule_ruleordered_id", "environment_id" }) })
 public class RuleOrdered extends AbstractEntity implements WithStatus, Comparable<RuleOrdered> {
 
     private static final long serialVersionUID = 1L;
 
     @ManyToOne
     @JsonProperty("virtualhostgroup")
-    @JoinColumn(name = "virtualhostgroup_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhostgroup_rule_ordered"))
+    @JoinColumn(name = "virtualhostgroup_ruleordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhostgroup_ruleordered"))
     private VirtualhostGroup virtualhostgroup;
 
     @JsonProperty("order")
@@ -39,7 +39,7 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     private Integer order = Integer.MAX_VALUE;
 
     @ManyToOne
-    @JoinColumn(name = "rule_rule_ordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_rule_ordered"))
+    @JoinColumn(name = "rule_ruleordered_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_ruleordered"))
     private Rule rule;
 
     @ManyToOne(optional = false)

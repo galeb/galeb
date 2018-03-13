@@ -1,6 +1,7 @@
 RPM_VER=$(GALEB_VERSION)
 VERSION=${RPM_VER}
 RELEASE=$(shell date +%y%m%d%H%M)
+SERVICES=router api legba kratos health
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
@@ -13,26 +14,25 @@ test:
 
 clean:
 	mvn clean
-	rm -f dists/galeb-router-${RPM_VER}-*.el7.noarch.rpm
-	rm -f dists/galeb-health-${RPM_VER}-*.el7.noarch.rpm
+	for service in ${SERVICES} ; do \
+		rm -f dists/galeb-$$service-${RPM_VER}*.rpm; \
+	done
 
 dist: galeb
 	type fpm > /dev/null 2>&1 && \
-    for service in router health api kratos legba oldapi ; do \
+    for service in ${SERVICES} ; do \
         old=$$(pwd) && \
         cd $$service/target && \
-        mkdir -p lib conf logs/tmp && \
-        cd lib && \
+        mkdir -p lib conf && \
         echo "#version ${VERSION}" > VERSION && \
-        git show --summary >> VERSION && \
-        cp -av ../../../wrapper . && \
-        cp -v ../../wrapper.conf ../conf/ && \
-        [ -f ../../log4j.xml ] && cp -v ../../log4j.xml ../conf/ || true && \
-        cp -av ../../../scripts ../ || true  && \
-        cp -av ../../scripts ../ || true  && \
-        cp -v ../galeb-$$service-${VERSION}-SNAPSHOT.jar galeb-$$service.jar && \
-        cp -av ../../../initscript wrapper/bin/ && \
-        cd .. && \
+        git show --summary >> lib/VERSION && \
+        cp -av ../../wrapper lib/ || true && \
+        cp -v ../wrapper.conf conf/ || true && \
+        cp -v ../log4j.xml conf/ || true && \
+        cp -av ../../scripts . || true  && \
+        cp -av ../scripts . || true && \
+        cp -av ../../initscript . || true && \
+        cp -v galeb-$$service-${VERSION}-SNAPSHOT.jar lib/galeb-$$service.jar && \
         fpm -s dir \
             -t rpm \
             -n "galeb-$$service" \
@@ -40,12 +40,12 @@ dist: galeb
             --iteration ${RELEASE}.el7 \
             -a noarch \
             --rpm-os linux \
-            --prefix /opt/galeb \
             -m '<galeb@corp.globo.com>' \
+            --url 'http://galeb.io' \
             --vendor 'Globo.com' \
-            --description 'Galeb $$service service' \
+            --description "Galeb $$service service" \
             --after-install scripts/postinstall \
-            -f -p ../../dists/galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib conf logs scripts && \
+            -f -p ../../dists/galeb-$$service-${RPM_VER}-${RELEASE}.el7.noarch.rpm lib/=/opt/galeb/lib/ scripts/=/opt/galeb/scripts/ conf/=/opt/galeb/conf/ initscript=/etc/init.d/galeb && \
         cd $$old; \
     done
 

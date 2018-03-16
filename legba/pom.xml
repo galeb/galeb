@@ -169,6 +169,7 @@
                         -Dserver.port=8020
                         -XX:+PerfDisableSharedMem
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
+                        -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
                         -Dcom.sun.management.jmxremote
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
@@ -185,6 +186,7 @@
                         -Dserver.port=8020
                         -XX:+PerfDisableSharedMem
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
+                        -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
                         -Dcom.sun.management.jmxremote=true
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false

@@ -6,6 +6,7 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -15,6 +16,11 @@ public class SpringRestConfiguration extends RepositoryRestConfigurerAdapter {
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+        setupCors(config);
+        exposeIdsEntities(config);
+    }
+
+    private void exposeIdsEntities(RepositoryRestConfiguration config) {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
 
@@ -29,5 +35,13 @@ public class SpringRestConfiguration extends RepositoryRestConfigurerAdapter {
                 throw new RuntimeException("Failed to expose `id` field due to", e);
             }
         }
+    }
+
+    private void setupCors(RepositoryRestConfiguration config) {
+        String pathPatternCors = "/**";
+        config.getCorsRegistry().addMapping(pathPatternCors);
+        CorsConfiguration corsConfiguration = config.getCorsRegistry().getCorsConfigurations().get(pathPatternCors);
+        corsConfiguration.addAllowedMethod("PATCH");
+        corsConfiguration.addAllowedMethod("DELETE");
     }
 }

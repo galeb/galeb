@@ -41,7 +41,7 @@ public class StatusService {
             mapStatus.put(entity.getId(), exists ? Status.PENDING : Status.OK);
             return mapStatus;
         }
-        if (entity.isQuarantine()) {
+        if (Boolean.TRUE.equals(entity.isQuarantine())) {
             Map<Long, Status> mapStatus = new HashMap<>();
             entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.DELETED));
             return mapStatus;

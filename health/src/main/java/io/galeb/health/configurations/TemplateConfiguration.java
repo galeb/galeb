@@ -23,6 +23,10 @@ public class TemplateConfiguration {
     private static final String BROKER_PASS = SystemEnv.BROKER_PASS.getValue();
     private static final boolean BROKER_HA  = Boolean.parseBoolean(SystemEnv.BROKER_HA.getValue());
 
+    // Additional Broker Configuration
+    private static final boolean BROKER_BLOCKDURABLESEND   = Boolean.parseBoolean(SystemEnv.BROKER_BLOCKDURABLESEND.getValue());
+    private static final int     BROKER_CONSUMERWINDOWSIZE = Integer.parseInt(SystemEnv.BROKER_CONSUMERWINDOWSIZE.getValue());
+
     @Bean
     public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory) {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
@@ -39,6 +43,8 @@ public class TemplateConfiguration {
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_CONN);
         connectionFactory.setUser(BROKER_USER);
         connectionFactory.setPassword(BROKER_PASS);
+        connectionFactory.setBlockOnDurableSend(BROKER_BLOCKDURABLESEND);
+        connectionFactory.setConsumerWindowSize(BROKER_CONSUMERWINDOWSIZE);
         if (BROKER_HA) {
             connectionFactory.setConnectionLoadBalancingPolicyClassName(RoundRobinConnectionLoadBalancingPolicy.class.getName());
         }

@@ -13,16 +13,9 @@ export DDL_MODE=validate
 ## REDIS ##
 export REDIS_URL='redis://127.0.0.1'
 
-## OAUTH ##
-export OAUTH_USERINFO=http://127.0.0.1:9000/user/
-unset LOGIN_KEY
-unset REJECT_KEY
-
 ## LDAP ##
 export GALEB_LDAP_URL=ldap://127.0.0.1:3890
 export GALEB_LDAP_USER='cn=user1,dc=test'
 export GALEB_LDAP_PASS='xxx'
 export GALEB_LDAP_BASE='dc=test'
 export GALEB_LDAP_ATTR_DN=cn
-export GALEB_API_URL='http://127.0.0.1:8000'
-export SESSION_TIMEOUT=86400 # legacy token auth

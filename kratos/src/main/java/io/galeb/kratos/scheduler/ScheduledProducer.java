@@ -55,25 +55,27 @@ public class ScheduledProducer {
         final String schedId = UUID.randomUUID().toString();
         long start = System.currentTimeMillis();
         final AtomicInteger counter = new AtomicInteger(0);
-        environmentRepository.findAll().stream().map(environment -> environment.getName().replaceAll("[ ]+", "_").toLowerCase()).forEach(env -> {
-            LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env);
-            Page<Target> targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(0, PAGE_SIZE));
+        environmentRepository.findAll().stream().forEach(env -> {
+            String environmentName = env.getName().replaceAll("[ ]+", "_").toLowerCase();
+            long environmentId = env.getId();
+            LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ")");
+            Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(0, PAGE_SIZE));
             StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
                 return getTargetInformation(t);
-             }).forEach(target -> sendToQueue(target, env, counter));
+            }).forEach(target -> sendToQueue(target, environmentId, counter));
             long size = targetsPage.getTotalElements();
             for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
-                    targetsPage = targetRepository.findByEnvironmentName(env, new PageRequest(page, PAGE_SIZE));
+                    targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
                     StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
                         return getTargetInformation(t);
-                    }).forEach(target -> sendToQueue(target, env, counter));
+                    }).forEach(target -> sendToQueue(target, environmentId, counter));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     break;
                 }
             }
-            LOGGER.info("[sch " + schedId + "] Sent " + counter.get() + " targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + env + " " +
+            LOGGER.info("[sch " + schedId + "] Sent " + counter.get() + " targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ") " +
                     "[" + (System.currentTimeMillis() - start) + " ms] (before to start this task: " + size + " targets from db)");
             counter.set(0);
         });
@@ -90,7 +92,7 @@ public class ScheduledProducer {
         return newTarget;
     }
 
-    private void sendToQueue(final Target target, String env, final AtomicInteger counter) {
+    private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {
         try {
             MessageCreator messageCreator = session -> {
                 counter.incrementAndGet();
@@ -101,7 +103,7 @@ public class ScheduledProducer {
                 if (LOGGER.isDebugEnabled()) LOGGER.debug("JMSMessageID: " + uniqueId + " - Target " + target.getName());
                 return message;
             };
-            template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + env, messageCreator);
+            template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

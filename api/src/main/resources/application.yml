@@ -1,8 +1,13 @@
 auth:
     localtoken: ${LOCAL_TOKEN:UNDEF}
     show_roles: ${SHOW_ROLES:false}
-    login_key:  ${LOGIN_KEY:login}
-    reject_key: ${REJECT_KEY:}
+
+ldap:
+    url: ${GALEB_LDAP_URL:ldap://127.0.0.1:3890}
+    userdn: ${GALEB_LDAP_USER:UNDEF}
+    pass: ${GALEB_LDAP_PASS:UNDEF}
+    base: ${GALEB_LDAP_BASE:UNDEF}
+    attrdn: ${GALEB_LDAP_ATTR_DN:UNDEF}
 
 build:
     project: '@project.artifactId@'

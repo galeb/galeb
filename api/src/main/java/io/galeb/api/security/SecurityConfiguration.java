@@ -37,13 +37,15 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsService userDetailsService;
-    private final AuthenticationProvider authenticationProvider;
+    private final ApiTokenAuthenticationProvider apiTokenAuthenticationProvider;
+    private final LdapAuthenticationProvider ldapAuthenticationProvider;
     private final LocalAdminService localAdmin;
 
     @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, AuthenticationProvider authenticationProvider, LocalAdminService localAdmin) {
+    public SecurityConfiguration(UserDetailsService userDetailsService, ApiTokenAuthenticationProvider apiTokenAuthenticationProvider, LdapAuthenticationProvider ldapAuthenticationProvider, LocalAdminService localAdmin) {
         this.userDetailsService = userDetailsService;
-        this.authenticationProvider = authenticationProvider;
+        this.apiTokenAuthenticationProvider = apiTokenAuthenticationProvider;
+        this.ldapAuthenticationProvider = ldapAuthenticationProvider;
         this.localAdmin = localAdmin;
     }
 
@@ -72,8 +74,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 withUser(localAdmin.getUsername()).
                 password(localAdmin.getPassword()).
                 roles("USER");
-        auth.authenticationProvider(authenticationProvider);
-        auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(apiTokenAuthenticationProvider);
+        auth.authenticationProvider(ldapAuthenticationProvider);
     }
 
 }

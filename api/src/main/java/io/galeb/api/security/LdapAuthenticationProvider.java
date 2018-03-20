@@ -16,6 +16,9 @@
 
 package io.galeb.api.security;
 
+import io.galeb.api.services.AccountDaoService;
+import io.galeb.api.services.LdapAuthenticationService;
+import io.galeb.api.services.LocalAdminService;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,15 +29,25 @@ import org.springframework.security.authentication.dao.AbstractUserDetailsAuthen
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+public class LdapAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
-    private static final Logger LOGGER = LogManager.getLogger(ApiTokenAuthenticationProvider.class);
+    private static final Logger LOGGER = LogManager.getLogger(LdapAuthenticationProvider.class);
 
     @Autowired
     private CurrentUserDetailsService currentUserDetailsService;
+
+    @Autowired
+    private LdapAuthenticationService ldapAuthenticationService;
+
+    @Autowired
+    private LocalAdminService localAdmin;
+
+    @Autowired
+    private AccountDaoService accountDaoService;
 
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
@@ -49,13 +62,22 @@ public class ApiTokenAuthenticationProvider extends AbstractUserDetailsAuthentic
             throw new SecurityException(errMsg);
         }
 
-        UserDetails userDetails = retrieveUser(authentication.getName(), null);
-        if (((Account) userDetails).getApitoken().equals(authentication.getCredentials())) {
-            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
-            return token;
+        if (isLdapCheckOk(authentication)) {
+            try {
+                retrieveUser(authentication.getName(), null);
+            } catch (UsernameNotFoundException e) {
+                Account account = new Account();
+                account.setUsername(authentication.getName());
+                account.setEmail(authentication.getName());
+                accountDaoService.save(account);
+            }
+            return new UsernamePasswordAuthenticationToken(localAdmin, authentication.getCredentials(), localAdmin.getAuthorities());
         }
-
         throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+    }
+
+    private boolean isLdapCheckOk(Authentication authentication) {
+        return ldapAuthenticationService.check(authentication.getName(), (String) authentication.getCredentials());
     }
 
     @Override

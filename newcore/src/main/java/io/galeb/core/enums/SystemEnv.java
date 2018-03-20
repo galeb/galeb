@@ -102,6 +102,16 @@ public enum SystemEnv {
     BROKER_HA                ("BROKER_HA",                Boolean.FALSE),
 
     /**
+     * Broker configuration of BlockOnDurableSend
+     */
+    BROKER_BLOCKDURABLESEND  ("BROKER_BLOCKDURABLESEND",  Boolean.FALSE),
+
+    /**
+     * Broker configuration of consumerWindowSize
+     */
+    BROKER_CONSUMERWINDOWSIZE ("BROKER_CONSUMERWINDOWSIZE", 0),
+
+    /**
      * Set message's lifetime (in milliseconds) of the message when sending.
      */
     JMS_TIMEOUT              ("JMS_TIMEOUT",              30000),

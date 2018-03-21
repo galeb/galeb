@@ -16,12 +16,16 @@
 
 package io.galeb.api.security;
 
+import io.galeb.api.repository.AccountRepository;
+import io.galeb.api.repository.RoleGroupRepository;
 import io.galeb.api.services.AccountDaoService;
 import io.galeb.api.services.LdapAuthenticationService;
 import io.galeb.api.services.LocalAdminService;
 import io.galeb.core.entity.Account;
+import io.galeb.core.entity.RoleGroup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +35,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class LdapAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
@@ -49,6 +54,12 @@ public class LdapAuthenticationProvider extends AbstractUserDetailsAuthenticatio
     @Autowired
     private AccountDaoService accountDaoService;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private RoleGroupRepository roleGroupRepository;
+
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
 
@@ -66,10 +77,15 @@ public class LdapAuthenticationProvider extends AbstractUserDetailsAuthenticatio
             try {
                 retrieveUser(authentication.getName(), null);
             } catch (UsernameNotFoundException e) {
-                Account account = new Account();
-                account.setUsername(authentication.getName());
-                account.setEmail(authentication.getName());
-                accountDaoService.save(account);
+                try {
+                    Account account = new Account();
+                    account.setUsername(authentication.getName());
+                    account.setEmail(authentication.getName());
+                    accountRepository.saveByPass(account);
+                } catch (Exception e1) {
+                    LOGGER.error(e1);
+                    throw e;
+                }
             }
             return new UsernamePasswordAuthenticationToken(localAdmin, authentication.getCredentials(), localAdmin.getAuthorities());
         }

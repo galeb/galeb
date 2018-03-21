@@ -16,11 +16,13 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.repository.RoleGroupRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -28,6 +30,8 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static io.galeb.core.entity.RoleGroup.ROLEGROUP_USER_DEFAULT;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Account> implements AccountRepositoryCustom, WithRoles {
@@ -38,10 +42,23 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     @Autowired
     private StatusService statusService;
 
+    @Autowired
+    private RoleGroupRepository roleGroupRepository;
+
     @PostConstruct
     private void init() {
         setSimpleJpaRepository(Account.class, em);
         setStatusService(statusService);
+    }
+
+    @Override
+    @Transactional
+    public Account saveByPass(Account entity) {
+        Account account = super.saveByPass(entity);
+        RoleGroup roleGroup = roleGroupRepository.findByName(ROLEGROUP_USER_DEFAULT);
+        roleGroup.getAccounts().add(entity);
+        roleGroupRepository.saveByPass(roleGroup);
+        return account;
     }
 
     @Override

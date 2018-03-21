@@ -42,6 +42,8 @@ import java.util.Set;
 @Table(name = "rolegroup", uniqueConstraints = { @UniqueConstraint(name = "UK_rolegroup_name", columnNames = { "name" }) })
 public class RoleGroup extends AbstractEntity  {
 
+    public static final String ROLEGROUP_USER_DEFAULT = "USER_DEFAULT";
+
     @Column(nullable = false)
     private String name;
 

@@ -18,7 +18,6 @@ package io.galeb.api.handler;
 
 import io.galeb.api.repository.RoleGroupRepository;
 import io.galeb.core.entity.Account;
-import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,11 +26,10 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 
 import static com.google.common.hash.Hashing.sha256;
+import static io.galeb.core.entity.RoleGroup.ROLEGROUP_USER_DEFAULT;
 
 @Component
 public class AccountHandler extends AbstractHandler<Account> {
-
-    private static final String ROLE_USER_DEFAULT = "USER_DEFAULT";
 
     @Autowired
     private RoleGroupRepository roleGroupRepository;
@@ -47,7 +45,7 @@ public class AccountHandler extends AbstractHandler<Account> {
 
     @Override
     protected void onAfterCreate(Account entity) {
-        RoleGroup roleGroup = roleGroupRepository.findByName(ROLE_USER_DEFAULT);
+        RoleGroup roleGroup = roleGroupRepository.findByName(ROLEGROUP_USER_DEFAULT);
         roleGroup.getAccounts().add(entity);
         roleGroupRepository.saveByPass(roleGroup);
     }

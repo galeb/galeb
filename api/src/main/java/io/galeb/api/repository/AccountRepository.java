@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @SuppressWarnings({"unused", "unchecked"})
@@ -34,6 +35,10 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#account, #this)")
     Account save(@Param("account") Account account);
+
+    @Override
+    @RestResource(exported = false)
+    Account saveByPass(@Param("account") Account account);
 
     @Override
     @ExposeFilterSwagger

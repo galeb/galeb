@@ -26,4 +26,6 @@ public interface AccountRepositoryCustom extends WithRoles {
     Iterable<Account> findAll(Sort sort);
 
     Page<Account> findAll(Pageable pageable);
+
+    Account saveByPass(Account account);
 }

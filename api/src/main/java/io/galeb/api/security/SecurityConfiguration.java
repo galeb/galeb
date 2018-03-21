@@ -36,17 +36,15 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsService userDetailsService;
+    private final InMemoryAuthenticatorProvider inMemoryAuthenticatorProvider;
     private final ApiTokenAuthenticationProvider apiTokenAuthenticationProvider;
     private final LdapAuthenticationProvider ldapAuthenticationProvider;
-    private final LocalAdminService localAdmin;
 
     @Autowired
-    public SecurityConfiguration(UserDetailsService userDetailsService, ApiTokenAuthenticationProvider apiTokenAuthenticationProvider, LdapAuthenticationProvider ldapAuthenticationProvider, LocalAdminService localAdmin) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfiguration(ApiTokenAuthenticationProvider apiTokenAuthenticationProvider, LdapAuthenticationProvider ldapAuthenticationProvider, InMemoryAuthenticatorProvider inMemoryAuthenticatorProvider) {
         this.apiTokenAuthenticationProvider = apiTokenAuthenticationProvider;
         this.ldapAuthenticationProvider = ldapAuthenticationProvider;
-        this.localAdmin = localAdmin;
+        this.inMemoryAuthenticatorProvider = inMemoryAuthenticatorProvider;
     }
 
     @Override
@@ -70,10 +68,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().
-                withUser(localAdmin.getUsername()).
-                password(localAdmin.getPassword()).
-                roles("USER");
+        auth.authenticationProvider(inMemoryAuthenticatorProvider);
         auth.authenticationProvider(apiTokenAuthenticationProvider);
         auth.authenticationProvider(ldapAuthenticationProvider);
     }

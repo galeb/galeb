@@ -58,22 +58,24 @@ public class LdapAuthenticationProvider extends AbstractUserDetailsAuthenticatio
             throw new SecurityException(errMsg);
         }
 
-        UserDetails userDetails;
+
         if (isLdapCheckOk(authentication)) {
+            UserDetails userDetails;
             try {
                 userDetails = retrieveUser(authentication.getName(), null);
-                return new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
             } catch (UsernameNotFoundException e) {
                 try {
                     Account account = new Account();
                     account.setUsername(authentication.getName());
                     account.setEmail(authentication.getName());
                     accountRepository.saveByPass(account);
+                    userDetails = account;
                 } catch (Exception e1) {
                     LOGGER.error(e1);
                     throw e;
                 }
             }
+            return new UsernamePasswordAuthenticationToken(userDetails, authentication.getCredentials(), userDetails.getAuthorities());
         }
         throw new BadCredentialsException(this.messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
     }

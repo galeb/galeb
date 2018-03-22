@@ -28,4 +28,6 @@ public interface AccountRepositoryCustom extends WithRoles {
     Page<Account> findAll(Pageable pageable);
 
     Account saveByPass(Account account);
+
+    Account findOne(Long id);
 }

@@ -17,6 +17,7 @@
 package io.galeb.api.repository.custom;
 
 import io.galeb.api.repository.RoleGroupRepository;
+import io.galeb.api.services.LocalAdminService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
@@ -49,6 +50,26 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     private void init() {
         setSimpleJpaRepository(Account.class, em);
         setStatusService(statusService);
+    }
+
+    @Override
+    public Account findOne(Long id) {
+        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        boolean isViewAll;
+        if (LocalAdminService.NAME.equals(account.getUsername())) {
+            isViewAll = true;
+        } else {
+            Set<String> roles = mergeRoles(-1L);
+            String roleView = Account.class.getSimpleName().toUpperCase() + "_VIEW";
+
+            String roleViewAll = roleView + "_ALL";
+            isViewAll = roles.contains(roleViewAll);
+            System.out.println("Roles: " + roles);
+        }
+        if (isViewAll || account.getId() == id) {
+            return super.findOne(id);
+        }
+        return null;
     }
 
     @Override

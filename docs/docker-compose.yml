@@ -21,6 +21,8 @@ services:
   ldap:
     image: tuxmonteiro/ldap-mock:latest
     container_name: ldap
+    volumes:
+      - "./users.json:/usr/src/app/users/users.json"
     ports:
       - 3890:3890
 

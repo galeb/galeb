@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
         plugin= {"pretty", "json:target/cucumber.json", "html:target/cucumber"},
         glue = {"io.galeb"},
         features= {"classpath:cucumber"},
-        tags={"~@ignore"}
+        tags={"@active"}
 )
 public class CucumberTest {
 }

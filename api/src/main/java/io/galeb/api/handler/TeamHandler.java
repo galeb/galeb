@@ -17,33 +17,24 @@
 package io.galeb.api.handler;
 
 import io.galeb.api.repository.RoleGroupRepository;
-import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
-import io.galeb.core.exceptions.BadRequestException;
+import io.galeb.core.entity.Team;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static io.galeb.core.entity.RoleGroup.ROLEGROUP_PROJECT_DEFAULT;
+import static io.galeb.core.entity.RoleGroup.ROLEGROUP_TEAM_DEFAULT;
 
 @Component
-public class ProjectHandler extends AbstractHandler<Project> {
+public class TeamHandler extends AbstractHandler<Team> {
 
     @Autowired
     private RoleGroupRepository roleGroupRepository;
 
     @Override
-    protected void onBeforeCreate(Project entity) {
-        super.onBeforeCreate(entity);
-        if (entity.getTeams() == null || entity.getTeams().isEmpty()) {
-            throw new BadRequestException("Team(s) undefined");
-        }
-    }
-
-    @Override
-    protected void onAfterCreate(Project entity) {
-        super.onAfterCreate(entity);
-        RoleGroup roleGroup = roleGroupRepository.findByName(ROLEGROUP_PROJECT_DEFAULT);
-        roleGroup.getProjects().add(entity);
+    protected void onAfterCreate(Team entity) {
+        RoleGroup roleGroup = roleGroupRepository.findByName(ROLEGROUP_TEAM_DEFAULT);
+        roleGroup.getTeams().add(entity);
         roleGroupRepository.saveByPass(roleGroup);
     }
+
 }

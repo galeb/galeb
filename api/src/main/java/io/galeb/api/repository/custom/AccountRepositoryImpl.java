@@ -64,7 +64,6 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
 
             String roleViewAll = roleView + "_ALL";
             isViewAll = roles.contains(roleViewAll);
-            System.out.println("Roles: " + roles);
         }
         if (isViewAll || account.getId() == id) {
             return super.findOne(id);

@@ -104,30 +104,30 @@ public class StepDefs {
     }
 
     private void createUsers() throws Throwable {
-        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic("admin", "pass");
-
-        Map<String, String> mapAccountJson = new HashMap<>();
-        mapAccountJson.put("username", "userlocal");
-        mapAccountJson.put("email", "userlocal@userlocal.com");
-        requestJsonBodyHas(mapAccountJson);
-        sendMethodPath("POST", "/account");
-
-        Map<String, String> mapTeamJson = new HashMap<>();
-        mapTeamJson.put("name", "teamlocal");
-        mapTeamJson.put("accounts", "[Account=userlocal]");
-        requestJsonBodyHas(mapTeamJson);
-        sendMethodPath("POST", "/team");
-
-        Map<String, String> mapRoleGroupJson = new HashMap<>();
-        mapRoleGroupJson.put("teams", "[Team=teamlocal]");
-        requestJsonBodyHas(mapRoleGroupJson);
-        sendMethodPath("PATCH", "/rolegroup/2");
-
-        sendMethodPath("GET", "/account/1?projection=apitoken");
-        tokenUserTeamAdmin = response.extract().body().jsonPath().get("apitoken").toString();
-        userTeamAdmin = "userlocal";
-
-        LOGGER.info("Created user with rolegroup TEAM_ADMIN and saved the token");
+//        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic("admin", "pass");
+//
+//        Map<String, String> mapAccountJson = new HashMap<>();
+//        mapAccountJson.put("username", "userlocal");
+//        mapAccountJson.put("email", "userlocal@userlocal.com");
+//        requestJsonBodyHas(mapAccountJson);
+//        sendMethodPath("POST", "/account");
+//
+//        Map<String, String> mapTeamJson = new HashMap<>();
+//        mapTeamJson.put("name", "teamlocal");
+//        mapTeamJson.put("accounts", "[Account=userlocal]");
+//        requestJsonBodyHas(mapTeamJson);
+//        sendMethodPath("POST", "/team");
+//
+//        Map<String, String> mapRoleGroupJson = new HashMap<>();
+//        mapRoleGroupJson.put("teams", "[Team=teamlocal]");
+//        requestJsonBodyHas(mapRoleGroupJson);
+//        sendMethodPath("PATCH", "/rolegroup/2");
+//
+//        sendMethodPath("GET", "/account/1?projection=apitoken");
+//        tokenUserTeamAdmin = response.extract().body().jsonPath().get("apitoken").toString();
+//        userTeamAdmin = "userlocal";
+//
+//        LOGGER.info("Created user with rolegroup TEAM_ADMIN and saved the token");
     }
 
     @After

@@ -8,7 +8,6 @@ export GALEB_DB_PASS=password
 export GALEB_DB_DRIVER=com.mysql.cj.jdbc.Driver
 export GALEB_DB_DIALECT=org.hibernate.dialect.MySQLDialect
 export SHOW_SQL=true
-export DDL_MODE=validate
 
 ## REDIS ##
 export REDIS_URL='redis://127.0.0.1'

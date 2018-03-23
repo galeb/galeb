@@ -154,6 +154,11 @@ public class PermissionService {
                 .getResultList();
         roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet()));
+        List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProjectByAccountId", RoleGroup.class)
+                .setParameter("id", accountId)
+                .getResultList();
+        roles.addAll(roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).collect(Collectors.toSet()));
         return roles;
     }
 

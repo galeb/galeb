@@ -35,7 +35,10 @@ import java.util.Set;
                 query = "SELECT r FROM RoleGroup r INNER JOIN r.accounts a WHERE a.id = :id"),
         @NamedQuery(
                 name = "roleGroupsTeam",
-                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id")
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id"),
+        @NamedQuery(
+                name = "roleGroupsFromProjectByAccountId",
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :id")
 })
 
 @Entity
@@ -43,6 +46,8 @@ import java.util.Set;
 public class RoleGroup extends AbstractEntity  {
 
     public static final String ROLEGROUP_USER_DEFAULT = "USER_DEFAULT";
+    public static final String ROLEGROUP_TEAM_DEFAULT = "TEAM_DEFAULT";
+    public static final String ROLEGROUP_PROJECT_DEFAULT = "PROJECT_DEFAULT";
 
     @Column(nullable = false)
     private String name;

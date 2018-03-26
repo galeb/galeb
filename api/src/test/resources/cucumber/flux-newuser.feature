@@ -42,12 +42,12 @@ Feature: Flux
      | username     | accountTwo              |
      | email    | accounttwo@test.com               |
     And send POST /account
-    Then the response status is 201
+    Then the response status is 403
     When request json body has:
      | username     | accountThree              |
      | email    | accountthree@test.com               |
     And send PUT Account=accountTwo
-    Then the response status is 201
+    Then the response status is 403
 
   Scenario: validate permissions for Team with role default
     Given a REST client authenticated as user1 with password ""

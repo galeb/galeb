@@ -54,6 +54,11 @@ public class PermissionService {
 
     public boolean allowSave(Object criteria, MethodSecurityExpressionOperations expressionOperations) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (criteria instanceof Account) {
+            Class<? extends AbstractEntity> entityClass = extractEntityClass(expressionOperations);
+            return isAdmin(account, Account.class.getSimpleName(), Action.SAVE.toString(), criteria) ||
+                   isMySelf(account, criteria, entityClass.getSimpleName(), Action.SAVE.toString());
+        }
         return allow(account, criteria, expressionOperations, Action.SAVE.toString());
     }
 

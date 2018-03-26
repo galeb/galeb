@@ -1,3 +1,4 @@
+@active
 Feature: RuleOrdered tests
   Background:
     Given a REST client authenticated as admin with password pass
@@ -10,7 +11,14 @@ Feature: RuleOrdered tests
       | name  | balancePolicyOne |
     And send POST /balancepolicy
     Then the response status is 201
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
+    Then the response status is 200
+    When request json body has:
+      | name     | teamlocal              |
+      | accounts         | [Account=user1]      |
+    And send POST /team
+    Then the response status is 201
     When request json body has:
       | name  | projOne |
       | teams | [Team=teamlocal] |
@@ -30,7 +38,8 @@ Feature: RuleOrdered tests
     Then the response status is 201
 
   Scenario: Conflict when create rule ordered without VirtualHostGroup
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -40,7 +49,8 @@ Feature: RuleOrdered tests
     Then the response status is 409
 
   Scenario: Conflict when create rule ordered without Rule
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -50,7 +60,8 @@ Feature: RuleOrdered tests
     Then the response status is 409
 
   Scenario: Conflict when create rule ordered without Environment
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -60,7 +71,8 @@ Feature: RuleOrdered tests
     Then the response status is 409
 
   Scenario: Conflit when duplicate rule ordered
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -77,7 +89,8 @@ Feature: RuleOrdered tests
     Then the response status is 409
 
   Scenario: Should patch the field order
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -91,7 +104,8 @@ Feature: RuleOrdered tests
     Then property order contains 2
 
   Scenario: Should patch the relationship rule
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -116,7 +130,8 @@ Feature: RuleOrdered tests
       | name  | envTwo |
     And send POST /environment
     Then the response status is 201
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -137,7 +152,8 @@ Feature: RuleOrdered tests
       | environments  | [Environment=envOne] |
     And send POST /virtualhost
     Then the response status is 201
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -151,7 +167,8 @@ Feature: RuleOrdered tests
     Then property id contains 2
 
   Scenario: Should delete roleordered
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |

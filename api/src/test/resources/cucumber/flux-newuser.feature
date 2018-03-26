@@ -27,7 +27,6 @@ Feature: Flux
     And send POST /project
     Then the response status is 201
 
-
   Scenario: validate permissions for Account with role default
     Given a REST client authenticated as user1 with password ""
     And send GET /

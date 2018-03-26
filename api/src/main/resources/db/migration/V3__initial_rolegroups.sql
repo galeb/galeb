@@ -131,6 +131,7 @@ INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULE_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULE_SAVE_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULE_DELETE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULE_VIEW');
+INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULE_VIEW_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_SAVE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_SAVE_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_DELETE');

@@ -16,5 +16,17 @@
     "cn": "superadmin",
     "attribute1": "value5",
     "attribute2": "value6"
+  },
+  {
+    "dn": "cn=adminTeamOne,dc=test",
+    "cn": "adminTeamOne",
+    "attribute1": "value5",
+    "attribute2": "value6"
+  },
+  {
+    "dn": "cn=accountOne,dc=test",
+    "cn": "accountOne",
+    "attribute1": "value5",
+    "attribute2": "value6"
   }
 ]

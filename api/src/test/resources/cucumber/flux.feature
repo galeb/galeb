@@ -1,3 +1,4 @@
+@active
 Feature: Flux
   Scenario: Flux
     # Create environment envOne
@@ -13,7 +14,14 @@ Feature: Flux
     And send POST /balancepolicy
     Then the response status is 201
     # Create projOne
-    Given a REST client authenticated with token and role TEAM_ADMIN
+    Given a REST client authenticated as user1 with password ""
+    And send GET /
+    Then the response status is 200
+    When request json body has:
+      | name     | teamlocal              |
+      | accounts         | [Account=user1]      |
+    And send POST /team
+    Then the response status is 201
     When request json body has:
       | name  | projOne |
       | teams | [Team=teamlocal] |

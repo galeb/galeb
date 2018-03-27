@@ -105,39 +105,39 @@ public class RoutersService {
     }
 
     @Transactional
-    public void put(String routerGroupId, String routerLocalIP, String version, String envid) {
+    public void put(String routerGroupId, String routerLocalIP, String version, String envId) {
         try {
-            String key = MessageFormat.format(FORMAT_KEY_VERSION, envid, routerGroupId, routerLocalIP);
+            String key = MessageFormat.format(FORMAT_KEY_VERSION, envId, routerGroupId, routerLocalIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
             if (!redisTemplate.hasKey(key)) {
-                versionService.incrementVersion(envid);
+                versionService.incrementVersion(envId);
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
-            updateRouterState(envid);
+            updateRouterState(envId);
         } catch (Exception e) {
             ErrorLogger.logError(e, this.getClass());
         }
     }
 
-    private void updateRouterState(String envid) {
+    private void updateRouterState(String envId) {
         Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
         Set<Long> eTagRouters = new HashSet<>();
-        String keyAll = MessageFormat.format(FORMAT_KEY_VERSION, envid, "*", "*");
+        String keyAll = MessageFormat.format(FORMAT_KEY_VERSION, envId, "*", "*");
         redisTemplate.keys(keyAll).stream().forEach(key -> {
             try {
                 eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
             } catch (NumberFormatException e) {
-                LOGGER.warn("Version is not a number. Verify the environment " + envid);
+                LOGGER.warn("Version is not a number. Verify the environment " + envId);
             }
             Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
             if (ttl == null || ttl < (REGISTER_TTL/2)) {
                 redisTemplate.delete(key);
-                versionService.incrementVersion(envid);
+                versionService.incrementVersion(envId);
             }
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
-        changesService.listEntitiesWithOldestVersion(envid, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
+        changesService.listEntitiesWithOldestVersion(envId, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
             mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(StringUtils.capitalize(entry.getKey()))).forEach(entry -> {
                 String entityClass = StringUtils.capitalize(entry.getKey());
                 String entityId = entry.getValue();

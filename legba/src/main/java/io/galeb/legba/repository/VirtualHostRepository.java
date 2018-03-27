@@ -18,4 +18,9 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             "WHERE e.id = :envId")
     List<VirtualHost> findAllByEnvironmentId(@Param("envId") Long envId);
 
+    @RestResource(exported = false)
+    @Query(value = "SELECT DISTINCT v FROM VirtualHost as v " +
+            "inner join v.environments as e " +
+            "WHERE e.name = :envName")
+    List<VirtualHost> findAllByEnvironmentName(@Param("envName") String envName);
 }

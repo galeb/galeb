@@ -251,6 +251,7 @@
                     <argLine>
                         ${surefireArgLine}
                         -server
+                        -Dserver.port=8080
                         -Xmx512m -Xss256k
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
                         -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector

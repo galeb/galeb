@@ -49,7 +49,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(new InMemoryAccountFilter(), BasicAuthenticationFilter.class);
         // @formatter:off
         http
-                .authorizeRequests().regexMatchers("^/swagger.*", "^/webjars/.*", "^/v2/api.*").permitAll().
+                .authorizeRequests().regexMatchers("^/swagger.*", "^/webjars/.*", "^/v2/api.*", "^/info", "^/healthcheck.html").permitAll().
             and().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
             and().

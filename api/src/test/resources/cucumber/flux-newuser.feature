@@ -137,3 +137,15 @@ Feature: Flux
       | pool  | Pool=poolOne |
     And send POST /target
     Then the response status is 201
+    And send DELETE Target=targetTwo
+    Then the response status is 204
+    And send DELETE Pool=poolOne
+    Then the response status is 204
+    And send DELETE /ruleordered/1
+    Then the response status is 204
+    And send DELETE VirtualHost=vhOne
+    Then the response status is 204
+    And send DELETE Rule=ruleOne
+    Then the response status is 204
+    And send DELETE Pool=poolOne
+    Then the response status is 204

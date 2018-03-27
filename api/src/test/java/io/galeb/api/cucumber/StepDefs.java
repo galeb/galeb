@@ -229,6 +229,11 @@ public class StepDefs {
         response.body(expression, equalTo(match));
     }
 
+    @Then("^the response search at '(.+)' has boolean (.+)")
+    public void theResponseSearchAtEqualToAsBoolean(String expression, Boolean match) {
+        response.body(expression, equalTo(match));
+    }
+
     private String processFullUrl(String data) {
         String key = "=";
         String exclude = "?";

@@ -48,6 +48,7 @@ public class RoleGroup extends AbstractEntity  {
     public static final String ROLEGROUP_USER_DEFAULT = "USER_DEFAULT";
     public static final String ROLEGROUP_TEAM_DEFAULT = "TEAM_DEFAULT";
     public static final String ROLEGROUP_PROJECT_DEFAULT = "PROJECT_DEFAULT";
+    public static final String ROLEGROUP_SUPER_ADMIN = "SUPER_ADMIN";
 
     @Column(nullable = false)
     private String name;

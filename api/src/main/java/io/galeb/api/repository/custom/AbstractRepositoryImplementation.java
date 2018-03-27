@@ -161,11 +161,17 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     protected Set<String> mergeRoles(long projectId) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long accountId = account.getId();
-
-        List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
-                .setParameter("account_id", accountId)
-                .setParameter("project_id", projectId)
-                .getResultList();
+        List<RoleGroup> roleGroupsFromProject;
+        if (projectId != -1) {
+            roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
+                    .setParameter("account_id", accountId)
+                    .setParameter("project_id", projectId)
+                    .getResultList();
+        } else {
+            roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProjectByAccountId", RoleGroup.class)
+                    .setParameter("id", accountId)
+                    .getResultList();
+        }
         Set<String> roles = roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
         List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
                 .setParameter("id", accountId)

@@ -44,20 +44,20 @@ public class VersionService {
     @Autowired
     StringRedisTemplate redisTemplate;
 
-    public String getActualVersion(String envid) {
-        String version = redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_VERSION, envid));
+    public String getActualVersion(String envId) {
+        String version = redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_VERSION, envId));
         if (version == null) {
-            version = String.valueOf(redisTemplate.opsForValue().increment(MessageFormat.format(FORMAT_KEY_VERSION, envid), 1));
+            version = String.valueOf(redisTemplate.opsForValue().increment(MessageFormat.format(FORMAT_KEY_VERSION, envId), 1));
         }
         return version;
     }
 
-    public String getCache(String envid, String zoneId, String version) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envid, zoneId, version));
+    public String getCache(String envId, String zoneId, String version) {
+        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, version));
     }
 
-    public void setCache(String cache, String envid, String zoneId, String version) {
-        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envid, zoneId, version), cache, 5, TimeUnit.MINUTES);
+    public void setCache(String cache, String envId, String zoneId, String version) {
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, version), cache, 5, TimeUnit.MINUTES);
     }
 
     public Long incrementVersion(Object envId) {

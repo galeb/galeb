@@ -30,9 +30,8 @@ public class VersionService {
     /**
      * Description arguments:
      * {0} - Environment Id
-     * {1} - Zone Id
      */
-    private static final String FORMAT_KEY_VERSION = "version:{0}:{1}";
+    private static final String FORMAT_KEY_VERSION = "version:{0}";
 
     /**
      * Description arguments:

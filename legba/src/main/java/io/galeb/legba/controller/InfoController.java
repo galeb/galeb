@@ -39,7 +39,7 @@ public class InfoController {
 
     @GetMapping(value = "/info")
     public ResponseEntity<String> info() {
-        String body = String.format("{\"name\":\"%s\", \"version\":\"%s\", \"build\":\"%s\"}", buildProject, buildVersion, buildTimestamp);
+        String body = String.format("{\"name\":\"%s\", \"version\":\"%s\", \"build\":\"%s\", \"healthy\":\"WORKING\"}", buildProject, buildVersion, buildTimestamp);
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("content-type", MediaType.APPLICATION_JSON_VALUE);
         return new ResponseEntity<>(body, headers, HttpStatus.OK);

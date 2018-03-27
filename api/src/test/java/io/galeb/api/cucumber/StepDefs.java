@@ -99,35 +99,7 @@ public class StepDefs {
         FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
         FLYWAY.clean();
         FLYWAY.migrate();
-        createUsers();
         LOGGER.info("Finish FLYWAY!");
-    }
-
-    private void createUsers() throws Throwable {
-//        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic("admin", "pass");
-//
-//        Map<String, String> mapAccountJson = new HashMap<>();
-//        mapAccountJson.put("username", "userlocal");
-//        mapAccountJson.put("email", "userlocal@userlocal.com");
-//        requestJsonBodyHas(mapAccountJson);
-//        sendMethodPath("POST", "/account");
-//
-//        Map<String, String> mapTeamJson = new HashMap<>();
-//        mapTeamJson.put("name", "teamlocal");
-//        mapTeamJson.put("accounts", "[Account=userlocal]");
-//        requestJsonBodyHas(mapTeamJson);
-//        sendMethodPath("POST", "/team");
-//
-//        Map<String, String> mapRoleGroupJson = new HashMap<>();
-//        mapRoleGroupJson.put("teams", "[Team=teamlocal]");
-//        requestJsonBodyHas(mapRoleGroupJson);
-//        sendMethodPath("PATCH", "/rolegroup/2");
-//
-//        sendMethodPath("GET", "/account/1?projection=apitoken");
-//        tokenUserTeamAdmin = response.extract().body().jsonPath().get("apitoken").toString();
-//        userTeamAdmin = "userlocal";
-//
-//        LOGGER.info("Created user with rolegroup TEAM_ADMIN and saved the token");
     }
 
     @After
@@ -162,13 +134,8 @@ public class StepDefs {
     @Given("^a REST client authenticated as (.*) with password (.*)$")
     public void givenRestClientAuthenticated(String login, String password) {
         request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(login, password);
+        sendMethodPath("GET", "/");
         LOGGER.info("Using "+RestAssured.class.getName()+" authenticated");
-    }
-
-    @Given("^a REST client authenticated with token and role TEAM_ADMIN$")
-    public void givenRestClientAuthenticatedWithToken() {
-        request = with().port(port).config(restAssuredConfig).contentType("application/json").auth().preemptive().basic(userTeamAdmin, tokenUserTeamAdmin);
-        LOGGER.info("Using "+RestAssured.class.getName()+" authenticated with token");
     }
 
     @When("^request json body has:$")

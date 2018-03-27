@@ -15,7 +15,6 @@ Feature: Tests Target
     Then the response status is 201
     # Create projOne
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |
@@ -44,7 +43,6 @@ Feature: Tests Target
 
   Scenario: Should does not create duplicate target in same pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | targetOne |
       | pool  | Pool=poolOne |
@@ -53,7 +51,6 @@ Feature: Tests Target
 
   Scenario: Should does not create target without pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | targetTwo |
     And send POST /target
@@ -61,7 +58,6 @@ Feature: Tests Target
 
   Scenario: Should change pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | poolTwo |
       | environment  | Environment=EnvOne |
@@ -79,7 +75,6 @@ Feature: Tests Target
 
   Scenario: Should change target name
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | targetTwo |
     And send PATCH /target/1
@@ -90,7 +85,6 @@ Feature: Tests Target
 
   Scenario: Should does change name duplicate target in same pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | targetTwo |
       | pool  | Pool=poolOne |
@@ -103,14 +97,12 @@ Feature: Tests Target
 
   Scenario: Get Target
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET Target=targetOne
     Then the response status is 200
     And property name contains targetOne
 
   Scenario: Get null Target
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET Target=NULL
     Then the response status is 404
 
@@ -123,7 +115,6 @@ Feature: Tests Target
     And send POST /healthstatus
     Then the response status is 201
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send DELETE Target=targetOne
     Then the response status is 204
     When send GET Target=targetOne
@@ -138,12 +129,10 @@ Feature: Tests Target
 
   Scenario: Search Target by Name
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET /target/search/findByName?name=targetOne
     Then the response search at '_embedded.target[0].name' equal to targetOne
 
   Scenario: Search Target by NameContaining
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET /target/search/findByNameContaining?name=One
     Then the response search at '_embedded.target[0].name' equal to targetOne

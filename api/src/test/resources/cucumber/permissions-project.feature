@@ -5,7 +5,6 @@ Feature: Validate permissions for create, update (specific and all fields), get 
                   accountOne -> teamOne -> projectOne
                   accountTwo -> teamTwo
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       Then the response status is 200
       When request json body has:
         | name     | teamOne              |
@@ -13,7 +12,6 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       And send POST /team
       Then the response status is 201
       Given a REST client authenticated as user2 with password ""
-      And send GET /
       Then the response status is 200
       When request json body has:
         | name     | teamTwo              |
@@ -21,7 +19,6 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       And send POST /team
       Then the response status is 201
       Given a REST client authenticated as superadmin with password ""
-      And send GET /
       Then the response status is 200
       Given a REST client authenticated as admin with password pass
       When request json body has:

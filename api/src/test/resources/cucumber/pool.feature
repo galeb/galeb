@@ -15,7 +15,6 @@ Feature: Pool tests
     Then the response status is 201
     # Create projOne
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |
@@ -46,7 +45,6 @@ Feature: Pool tests
 
   Scenario: Should have balance policy on create rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name  | poolTwo |
@@ -57,7 +55,6 @@ Feature: Pool tests
 
   Scenario: Should have envinronment on create rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name  | poolTwo |
@@ -68,7 +65,6 @@ Feature: Pool tests
 
   Scenario: Should have project on create rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name  | poolTwo |
@@ -79,7 +75,6 @@ Feature: Pool tests
 
   Scenario: Create duplicated Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name  | poolOne |
@@ -91,7 +86,6 @@ Feature: Pool tests
 
   Scenario: Get Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When send GET Pool=poolOne
     Then the response status is 200
@@ -99,14 +93,12 @@ Feature: Pool tests
 
   Scenario: Get null Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When send GET Pool=NULL
     Then the response status is 404
 
   Scenario: Update Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name        | poolOneChanged            |
@@ -120,7 +112,6 @@ Feature: Pool tests
 
   Scenario: Update name field of Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name | poolTwo |
@@ -132,7 +123,6 @@ Feature: Pool tests
 
   Scenario: Delete Pool
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When send DELETE Pool=poolOne
     Then the response status is 204
@@ -146,14 +136,12 @@ Feature: Pool tests
 
   Scenario: Search Pool by Name
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When send GET /pool/search/findByName?name=poolOne
     Then the response search at '_embedded.pool[0].name' equal to poolOne
 
   Scenario: Search Pool by NameContaining
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When send GET /pool/search/findByNameContaining?name=One
     Then the response search at '_embedded.pool[0].name' equal to poolOne

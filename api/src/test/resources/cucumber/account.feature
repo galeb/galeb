@@ -5,10 +5,8 @@ Feature: Account Support
 
     Background:
       Given a REST client authenticated as adminTeamOne with password ""
-      And send GET /
       Then the response status is 200
       Given a REST client authenticated as accountOne with password ""
-      And send GET /
       Then the response status is 200
       Given a REST client authenticated as admin with password pass
       When request json body has:

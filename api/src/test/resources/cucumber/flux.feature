@@ -15,7 +15,6 @@ Feature: Flux
     Then the response status is 201
     # Create projOne
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |

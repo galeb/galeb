@@ -29,7 +29,6 @@ Feature: Flux
 
   Scenario: validate permissions for Account with role default
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     And send GET Account=user1
     Then the response status is 200
@@ -50,7 +49,6 @@ Feature: Flux
 
   Scenario: validate permissions for Team with role default
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name     | teamTwo              |
     And send POST /team
@@ -74,7 +72,6 @@ Feature: Flux
 
   Scenario: validate permissions for Project with role default
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name     | teamTwo              |
       | accounts | [Account=user1]        |

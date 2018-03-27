@@ -18,7 +18,6 @@ Feature: VirtualHost Support
     Then the response status is 201
       # Create projOne
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |
@@ -39,7 +38,6 @@ Feature: VirtualHost Support
 
     Scenario: Create duplicated Virtualhost
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When request json body has:
         | name        | one                |
         | environments | [Environment=envOne] |
@@ -49,7 +47,6 @@ Feature: VirtualHost Support
 
     Scenario: Get VirtualHost
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When send GET /virtualhost/1
       Then the response status is 200
       And property name contains one
@@ -61,7 +58,6 @@ Feature: VirtualHost Support
 
     Scenario: Update VirtualHost
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When request json body has:
         | name        | two                |
         | environments | [Environment=envOne] |
@@ -74,7 +70,6 @@ Feature: VirtualHost Support
 
     Scenario: Update name field of VirtualHost
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When request json body has:
         | name | two |
       And send PATCH /virtualhost/1
@@ -85,7 +80,6 @@ Feature: VirtualHost Support
 
     Scenario: Update project field of VirtualHost (name update is ignored)
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When request json body has:
         | name  | projTwo |
         | teams | [Team=teamlocal] |
@@ -101,7 +95,6 @@ Feature: VirtualHost Support
 
     Scenario: Delete VirtualHost
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When send DELETE /virtualhost/1
       Then the response status is 204
       When send GET /virtualhost/1
@@ -116,7 +109,6 @@ Feature: VirtualHost Support
 
     Scenario: Invalid environment return Bad Request
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When request json body has:
         | name        | three           |
         | environments | [Environment=two] |
@@ -126,12 +118,10 @@ Feature: VirtualHost Support
 
     Scenario: Search VirtualHost by Name
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When send GET /virtualhost/search/findByName?name=one
       Then the response search at '_embedded.virtualhost[0].name' equal to one
 
     Scenario: Search VirtualHost by NameContaining
       Given a REST client authenticated as user1 with password ""
-      And send GET /
       When send GET /virtualhost/search/findByNameContaining?name=n
       Then the response search at '_embedded.virtualhost[0].name' equal to one

@@ -12,7 +12,6 @@ Feature: RuleOrdered tests
     And send POST /balancepolicy
     Then the response status is 201
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |
@@ -39,7 +38,6 @@ Feature: RuleOrdered tests
 
   Scenario: Conflict when create rule ordered without VirtualHostGroup
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -50,7 +48,6 @@ Feature: RuleOrdered tests
 
   Scenario: Conflict when create rule ordered without Rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -61,7 +58,6 @@ Feature: RuleOrdered tests
 
   Scenario: Conflict when create rule ordered without Environment
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | roOne |
       | order | 1     |
@@ -72,7 +68,6 @@ Feature: RuleOrdered tests
 
   Scenario: Conflit when duplicate rule ordered
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -90,7 +85,6 @@ Feature: RuleOrdered tests
 
   Scenario: Should patch the field order
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -105,7 +99,6 @@ Feature: RuleOrdered tests
 
   Scenario: Should patch the relationship rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -131,7 +124,6 @@ Feature: RuleOrdered tests
     And send POST /environment
     Then the response status is 201
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -153,7 +145,6 @@ Feature: RuleOrdered tests
     And send POST /virtualhost
     Then the response status is 201
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -168,7 +159,6 @@ Feature: RuleOrdered tests
 
   Scenario: Should delete roleordered
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |

@@ -15,7 +15,6 @@ Feature: Rule tests
     Then the response status is 201
     # Create projOne
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     Then the response status is 200
     When request json body has:
       | name     | teamlocal              |
@@ -46,7 +45,6 @@ Feature: Rule tests
 
   Scenario: Should does not create duplicate rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | ruleOne |
       | matching  | / |
@@ -57,7 +55,6 @@ Feature: Rule tests
 
   Scenario: Should create rule in another pool and another project
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | projTwo |
       | teams | [Team=teamlocal] |
@@ -79,7 +76,6 @@ Feature: Rule tests
 
   Scenario: Should create rule with same pool and another project
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | projTwo |
       | teams | [Team=teamlocal] |
@@ -95,13 +91,11 @@ Feature: Rule tests
 
   Scenario: Get null Rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET Rule=NULL
     Then the response status is 404
 
   Scenario: Update all fields of Rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When request json body has:
       | name  | projTwo |
       | teams | [Team=teamlocal] |
@@ -132,7 +126,6 @@ Feature: Rule tests
 
   Scenario: Should delete rule
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     And send DELETE /rule/1
     Then the response status is 204
     And send GET Rule=ruleOne
@@ -141,12 +134,10 @@ Feature: Rule tests
 
   Scenario: Search Rule by Name
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET /rule/search/findByName?name=ruleOne
     Then the response search at '_embedded.rule[0].name' equal to ruleOne
 
   Scenario: Search Rule by NameContaining
     Given a REST client authenticated as user1 with password ""
-    And send GET /
     When send GET /rule/search/findByNameContaining?name=One
     Then the response search at '_embedded.rule[0].name' equal to ruleOne

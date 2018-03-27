@@ -70,6 +70,7 @@ Feature: Flux
     And send DELETE Team=teamOne
     Then the response status is 403
 
+  @active-now
   Scenario: validate permissions for Project with role default
     Given a REST client authenticated as user1 with password ""
     When request json body has:
@@ -137,3 +138,15 @@ Feature: Flux
       | pool  | Pool=poolOne |
     And send POST /target
     Then the response status is 201
+    And send DELETE Target=targetTwo
+    Then the response status is 204
+    And send DELETE Pool=poolOne
+    Then the response status is 204
+    And send DELETE /ruleordered/1
+    Then the response status is 204
+    And send DELETE VirtualHost=vhOne
+    Then the response status is 204
+    And send DELETE Rule=ruleOne
+    Then the response status is 204
+    And send DELETE Pool=poolOne
+    Then the response status is 204

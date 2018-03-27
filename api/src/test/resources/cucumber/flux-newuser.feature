@@ -82,6 +82,9 @@ Feature: Flux
       | teams | [Team=teamTwo] |
     And send POST /project
     Then the response status is 201
+    And send GET /balancepolicy
+    Then the response status is 200
+    And the response search at '_embedded.balancepolicy[0].name' equal to balancePolicyOne
     When request json body has:
       | name  | poolOne |
       | environment  | Environment=EnvOne |
@@ -89,6 +92,9 @@ Feature: Flux
       | project  | Project=projTwo |
     And send POST /pool
     Then the response status is 201
+    And send GET /pool
+    Then the response status is 200
+    And the response search at '_embedded.pool[0].name' equal to poolOne
     When request json body has:
       | name  | ruleOne |
       | matching  | / |
@@ -96,12 +102,18 @@ Feature: Flux
       | project  | Project=projTwo |
     And send POST /rule
     Then the response status is 201
+    And send GET /rule
+    Then the response status is 200
+    And the response search at '_embedded.rule[0].name' equal to ruleOne
     When request json body has:
       | name  | vhOne |
       | project  | Project=projTwo |
       | environments  | [Environment=EnvOne] |
     And send POST /virtualhost
     Then the response status is 201
+    And send GET /virtualhost
+    Then the response status is 200
+    And the response search at '_embedded.virtualhost[0].name' equal to vhOne
     When request json body has:
       | order | 1     |
       | rule  | Rule=ruleOne |
@@ -109,11 +121,17 @@ Feature: Flux
       | virtualhostgroup | VirtualhostGroup=vhOne |
     And send POST /ruleordered
     Then the response status is 201
+    And send GET /ruleordered
+    Then the response status is 200
+    And the response search at '_embedded.ruleordered[0].order' has number 1
     When request json body has:
       | name  | targetOne |
       | pool  | Pool=poolOne |
     And send POST /target
     Then the response status is 201
+    And send GET /target
+    Then the response status is 200
+    And the response search at '_embedded.target[0].name' equal to targetOne
     When request json body has:
       | name  | targetTwo |
       | pool  | Pool=poolOne |

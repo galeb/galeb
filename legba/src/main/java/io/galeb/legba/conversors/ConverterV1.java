@@ -23,7 +23,7 @@ public class ConverterV1 implements Converter {
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     @Override
-    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String zoneId, String envId) {
+    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String zoneId, Long envId) {
         List<io.galeb.legba.model.v1.VirtualHost> list = new ArrayList<>();
         List<String> keysFullHash = new ArrayList<>();
         virtualHostList.stream().forEach(vh -> {
@@ -34,7 +34,7 @@ public class ConverterV1 implements Converter {
             v.setRules(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, zoneId, envId, keysFullHash));
 
             io.galeb.legba.model.v1.Environment environment = new io.galeb.legba.model.v1.Environment();
-            io.galeb.core.entity.Environment env = vh.getEnvironments().stream().filter(e -> e.getId() == Long.valueOf(envId)).findFirst().get();
+            io.galeb.core.entity.Environment env = vh.getEnvironments().stream().filter(e -> e.getId() == envId).findFirst().get();
             environment.setId(env.getId());
 
             Map<String, String> map = new HashMap<>();
@@ -56,7 +56,7 @@ public class ConverterV1 implements Converter {
         return gson.toJson(newList);
     }
 
-    private Set<io.galeb.legba.model.v1.Rule> convertVirtualhostGroup(io.galeb.core.entity.VirtualhostGroup virtualhostgroup, String numRouters, String zoneId, String envId, List<String> keysFullHash) {
+    private Set<io.galeb.legba.model.v1.Rule> convertVirtualhostGroup(io.galeb.core.entity.VirtualhostGroup virtualhostgroup, String numRouters, String zoneId, Long envId, List<String> keysFullHash) {
 
         Set<io.galeb.legba.model.v1.Rule> rules = new HashSet<>();
 
@@ -82,10 +82,10 @@ public class ConverterV1 implements Converter {
         return rules;
     }
 
-    private io.galeb.legba.model.v1.Pool convertPools(Set<io.galeb.core.entity.Pool> pools, String numRouters, String zoneId, String envId, List<String> keysFullHash) {
+    private io.galeb.legba.model.v1.Pool convertPools(Set<io.galeb.core.entity.Pool> pools, String numRouters, String zoneId, Long envId, List<String> keysFullHash) {
         io.galeb.legba.model.v1.Pool pool = new io.galeb.legba.model.v1.Pool();
         Set<io.galeb.legba.model.v1.Target> targets = new HashSet<>();
-        pools.stream().filter(p -> p.getEnvironment().getId() == Long.valueOf(envId)).forEach(p -> {
+        pools.stream().filter(p -> p.getEnvironment().getId() == envId).forEach(p -> {
             keysFullHash.add(p.getLastModifiedAt().toString());
 
             pool.setName(p.getName());

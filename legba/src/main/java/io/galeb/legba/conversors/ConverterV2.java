@@ -16,7 +16,7 @@ public class ConverterV2 implements Converter {
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     @Override
-    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String networkId, String envId) {
+    public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String networkId, Long envId) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
         virtualHostList.stream().forEach(vh -> {
 

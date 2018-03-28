@@ -9,7 +9,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.List;
 
-@RepositoryRestResource(path = "virtualhost", collectionResourceRel = "virtualhost", itemResourceRel = "virtualhost")
+@RepositoryRestResource(exported = false, path = "virtualhost", collectionResourceRel = "virtualhost", itemResourceRel = "virtualhost")
 public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> {
 
     @RestResource(exported = false)
@@ -17,10 +17,4 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             "inner join v.environments as e " +
             "WHERE e.id = :envId")
     List<VirtualHost> findAllByEnvironmentId(@Param("envId") Long envId);
-
-    @RestResource(exported = false)
-    @Query(value = "SELECT DISTINCT v FROM VirtualHost as v " +
-            "inner join v.environments as e " +
-            "WHERE e.name = :envName")
-    List<VirtualHost> findAllByEnvironmentName(@Param("envName") String envName);
 }

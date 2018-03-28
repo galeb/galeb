@@ -4,12 +4,10 @@ import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.conversors.Converter;
 import io.galeb.legba.conversors.ConverterBuilder;
-import io.galeb.legba.repository.EnvironmentRepository;
 import io.galeb.legba.services.CopyService;
 import io.galeb.legba.services.RoutersService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.h2.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 @RequestMapping(value = {"virtualhostscached", "{apiVersion:.+}/virtualhostscached"}, produces = MediaType.APPLICATION_JSON_VALUE)
-public class VirtualHostCachedController {
+public class VirtualHostCachedController extends AbstractController {
 
     private static final Log LOGGER = LogFactory.getLog(VirtualHostCachedController.class);
 
@@ -35,9 +33,6 @@ public class VirtualHostCachedController {
 
     @Autowired
     private RoutersService routersService;
-
-    @Autowired
-    private EnvironmentRepository environmentRepository;
 
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
     public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
@@ -68,13 +63,5 @@ public class VirtualHostCachedController {
         }
         return new ResponseEntity<>(cache, OK);
 
-    }
-
-    private Long getEnvironmentId(String envname) {
-        if (StringUtils.isNumber(envname)) {
-            return Long.parseLong(envname);
-        } else {
-            return environmentRepository.findByNameIgnoreCase(envname).getId();
-        }
     }
 }

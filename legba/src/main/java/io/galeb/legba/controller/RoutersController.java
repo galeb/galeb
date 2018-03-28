@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value="/routers", produces = MediaType.APPLICATION_JSON_VALUE)
-public class RoutersController {
+public class RoutersController extends AbstractController {
 
     private final Gson gson = new Gson();
 
@@ -29,9 +29,10 @@ public class RoutersController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<?> headRouterMap(@RequestHeader(value = "X-Galeb-LocalIP") String routerLocalIP,
                                            @RequestHeader(value = "X-Galeb-GroupID") String routerGroupId,
-                                           @RequestHeader(value = "X-Galeb-Environment") String envid,
+                                           @RequestHeader(value = "X-Galeb-Environment") String envName,
                                            @RequestHeader(value = "If-None-Match") String version) throws Exception {
-        routersService.put(routerGroupId, routerLocalIP, version, envid);
+        Long envId = getEnvironmentId(envName);
+        routersService.put(routerGroupId, routerLocalIP, version, envId.toString());
         return ResponseEntity.ok().build();
     }
 

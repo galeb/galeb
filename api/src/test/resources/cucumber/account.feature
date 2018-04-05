@@ -27,7 +27,7 @@ Feature: Account Support
 
     Scenario: Get null Account
       Given a REST client authenticated as adminTeamOne with password ""
-      When send GET /account/2
+      When send GET /account/99
       Then the response status is 404
 
     Scenario: Create duplicated Account
@@ -44,7 +44,7 @@ Feature: Account Support
         | username     | accountThree            |
         | email    | test3@teste.com             |
       And send PUT Account=adminTeamOne
-      Then the response status is 403
+      Then the response status is 200
       And a REST client authenticated as adminTeamOne with password ""
       When send GET Account=adminTeamOne
       Then the response status is 200
@@ -64,7 +64,7 @@ Feature: Account Support
     Scenario: Delete Account Denied
       Given a REST client authenticated as adminTeamOne with password ""
       When send DELETE Account=accountOne
-      Then the response status is 404
+      Then the response status is 403
 
     Scenario: Delete Account
       Given a REST client authenticated as admin with password pass

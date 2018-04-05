@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -49,18 +50,14 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
     @Override
     public Set<String> roles(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<RoleGroup> roleGroups;
         if (criteria instanceof Team) {
-            roleGroups = em.createNamedQuery("roleGroupsTeam", RoleGroup.class)
-                    .setParameter("team_id", ((Team)criteria).getId())
-                    .setParameter("account_id", account.getId())
-                    .getResultList();
-            return roleGroups.stream().flatMap(rg -> rg.getRoles().stream()).map(Enum::toString).collect(Collectors.toSet());
-        }
-        if (criteria instanceof Account) {
-            roleGroups = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
-                    .setParameter("id", account.getId())
-                    .getResultList();
+            List<RoleGroup> roleGroups = new ArrayList<>();
+            if (((Team)criteria).getId() != 0) {
+                roleGroups = em.createNamedQuery("roleGroupsTeam", RoleGroup.class)
+                        .setParameter("team_id", ((Team) criteria).getId())
+                        .setParameter("account_id", account.getId())
+                        .getResultList();
+            }
             return roleGroups.stream().flatMap(rg -> rg.getRoles().stream()).map(Enum::toString).collect(Collectors.toSet());
         }
         if (criteria instanceof Long) {

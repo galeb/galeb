@@ -53,25 +53,6 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     }
 
     @Override
-    public Account findOne(Long id) {
-        Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        boolean isViewAll;
-        if (LocalAdminService.NAME.equals(account.getUsername())) {
-            isViewAll = true;
-        } else {
-            Set<String> roles = mergeRoles(-1L);
-            String roleView = Account.class.getSimpleName().toUpperCase() + "_VIEW";
-
-            String roleViewAll = roleView + "_ALL";
-            isViewAll = roles.contains(roleViewAll);
-        }
-        if (isViewAll || account.getId() == id) {
-            return super.findOne(id);
-        }
-        return null;
-    }
-
-    @Override
     @Transactional
     public Account saveByPass(Account entity) {
         Account account = super.saveByPass(entity);
@@ -86,11 +67,6 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Set<String> roles = account.getRolegroups().stream().flatMap(rg -> rg.getRoles().stream())
                 .map(Object::toString).distinct().collect(Collectors.toSet());
-        List<RoleGroup> roleGroups = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
-                .setParameter("id", account.getId())
-                .getResultList();
-        roles.addAll(roleGroups.stream().flatMap(rg -> rg.getRoles().stream())
-                .map(Object::toString).distinct().collect(Collectors.toSet()));
         return roles;
     }
 

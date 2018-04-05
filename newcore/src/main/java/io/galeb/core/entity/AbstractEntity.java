@@ -24,6 +24,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -33,6 +34,7 @@ import java.util.Set;
 
 @MappedSuperclass
 @JsonCustomProperties
+@EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -58,7 +60,6 @@ public abstract class AbstractEntity implements Serializable {
     @LastModifiedBy
     @Column(nullable = false)
     @JsonProperty("_last_modified_by")
-
     private String lastModifiedBy;
 
     @LastModifiedDate
@@ -72,20 +73,6 @@ public abstract class AbstractEntity implements Serializable {
     @JsonIgnore
     @Transient
     private Set<Environment> allEnvironments = new HashSet<>();
-
-    @PrePersist
-    private void onCreate() {
-        createdAt = new Date();
-        createdBy = getCurrentAuditor();;
-        lastModifiedAt = createdAt;
-        lastModifiedBy = createdBy;
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        lastModifiedAt = new Date();
-        lastModifiedBy = "";
-    }
 
     private String description;
 
@@ -161,9 +148,9 @@ public abstract class AbstractEntity implements Serializable {
         this.allEnvironments = allEnvironments;
     }
 
-    private String getCurrentAuditor() {
-        final SpringSecurityAuditorAware auditorAware = new SpringSecurityAuditorAware();
-        return auditorAware.getCurrentAuditor();
-    }
+//    private String getCurrentAuditor() {
+//        final SpringSecurityAuditorAware auditorAware = new SpringSecurityAuditorAware();
+//        return auditorAware.getCurrentAuditor();
+//    }
 
 }

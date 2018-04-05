@@ -1,4 +1,4 @@
-@active
+@active-now
 Feature: Validate permissions for create, update (specific and all fields), get and delete projects.
     Background: Creates three users: accountOne, accountTwo and accountSuperAdmin
                 Creates also teamOne, teamTwo, projectOne and relationships as below:

@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess, unused")
-@Service("perm")
+@Service("perm-old")
 public class PermissionService {
 
     public enum Action {
@@ -167,9 +167,9 @@ public class PermissionService {
     }
 
     private boolean isAdmin(Account account, String entityClass, String action, Object criteria) {
-        if (hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria)) {
-            return true;
-        }
+//        if (hasSelfRole(account, Role.ADMIN.toString(), entityClass, action, criteria)) {
+//            return true;
+//        }
         boolean result = LocalAdminService.NAME.equals(account.getUsername());
         auditService.logAccess(null, Collections.emptySet(), result, entityClass, action, criteria,  AuditType.LOCAL_ADMIN);
         return result;

@@ -68,8 +68,8 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer statusCode = exchange.getStatusCode();
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
-            final String statsdKeyFull = cleanUpKey(VH_PREFIX + virtualhost) + "." + cleanUpKey(targetUri);
-            final String statsdKeyVirtualHost = cleanUpKey(VH_PREFIX + virtualhost);
+            final String statsdKeyFull = VH_PREFIX + cleanUpKey(virtualhost) + "." + cleanUpKey(targetUri);
+            final String statsdKeyVirtualHost = VH_PREFIX + cleanUpKey(virtualhost);
             final String statsdKeyEnvironmentName = ENV_PREFIX + ENVIRONMENT_NAME;
 
             Set<String> keys = new HashSet<>();
@@ -77,10 +77,10 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             keys.add(statsdKeyVirtualHost);
             keys.add(statsdKeyEnvironmentName);
             if (poolName != null) {
-                final String statsdKeyPool = cleanUpKey(POOL_PREFIX + poolName);
-                final String statsdKeyPoolTarget = cleanUpKey(POOL_PREFIX + poolName + "." + cleanUpKey(targetUri));
-                final String statsdKeyVirtualHostPool = cleanUpKey(statsdKeyVirtualHost + "." + poolName);
-                final String statsdKeyVirtualHostPoolTarget = cleanUpKey(statsdKeyVirtualHost + "." + poolName + "." + cleanUpKey(targetUri));
+                final String statsdKeyPool = POOL_PREFIX + cleanUpKey(poolName);
+                final String statsdKeyPoolTarget = POOL_PREFIX + cleanUpKey(poolName + "." + cleanUpKey(targetUri));
+                final String statsdKeyVirtualHostPool = statsdKeyVirtualHost + cleanUpKey("." + poolName);
+                final String statsdKeyVirtualHostPoolTarget = statsdKeyVirtualHost + cleanUpKey("." + poolName + "." + targetUri);
                 keys.add(statsdKeyPool);
                 keys.add(statsdKeyPoolTarget);
                 keys.add(statsdKeyVirtualHostPool);

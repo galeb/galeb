@@ -38,9 +38,9 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
     private static final String UNDEF = "UNDEF";
 
-    private static final String VH_PREFIX   = "VH_";
-    private static final String ENV_PREFIX  = "ENV_";
-    private static final String POOL_PREFIX = "POOL_";
+    private static final String VH_PREFIX   = "VH.";
+    private static final String ENV_PREFIX  = "ENV.";
+    private static final String POOL_PREFIX = "POOL.";
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -110,7 +110,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
     private void sendStatusCodeCount(Set<String> keys, Integer statusCode, boolean targetIsUndef) {
         int realStatusCode = targetIsUndef ? 503 : statusCode;
-        keys.stream().forEach(key -> statsdClient.incr(key + ".httpCode" + realStatusCode));
+        keys.stream().forEach(key -> statsdClient.incr(key + ".httpCode." + realStatusCode));
     }
 
     private void sendActiveConnCount(Set<String> keys, Integer clientOpenConnection, boolean targetIsUndef) {

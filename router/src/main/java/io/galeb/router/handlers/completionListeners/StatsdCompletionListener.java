@@ -68,19 +68,19 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer statusCode = exchange.getStatusCode();
             final String method = exchange.getRequestMethod().toString();
             final Integer responseTime = getResponseTime(exchange);
-            final String statsdKeyFull = VH_PREFIX + cleanUpKey(virtualhost) + "." + cleanUpKey(targetUri);
             final String statsdKeyVirtualHost = VH_PREFIX + cleanUpKey(virtualhost);
+            final String statsdKeyVirtualHostTarget = statsdKeyVirtualHost + "." + cleanUpKey(targetUri);
             final String statsdKeyEnvironmentName = ENV_PREFIX + ENVIRONMENT_NAME;
 
             Set<String> keys = new HashSet<>();
-            keys.add(statsdKeyFull);
+            keys.add(statsdKeyVirtualHostTarget);
             keys.add(statsdKeyVirtualHost);
             keys.add(statsdKeyEnvironmentName);
             if (poolName != null) {
                 final String statsdKeyPool = POOL_PREFIX + cleanUpKey(poolName);
-                final String statsdKeyPoolTarget = POOL_PREFIX + cleanUpKey(poolName + "." + cleanUpKey(targetUri));
-                final String statsdKeyVirtualHostPool = statsdKeyVirtualHost + cleanUpKey("." + poolName);
-                final String statsdKeyVirtualHostPoolTarget = statsdKeyVirtualHost + cleanUpKey("." + poolName + "." + targetUri);
+                final String statsdKeyPoolTarget = statsdKeyPool + "." + cleanUpKey(targetUri);
+                final String statsdKeyVirtualHostPool = statsdKeyVirtualHost + "." + cleanUpKey(poolName);
+                final String statsdKeyVirtualHostPoolTarget = statsdKeyVirtualHostPool + "." + cleanUpKey(targetUri);
                 keys.add(statsdKeyPool);
                 keys.add(statsdKeyPoolTarget);
                 keys.add(statsdKeyVirtualHostPool);
@@ -93,11 +93,11 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
             if (sendOpenconnCounter) {
                 final Integer clientOpenConnection = exchange.getAttachment(ClientStatisticsMarker.TARGET_CONN);
-                final String statsdKeyEnvironmentNameFull = statsdKeyEnvironmentName + "." + virtualhost;
+                final String statsdKeyEnvironmentNameVirtualhost = statsdKeyEnvironmentName + "." + cleanUpKey(virtualhost);
                 Set<String> keysToConnCount = new HashSet<>();
-                keysToConnCount.add(statsdKeyFull);
+                keysToConnCount.add(statsdKeyVirtualHostTarget);
                 keysToConnCount.add(statsdKeyEnvironmentName);
-                keysToConnCount.add(statsdKeyEnvironmentNameFull);
+                keysToConnCount.add(statsdKeyEnvironmentNameVirtualhost);
                 sendActiveConnCount(keysToConnCount, clientOpenConnection, targetIsUndef);
             }
 
@@ -110,21 +110,21 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
 
     private void sendStatusCodeCount(Set<String> keys, Integer statusCode, boolean targetIsUndef) {
         int realStatusCode = targetIsUndef ? 503 : statusCode;
-        keys.stream().forEach(key -> statsdClient.incr(key + ".httpCode." + realStatusCode));
+        keys.forEach(key -> statsdClient.incr(key + ".httpCode." + realStatusCode));
     }
 
     private void sendActiveConnCount(Set<String> keys, Integer clientOpenConnection, boolean targetIsUndef) {
         int conn = (clientOpenConnection != null && !targetIsUndef) ? clientOpenConnection : 0;
-        keys.stream().forEach(key -> statsdClient.gauge(key + ".activeConns", conn));
+        keys.forEach(key -> statsdClient.gauge(key + ".activeConns", conn));
     }
 
     private void sendHttpMethodCount(Set<String> keys, String method) {
-        keys.stream().forEach(key -> statsdClient.count(key + ".httpMethod." + method, 1));
+        keys.forEach(key -> statsdClient.count(key + ".httpMethod." + method, 1));
     }
 
     private void sendResponseTime(Set<String> keys, long requestTime, boolean targetIsUndef) {
         long realRequestTime = targetIsUndef ? 0 : requestTime;
-        keys.stream().forEach(key -> statsdClient.timing(key + ".requestTime", realRequestTime));
+        keys.forEach(key -> statsdClient.timing(key + ".requestTime", realRequestTime));
     }
 
     private int getResponseTime(HttpServerExchange exchange) {

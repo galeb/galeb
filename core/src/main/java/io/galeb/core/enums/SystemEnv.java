@@ -255,22 +255,22 @@ public enum SystemEnv {
     /**
      * Statsd environment tag.
      */
-    STATSD_ENVIRONMENT_TAG  ("STATSD_ENVIRONMENT_TAG",  "ENV."),
+    STATSD_ENVIRONMENT_TAG  ("STATSD_ENVIRONMENT_TAG",  "_ENV_."),
 
     /**
      * Statsd virtualhost tag.
      */
-    STATSD_VIRTUALHOST_TAG  ("STATSD_VIRTUALHOST_TAG",  "VH."),
+    STATSD_VIRTUALHOST_TAG  ("STATSD_VIRTUALHOST_TAG",  "_VH_."),
 
     /**
      * Statsd pool tag.
      */
-    STATSD_POOL_TAG         ("STATSD_POOL_TAG",         "POOL."),
+    STATSD_POOL_TAG         ("STATSD_POOL_TAG",         "_POOL_."),
 
     /**
      * Statsd target tag.
      */
-    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "TARGET.");
+    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "_TARGET_.");
 
     /**
      * Gets SystemEnv value.

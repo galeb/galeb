@@ -67,10 +67,10 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer responseTime = getResponseTime(exchange);
 
             // @formatter:off
-            final String key = ENV_TAG    + "." + ENVIRONMENT_NAME + "." +
-                               VH_TAG     + "." + cleanUpKey(virtualhost) + "." +
-                               POOL_TAG   + "." + cleanUpKey(poolName) + "." +
-                               TARGET_TAG + "." + cleanUpKey(targetUri);
+            final String key = ENV_TAG    + ENVIRONMENT_NAME + "." +
+                               VH_TAG     + cleanUpKey(virtualhost) + "." +
+                               POOL_TAG   + cleanUpKey(poolName) + "." +
+                               TARGET_TAG + cleanUpKey(targetUri);
             // @formatter:on
 
             sendStatusCodeCount(key, statusCode, isTargetUnknown);

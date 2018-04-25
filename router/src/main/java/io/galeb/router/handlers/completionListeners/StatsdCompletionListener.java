@@ -108,7 +108,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
         return Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange)));
     }
 
-    private String cleanUpKey(String str) {
+    public String cleanUpKey(String str) {
         if (str == null) return UNDEF;
         if (str.startsWith("http://")) str = str.substring(7);
         char[] value = str.toCharArray();
@@ -116,7 +116,15 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
         int i = -1;
         int len = value.length;
         char buf[] = new char[len];
-        while (++i < len) for (int j = -1; ++j < invalidChars.length;) buf[i] = (value[i] == invalidChars[j]) ? '_' : value[i];
+        while (++i < len) {
+            buf[i] = value[i];
+            for (int j = -1; ++j < invalidChars.length;) {
+                if (buf[i] == invalidChars[j]) {
+                    buf[i] = '_';
+                    break;
+                }
+            }
+        }
         return new String(buf);
     }
 }

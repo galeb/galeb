@@ -250,7 +250,27 @@ public enum SystemEnv {
     /**
      * Enable JMX reporter (Undertow front-end metrics)
      */
-    ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE);
+    ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE),
+
+    /**
+     * Statsd environment tag.
+     */
+    STATSD_ENVIRONMENT_TAG  ("STATSD_ENVIRONMENT_TAG",  "ENV"),
+
+    /**
+     * Statsd virtualhost tag.
+     */
+    STATSD_VIRTUALHOST_TAG  ("STATSD_VIRTUALHOST_TAG",  "VH"),
+
+    /**
+     * Statsd pool tag.
+     */
+    STATSD_POOL_TAG         ("STATSD_POOL_TAG",         "POOL"),
+
+    /**
+     * Statsd target tag.
+     */
+    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "TARGET");
 
     /**
      * Gets SystemEnv value.

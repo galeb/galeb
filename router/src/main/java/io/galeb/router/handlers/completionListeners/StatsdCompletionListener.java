@@ -39,7 +39,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
     private static final String POOL_TAG   = SystemEnv.STATSD_POOL_TAG.getValue();
     private static final String TARGET_TAG = SystemEnv.STATSD_TARGET_TAG.getValue();
 
-    private static final String ENVIRONMENT_NAME = cleanUpKey(SystemEnv.ENVIRONMENT_NAME.getValue().replaceAll("-","_").toLowerCase());
+    private final String environmentName = cleanUpKey(SystemEnv.ENVIRONMENT_NAME.getValue().replaceAll("-","_").toLowerCase());
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
@@ -67,7 +67,7 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
             final Integer responseTime = getResponseTime(exchange);
 
             // @formatter:off
-            final String key = ENV_TAG    + ENVIRONMENT_NAME + "." +
+            final String key = ENV_TAG    + environmentName + "." +
                                VH_TAG     + cleanUpKey(virtualhost) + "." +
                                POOL_TAG   + cleanUpKey(poolName) + "." +
                                TARGET_TAG + cleanUpKey(targetUri);
@@ -108,7 +108,15 @@ public class StatsdCompletionListener extends ProcessorLocalStatusCode implement
         return Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange)));
     }
 
-    private static String cleanUpKey(String str) {
-        return str.replaceAll("http://", "").replaceAll("[.: ]", "_");
+    private String cleanUpKey(String str) {
+        if (str == null) return UNDEF;
+        if (str.startsWith("http://")) str = str.substring(7);
+        char[] value = str.toCharArray();
+        char[] invalidChars = new char[]{':','.',' '};
+        int i = -1;
+        int len = value.length;
+        char buf[] = new char[len];
+        while (++i < len) for (int j = -1; ++j < invalidChars.length;) buf[i] = (value[i] == invalidChars[j]) ? '_' : value[i];
+        return new String(buf);
     }
 }

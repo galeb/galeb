@@ -35,6 +35,7 @@ dist: galeb
         cp -av ../../initscript wrapper/bin/ && \
         cd .. && \
         fpm -s dir \
+            --rpm-rpmbuild-define '_binaries_in_noarch_packages_terminate_build 0' \
             -t rpm \
             -n "galeb-$$service" \
             -v ${RPM_VER} \

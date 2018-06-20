@@ -1,5 +1,6 @@
 package io.galeb.legba.controller;
 
+import com.google.gson.Gson;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.conversors.Converter;
@@ -15,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -24,6 +27,7 @@ import static org.springframework.http.HttpStatus.OK;
 public class VirtualHostCachedController extends AbstractController {
 
     private static final Log LOGGER = LogFactory.getLog(VirtualHostCachedController.class);
+    private final Gson gson = new Gson();
 
     @Autowired
     private VersionService versionService;
@@ -45,8 +49,18 @@ public class VirtualHostCachedController extends AbstractController {
         Assert.notNull(version, "version undefined");
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
+
+        Map<String, String> mapLog = new HashMap<>();
+        mapLog.put("actualVersion", actualVersion);
+        mapLog.put("environmentId", String.valueOf(envId));
+        mapLog.put("environmentName", envName);
+        mapLog.put("groupId", routerGroupId);
+        mapLog.put("zoneId", zoneId);
+
         if (version.equals(actualVersion)) {
-            LOGGER.warn("If-None-Match header matchs with internal etag, then ignoring request");
+            mapLog.put("status", HttpStatus.NOT_MODIFIED.toString());
+            LOGGER.info(gson.toJson(mapLog));
+
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
@@ -57,11 +71,21 @@ public class VirtualHostCachedController extends AbstractController {
             List<VirtualHost> list = copyService.getVirtualHosts(envId);
             cache = converter.convertToString(list, numRouters, actualVersion, zoneId, envId);
             versionService.setCache(cache, envId.toString(), zoneId, actualVersion);
+
+            mapLog.put("apiVersion", apiVersion == null ? "default" : apiVersion);
+            mapLog.put("numRouters", numRouters);
+            mapLog.put("numVirtualHost", String.valueOf(list.size()));
         }
         if ("".equals(cache)) {
+            mapLog.put("status", HttpStatus.NOT_FOUND.toString());
+            LOGGER.info(gson.toJson(mapLog));
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return new ResponseEntity<>(cache, OK);
 
+        mapLog.put("status", HttpStatus.OK.toString());
+        LOGGER.info(gson.toJson(mapLog));
+
+        return new ResponseEntity<>(cache, OK);
     }
 }

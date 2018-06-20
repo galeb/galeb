@@ -1,5 +1,6 @@
 package io.galeb.legba.services;
 
+import com.google.gson.Gson;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
@@ -17,7 +18,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class RoutersService {
 
     private static final Log LOGGER = LogFactory.getLog(RoutersService.class);
-
+    private final Gson gson = new Gson();
 
     /**
      * Description arguments:
@@ -111,7 +114,12 @@ public class RoutersService {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, routerGroupId, routerLocalIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
             if (!redisTemplate.hasKey(key)) {
-                versionService.incrementVersion(envId);
+                Long versionIncremented = versionService.incrementVersion(envId);
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("keyAdded", key);
+                mapLog.put("versionIncremented", String.valueOf(versionIncremented));
+                mapLog.put("environmentId", envId);
+                LOGGER.info(gson.toJson(mapLog));
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
             updateRouterState(envId);
@@ -133,7 +141,13 @@ public class RoutersService {
             Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
             if (ttl == null || ttl < (REGISTER_TTL/2)) {
                 redisTemplate.delete(key);
-                versionService.incrementVersion(envId);
+                Long versionIncremented = versionService.incrementVersion(envId);
+
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("keyExpired", key);
+                mapLog.put("versionIncremented", String.valueOf(versionIncremented));
+                mapLog.put("environmentId", envId);
+                LOGGER.info(gson.toJson(mapLog));
             }
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
@@ -144,6 +158,12 @@ public class RoutersService {
                 String entityId = entry.getValue();
                 Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId");
                 query.setParameter("entityId", Long.parseLong(entityId)).executeUpdate();
+
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("entityIdDeleted", "entityId");
+                mapLog.put("environmentId", envId);
+
+                LOGGER.info(gson.toJson(mapLog));
             });
             changesService.delete(mapOfEntities.getKey());
         });

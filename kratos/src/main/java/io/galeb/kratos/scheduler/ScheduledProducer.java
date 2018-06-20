@@ -1,5 +1,6 @@
 package io.galeb.kratos.scheduler;
 
+import com.google.gson.Gson;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,6 +44,8 @@ public class ScheduledProducer {
     private final EnvironmentRepository environmentRepository;
     private final PoolRepository poolRepository;
     private final JmsTemplate template;
+
+    private Gson gson = new Gson();
 
     @Autowired
     public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, PoolRepository poolRepository, JmsTemplate template) {
@@ -75,8 +80,14 @@ public class ScheduledProducer {
                     break;
                 }
             }
-            LOGGER.info("[sch " + schedId + "] Sent " + counter.get() + " targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ") " +
-                    "[" + (System.currentTimeMillis() - start) + " ms] (before to start this task: " + size + " targets from db)");
+            Map<String, String> mapLog = new HashMap<>();
+            mapLog.put("class", ScheduledProducer.class.getSimpleName().toString());
+            mapLog.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
+            mapLog.put("schedId", schedId);
+            mapLog.put("countTarget", String.valueOf(counter.get()));
+            mapLog.put("time", String.valueOf(System.currentTimeMillis() - start));
+
+            LOGGER.info(gson.toJson(mapLog));
             counter.set(0);
         });
     }

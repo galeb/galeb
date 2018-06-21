@@ -76,3 +76,7 @@ security:
 
 flyway:
     enabled: ${FLYWAY_ENABLED:false}
+
+logbook:
+    write:
+        level: INFO

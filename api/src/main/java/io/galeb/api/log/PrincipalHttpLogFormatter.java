@@ -37,7 +37,7 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
 
     private String getPrincipal() {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        @Nullable final String principal = authentication.getName();
+        @Nullable final String principal = authentication == null ? null : authentication.getName();
         return principal == null ? "anonymous" : principal;
     }
 }

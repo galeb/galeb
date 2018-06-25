@@ -1,6 +1,6 @@
 package io.galeb.legba.services;
 
-import io.galeb.core.entity.*;
+import com.google.gson.Gson;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -18,14 +17,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class RoutersService {
 
     private static final Log LOGGER = LogFactory.getLog(RoutersService.class);
-
+    private final Gson gson = new Gson();
 
     /**
      * Description arguments:
@@ -33,7 +37,7 @@ public class RoutersService {
      * {1} - Group ID
      * {2} - Local IP
      */
-    private static final String FORMAT_KEY_VERSION = "routers:{0}:{1}:{2}";
+    private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
     public static long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
 
@@ -59,11 +63,11 @@ public class RoutersService {
 
             final Set<JsonSchema.Env> envs = new HashSet<>();
             String key_envid = environmentId == null ? "*" : environmentId;
-            redisTemplate.keys(MessageFormat.format(FORMAT_KEY_VERSION, key_envid, "*", "*")).forEach(key -> {
+            redisTemplate.keys(MessageFormat.format(FORMAT_KEY_ROUTERS, key_envid, "*", "*")).forEach(key -> {
                 try {
                     String etag = redisTemplate.opsForValue().get(key);
                     long expire = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
-                    MessageFormat ms = new MessageFormat(FORMAT_KEY_VERSION);
+                    MessageFormat ms = new MessageFormat(FORMAT_KEY_ROUTERS);
                     Object[] positions = ms.parse(key);
                     String env = (String) positions[0];
                     String groupId = (String) positions[1];
@@ -107,10 +111,15 @@ public class RoutersService {
     @Transactional
     public void put(String routerGroupId, String routerLocalIP, String version, String envId) {
         try {
-            String key = MessageFormat.format(FORMAT_KEY_VERSION, envId, routerGroupId, routerLocalIP);
+            String key = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, routerGroupId, routerLocalIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
             if (!redisTemplate.hasKey(key)) {
-                versionService.incrementVersion(envId);
+                Long versionIncremented = versionService.incrementVersion(envId);
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("keyAdded", key);
+                mapLog.put("versionIncremented", String.valueOf(versionIncremented));
+                mapLog.put("environmentId", envId);
+                LOGGER.info(gson.toJson(mapLog));
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
             updateRouterState(envId);
@@ -122,7 +131,7 @@ public class RoutersService {
     private void updateRouterState(String envId) {
         Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
         Set<Long> eTagRouters = new HashSet<>();
-        String keyAll = MessageFormat.format(FORMAT_KEY_VERSION, envId, "*", "*");
+        String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, "*", "*");
         redisTemplate.keys(keyAll).stream().forEach(key -> {
             try {
                 eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
@@ -132,7 +141,13 @@ public class RoutersService {
             Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
             if (ttl == null || ttl < (REGISTER_TTL/2)) {
                 redisTemplate.delete(key);
-                versionService.incrementVersion(envId);
+                Long versionIncremented = versionService.incrementVersion(envId);
+
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("keyExpired", key);
+                mapLog.put("versionIncremented", String.valueOf(versionIncremented));
+                mapLog.put("environmentId", envId);
+                LOGGER.info(gson.toJson(mapLog));
             }
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
@@ -143,6 +158,12 @@ public class RoutersService {
                 String entityId = entry.getValue();
                 Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId");
                 query.setParameter("entityId", Long.parseLong(entityId)).executeUpdate();
+
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("entityIdDeleted", "entityId");
+                mapLog.put("environmentId", envId);
+
+                LOGGER.info(gson.toJson(mapLog));
             });
             changesService.delete(mapOfEntities.getKey());
         });

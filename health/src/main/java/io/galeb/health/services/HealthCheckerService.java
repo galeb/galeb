@@ -16,6 +16,7 @@
 
 package io.galeb.health.services;
 
+import com.google.gson.Gson;
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Pool;
@@ -34,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -55,6 +58,8 @@ public class HealthCheckerService {
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
     private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
+
+    private final Gson gson = new Gson();
 
     @Autowired
     public HealthCheckerService(final CallBackQueue callBackQueue) {
@@ -132,25 +137,23 @@ public class HealthCheckerService {
                     healthStatus.setStatus(status);
                     healthStatus.setStatusDetailed(reason);
                     String logMessage = buildLogMessage(reason);
-                    if (status.equals(HealthStatus.Status.HEALTHY)) {
-                        logger.info(logMessage);
-                    } else {
-                        logger.warn(logMessage);
-                    }
+                    logger.info(logMessage);
                     if (!reason.equals(lastReason)) {
                         callBackQueue.update(healthStatus);
                     }
                 }
 
                 private String buildLogMessage(String reason) {
-                    return "Pool " + poolName + " -> " + "Test Params: { "
-                            + "ExpectedBody:\"" + hcBody + "\", "
-                            + "ExpectedStatusCode:" + hcStatusCode + ", "
-                            + "Host:\"" + hcHost + "\", "
-                            + "FullUrl:\"" + target.getName() + hcPath + "\", "
-                            + "ConnectionTimeout:" + connectionTimeout + "ms }, "
-                            + "Result: [ " + reason
-                            + " (request time: " + (System.currentTimeMillis() - start) + " ms) ]";
+                    Map<String, String> mapLog = new HashMap<>();
+                    mapLog.put("pool", poolName);
+                    mapLog.put("expectedBody", hcBody);
+                    mapLog.put("expectedStatusCode", hcStatusCode);
+                    mapLog.put("host", hcHost);
+                    mapLog.put("fullUrl", target.getName() + hcPath);
+                    mapLog.put("connectionTimeout", connectionTimeout + "");
+                    mapLog.put("result", reason);
+                    mapLog.put("requestTime", (System.currentTimeMillis() - start) + "");
+                    return gson.toJson(mapLog);
                 }
 
             });

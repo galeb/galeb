@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-  <Properties>
-    <Property name="LOGLEVEL">INFO</Property>
-    <Property name="hostname">${env:HOSTNAME}</Property>
-    <Property name="syslog_host">${env:SYSLOG_HOST}</Property>
-    <Property name="syslog_port">${env:SYSLOG_PORT}</Property>
-    <Property name="tags">GALEB,API</Property>
-  </Properties>
-  <Appenders>
-    <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} api: [%p] %t %enc{%m} %exception\ttags: ${tags},APP%n"/>
-    </Socket>
-  </Appenders>
-  <Loggers>
-    <Root level="trace">
-      <AppenderRef ref="SyslogApp" level="${env:LOGLEVEL}"/>
-    </Root>
-  </Loggers>
+<Properties>
+  <Property name="LOGLEVEL">INFO</Property>
+  <Property name="hostname">${env:HOSTNAME}</Property>
+  <Property name="syslog_host">${env:SYSLOG_HOST}</Property>
+  <Property name="syslog_port">${env:SYSLOG_PORT}</Property>
+  <Property name="tags">GALEB,API</Property>
+</Properties>
+<Appenders>
+
+  <Console name="STDOUT" target="SYSTEM_OUT">
+    <PatternLayout pattern="%m%n %exception"/>
+  </Console>
+
+  <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
+    <PatternLayout pattern="%m %exception\ttags: ${tags},APP%n"/>
+  </Socket>
+
+  <Async name="AsyncSyslogApp">
+    <AppenderRef ref="SyslogApp"/>
+    <AppenderRef ref="STDOUT"/>
+  </Async>
+
+</Appenders>
+<Loggers>
+  <Logger name="org.xnio.listener" level="FATAL" additivity="false"/>
+  <Logger name="io.undertow.request" level="FATAL" additivity="false"/>
+  <Root level="trace">
+    <AppenderRef ref="AsyncSyslogApp" level="${env:LOGLEVEL}"/>
+  </Root>
+</Loggers>
 </Configuration>

@@ -60,7 +60,7 @@ public class VirtualHostCachedControllerTest {
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
-        when(copyService.getVirtualHosts("1")).thenReturn(listVirtualHost);
+        when(copyService.getVirtualHosts(Long.parseLong("1"))).thenReturn(listVirtualHost);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
@@ -78,7 +78,7 @@ public class VirtualHostCachedControllerTest {
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
-        when(copyService.getVirtualHosts("1")).thenReturn(listVirtualHost);
+        when(copyService.getVirtualHosts(Long.parseLong("1"))).thenReturn(listVirtualHost);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");

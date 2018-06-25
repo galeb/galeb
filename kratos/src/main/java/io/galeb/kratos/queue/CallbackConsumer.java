@@ -1,5 +1,6 @@
 package io.galeb.kratos.queue;
 
+import com.google.gson.Gson;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;
 import io.galeb.core.services.ChangesService;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class CallbackConsumer {
 
@@ -23,6 +27,8 @@ public class CallbackConsumer {
 
     private final HealthStatusRepository healthStatusRepository;
     private final TargetRepository targetRepository;
+
+    private final Gson gson = new Gson();
 
     @Autowired
     private ChangesService changesService;
@@ -44,8 +50,6 @@ public class CallbackConsumer {
                 if (tempHealthStatus == null) {
                     tempHealthStatus = healthStatus;
                     Target target = targetRepository.findOne(healthStatus.getTarget().getId());
-                    System.out.println("ID TARGET FIND: "+ healthStatus.getTarget().getId());
-                    System.out.println("TARGET FIND: "+ target);
                     tempHealthStatus.setTarget(target);
                 }
 
@@ -56,7 +60,16 @@ public class CallbackConsumer {
                 Target target = tempHealthStatus.getTarget();
                 tempHealthStatus.getTarget().getAllEnvironments().forEach(e ->
                         changesService.register(e, target, String.valueOf(versionService.incrementVersion(e.getId()))));
-                LOGGER.warn("HealthStatus [source: " + tempHealthStatus.getSource() +  "] (from target " + tempHealthStatus.getTarget().getName() + ") updated.");
+
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("class", CallbackConsumer.class.getSimpleName().toString());
+                mapLog.put("queue", QUEUE_HEALTH_CALLBACK);
+                mapLog.put("healthStatus_source", tempHealthStatus.getSource());
+                mapLog.put("healthStatus_statusDetailed", tempHealthStatus.getStatusDetailed());
+                mapLog.put("healthStatus_status", tempHealthStatus.getStatus().name());
+                mapLog.put("healthStatus_target", tempHealthStatus.getTarget().getName());
+
+                LOGGER.info(gson.toJson(mapLog));
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

@@ -16,6 +16,7 @@
 
 package io.galeb.health.util;
 
+import com.google.gson.Gson;
 import io.galeb.core.entity.HealthStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,9 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.jms.Message;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
@@ -36,6 +40,8 @@ public class CallBackQueue {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final JmsTemplate jmsTemplate;
+
+    private final Gson gson = new Gson();
 
     @Autowired
     public CallBackQueue(JmsTemplate jmsTemplate) {
@@ -51,7 +57,16 @@ public class CallBackQueue {
                 message.setJMSMessageID(uniqueId);
                 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
 
-                logger.info("JMSMessageID: " + uniqueId);
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("class", CallBackQueue.class.getSimpleName().toString());
+                mapLog.put("queue", HEALTH_CALLBACK_QUEUE);
+                mapLog.put("jmsMessageId", uniqueId);
+                mapLog.put("healthStatus_source", healthStatus.getSource());
+                mapLog.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
+                mapLog.put("healthStatus_status", healthStatus.getStatus().name());
+                mapLog.put("healthStatus_target", healthStatus.getTarget().getName());
+
+                logger.info(gson.toJson(mapLog));
                 return message;
             });
         } catch (JmsException e) {

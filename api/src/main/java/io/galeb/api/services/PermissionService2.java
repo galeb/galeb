@@ -77,16 +77,17 @@ public class PermissionService2 {
         boolean allow = false;
         AuditType audiType = AuditType.ROLE;
         boolean isAccount = criteria instanceof Account;
+        Set<String> contextRoles = repository.roles(criteria);
         switch (action) {
             case CREATE:
                 allow = isAccount ? ((Account) criteria).getId() == account.getId() : hasRoleSelf(roles, roleUpperCase);
                 break;
             case UPDATE:
             case DELETE:
-                allow = isAccount ? ((Account) criteria).getId() == account.getId() : hasContextRole(criteria, repository, roleUpperCase, roles);
+                allow = isAccount ? ((Account) criteria).getId() == account.getId() : hasContextRole(contextRoles, roleUpperCase);
                 break;
             case VIEW:
-                allow = hasGlobal(criteria, repository.classEntity()) || hasContextRole(criteria, repository, roleUpperCase, roles);
+                allow = criteria == null || hasGlobal(criteria, repository.classEntity()) || hasContextRole(contextRoles, roleUpperCase);
                 break;
 
         }
@@ -135,13 +136,7 @@ public class PermissionService2 {
         return false;
     }
 
-    private boolean hasContextRole(Object criteria, WithRoles repository, String role, Set<String> rolesOfAccount) {
-        Set<String> roles = repository.roles(criteria);
-        Set<String> allRoles = new HashSet<>();
-        if (criteria == null || !roles.isEmpty()) {
-            allRoles = Sets.union(roles, rolesOfAccount);
-        }
-        return allRoles.stream().anyMatch(role::equals);
+    private boolean hasContextRole(Set<String> roles, String role) {
+        return roles != null && roles.stream().anyMatch(role::equals);
     }
-
 }

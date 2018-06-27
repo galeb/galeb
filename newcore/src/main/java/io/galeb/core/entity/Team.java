@@ -23,6 +23,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "teamLinkedToAccount",
+                query = "SELECT t FROM Team t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id")
+})
+
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_team_name", columnNames = { "name" }) })
 public class Team extends AbstractEntity {

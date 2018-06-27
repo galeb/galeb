@@ -48,28 +48,22 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
     }
 
     @Override
-    public Set<String> roles(Object criteria) {
+    protected long getProjectId(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (criteria instanceof Project) {
-            List<RoleGroup> roleGroups = new ArrayList<>();
-            if (((Project)criteria).getId() != 0) {
-                roleGroups = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
-                        .setParameter("project_id", ((Project) criteria).getId())
-                        .setParameter("account_id", account.getId())
-                        .getResultList();
-            }
-            return roleGroups.stream().flatMap(rg -> rg.getRoles().stream()).map(Enum::toString).collect(Collectors.toSet());
+            return ((Project) criteria).getId();
         }
         if (criteria instanceof Long) {
             Project project = em.find(Project.class, criteria);
-            return roles(project);
+            return project.getId();
         }
         if (criteria instanceof String) {
             String query = "SELECT t FROM Project t WHERE t.name = :name";
             Project project = em.createQuery(query, Project.class).setParameter("name", criteria).getSingleResult();
-            return roles(project);
+            return project.getId();
         }
-        return Collections.emptySet();
+        return -1;
+
     }
 
     @Override

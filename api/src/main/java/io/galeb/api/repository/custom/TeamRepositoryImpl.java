@@ -18,6 +18,7 @@ package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
+import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +52,9 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
     public Set<String> roles(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (criteria instanceof Team) {
-            List<RoleGroup> roleGroups = new ArrayList<>();
-            if (((Team)criteria).getId() != 0) {
-                roleGroups = em.createNamedQuery("roleGroupsTeam", RoleGroup.class)
-                        .setParameter("team_id", ((Team) criteria).getId())
-                        .setParameter("account_id", account.getId())
-                        .getResultList();
+            if (isAccountLinkedWithTeam(account.getId(), ((Team)criteria).getId())) {
+                return mergeAllRolesOf(account);
             }
-            return roleGroups.stream().flatMap(rg -> rg.getRoles().stream()).map(Enum::toString).collect(Collectors.toSet());
         }
         if (criteria instanceof Long) {
             Team team = em.find(Team.class, criteria);
@@ -76,5 +72,16 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
     protected String querySuffix(String username) {
         return "INNER JOIN entity.accounts a WHERE a.username = '" + username + "'";
     }
+
+    private boolean isAccountLinkedWithTeam(long accountId, long teamId) {
+        List<Team> teams = em.createNamedQuery("teamLinkedToAccount", Team.class)
+                .setParameter("account_id", accountId)
+                .setParameter("team_id", teamId).getResultList();
+        if (teams == null || teams.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
 
 }

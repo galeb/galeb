@@ -1,4 +1,4 @@
-@active-now
+@active
 Feature: Validate permissions for create, update (specific and all fields), get and delete projects.
     Background: Creates three users: accountOne, accountTwo and accountSuperAdmin
                 Creates also teamOne, teamTwo, projectOne and relationships as below:
@@ -32,7 +32,7 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       And send POST /project
       Then the response status is 201
 
-    Scenario Outline: Accounts create project with rolegroup default (obs.: with accountTwo, the error is 400. Investigate it.)
+  Scenario Outline: Accounts create project with rolegroup default
       Given a REST client authenticated as <user> with password ""
       When request json body has:
         | name     | projectTwo              |
@@ -42,7 +42,8 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       Examples:
         | user               | status |
         | user1         | 201    |
-        | user2         | 400    |
+        # this user (user2) can create because the rolegroup TEAM_DEFAULT contains role TEAM_VIEW_ALL, but this user does not view because does not part of team.
+        | user2         | 201    |
         | superadmin    | 201    |
 
     Scenario Outline: Accounts view project with rolegroup default
@@ -68,7 +69,7 @@ Feature: Validate permissions for create, update (specific and all fields), get 
         | user2         | 403    |
         | superadmin         | 200    |
 
-    Scenario Outline: Accounts update specific field project with rolegroup default
+  Scenario Outline: Accounts update specific field project with rolegroup default
       Given a REST client authenticated as <user> with password ""
       When request json body has:
         | name     | projectOne              |
@@ -80,7 +81,7 @@ Feature: Validate permissions for create, update (specific and all fields), get 
         | user2         | 403    |
         | superadmin         | 200    |
 
-    Scenario Outline: Accounts delete project with rolegroup default
+  Scenario Outline: Accounts delete project with rolegroup default
       Given a REST client authenticated as <user> with password  ""
       And send DELETE /project/1
       Then the response status is <status>

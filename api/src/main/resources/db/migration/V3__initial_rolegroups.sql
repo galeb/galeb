@@ -149,6 +149,7 @@ INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_CREATE
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_UPDATE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_DELETE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_VIEW');
+INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'RULEORDERED_VIEW_ALL');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'TARGET_CREATE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'TARGET_UPDATE');
 INSERT INTO rolegroup_roles (rolegroup_id, role) VALUES (@E, 'TARGET_DELETE');

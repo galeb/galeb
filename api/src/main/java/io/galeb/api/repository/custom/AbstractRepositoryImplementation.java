@@ -138,10 +138,10 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return -1;
     }
 
-    private Set<String> projectRoles(long accountId, long projectId) {
+    private Set<String> projectRoles(Account account, long projectId) {
         try {
-            if (!isAccountLinkedWithProject(accountId, projectId)) return Collections.emptySet();
-            return mergeRoles(projectId);
+            if (!isAccountLinkedWithProject(account.getId(), projectId)) return Collections.emptySet();
+            return mergeAllRolesOf(account);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -194,13 +194,12 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return roles;
     }
 
-
     public Set<String> roles(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long projectId = getProjectId(criteria);
         if (projectId > -1) {
             long accountId = account.getId();
-            return projectRoles(accountId, projectId);
+            return projectRoles(account, projectId);
         }
         return Collections.emptySet();
     }

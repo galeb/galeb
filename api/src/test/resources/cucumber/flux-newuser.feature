@@ -33,9 +33,9 @@ Feature: Flux
     And send GET Account=user1
     Then the response status is 200
     And send GET Account=accountOne
-    Then the response status is 404
+    Then the response status is 200
     And send DELETE Account=accountOne
-    Then the response status is 404
+    Then the response status is 403
     When request json body has:
      | username     | accountTwo              |
      | email    | accounttwo@test.com               |
@@ -48,15 +48,26 @@ Feature: Flux
     Then the response status is 403
 
   Scenario: validate permissions for Team with role default
+    Given a REST client authenticated as user2 with password ""
+    When request json body has:
+      | name     | teamUser2              |
+    And send POST /team
+    Then the response status is 201
     Given a REST client authenticated as user1 with password ""
     When request json body has:
       | name     | teamTwo              |
+      | accounts | [Account=user1]      |
     And send POST /team
+    Then the response status is 201
+    When request json body has:
+      | name  | projTwo |
+      | teams | [Team=teamTwo, Team=teamUser2, Team=teamOne] |
+    And send POST /project
     Then the response status is 201
     And send GET Team=teamTwo
     Then the response status is 200
     And send GET Team=teamOne
-    Then the response status is 403
+    Then the response status is 200
     When request json body has:
       | name     | teamTwo              |
     And send PUT Team=teamTwo
@@ -65,6 +76,8 @@ Feature: Flux
       | name     | teamOne             |
     And send PUT Team=teamOne
     Then the response status is 403
+    And send DELETE Project=projTwo
+    Then the response status is 204
     And send DELETE Team=teamTwo
     Then the response status is 204
     And send DELETE Team=teamOne

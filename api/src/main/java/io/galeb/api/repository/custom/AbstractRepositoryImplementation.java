@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +92,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         if (LocalAdminService.NAME.equals(account.getUsername())) {
             isViewAll = true;
         } else {
-            Set<String> roles = mergeRoles(-1L);
+            Set<String> roles = mergeAllRolesOf(account);
             String roleView = entityClass.getSimpleName().toUpperCase() + "_VIEW";
             isView = roles.contains(roleView);
 
@@ -137,10 +138,10 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return -1;
     }
 
-    private Set<String> projectRoles(long accountId, long projectId) {
+    private Set<String> projectRoles(Account account, long projectId) {
         try {
-            if (!isAccountLinkedWithProject(accountId, projectId)) return Collections.emptySet();
-            return mergeRoles(projectId);
+            if (!isAccountLinkedWithProject(account.getId(), projectId)) return Collections.emptySet();
+            return mergeAllRolesOf(account);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -161,27 +162,34 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     protected Set<String> mergeRoles(long projectId) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long accountId = account.getId();
-        List<RoleGroup> roleGroupsFromProject;
+        List<RoleGroup> roleGroupsFromProject = new ArrayList<>();
         if (projectId != -1) {
             roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
                     .setParameter("account_id", accountId)
                     .setParameter("project_id", projectId)
                     .getResultList();
-        } else {
-            roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProjectByAccountId", RoleGroup.class)
-                    .setParameter("id", accountId)
-                    .getResultList();
         }
         Set<String> roles = roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
+        return roles;
+    }
+
+    @Override
+    public Set<String> mergeAllRolesOf(Account account) {
+        long accountId = account.getId();
         List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();
-        roles.addAll(roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
-                .distinct().map(Enum::toString).distinct().collect(Collectors.toSet()));
+        Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).distinct().collect(Collectors.toSet());
         List<RoleGroup> roleGroupsFromAccount = em.createNamedQuery("roleGroupsFromAccount", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();
         roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
+                .distinct().map(Enum::toString).collect(Collectors.toSet()));
+        List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProjectByAccountId", RoleGroup.class)
+                .setParameter("id", accountId)
+                .getResultList();
+        roles.addAll(roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet()));
         return roles;
     }
@@ -191,7 +199,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         long projectId = getProjectId(criteria);
         if (projectId > -1) {
             long accountId = account.getId();
-            return projectRoles(accountId, projectId);
+            return projectRoles(account, projectId);
         }
         return Collections.emptySet();
     }
@@ -211,6 +219,11 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
     private String selectCountPrefix() {
         return "SELECT COUNT(entity) From " + entityClass.getSimpleName() + " entity";
+    }
+
+    @Override
+    public Class<? extends AbstractEntity> classEntity() {
+        return (Class<? extends AbstractEntity>)entityClass;
     }
 
 }

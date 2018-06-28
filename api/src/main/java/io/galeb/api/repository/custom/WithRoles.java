@@ -16,9 +16,14 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Account;
+
 import java.util.Set;
 
 public interface WithRoles {
 
     Set<String> roles(Object criteria);
+    Set<String> mergeAllRolesOf(Account account);
+    Class<? extends AbstractEntity> classEntity();
 }

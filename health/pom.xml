@@ -95,6 +95,10 @@
                     <groupId>biz.paluch.redis</groupId>
                     <artifactId>lettuce</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

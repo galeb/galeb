@@ -9,12 +9,16 @@
   </Properties>
   <Appenders>
     <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} legba: [%p] %t %enc{%m} %exception\ttags: ${tags},APP%n"/>
+      <PatternLayout pattern="%m %exception\ttags: ${tags},APP%n"/>
     </Socket>
+
+    <Async name="AsyncSyslogApp">
+      <AppenderRef ref="SyslogApp"/>
+    </Async>
   </Appenders>
   <Loggers>
     <Root level="trace">
-      <AppenderRef ref="SyslogApp" level="${env:LOGLEVEL}"/>
+      <AppenderRef ref="AsyncSyslogApp" level="${env:LOGLEVEL}"/>
     </Root>
   </Loggers>
 </Configuration>

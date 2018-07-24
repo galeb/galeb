@@ -53,6 +53,8 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     @Transient
     private Map<Long, Status> status = new HashMap<>();
 
+    private String allow = "/";
+
     // Healthcheck Attributes
 
     private String hcPath = "/";
@@ -138,6 +140,10 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
             this.global = global;
         }
     }
+
+    public String getAllow() { return allow; }
+
+    public void setAllow(String allow) { this.allow = allow; }
 
     public String getHcPath() {
         return hcPath;

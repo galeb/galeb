@@ -39,16 +39,26 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
         if (virtualHost.getEnvironments() == null || virtualHost.getEnvironments().isEmpty()) {
             throw new BadRequestException("Environment(s) undefined");
         }
-        if (virtualHost.getVirtualhostgroup() == null) {
-            VirtualhostGroup virtualhostGroup = new VirtualhostGroup();
-            virtualhostGroupRepository.save(virtualhostGroup);
-            virtualHost.setVirtualhostgroup(virtualhostGroup);
-        }
+        checkVirtualHostGroup(virtualHost);
+    }
+
+    @Override
+    protected void onBeforeSave(VirtualHost virtualHost) {
+        super.onBeforeSave(virtualHost);
+        checkVirtualHostGroup(virtualHost);
     }
 
     @Override
     protected Set<Environment> getAllEnvironments(VirtualHost entity) {
         return entity.getEnvironments();
+    }
+
+    private void checkVirtualHostGroup(VirtualHost virtualHost) {
+        if (virtualHost.getVirtualhostgroup() == null) {
+            VirtualhostGroup virtualhostGroup = new VirtualhostGroup();
+            virtualhostGroupRepository.save(virtualhostGroup);
+            virtualHost.setVirtualhostgroup(virtualhostGroup);
+        }
     }
 
 }

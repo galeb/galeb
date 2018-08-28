@@ -47,7 +47,7 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
         }
         if (remoteUser != null) {
             String remoteAddr = request.getRemoteAddr();
-            if (LocalAdminService.NAME.equals(remoteUser) && !"127.0.0.1".equals(remoteAddr)) {
+            if (LocalAdminService.NAME.equals(remoteUser) && (!"127.0.0.1".equals(remoteAddr) && !"0:0:0:0:0:0:0:1".equals(remoteAddr))) {
                 throw new UsernameNotFoundException("Account " + LocalAdminService.NAME + " NOT FOUND");
             }
         }

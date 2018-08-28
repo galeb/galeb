@@ -85,6 +85,7 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     @Override
     protected void onAfterDelete(T entity) {
         super.onAfterDelete(entity);
+        registerChanges(entity);
     }
 
     protected Set<Environment> getAllEnvironments(T entity) {

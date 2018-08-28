@@ -156,14 +156,17 @@ public class RoutersService {
             mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(StringUtils.capitalize(entry.getKey()))).forEach(entry -> {
                 String entityClass = StringUtils.capitalize(entry.getKey());
                 String entityId = entry.getValue();
-                Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId");
-                query.setParameter("entityId", Long.parseLong(entityId)).executeUpdate();
+                Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
+                query.setParameter("entityId", Long.parseLong(entityId));
+                int numEntities = query.executeUpdate();
 
-                Map<String, String> mapLog = new HashMap<>();
-                mapLog.put("entityIdDeleted", "entityId");
-                mapLog.put("environmentId", envId);
-
-                LOGGER.info(gson.toJson(mapLog));
+                if (numEntities > 0) {
+                    Map<String, String> mapLog = new HashMap<>();
+                    mapLog.put("entityIdDeleted", entityId);
+                    mapLog.put("entityClassDeleted", entityClass);
+                    mapLog.put("environmentId", envId);
+                    LOGGER.info(gson.toJson(mapLog));
+                }
             });
             changesService.delete(mapOfEntities.getKey());
         });

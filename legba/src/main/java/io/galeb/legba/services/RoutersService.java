@@ -153,8 +153,8 @@ public class RoutersService {
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
         changesService.listEntitiesWithOldestVersion(envId, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
-            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(StringUtils.capitalize(entry.getKey()))).forEach(entry -> {
-                String entityClass = StringUtils.capitalize(entry.getKey());
+            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.stream().anyMatch(t -> t.toLowerCase().equals(entry.getKey()))).forEach(entry -> {
+                String entityClass = entry.getKey();
                 String entityId = entry.getValue();
                 Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
                 query.setParameter("entityId", Long.parseLong(entityId));

@@ -56,7 +56,7 @@ public class ChangesService {
         if (!entitiesRegistrable.contains(entity.getClass().getSimpleName())) {
             return;
         }
-        String simpleNameClass = entity.getClass().getSimpleName().toLowerCase();
+        String simpleNameClass = entity.getClass().getSimpleName();
         String envId = String.valueOf(e.getId());
         Long entityId = entity.getId();
         String entityLastModifiedAt = String.valueOf(entity.getLastModifiedAt().getTime());
@@ -70,7 +70,7 @@ public class ChangesService {
     }
 
     public Set<Long> listEnvironmentIds(AbstractEntity entity) {
-        String simpleNameClass = entity.getClass().getSimpleName().toLowerCase();
+        String simpleNameClass = entity.getClass().getSimpleName();
         Long entityId = entity.getId();
         String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, "*",simpleNameClass, entityId, "*");
         Set<String> keys = keys(keyFormatted);

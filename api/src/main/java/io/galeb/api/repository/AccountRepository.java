@@ -58,4 +58,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Account findByUsername(@Param("username") String username);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<Account> findByUsernameContaining(@Param("username") String username, Pageable pageable);
 }

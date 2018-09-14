@@ -53,7 +53,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             and().
                 sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER).
             and().
-                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/(accounts|teams|rolegroups).*").denyAll().
+                authorizeRequests().regexMatchers(HttpMethod.GET, "/.+/.+/(rolegroups).*").denyAll().
             and().
                 authorizeRequests().anyRequest().authenticated().
             and().

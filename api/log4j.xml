@@ -9,17 +9,12 @@
 </Properties>
 <Appenders>
 
-  <Console name="STDOUT" target="SYSTEM_OUT">
-    <PatternLayout pattern="%m%n %exception"/>
-  </Console>
-
   <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
     <PatternLayout pattern="%m %exception\ttags: ${tags},APP%n"/>
   </Socket>
 
   <Async name="AsyncSyslogApp">
     <AppenderRef ref="SyslogApp"/>
-    <AppenderRef ref="STDOUT"/>
   </Async>
 
 </Appenders>

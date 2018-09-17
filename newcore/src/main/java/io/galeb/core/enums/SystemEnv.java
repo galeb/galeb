@@ -51,7 +51,7 @@ public enum SystemEnv {
     /**
      * Tags to separete logs
      */
-    LOGGING_TAGS           ("LOGGIN_TAGS",          "GALEB"),
+    LOGGING_TAGS           ("LOGGING_TAGS",          "GALEB"),
 
 
     // HEALTHCHECKER

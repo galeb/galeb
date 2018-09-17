@@ -5,7 +5,6 @@
     <Property name="hostname">${env:HOSTNAME}</Property>
     <Property name="syslog_host">${env:SYSLOG_HOST}</Property>
     <Property name="syslog_port">${env:SYSLOG_PORT}</Property>
-    <Property name="tags">GALEB,HEALTH</Property>
   </Properties>
   <Appenders>
     <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">

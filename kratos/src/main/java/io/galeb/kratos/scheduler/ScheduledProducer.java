@@ -1,12 +1,10 @@
 package io.galeb.kratos.scheduler;
 
 import com.google.gson.Gson;
-import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
-import io.galeb.kratos.repository.PoolRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
@@ -42,16 +39,14 @@ public class ScheduledProducer {
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
-    private final PoolRepository poolRepository;
     private final JmsTemplate template;
 
     private Gson gson = new Gson();
 
     @Autowired
-    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, PoolRepository poolRepository, JmsTemplate template) {
+    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template) {
         this.targetRepository = targetRepository;
         this.environmentRepository = environmentRepository;
-        this.poolRepository = poolRepository;
         this.template = template;
     }
 
@@ -65,16 +60,12 @@ public class ScheduledProducer {
             long environmentId = env.getId();
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ")");
             Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(0, PAGE_SIZE));
-            StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
-                return getTargetInformation(t);
-            }).forEach(target -> sendToQueue(target, environmentId, counter));
+            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, environmentId, counter));
             long size = targetsPage.getTotalElements();
             for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
                     targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
-                    StreamSupport.stream(targetsPage.spliterator(), false).map(t -> {
-                        return getTargetInformation(t);
-                    }).forEach(target -> sendToQueue(target, environmentId, counter));
+                    StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, environmentId, counter));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     break;
@@ -90,17 +81,6 @@ public class ScheduledProducer {
             LOGGER.info(gson.toJson(mapLog));
             counter.set(0);
         });
-    }
-
-    private Target getTargetInformation(Target t) {
-        Pool pool = poolRepository.findByTargetId(t.getId());
-        Target newTarget = new Target();
-        newTarget.setName(t.getName());
-        newTarget.setPool(pool);
-        newTarget.setHealthStatus(t.getHealthStatus());
-        newTarget.setId(t.getId());
-        newTarget.setLastModifiedAt(t.getLastModifiedAt());
-        return newTarget;
     }
 
     private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {

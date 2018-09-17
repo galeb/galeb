@@ -36,6 +36,7 @@ public class ScheduledProducer {
 
     private static final int    PAGE_SIZE                 = 100;
     private static final String QUEUE_GALEB_HEALTH_PREFIX = SystemEnv.QUEUE_NAME.getValue();
+    private static final String LOGGING_TAGS              = SystemEnv.LOGGING_TAGS.getValue();
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
@@ -77,6 +78,7 @@ public class ScheduledProducer {
             mapLog.put("schedId", schedId);
             mapLog.put("countTarget", String.valueOf(counter.get()));
             mapLog.put("time", String.valueOf(System.currentTimeMillis() - start));
+            mapLog.put("tags", LOGGING_TAGS);
 
             LOGGER.info(gson.toJson(mapLog));
             counter.set(0);

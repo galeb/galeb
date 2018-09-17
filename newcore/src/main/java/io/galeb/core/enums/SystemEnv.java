@@ -48,6 +48,11 @@ public enum SystemEnv {
      */
     SYSLOG_PORT           ("SYSLOG_PORT",           514),
 
+    /**
+     * Tags to separete logs
+     */
+    LOGGING_TAGS           ("LOGGIN_TAGS",          "GALEB"),
+
 
     // HEALTHCHECKER
 

@@ -1,6 +1,7 @@
 package io.galeb.legba.services;
 
 import com.google.gson.Gson;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
@@ -34,6 +35,8 @@ public class RoutersService {
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
     public static long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
+
+    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -113,6 +116,7 @@ public class RoutersService {
                 mapLog.put("keyAdded", key);
                 mapLog.put("versionIncremented", String.valueOf(versionIncremented));
                 mapLog.put("environmentId", envId);
+                mapLog.put("tags", LOGGING_TAGS);
                 LOGGER.info(gson.toJson(mapLog));
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
@@ -141,6 +145,7 @@ public class RoutersService {
                 mapLog.put("keyExpired", key);
                 mapLog.put("versionIncremented", String.valueOf(versionIncremented));
                 mapLog.put("environmentId", envId);
+                mapLog.put("tags", LOGGING_TAGS);
                 LOGGER.info(gson.toJson(mapLog));
             }
         });
@@ -159,6 +164,7 @@ public class RoutersService {
                     mapLog.put("entityIdDeleted", entityId);
                     mapLog.put("entityClassDeleted", entityClass);
                     mapLog.put("environmentId", envId);
+                    mapLog.put("tags", LOGGING_TAGS);
                     LOGGER.info(gson.toJson(mapLog));
                 }
             });

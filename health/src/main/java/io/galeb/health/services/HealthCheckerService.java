@@ -58,6 +58,7 @@ public class HealthCheckerService {
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
     private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
+    private static final String LOGGING_TAGS  = SystemEnv.LOGGING_TAGS.getValue();
 
     private final Gson gson = new Gson();
 
@@ -153,6 +154,7 @@ public class HealthCheckerService {
                     mapLog.put("connectionTimeout", connectionTimeout + "");
                     mapLog.put("result", reason);
                     mapLog.put("requestTime", (System.currentTimeMillis() - start) + "");
+                    mapLog.put("tags", LOGGING_TAGS);
                     return gson.toJson(mapLog);
                 }
 

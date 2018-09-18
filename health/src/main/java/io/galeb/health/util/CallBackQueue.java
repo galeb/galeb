@@ -18,6 +18,7 @@ package io.galeb.health.util;
 
 import com.google.gson.Gson;
 import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.enums.SystemEnv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,8 @@ public class CallBackQueue {
 
     private final Gson gson = new Gson();
 
+    private static final String LOGGING_TAGS  = SystemEnv.LOGGING_TAGS.getValue();
+
     @Autowired
     public CallBackQueue(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
@@ -65,6 +68,7 @@ public class CallBackQueue {
                 mapLog.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
                 mapLog.put("healthStatus_status", healthStatus.getStatus().name());
                 mapLog.put("healthStatus_target", healthStatus.getTarget().getName());
+                mapLog.put("tags", LOGGING_TAGS);
 
                 logger.info(gson.toJson(mapLog));
                 return message;

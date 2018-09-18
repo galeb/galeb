@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.entity.WithStatus;
 import io.galeb.legba.model.v1.RuleType;
 import org.springframework.util.StringUtils;
 
@@ -98,7 +99,7 @@ public class ConverterV1 implements Converter {
                 pool.getProperties().put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
             }
 
-            p.getTargets().stream().forEach(t -> {
+            p.getTargets().stream().filter(t -> !t.getStatus().equals(WithStatus.Status.DELETED)).forEach(t -> {
                 Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
                         .stream()
                         .filter(hs -> (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) && hs.getStatus().equals(HealthStatus.Status.HEALTHY))

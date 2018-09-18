@@ -2,6 +2,7 @@ package io.galeb.legba.controller;
 
 import com.google.gson.Gson;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.conversors.Converter;
 import io.galeb.legba.conversors.ConverterBuilder;
@@ -38,6 +39,8 @@ public class VirtualHostCachedController extends AbstractController {
     @Autowired
     private RoutersService routersService;
 
+    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
+
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
     public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
                                                @PathVariable String envName,
@@ -56,6 +59,7 @@ public class VirtualHostCachedController extends AbstractController {
         mapLog.put("environmentName", envName);
         mapLog.put("groupId", routerGroupId);
         mapLog.put("zoneId", zoneId);
+        mapLog.put("tags", LOGGING_TAGS);
 
         if (version.equals(actualVersion)) {
             mapLog.put("status", HttpStatus.NOT_MODIFIED.toString());

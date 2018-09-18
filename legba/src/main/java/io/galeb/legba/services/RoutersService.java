@@ -1,6 +1,7 @@
 package io.galeb.legba.services;
 
 import com.google.gson.Gson;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.legba.common.ErrorLogger;
@@ -11,18 +12,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -40,6 +35,8 @@ public class RoutersService {
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
     public static long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
+
+    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -119,6 +116,7 @@ public class RoutersService {
                 mapLog.put("keyAdded", key);
                 mapLog.put("versionIncremented", String.valueOf(versionIncremented));
                 mapLog.put("environmentId", envId);
+                mapLog.put("tags", LOGGING_TAGS);
                 LOGGER.info(gson.toJson(mapLog));
             }
             redisTemplate.opsForValue().set(key, version, REGISTER_TTL, TimeUnit.MILLISECONDS);
@@ -147,14 +145,15 @@ public class RoutersService {
                 mapLog.put("keyExpired", key);
                 mapLog.put("versionIncremented", String.valueOf(versionIncremented));
                 mapLog.put("environmentId", envId);
+                mapLog.put("tags", LOGGING_TAGS);
                 LOGGER.info(gson.toJson(mapLog));
             }
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
         changesService.listEntitiesWithOldestVersion(envId, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
-            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(StringUtils.capitalize(entry.getKey()))).forEach(entry -> {
-                String entityClass = StringUtils.capitalize(entry.getKey());
+            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(entry.getKey())).forEach(entry -> {
+                String entityClass = entry.getKey();
                 String entityId = entry.getValue();
                 Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
                 query.setParameter("entityId", Long.parseLong(entityId));
@@ -165,6 +164,7 @@ public class RoutersService {
                     mapLog.put("entityIdDeleted", entityId);
                     mapLog.put("entityClassDeleted", entityClass);
                     mapLog.put("environmentId", envId);
+                    mapLog.put("tags", LOGGING_TAGS);
                     LOGGER.info(gson.toJson(mapLog));
                 }
             });

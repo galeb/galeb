@@ -3,6 +3,7 @@ package io.galeb.kratos.queue;
 import com.google.gson.Gson;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.kratos.repository.HealthStatusRepository;
@@ -29,6 +30,8 @@ public class CallbackConsumer {
     private final TargetRepository targetRepository;
 
     private final Gson gson = new Gson();
+
+    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
     private ChangesService changesService;
@@ -68,6 +71,7 @@ public class CallbackConsumer {
                 mapLog.put("healthStatus_statusDetailed", tempHealthStatus.getStatusDetailed());
                 mapLog.put("healthStatus_status", tempHealthStatus.getStatus().name());
                 mapLog.put("healthStatus_target", tempHealthStatus.getTarget().getName());
+                mapLog.put("tags", LOGGING_TAGS);
 
                 LOGGER.info(gson.toJson(mapLog));
             }

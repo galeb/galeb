@@ -1,5 +1,6 @@
 package io.galeb.api.log;
 
+import io.galeb.core.enums.SystemEnv;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.zalando.logbook.Correlation;
@@ -17,6 +18,8 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
 
     private final JsonHttpLogFormatter delegate;
 
+    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
+
     public PrincipalHttpLogFormatter(final JsonHttpLogFormatter delegate) {
         this.delegate = delegate;
     }
@@ -25,6 +28,7 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
     public String format(final Precorrelation<HttpRequest> precorrelation) throws IOException {
         final Map<String, Object> content = delegate.prepare(precorrelation);
         content.put("principal", getPrincipal());
+        content.put("tags", LOGGING_TAGS);
         return delegate.format(content);
     }
 
@@ -32,6 +36,7 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
     public String format(final Correlation<HttpRequest, HttpResponse> correlation) throws IOException {
         final Map<String, Object> content = delegate.prepare(correlation);
         content.put("principal", getPrincipal());
+        content.put("tags", LOGGING_TAGS);
         return delegate.format(content);
     }
 

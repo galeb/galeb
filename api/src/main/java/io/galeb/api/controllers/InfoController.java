@@ -17,7 +17,6 @@
 package io.galeb.api.controllers;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -38,11 +37,10 @@ public class InfoController {
     @Value("${build.timestamp}")
     private String buildTimestamp;
 
-    @GetMapping(value = "/info")
+    @GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> info() {
         String body = String.format("{\"name\":\"%s\", \"version\":\"%s\", \"build\":\"%s\", \"healthy\":\"WORKING\"}", buildProject, buildVersion, buildTimestamp);
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-        headers.add("content-type", MediaType.APPLICATION_JSON_VALUE);
-        return new ResponseEntity<>(body, headers, HttpStatus.OK);
+        return ResponseEntity.ok(body);
     }
 }

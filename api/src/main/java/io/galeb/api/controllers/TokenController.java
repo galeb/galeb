@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -47,13 +49,16 @@ public class TokenController {
         private String username ;
         private String email;
         private String token;
-        private Set<String> roles;
+        private SortedSet<String> roles;
 
         public TokenInfo(Account account) {
             this.username = account.getUsername();
             this.email = account.getEmail();
             this.token = account.getApitoken();
-            this.roles = account.getRolegroups().stream().map(RoleGroup::getName).collect(Collectors.toSet());
+            this.roles = account.getRolegroups().stream()
+                    .flatMap(r -> r.getRoles().stream())
+                    .map(Enum::name)
+                    .collect(Collectors.toCollection(TreeSet::new));
         }
 
         public String getUsername() {

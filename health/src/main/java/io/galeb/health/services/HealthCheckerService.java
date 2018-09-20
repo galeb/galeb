@@ -106,7 +106,7 @@ public class HealthCheckerService {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    definePropertiesAndUpdate(HealthStatus.Status.UNKNOWN, t.getMessage());
+                    definePropertiesAndUpdate(HealthStatus.Status.FAIL, t.getMessage());
                 }
 
                 private boolean checkFailBody(Response response) {

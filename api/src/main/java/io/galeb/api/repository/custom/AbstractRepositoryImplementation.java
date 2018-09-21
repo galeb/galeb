@@ -202,7 +202,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long projectId = getProjectId(criteria);
         if (projectId == NOT_FOUND) {
-            return Collections.singleton(entityClass.getName() + "_" + VIEW.toString());
+            return Collections.singleton(entityClass.getSimpleName().toUpperCase() + "_" + VIEW.toString());
         }
         if (projectId > -1) {
             long accountId = account.getId();

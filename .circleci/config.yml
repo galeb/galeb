@@ -23,7 +23,11 @@ jobs:
                 name: Build package
                 command: |
                   export GALEB_VERSION=$(cat /tmp/galeb_version)
-                  mvn package -DskipTests
+                  if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                    mvn package
+                  else
+                    mvn package -DskipTests
+                  fi
 
             - save_cache:
                 paths:
@@ -33,8 +37,7 @@ jobs:
             - deploy:
                 name: Push release
                 command: |
-                    if [ "${CIRCLE_BRANCH}" == "new-services" ]; then
-                    #if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "develop" ]; then
+                    if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "develop" ]; then
                       sudo yum update -y || true
                       sudo yum install -y ruby-devel gcc make rpm-build rubygems
                       sudo gem install --no-ri --no-rdoc fpm
@@ -47,7 +50,6 @@ jobs:
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do
                         if [ "x$GITHUB_TOKEN" != "x" -a "x$BINTRAY_USER" != "x" -a "x$BINTRAY_TOKEN" != "x" ]; then
                           curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -H'content-type: application/x-redhat-package-manager' --data-binary @$pkg ${upload}?name=${pkg}
-                          ##curl -v -L -T $PWD/$pkg -H "X-Bintray-Package:Galeb4" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/noarch/
                           curl -v -L -T $PWD/$pkg -H "X-Bintray-Package:GalebNew" -H "X-Bintray-Version:${GALEB_VERSION}" -H"X-Bintray-Publish:1" -H"X-Bintray-Override:1" -u${BINTRAY_USER}:${BINTRAY_TOKEN} https://api.bintray.com/content/galeb/rpm/7/x86_64/
                         else
                           echo "ERROR: one or more envs undefined"

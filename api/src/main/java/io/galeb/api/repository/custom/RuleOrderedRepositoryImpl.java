@@ -62,6 +62,9 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
             }
             if (criteria instanceof Long) {
                 ruleOrdered = em.find(RuleOrdered.class, criteria);
+                if (ruleOrdered == null) {
+                    return NOT_FOUND;
+                }
             }
         } catch (Exception ignored) {}
         if (ruleOrdered == null) {

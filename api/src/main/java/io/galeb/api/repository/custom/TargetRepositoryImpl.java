@@ -62,6 +62,9 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
             }
             if (criteria instanceof Long) {
                 target = em.find(Target.class, criteria);
+                if (target == null) {
+                    return NOT_FOUND;
+                }
             }
             if (criteria instanceof String) {
                 String query = "SELECT t FROM Target t WHERE t.name = :name";

@@ -56,6 +56,9 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
         }
         if (criteria instanceof Long) {
             pool = em.find(Pool.class, criteria);
+            if (pool == null) {
+                return NOT_FOUND;
+            }
         }
         if (criteria instanceof String) {
             String query = "SELECT p FROM Project p WHERE p.name = :name";

@@ -55,6 +55,9 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
         }
         if (criteria instanceof Long) {
             Project project = em.find(Project.class, criteria);
+            if (project == null) {
+                return NOT_FOUND;
+            }
             return project.getId();
         }
         if (criteria instanceof String) {

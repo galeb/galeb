@@ -54,6 +54,9 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
             }
             if (criteria instanceof Long) {
                 virtualhostGroup = em.find(VirtualhostGroup.class, criteria);
+                if (virtualhostGroup == null) {
+                    return NOT_FOUND;
+                }
             }
             if (criteria instanceof Project) {
                 projectId = ((Project)criteria).getId();

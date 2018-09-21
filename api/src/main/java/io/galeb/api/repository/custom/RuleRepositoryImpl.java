@@ -68,6 +68,9 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
             }
             if (criteria instanceof Long) {
                 rule = em.find(Rule.class, criteria);
+                if (rule == null) {
+                    return NOT_FOUND;
+                }
             }
             if (criteria instanceof String) {
                 String query = "SELECT r FROM Rule r WHERE r.name = :name";

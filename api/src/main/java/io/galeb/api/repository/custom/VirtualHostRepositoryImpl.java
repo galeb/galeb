@@ -63,6 +63,9 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
             }
             if (criteria instanceof Long) {
                 virtualHost = em.find(VirtualHost.class, criteria);
+                if (virtualHost == null) {
+                    return NOT_FOUND;
+                }
             }
             if (criteria instanceof String) {
                 String query = "SELECT v FROM VirtualHost v WHERE v.name = :name";

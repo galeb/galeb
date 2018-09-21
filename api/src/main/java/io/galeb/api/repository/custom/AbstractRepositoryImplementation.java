@@ -44,11 +44,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.galeb.api.services.PermissionService.Action.VIEW;
+
 @SuppressWarnings("unused")
 @NoRepositoryBean
 public abstract class AbstractRepositoryImplementation<T extends AbstractEntity> implements WithRoles {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractRepositoryImplementation.class);
+
+    Long NOT_FOUND = -404L;
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
@@ -197,6 +201,9 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public Set<String> roles(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long projectId = getProjectId(criteria);
+        if (projectId == NOT_FOUND) {
+            return Collections.singleton(entityClass.getName() + "_" + VIEW.toString());
+        }
         if (projectId > -1) {
             long accountId = account.getId();
             return projectRoles(account, projectId);

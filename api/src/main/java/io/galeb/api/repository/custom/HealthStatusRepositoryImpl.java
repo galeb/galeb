@@ -58,6 +58,9 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
             }
             if (criteria instanceof Long) {
                 healthStatus = em.find(HealthStatus.class, criteria);
+                if (healthStatus == null) {
+                    return NOT_FOUND;
+                }
             }
         } catch (Exception ignored) {}
         if (healthStatus == null) {

@@ -61,7 +61,7 @@ public class CallBackQueue {
                 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
 
                 Map<String, String> mapLog = new HashMap<>();
-                mapLog.put("class", CallBackQueue.class.getSimpleName().toString());
+                mapLog.put("class", CallBackQueue.class.getSimpleName());
                 mapLog.put("queue", HEALTH_CALLBACK_QUEUE);
                 mapLog.put("jmsMessageId", uniqueId);
                 mapLog.put("healthStatus_source", healthStatus.getSource());

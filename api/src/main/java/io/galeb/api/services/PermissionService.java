@@ -55,12 +55,16 @@ public class PermissionService {
         if (LocalAdminService.NAME.equals(account.getUsername())) {
             return true;
         }
-
+        Object operationsThis = expressionOperations.getThis();
+        if (criteria != null && operationsThis == null) {
+            // 404
+            return true;
+        }
         WithRoles repository;
-        if (expressionOperations.getThis() instanceof WithRoles) {
-            repository = (WithRoles) expressionOperations.getThis();
+        if (operationsThis instanceof WithRoles) {
+            repository = (WithRoles) operationsThis;
         } else {
-            LOGGER.error("{} is not an instance of {}", expressionOperations.getThis(), WithRoles.class.getSimpleName());
+            LOGGER.error("{} is not an instance of {}", operationsThis, WithRoles.class.getSimpleName());
             return false;
         }
 

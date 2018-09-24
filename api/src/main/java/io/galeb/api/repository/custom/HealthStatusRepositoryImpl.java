@@ -77,7 +77,7 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
 
     @Override
     protected String querySuffix(String username) {
-        return "INNER JOIN entity.target.pools pools INNER JOIN pools.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
+        return "INNER JOIN entity.target.pool pool INNER JOIN pool.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
                 "WHERE a.username = '" + username + "'";
     }
 }

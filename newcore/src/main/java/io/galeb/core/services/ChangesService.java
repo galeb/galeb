@@ -53,23 +53,24 @@ public class ChangesService {
     public void register(Environment e, AbstractEntity entity, String version) {
         String simpleNameClass = entity.getClass().getSimpleName();
         String envId = String.valueOf(e.getId());
-        Long entityId = entity.getId();
+        String entityId = String.valueOf(entity.getId());
         String entityLastModifiedAt = String.valueOf(entity.getLastModifiedAt().getTime());
         String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, envId, simpleNameClass, entityId, entityLastModifiedAt);
         redisTemplate.opsForValue().setIfAbsent(keyFormatted, version);
     }
 
     public boolean hasByEnvironmentId(Long environmentId) {
-        String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, environmentId, "*", "*", "*");
+        String envId = String.valueOf(environmentId);
+        String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, envId, "*", "*", "*");
         return hasKey(keyFormatted);
     }
 
     public Set<Long> listEnvironmentIds(AbstractEntity entity) {
         String simpleNameClass = entity.getClass().getSimpleName();
-        Long entityId = entity.getId();
+        String entityId = String.valueOf(entity.getId());
         String keyFormatted = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, "*", simpleNameClass, entityId, "*");
         Set<String> keys = keys(keyFormatted);
-        return keys.stream().map(k -> Long.parseLong(new MessageFormat(FORMAT_KEY_HAS_CHANGE).parse(k, new ParsePosition(0))[0].toString())).collect(Collectors.toSet());
+        return keys.stream().map(key -> Long.parseLong(key.split(":")[1])).collect(Collectors.toSet());
     }
 
     public List<HasChangeData<String, String, String>> listEntitiesWithOldestVersion(String envid, Long minRouterVersion) {

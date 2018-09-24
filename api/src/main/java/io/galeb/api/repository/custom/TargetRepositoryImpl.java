@@ -89,6 +89,8 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
                     "(SELECT entity.id FROM Target entity INNER JOIN entity.pools pools INNER JOIN pools.rules r INNER JOIN r.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
                         "WHERE a.username = '" + username + "' AND r.global = false) " +
                 "OR entity.id IN " +
+                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pools pools WHERE pools.global = true) " +
+                "OR entity.id IN " +
                     "(SELECT entity.id FROM Target entity INNER JOIN entity.pools pools INNER JOIN pools.rules r WHERE r.global = true)";
     }
 }

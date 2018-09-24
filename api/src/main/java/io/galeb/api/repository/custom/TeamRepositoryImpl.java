@@ -18,8 +18,6 @@ package io.galeb.api.repository.custom;
 
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
-import io.galeb.core.entity.Project;
-import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,11 +25,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> implements TeamRepositoryCustom, WithRoles {
@@ -77,10 +73,7 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
         List<Team> teams = em.createNamedQuery("teamLinkedToAccount", Team.class)
                 .setParameter("account_id", accountId)
                 .setParameter("team_id", teamId).getResultList();
-        if (teams == null || teams.isEmpty()) {
-            return false;
-        }
-        return true;
+        return teams != null && !teams.isEmpty();
     }
 
 

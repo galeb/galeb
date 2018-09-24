@@ -173,8 +173,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
                     .setParameter("project_id", projectId)
                     .getResultList();
         }
-        Set<String> roles = roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
-        return roles;
+        return roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
     }
 
     @Override
@@ -184,7 +183,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
                 .setParameter("id", accountId)
                 .getResultList();
         Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
-                .distinct().map(Enum::toString).distinct().collect(Collectors.toSet());
+                .distinct().map(Enum::toString).collect(Collectors.toSet());
         List<RoleGroup> roleGroupsFromAccount = em.createNamedQuery("roleGroupsFromAccount", RoleGroup.class)
                 .setParameter("id", accountId)
                 .getResultList();

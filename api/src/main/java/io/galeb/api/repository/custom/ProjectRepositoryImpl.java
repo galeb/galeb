@@ -19,18 +19,12 @@ package io.galeb.api.repository.custom;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.Project;
-import io.galeb.core.entity.RoleGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Project> implements ProjectRepositoryCustom, WithRoles {

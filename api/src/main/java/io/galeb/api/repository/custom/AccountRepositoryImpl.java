@@ -17,7 +17,6 @@
 package io.galeb.api.repository.custom;
 
 import io.galeb.api.repository.RoleGroupRepository;
-import io.galeb.api.services.LocalAdminService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
@@ -28,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,9 +63,9 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     @Override
     public Set<String> roles(Object criteria) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Set<String> roles = account.getRolegroups().stream().flatMap(rg -> rg.getRoles().stream())
-                .map(Object::toString).distinct().collect(Collectors.toSet());
-        return roles;
+        return account.getRolegroups().stream()
+                .flatMap(rg -> rg.getRoles().stream())
+                .map(Object::toString).collect(Collectors.toSet());
     }
 
     @Override

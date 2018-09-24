@@ -19,7 +19,6 @@ package io.galeb.api.repository;
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.PoolRepositoryCustom;
 import io.galeb.core.entity.Pool;
-import io.galeb.core.entity.Rule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

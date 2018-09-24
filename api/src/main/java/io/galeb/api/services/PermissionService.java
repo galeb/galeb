@@ -120,7 +120,7 @@ public class PermissionService {
     }
 
     private boolean hasRoleAll(Set<String> roles, String role) {
-        return roles.stream().filter(r -> r.equals(role + "_ALL")).count() > 0;
+        return roles.stream().anyMatch(r -> r.equals(role + "_ALL"));
     }
 
     private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {

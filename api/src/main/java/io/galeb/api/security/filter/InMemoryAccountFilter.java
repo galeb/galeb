@@ -17,6 +17,7 @@
 package io.galeb.api.security.filter;
 
 import io.galeb.api.services.LocalAdminService;
+import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -56,7 +57,7 @@ public class InMemoryAccountFilter extends OncePerRequestFilter {
     }
 
     private String[] extractAndDecodeHeader(String header) throws IOException {
-        byte[] base64Token = header.substring(6).getBytes("UTF-8");
+        byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
         byte[] decoded;
         try {
             decoded = Base64.decode(base64Token);

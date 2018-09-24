@@ -71,7 +71,7 @@ public class AuditService {
                 action,
                 criteria instanceof AbstractEntity ? ((AbstractEntity)criteria).getId() : criteria,
                 account.getUsername() + (remoteAddr != null ? "/" + remoteAddr : ""),
-                showRoles ? " (roles: " + roles.stream().collect(Collectors.joining(",")) + ")" : "",
+                showRoles ? " (roles: " + String.join(",", roles) + ")" : "",
                 auditType == AuditType.ROLE ? auditType.getMsg() + role + "?" : auditType.getMsg(),
                 result));
     }

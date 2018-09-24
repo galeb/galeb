@@ -66,4 +66,8 @@ public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGro
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<VirtualhostGroup> findAll(Pageable pageable);
+
+    @ExposeFilterSwagger
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualhostGroup> findByVirtualhosts_NameContaining(@Param("name") String name, Pageable pageable);
 }

@@ -82,8 +82,8 @@ public class RoutersService {
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
 
             final Set<JsonSchema.Env> envs = new HashSet<>();
-            String key_envid = environmentId == null ? "*" : environmentId;
-            redisTemplate.keys(MessageFormat.format(FORMAT_KEY_ROUTERS, key_envid, "*", "*")).forEach(key -> {
+            String keyEnvId = environmentId == null ? "*" : environmentId;
+            redisTemplate.keys(MessageFormat.format(FORMAT_KEY_ROUTERS, keyEnvId, "*", "*")).forEach(key -> {
                 try {
                     String etag = redisTemplate.opsForValue().get(key);
                     long expire = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);

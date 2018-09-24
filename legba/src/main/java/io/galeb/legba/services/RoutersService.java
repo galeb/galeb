@@ -1,7 +1,24 @@
+/*
+ * Copyright (c) 2014-2018 Globo.com - ATeam
+ * All rights reserved.
+ *
+ * This source is subject to the Apache License, Version 2.0.
+ * Please see the LICENSE file for more information.
+ *
+ * Authors: See AUTHORS file
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.galeb.legba.services;
 
 import com.google.gson.Gson;
 import io.galeb.core.common.EntitiesRegistrable;
+import io.galeb.core.common.HasChangeData;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
@@ -11,14 +28,19 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -48,8 +70,8 @@ public class RoutersService {
     @Autowired
     private VersionService versionService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
     public Set<JsonSchema.Env> get() {
         return get(null);
@@ -126,8 +148,7 @@ public class RoutersService {
         }
     }
 
-    @Transactional(noRollbackFor = Exception.class)
-    void updateRouterState(String envId) {
+    private void updateRouterState(String envId) {
         Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
         Set<Long> eTagRouters = new HashSet<>();
         String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, "*", "*");
@@ -153,22 +174,35 @@ public class RoutersService {
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
         changesService.listEntitiesWithOldestVersion(envId, versionRouter).stream()
-                .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName())).forEach(hasChangeData -> {
-                String entityClass = hasChangeData.entityClassName();
-                String entityId = hasChangeData.entityId();
-                Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
-                query.setParameter("entityId", Long.parseLong(entityId));
-                int numEntities = query.executeUpdate();
+                .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))
+                .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(envId, hasChangeData));
+    }
 
-                if (numEntities > 0) {
-                    Map<String, String> mapLog = new HashMap<>();
-                    mapLog.put("entityIdDeleted", entityId);
-                    mapLog.put("entityClassDeleted", entityClass);
-                    mapLog.put("environmentId", envId);
-                    mapLog.put("tags", LOGGING_TAGS);
-                    LOGGER.info(gson.toJson(mapLog));
-                }
+    private void deleteHasChangeAndEntityFromDB(String envId, HasChangeData<String, String, String> hasChangeData) {
+        String entityClass = hasChangeData.entityClassName();
+        String entityId = hasChangeData.entityId();
+        final EntityManager entityManager = entityManagerFactory.createEntityManager();
+        final EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
+            query.setParameter("entityId", Long.parseLong(entityId));
+            int numEntities = query.executeUpdate();
+            transaction.commit();
+            if (numEntities > 0) {
+                Map<String, String> mapLog = new HashMap<>();
+                mapLog.put("entityIdDeleted", entityId);
+                mapLog.put("entityClassDeleted", entityClass);
+                mapLog.put("environmentId", envId);
+                mapLog.put("tags", LOGGING_TAGS);
+                LOGGER.info(gson.toJson(mapLog));
+            }
             changesService.delete(hasChangeData.key());
-        });
+        } catch (Exception e) {
+            transaction.rollback();
+            LOGGER.error(e.getMessage(), e);
+        } finally {
+            entityManager.close();
+        }
     }
 }

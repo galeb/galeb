@@ -98,7 +98,7 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
             return;
         }
         getAllEnvironments(entity).forEach(e ->
-                changesService.register(e, entity, String.valueOf(versionService.incrementVersion(e.getId()))));
+                changesService.register(e, entity, String.valueOf(versionService.incrementVersion(String.valueOf(e.getId())))));
     }
 
 }

@@ -62,10 +62,10 @@ public class CallbackConsumer {
 
                 Target target = tempHealthStatus.getTarget();
                 tempHealthStatus.getTarget().getAllEnvironments().forEach(e ->
-                        changesService.register(e, target, String.valueOf(versionService.incrementVersion(e.getId()))));
+                        changesService.register(e, target, String.valueOf(versionService.incrementVersion(String.valueOf(e.getId())))));
 
                 Map<String, String> mapLog = new HashMap<>();
-                mapLog.put("class", CallbackConsumer.class.getSimpleName().toString());
+                mapLog.put("class", CallbackConsumer.class.getSimpleName());
                 mapLog.put("queue", QUEUE_HEALTH_CALLBACK);
                 mapLog.put("healthStatus_source", tempHealthStatus.getSource());
                 mapLog.put("healthStatus_statusDetailed", tempHealthStatus.getStatusDetailed());

@@ -60,7 +60,7 @@ public class VersionService {
         redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, version), cache, 5, TimeUnit.MINUTES);
     }
 
-    public Long incrementVersion(Object envId) {
+    public Long incrementVersion(String envId) {
         String keyFormatted = MessageFormat.format(FORMAT_KEY_VERSION, envId);
         return redisTemplate.opsForValue().increment(keyFormatted, 1);
     }

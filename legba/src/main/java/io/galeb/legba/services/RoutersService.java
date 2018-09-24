@@ -1,6 +1,7 @@
 package io.galeb.legba.services;
 
 import com.google.gson.Gson;
+import io.galeb.core.common.EntitiesRegistrable;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
@@ -105,7 +106,6 @@ public class RoutersService {
         return numRouters;
     }
 
-    @Transactional
     public void put(String routerGroupId, String routerLocalIP, String version, String envId) {
         try {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, routerGroupId, routerLocalIP);
@@ -126,11 +126,12 @@ public class RoutersService {
         }
     }
 
-    private void updateRouterState(String envId) {
+    @Transactional(noRollbackFor = Exception.class)
+    void updateRouterState(String envId) {
         Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
         Set<Long> eTagRouters = new HashSet<>();
         String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, "*", "*");
-        redisTemplate.keys(keyAll).stream().forEach(key -> {
+        redisTemplate.keys(keyAll).forEach(key -> {
             try {
                 eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
             } catch (NumberFormatException e) {
@@ -151,10 +152,10 @@ public class RoutersService {
         });
         Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
-        changesService.listEntitiesWithOldestVersion(envId, versionRouter).entrySet().stream().forEach(mapOfEntities -> {
-            mapOfEntities.getValue().entrySet().stream().filter(entry -> ChangesService.entitiesRegistrable.contains(entry.getKey())).forEach(entry -> {
-                String entityClass = entry.getKey();
-                String entityId = entry.getValue();
+        changesService.listEntitiesWithOldestVersion(envId, versionRouter).stream()
+                .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName())).forEach(hasChangeData -> {
+                String entityClass = hasChangeData.entityClassName();
+                String entityId = hasChangeData.entityId();
                 Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
                 query.setParameter("entityId", Long.parseLong(entityId));
                 int numEntities = query.executeUpdate();
@@ -167,8 +168,7 @@ public class RoutersService {
                     mapLog.put("tags", LOGGING_TAGS);
                     LOGGER.info(gson.toJson(mapLog));
                 }
-            });
-            changesService.delete(mapOfEntities.getKey());
+            changesService.delete(hasChangeData.key());
         });
     }
 }

@@ -16,6 +16,7 @@
 
 package io.galeb.api.handler;
 
+import io.galeb.core.common.EntitiesRegistrable;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.services.ChangesService;
@@ -93,6 +94,9 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     }
 
     private void registerChanges(T entity) {
+        if (!EntitiesRegistrable.contains(entity.getClass().getSimpleName())) {
+            return;
+        }
         getAllEnvironments(entity).forEach(e ->
                 changesService.register(e, entity, String.valueOf(versionService.incrementVersion(e.getId()))));
     }

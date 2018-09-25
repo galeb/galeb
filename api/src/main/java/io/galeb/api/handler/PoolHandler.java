@@ -18,6 +18,7 @@ package io.galeb.api.handler;
 
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Pool;
+import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -31,4 +32,11 @@ public class PoolHandler extends AbstractHandler<Pool> {
         return Collections.singleton(entity.getEnvironment());
     }
 
+    @Override
+    protected void onBeforeDelete(Pool entity) {
+        if (!entity.getTargets().isEmpty()) {
+            throw new BadRequestException("Pool still has Target associated");
+        }
+        super.onBeforeDelete(entity);
+    }
 }

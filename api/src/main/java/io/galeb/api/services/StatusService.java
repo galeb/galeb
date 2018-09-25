@@ -18,6 +18,7 @@ package io.galeb.api.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Target;
 import io.galeb.core.entity.WithStatus.Status;
 import io.galeb.core.services.ChangesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,22 +36,25 @@ public class StatusService {
     ChangesService changesService;
 
     public Map<Long, Status> status(AbstractEntity entity) {
+        Map<Long, Status> mapStatus = new HashMap<>();
+
         if (entity instanceof Environment) {
             boolean exists = changesService.hasByEnvironmentId(entity.getId());
-            Map<Long, Status> mapStatus = new HashMap<>();
             mapStatus.put(entity.getId(), exists ? Status.PENDING : Status.OK);
             return mapStatus;
         }
         if (Boolean.TRUE.equals(entity.isQuarantine())) {
-            Map<Long, Status> mapStatus = new HashMap<>();
             entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.DELETED));
+            return mapStatus;
+        }
+        if (entity instanceof Target && ((Target) entity).getHealthStatus().isEmpty()) {
+            entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.PENDING));
             return mapStatus;
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
         Set<Long> allEnvironmentIdsEntity = entity.getAllEnvironments().stream().map(Environment::getId).collect(Collectors.toSet());
         allEnvironmentIdsEntity.removeAll(allEnvironmentsWithChanges);
 
-        Map<Long, Status> mapStatus = new HashMap<>();
         allEnvironmentIdsEntity.forEach(e -> mapStatus.put(e, Status.OK));
         allEnvironmentsWithChanges.forEach(e -> mapStatus.put(e, Status.PENDING));
 

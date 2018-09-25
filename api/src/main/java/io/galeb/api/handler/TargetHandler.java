@@ -33,7 +33,6 @@ public class TargetHandler extends AbstractHandler<Target> {
 
     @Override
     protected void onBeforeCreate(Target entity) {
-        super.onBeforeCreate(entity);
         if (entity.getPool() == null) {
             throw new BadRequestException("Pool undefined");
         }

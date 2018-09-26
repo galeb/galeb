@@ -16,6 +16,7 @@
 
 package io.galeb.kratos.services;
 
+import io.galeb.kratos.services.HealthSchema.Health;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,18 +68,23 @@ public class HealthService {
                     String healthGroup = (String) positions[1];
                     String localIps = (String) positions[2];
 
+                    envs.add(new HealthSchema.Env(envId, new HashSet<>()));
                     HealthSchema.Env envSchema = envs.stream()
                         .filter(e -> e.getEnvId().equals(envId))
                         .findAny()
-                        .orElseGet(() -> new HealthSchema.Env(envId, new HashSet<>()));
-                    HealthSchema.Source sourceSchema = envSchema.getSources().stream()
+                        .get();
+
+                    Set<HealthSchema.Source> sources = envSchema.getSources();
+                    sources.add(new HealthSchema.Source(healthGroup, new HashSet<>()));
+                    HealthSchema.Source sourceSchema = sources.stream()
                         .filter(s -> s.getName().equals(healthGroup))
                         .findAny()
-                        .orElseGet(() -> new HealthSchema.Source(healthGroup, new HashSet<>()));
+                        .get();
 
-                    sourceSchema.getHealths().add(new HealthSchema.Health(localIps, expire));
+                    final Health health = new Health(localIps, expire);
+                    sourceSchema.getHealths().remove(health);
+                    sourceSchema.getHealths().add(health);
 
-                    envs.add(envSchema);
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                 }

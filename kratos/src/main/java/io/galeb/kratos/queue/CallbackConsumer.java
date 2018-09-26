@@ -8,10 +8,13 @@ import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import io.galeb.kratos.repository.HealthStatusRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import io.galeb.kratos.services.HealthService;
+import java.util.Optional;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +28,7 @@ public class CallbackConsumer {
     private static final Log LOGGER = LogFactory.getLog(CallbackConsumer.class);
 
     private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
+    private static final String QUEUE_HEALTH_REGISTER = "health-register";
 
     private final HealthStatusRepository healthStatusRepository;
     private final TargetRepository targetRepository;
@@ -38,6 +42,9 @@ public class CallbackConsumer {
 
     @Autowired
     private VersionService versionService;
+
+    @Autowired
+    private HealthService healthService;
 
     @Autowired
     public CallbackConsumer(HealthStatusRepository healthStatusRepository, TargetRepository targetRepository) {
@@ -78,5 +85,10 @@ public class CallbackConsumer {
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    @JmsListener(destination = QUEUE_HEALTH_REGISTER)
+    public void registerListener(String message) {
+        healthService.put(message);
     }
 }

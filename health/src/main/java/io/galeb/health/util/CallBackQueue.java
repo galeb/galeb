@@ -36,7 +36,8 @@ import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTI
 @Component
 public class CallBackQueue {
 
-    private static final String HEALTH_CALLBACK_QUEUE = "health-callback";
+    private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
+    private static final String QUEUE_HEALTH_REGISTER = "health-register";
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -53,7 +54,7 @@ public class CallBackQueue {
 
     public void update(HealthStatus healthStatus) {
         try {
-            jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
+            jmsTemplate.send(QUEUE_HEALTH_CALLBACK, session -> {
                 Message message = session.createObjectMessage(healthStatus);
                 String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
                 message.setStringProperty("_HQ_DUPL_ID", uniqueId);
@@ -62,7 +63,7 @@ public class CallBackQueue {
 
                 Map<String, String> mapLog = new HashMap<>();
                 mapLog.put("class", CallBackQueue.class.getSimpleName());
-                mapLog.put("queue", HEALTH_CALLBACK_QUEUE);
+                mapLog.put("queue", QUEUE_HEALTH_CALLBACK);
                 mapLog.put("jmsMessageId", uniqueId);
                 mapLog.put("healthStatus_source", healthStatus.getSource());
                 mapLog.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
@@ -78,4 +79,8 @@ public class CallBackQueue {
         }
     }
 
+    public void register(String zoneId) {
+        String envId = SystemEnv.ENVIRONMENT_ID.getValue();
+        jmsTemplate.convertAndSend(QUEUE_HEALTH_REGISTER, "header:" + envId + ":" + zoneId + ":" + LocalIP.encode());
+    }
 }

@@ -135,6 +135,11 @@ public enum SystemEnv {
     ENVIRONMENT_NAME      ("ENVIRONMENT_NAME",       ""),
 
     /**
+     * Galeb Manager -> Environment Id
+     */
+    ENVIRONMENT_ID        ("ENVIRONMENT_ID",         0),
+
+    /**
      * Galeb Manager URL
      */
     MANAGER_URL           ("MANAGER_URL",           "http://127.0.0.1:8000"),

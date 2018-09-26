@@ -142,6 +142,7 @@ public class HealthCheckerService {
                     if (!reason.equals(lastReason)) {
                         callBackQueue.update(healthStatus);
                     }
+                    callBackQueue.register(ZONE_ID);
                 }
 
                 private String buildLogMessage(String reason) {

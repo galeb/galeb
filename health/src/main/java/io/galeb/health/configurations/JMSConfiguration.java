@@ -35,9 +35,7 @@ import javax.jms.JMSException;
 @EnableJms
 public class JMSConfiguration implements JmsListenerConfigurer {
 
-    private static final String QUEUE_NAME =
-            SystemEnv.QUEUE_NAME.getValue() + "_" +
-                    SystemEnv.ENVIRONMENT_NAME.getValue().replaceAll("[ ]+", "_").toLowerCase();
+    private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue() + "_" + SystemEnv.ENVIRONMENT_ID.getValue();
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

@@ -35,6 +35,9 @@ public class StatusService {
     @Autowired
     ChangesService changesService;
 
+    @Autowired
+    HealthStatusService healthStatusService;
+
     public Map<Long, Status> status(AbstractEntity entity) {
         if (entity instanceof Environment) {
             boolean exists = changesService.hasByEnvironmentId(entity.getId());
@@ -45,7 +48,7 @@ public class StatusService {
         if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
-        if (entity instanceof Target && ((Target) entity).getHealthStatus().size() < allEnvironments.size()) {
+        if (entity instanceof Target && ((Target) entity).getHealthStatus().size() < healthStatusService.count(allEnvironments.stream().findAny().get().getId())) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);

@@ -81,6 +81,6 @@ public class CallBackQueue {
 
     public void register(String zoneId) {
         String envId = SystemEnv.ENVIRONMENT_ID.getValue();
-        jmsTemplate.convertAndSend(QUEUE_HEALTH_REGISTER, "header:" + envId + ":" + zoneId + ":" + LocalIP.encode());
+        jmsTemplate.convertAndSend(QUEUE_HEALTH_REGISTER, "health:" + envId + ":" + zoneId + ":" + LocalIP.encode());
     }
 }

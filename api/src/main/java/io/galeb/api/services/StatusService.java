@@ -21,13 +21,13 @@ import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Target;
 import io.galeb.core.entity.WithStatus.Status;
 import io.galeb.core.services.ChangesService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StatusService {
@@ -36,25 +36,23 @@ public class StatusService {
     ChangesService changesService;
 
     public Map<Long, Status> status(AbstractEntity entity) {
-        Map<Long, Status> mapStatus = new HashMap<>();
-
         if (entity instanceof Environment) {
             boolean exists = changesService.hasByEnvironmentId(entity.getId());
-            mapStatus.put(entity.getId(), exists ? Status.PENDING : Status.OK);
-            return mapStatus;
+            return Collections.singletonMap(entity.getId(), exists ? Status.PENDING : Status.OK);
         }
-        if (Boolean.TRUE.equals(entity.isQuarantine())) {
-            entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.DELETED));
-            return mapStatus;
+        final Set<Environment> allEnvironments = entity.getAllEnvironments();
+        final Boolean isQuarantine;
+        if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {
+            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
-        if (entity instanceof Target && ((Target) entity).getHealthStatus().isEmpty()) {
-            entity.getAllEnvironments().forEach(e -> mapStatus.put(e.getId(), Status.PENDING));
-            return mapStatus;
+        if (entity instanceof Target && ((Target) entity).getHealthStatus().size() < allEnvironments.size()) {
+            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
-        Set<Long> allEnvironmentIdsEntity = entity.getAllEnvironments().stream().map(Environment::getId).collect(Collectors.toSet());
+        Set<Long> allEnvironmentIdsEntity = allEnvironments.stream().map(Environment::getId).collect(Collectors.toSet());
         allEnvironmentIdsEntity.removeAll(allEnvironmentsWithChanges);
 
+        Map<Long, Status> mapStatus = new HashMap<>();
         allEnvironmentIdsEntity.forEach(e -> mapStatus.put(e, Status.OK));
         allEnvironmentsWithChanges.forEach(e -> mapStatus.put(e, Status.PENDING));
 

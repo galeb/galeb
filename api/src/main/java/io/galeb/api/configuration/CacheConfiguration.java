@@ -16,6 +16,7 @@
 
 package io.galeb.api.configuration;
 
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -29,12 +30,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 @EnableCaching
 public class CacheConfiguration {
 
+    private static Integer CACHE_EXPIRATION = Integer
+        .valueOf(Optional.ofNullable(System.getenv("CACHE_EXPIRATION")).orElse("300"));
+
     @Bean
     public CacheManager cacheManager(@Qualifier("redisTemplateForCache") RedisTemplate redisTemplate) {
         RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
 
         // Number of seconds before expiration. Defaults to unlimited (0)
-        cacheManager.setDefaultExpiration(300);
+        cacheManager.setDefaultExpiration(CACHE_EXPIRATION);
         return cacheManager;
     }
 

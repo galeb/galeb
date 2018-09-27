@@ -19,6 +19,8 @@ package io.galeb.api.repository;
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.TargetRepositoryCustom;
 import io.galeb.core.entity.Target;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,21 +35,25 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#target, #this)")
+    @CacheEvict(value = "target", key = "#id")
     Target save(@Param("target") Target target);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "target", key = "#id")
     void delete(@Param("id") Long id);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
+    @Cacheable(value = "target", key = "#id")
     Target findOne(@Param("id") Long id);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
+    @Cacheable(value = "target")
     Page<Target> findAll(Pageable pageable);
 
     @ExposeFilterSwagger

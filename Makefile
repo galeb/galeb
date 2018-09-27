@@ -36,7 +36,7 @@ dist: galeb
         fpm -s dir \
             --rpm-rpmbuild-define '_binaries_in_noarch_packages_terminate_build 0' \
             -t rpm \
-            -n "galeb-new-$$service" \
+            -n "galeb-$$service" \
             -v ${RPM_VER} \
             --iteration ${RELEASE}.el7 \
             -a noarch \
@@ -46,7 +46,7 @@ dist: galeb
             --vendor 'Globo.com' \
             --description "Galeb $$service service" \
             --after-install scripts/postinstall \
-            -f -p ../../dists/galeb-new-$$service-${RPM_VER}.el7.noarch.rpm lib/=/opt/galeb/lib/ scripts/=/opt/galeb/scripts/ conf/=/opt/galeb/conf/ initscript=/etc/init.d/galeb && \
+            -f -p ../../dists/galeb-$$service-${RPM_VER}.el7.noarch.rpm lib/=/opt/galeb/lib/ scripts/=/opt/galeb/scripts/ conf/=/opt/galeb/conf/ initscript=/etc/init.d/galeb && \
         cd $$old; \
     done
 

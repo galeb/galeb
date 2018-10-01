@@ -35,25 +35,21 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#target, #this)")
-    @CacheEvict(value = "target", key = "#p0.id")
     Target save(@Param("target") Target target);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @CacheEvict(value = "target", key = "#p0")
     void delete(@Param("id") Long id);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
-    @Cacheable(value = "target", key = "#p0")
     Target findOne(@Param("id") Long id);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
-    @Cacheable(value = "target")
     Page<Target> findAll(Pageable pageable);
 
     @ExposeFilterSwagger

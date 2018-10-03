@@ -31,15 +31,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final InMemoryAuthenticatorProvider inMemoryAuthenticatorProvider;
     private final ApiTokenAuthenticationProvider apiTokenAuthenticationProvider;
     private final LdapAuthenticationProvider ldapAuthenticationProvider;
 
     @Autowired
-    public SecurityConfiguration(ApiTokenAuthenticationProvider apiTokenAuthenticationProvider, LdapAuthenticationProvider ldapAuthenticationProvider, InMemoryAuthenticatorProvider inMemoryAuthenticatorProvider) {
+    public SecurityConfiguration(ApiTokenAuthenticationProvider apiTokenAuthenticationProvider, LdapAuthenticationProvider ldapAuthenticationProvider) {
         this.apiTokenAuthenticationProvider = apiTokenAuthenticationProvider;
         this.ldapAuthenticationProvider = ldapAuthenticationProvider;
-        this.inMemoryAuthenticatorProvider = inMemoryAuthenticatorProvider;
     }
 
     @Override

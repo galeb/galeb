@@ -52,9 +52,7 @@ public class PermissionService {
 
     private boolean allow(Action action, Object criteria, MethodSecurityExpressionOperations expressionOperations) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (LocalAdminService.NAME.equals(account.getUsername())) {
-            return true;
-        }
+
         Object operationsThis = expressionOperations.getThis();
         if (criteria != null && operationsThis == null) {
             // 404

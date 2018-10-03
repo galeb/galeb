@@ -17,7 +17,6 @@
 package io.galeb.api.controllers;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.galeb.api.services.LocalAdminService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
 import org.springframework.http.MediaType;
@@ -80,7 +79,7 @@ public class TokenController {
         // TODO: Remove when web-ui will be improved
         @Deprecated
         public boolean isAdmin() {
-            return roles.contains(RoleGroup.ROLEGROUP_SUPER_ADMIN) || LocalAdminService.NAME.equals(username);
+            return roles.contains(RoleGroup.ROLEGROUP_SUPER_ADMIN);
         }
     }
 }

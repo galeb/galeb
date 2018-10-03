@@ -21,6 +21,15 @@ import org.springframework.util.Assert;
 import javax.persistence.*;
 import java.util.*;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "RuleDefault",
+                query = "SELECT DISTINCT entity From Rule entity WHERE entity.id IN " +
+                    "(SELECT entity.id FROM Rule entity INNER JOIN entity.project.teams t INNER JOIN t.accounts a " +
+                        "WHERE a.username = :username AND entity.global = false) " +
+                "OR entity.id IN " +
+                    "(SELECT entity.id From Rule entity WHERE entity.global = true)")
+})
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name", columnNames = { "name" }) })
 public class Rule extends AbstractEntity implements WithStatus, WithGlobal {

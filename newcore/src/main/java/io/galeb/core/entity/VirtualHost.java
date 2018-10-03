@@ -22,6 +22,11 @@ import org.springframework.util.Assert;
 import javax.persistence.*;
 import java.util.*;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "VirtualHostDefault",
+                query = "SELECT DISTINCT entity From VirtualHost entity INNER JOIN entity.project.teams t INNER JOIN t.accounts a WHERE a.username = :username")
+})
 @Entity
 @Table(name = "virtualhost", uniqueConstraints = { @UniqueConstraint(name = "UK_virtualhost_name", columnNames = { "name" }) })
 public class VirtualHost extends AbstractEntity implements WithStatus {

@@ -28,6 +28,12 @@ import java.util.*;
 
 import static com.google.common.hash.Hashing.sha256;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "AccountDefault",
+                query = "SELECT DISTINCT entity From Account entity WHERE entity.username = :username")
+})
+
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_account_username", columnNames = { "username" }) })
 public class Account extends AbstractEntity implements UserDetails {

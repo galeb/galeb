@@ -23,6 +23,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "BalancePolicyDefault",
+                query = "SELECT DISTINCT entity From BalancePolicy entity")
+})
+
 @Entity
 @Table(name = "balancepolicy", uniqueConstraints = { @UniqueConstraint(name = "UK_balancepolicy_name", columnNames = { "name" }) })
 public class BalancePolicy extends AbstractEntity {

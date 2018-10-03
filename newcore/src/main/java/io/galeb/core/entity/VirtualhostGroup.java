@@ -22,6 +22,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "VirtualhostGroupDefault",
+                query = "SELECT DISTINCT entity From VirtualhostGroup entity INNER JOIN entity.virtualhosts v INNER JOIN v.project.teams t INNER JOIN t.accounts a " +
+                "WHERE a.username = :username")
+})
+
 @Entity
 @Table(name = "virtualhostgroup")
 public class VirtualhostGroup extends AbstractEntity implements WithStatus {

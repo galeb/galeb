@@ -26,7 +26,10 @@ import java.util.Set;
 @NamedQueries({
         @NamedQuery(
                 name = "teamLinkedToAccount",
-                query = "SELECT t FROM Team t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id")
+                query = "SELECT t FROM Team t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id"),
+        @NamedQuery(
+                name = "TeamDefault",
+                query = "SELECT DISTINCT entity From Team entity INNER JOIN entity.accounts a WHERE a.username = :username")
 })
 
 @Entity

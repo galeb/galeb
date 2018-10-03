@@ -20,6 +20,12 @@ import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "HealthCheckDefault",
+                query = "SELECT DISTINCT entity From HealthCheck entity")
+})
+
 @Entity
 @Table(name = "healthcheck", uniqueConstraints = { @UniqueConstraint(name = "UK_healthcheck_name", columnNames = { "name" }) })
 public class HealthCheck extends AbstractEntity {

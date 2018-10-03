@@ -16,11 +16,16 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.util.*;
+
+@NamedQueries({
+        @NamedQuery(
+                name = "EnvironmentDefault",
+                query = "SELECT DISTINCT entity From Environment entity")
+})
 
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_environment_name", columnNames = { "name" }) })

@@ -38,7 +38,10 @@ import java.util.Set;
                 query = "SELECT r FROM RoleGroup r INNER JOIN r.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND t.id = :team_id"),
         @NamedQuery(
                 name = "roleGroupsFromProjectByAccountId",
-                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :id")
+                query = "SELECT r FROM RoleGroup r INNER JOIN r.projects p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :id"),
+        @NamedQuery(
+                name = "RoleGroupDefault",
+                query = "SELECT DISTINCT entity From RoleGroup entity INNER JOIN entity.accounts a WHERE a.username = :username")
 })
 
 @Entity

@@ -23,6 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "RuleOrderedDefault",
+                query = "SELECT DISTINCT entity From RuleOrdered entity INNER JOIN entity.rule.project.teams t INNER JOIN t.accounts a WHERE a.username = :username")
+})
+
 @Entity
 @Table(name = "ruleordered", uniqueConstraints = { @UniqueConstraint(name = "UK_order__rule_id__virtualhostgroup_id__environment_id", columnNames = { "rule_order", "rule_ruleordered_id", "virtualhostgroup_ruleordered_id", "environment_id" }) })
 public class RuleOrdered extends AbstractEntity implements WithStatus, Comparable<RuleOrdered> {

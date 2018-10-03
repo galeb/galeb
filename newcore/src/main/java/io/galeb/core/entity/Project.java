@@ -38,7 +38,10 @@ import java.util.Set;
                 query = "SELECT p FROM Project p INNER JOIN p.virtualhosts v WHERE v.virtualhostgroup.id = :id"),
         @NamedQuery(
                 name = "projectFromTarget",
-                query = "SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t WHERE t.id = :id")
+                query = "SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t WHERE t.id = :id"),
+        @NamedQuery(
+                name = "ProjectDefault",
+                query = "SELECT DISTINCT entity From Project entity INNER JOIN entity.teams t INNER JOIN t.accounts a WHERE a.username = :username")
 })
 
 @Entity

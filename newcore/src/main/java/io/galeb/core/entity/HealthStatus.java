@@ -19,6 +19,13 @@ package io.galeb.core.entity;
 import javax.persistence.*;
 import java.util.Objects;
 
+@NamedQueries({
+        @NamedQuery(
+                name = "HealthStatusDefault",
+                query = "SELECT DISTINCT entity From HealthStatus entity INNER JOIN entity.target.pool pool INNER JOIN pool.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
+                "WHERE a.username = :username")
+})
+
 @Entity
 @Table(name = "health_status", uniqueConstraints = { @UniqueConstraint(name = "UK_health_status_source_target_id", columnNames = { "source", "target_id" }) })
 public class HealthStatus extends AbstractEntity {

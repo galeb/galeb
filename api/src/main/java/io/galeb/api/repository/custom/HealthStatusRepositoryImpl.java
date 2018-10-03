@@ -74,10 +74,4 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
         }
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.target.pool pool INNER JOIN pool.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
-                "WHERE a.username = '" + username + "'";
-    }
 }

@@ -62,9 +62,4 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
         return -1;
 
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.teams t INNER JOIN t.accounts a WHERE a.username = '" + username + "'";
-    }
 }

@@ -68,11 +68,4 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
         if (projects == null || projects.isEmpty()) return -1L;
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.virtualhosts v INNER JOIN v.project.teams t INNER JOIN t.accounts a " +
-                "WHERE a.username = '" + username + "'";
-    }
-
 }

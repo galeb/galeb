@@ -68,9 +68,4 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
                 .map(Object::toString).collect(Collectors.toSet());
     }
 
-    @Override
-    protected String querySuffix(String username) {
-        return "WHERE entity.username = '" + username + "'";
-    }
-
 }

@@ -19,8 +19,6 @@ package io.galeb.api.repository;
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.TargetRepositoryCustom;
 import io.galeb.core.entity.Target;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

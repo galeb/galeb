@@ -46,8 +46,4 @@ public class BalancePolicyRepositoryImpl extends AbstractRepositoryImplementatio
         return Collections.emptySet();
     }
 
-    @Override
-    protected String querySuffix(String username) {
-        return "";
-    }
 }

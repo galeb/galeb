@@ -17,16 +17,11 @@
 package io.galeb.api.repository.custom;
 
 import com.google.common.reflect.TypeToken;
-import io.galeb.api.services.LocalAdminService;
 import io.galeb.api.services.StatusService;
-import io.galeb.core.entity.AbstractEntity;
-import io.galeb.core.entity.Account;
-import io.galeb.core.entity.Environment;
-import io.galeb.core.entity.Project;
-import io.galeb.core.entity.RoleGroup;
-import io.galeb.core.entity.WithStatus;
+import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -89,34 +85,32 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
 
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Page<T> findAll(Pageable pageable) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         boolean isViewAll;
         boolean isView = false;
-        if (LocalAdminService.NAME.equals(account.getUsername())) {
-            isViewAll = true;
-        } else {
-            Set<String> roles = mergeAllRolesOf(account);
-            String roleView = entityClass.getSimpleName().toUpperCase() + "_VIEW";
-            isView = roles.contains(roleView);
+        Set<String> roles = mergeAllRolesOf(account);
+        String roleView = entityClass.getSimpleName().toUpperCase() + "_VIEW";
+        isView = roles.contains(roleView);
 
-            String roleViewAll = roleView + "_ALL";
-            isViewAll = roles.contains(roleViewAll);
-        }
+        String roleViewAll = roleView + "_ALL";
+        isViewAll = roles.contains(roleViewAll);
 
         if (!isView && !isViewAll) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
         String username = account.getUsername();
-        TypedQuery<?> query = em.createQuery(isViewAll ? selectPrefix() : selectPrefix() + " " + querySuffix(username), entityClass);
-        TypedQuery<Long> queryCount = em.createQuery(isViewAll ? selectCountPrefix() : selectCountPrefix() + " " + querySuffix(username), Long.class);
+        String queryName = entityClass.getSimpleName() + "Default";
+        TypedQuery<?> query = em.createNamedQuery(queryName, entityClass);
+        query.setParameter("username", username);
 
         query.setFirstResult(pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
 
         List<?> queryResult = query.getResultList();
-        Page<T> page = new PageImpl<>((List<T>) queryResult, pageable, queryCount.getSingleResult());
+        Page<T> page = new PageImpl<>((List<T>) queryResult, pageable, queryResult.size());
         for (T entity: page) {
             setStatus(entity);
         }
@@ -215,16 +209,6 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
             entity.setAllEnvironments(getAllEnvironments(entity));
             ((WithStatus) entity).setStatus(statusService.status(entity));
         }
-    }
-
-    protected abstract String querySuffix(String username);
-
-    protected String selectPrefix() {
-        return "SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity";
-    }
-
-    private String selectCountPrefix() {
-        return "SELECT COUNT(entity) From " + entityClass.getSimpleName() + " entity";
     }
 
     @Override

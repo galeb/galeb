@@ -82,14 +82,4 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
         } catch (Exception ignored) {}
         return projectId > -1L ? projectId : (rule != null ? rule.getProject().getId() : -1L);
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "WHERE entity.id IN " +
-                    "(SELECT entity.id FROM Rule entity INNER JOIN entity.project.teams t INNER JOIN t.accounts a " +
-                        "WHERE a.username = '" + username + "' AND entity.global = false) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id From Rule entity WHERE entity.global = true)";
-    }
-
 }

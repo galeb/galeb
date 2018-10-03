@@ -45,9 +45,4 @@ public class RoleGroupRepositoryImpl extends AbstractRepositoryImplementation<Ro
     public Set<String> roles(Object criteria) {
         return Collections.emptySet();
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.accounts a WHERE a.username = '" + username + "'";
-    }
 }

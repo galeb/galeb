@@ -78,9 +78,4 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
         }
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.rule.project.teams t INNER JOIN t.accounts a WHERE a.username = '" + username + "'";
-    }
 }

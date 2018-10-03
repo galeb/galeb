@@ -64,11 +64,6 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
         return Collections.emptySet();
     }
 
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.accounts a WHERE a.username = '" + username + "'";
-    }
-
     private boolean isAccountLinkedWithTeam(long accountId, long teamId) {
         List<Team> teams = em.createNamedQuery("teamLinkedToAccount", Team.class)
                 .setParameter("account_id", accountId)

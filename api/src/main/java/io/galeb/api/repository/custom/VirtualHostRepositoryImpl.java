@@ -77,10 +77,4 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
         } catch (Exception ignored) {}
         return projectId > -1L ? projectId : (virtualHost != null ? virtualHost.getProject().getId() : -1L);
     }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "INNER JOIN entity.project.teams t INNER JOIN t.accounts a WHERE a.username = '" + username + "'";
-    }
-
 }

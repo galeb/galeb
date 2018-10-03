@@ -70,7 +70,8 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
                 String query = "SELECT t FROM Target t WHERE t.name = :name";
                 target = em.createQuery(query, Target.class).setParameter("name", criteria).getSingleResult();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         if (target == null) {
             return -1L;
         }
@@ -81,16 +82,5 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
             return -1;
         }
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
-    }
-
-    @Override
-    protected String querySuffix(String username) {
-        return "WHERE entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool INNER JOIN pool.rules r INNER JOIN r.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
-                        "WHERE a.username = '" + username + "' AND r.global = false) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool WHERE pool.global = true) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool INNER JOIN pool.rules r WHERE r.global = true)";
     }
 }

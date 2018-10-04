@@ -103,8 +103,14 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
         String username = account.getUsername();
         String queryName = entityClass.getSimpleName() + "Default";
-        TypedQuery<?> query = em.createNamedQuery(queryName, entityClass);
-        query.setParameter("username", username);
+
+        TypedQuery<?> query;
+        if (isViewAll) {
+            query = em.createQuery("SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity", entityClass);
+        } else {
+            query = em.createNamedQuery(queryName, entityClass);
+            query.setParameter("username", username);
+        }
 
         query.setFirstResult(pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());

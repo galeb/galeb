@@ -106,6 +106,12 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-rest-core</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.atteo</groupId>
+                <artifactId>evo-inflector</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

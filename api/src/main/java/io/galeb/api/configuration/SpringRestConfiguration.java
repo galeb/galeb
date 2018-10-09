@@ -5,6 +5,7 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.hateoas.core.DefaultRelProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -18,6 +19,11 @@ public class SpringRestConfiguration extends RepositoryRestConfigurerAdapter {
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
         setupCors(config);
         exposeIdsEntities(config);
+        disableEvo(config);
+    }
+
+    private void disableEvo(RepositoryRestConfiguration config) {
+        config.setRelProvider(new DefaultRelProvider());
     }
 
     private void exposeIdsEntities(RepositoryRestConfiguration config) {

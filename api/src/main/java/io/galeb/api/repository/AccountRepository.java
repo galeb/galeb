@@ -19,6 +19,8 @@ package io.galeb.api.repository;
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.AccountRepositoryCustom;
 import io.galeb.core.entity.Account;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,15 +36,27 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#account, #this)")
+    @Caching(evict = {
+            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "userDetails", key = "#p0.username")
+    })
     Account save(@Param("account") Account account);
 
     @Override
     @RestResource(exported = false)
+    @Caching(evict = {
+            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "userDetails", key = "#p0.username")
+    })
     Account saveByPass(@Param("account") Account account);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @Caching(evict = {
+            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "userDetails", allEntries = true)
+    })
     void delete(@Param("id") Long id);
 
     @Override

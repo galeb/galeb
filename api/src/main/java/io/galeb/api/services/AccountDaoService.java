@@ -17,6 +17,7 @@
 package io.galeb.api.services;
 
 import io.galeb.core.entity.Account;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class AccountDaoService {
         return find(account.getUsername());
     }
 
-//    @Cacheable("accounts")
+    @Cacheable(value = "userDetails")
     public Account find(String username) {
         Account accountPersisted = null;
         try {

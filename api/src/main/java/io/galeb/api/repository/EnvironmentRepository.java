@@ -19,6 +19,8 @@ package io.galeb.api.repository;
 import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
 import io.galeb.core.entity.Environment;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,6 +45,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "findAllByTargetId", allEntries = true)
     void delete(@Param("id") Long id);
 
     @ExposeFilterSwagger
@@ -51,6 +54,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join e.pools as p " +
             "inner join p.targets as t " +
             "WHERE t.id = :targetId")
+    @Cacheable(value = "findAllByTargetId")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
     @ExposeFilterSwagger

@@ -177,6 +177,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     @Override
+    @Cacheable(value = "mergeAllRolesOf")
     public Set<String> mergeAllRolesOf(Account account) {
         long accountId = account.getId();
         List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)

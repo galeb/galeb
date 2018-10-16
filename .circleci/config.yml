@@ -45,7 +45,7 @@ jobs:
                       echo $GALEB_VERSION
                       make galeb dist
                       ls -l dists
-                      upload=$(curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'"}' https://api.github.com/repos/galeb/galeb/releases | jq -r .upload_url | sed 's/{.*//')
+                      upload=$(curl -s -L -H "Authorization: token $GITHUB_TOKEN" -XPOST -d'{"body": "v'$GALEB_VERSION'", "name": "v'$GALEB_VERSION'", "tag_name": "v'$GALEB_VERSION'", "target_commitish": "'$CIRCLE_SHA1'"}' https://api.github.com/repos/galeb/galeb/releases | jq -r .upload_url | sed 's/{.*//')
                       echo "upload_url : $upload"
                       cd dists/; for pkg in *${GALEB_VERSION}*rpm; do
                         if [ "x$GITHUB_TOKEN" != "x" -a "x$BINTRAY_USER" != "x" -a "x$BINTRAY_TOKEN" != "x" ]; then

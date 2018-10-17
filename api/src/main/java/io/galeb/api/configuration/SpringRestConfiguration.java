@@ -1,5 +1,6 @@
 package io.galeb.api.configuration;
 
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
@@ -27,11 +28,7 @@ public class SpringRestConfiguration extends RepositoryRestConfigurerAdapter {
     }
 
     private void exposeIdsEntities(RepositoryRestConfiguration config) {
-        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
-
-        final Set<BeanDefinition> beans = provider.findCandidateComponents("io.galeb.core.entity");
-
+        final Set<BeanDefinition> beans = allBeansDomain();
         for (BeanDefinition bean : beans) {
             try {
                 Class<?> idExposedClasses = Class.forName(bean.getBeanClassName());
@@ -41,6 +38,23 @@ public class SpringRestConfiguration extends RepositoryRestConfigurerAdapter {
                 throw new RuntimeException("Failed to expose `id` field due to", e);
             }
         }
+    }
+
+    private Set<BeanDefinition> allBeansDomain() {
+        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
+        return provider.findCandidateComponents("io.galeb.core.entity");
+    }
+
+    public Set<? extends Class<?>> allEntitiesClass() {
+        return allBeansDomain().stream().map(b -> {
+            try {
+                return Class.forName(Class.forName(b.getBeanClassName()).getName());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).collect(Collectors.toSet());
     }
 
     private void setupCors(RepositoryRestConfiguration config) {

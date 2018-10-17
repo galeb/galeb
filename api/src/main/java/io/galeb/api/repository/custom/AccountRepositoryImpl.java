@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.RoleGroupRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
@@ -25,8 +26,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,18 +34,18 @@ import static io.galeb.core.entity.RoleGroup.ROLEGROUP_USER_DEFAULT;
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Account> implements AccountRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
-
     @Autowired
     private StatusService statusService;
+
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private RoleGroupRepository roleGroupRepository;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Account.class, em);
+        setSimpleJpaRepository(Account.class, genericDaoService);
         setStatusService(statusService);
     }
 

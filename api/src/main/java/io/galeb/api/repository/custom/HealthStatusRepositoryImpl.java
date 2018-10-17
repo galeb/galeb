@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.HealthStatus;
@@ -23,8 +24,6 @@ import io.galeb.core.entity.Project;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,15 +31,15 @@ import java.util.Set;
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation<HealthStatus> implements HealthStatusRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(HealthStatus.class, em);
+        setSimpleJpaRepository(HealthStatus.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -54,10 +53,10 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
         HealthStatus healthStatus = null;
         try {
             if (criteria instanceof HealthStatus) {
-                healthStatus = em.find(HealthStatus.class, ((HealthStatus) criteria).getId());
+                healthStatus = (HealthStatus) genericDaoService.findOne(HealthStatus.class, ((HealthStatus) criteria).getId());
             }
             if (criteria instanceof Long) {
-                healthStatus = em.find(HealthStatus.class, criteria);
+                healthStatus = (HealthStatus) genericDaoService.findOne(HealthStatus.class, (Long) criteria);
                 if (healthStatus == null) {
                     return NOT_FOUND;
                 }
@@ -66,9 +65,7 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
         if (healthStatus == null) {
             return -1L;
         }
-        List<Project> projects = em.createNamedQuery("projectHealthStatus", Project.class)
-                .setParameter("id", healthStatus.getId())
-                .getResultList();
+        List<Project> projects = genericDaoService.projectsHealthStatus(healthStatus.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

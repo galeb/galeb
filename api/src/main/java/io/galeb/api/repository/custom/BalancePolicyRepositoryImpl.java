@@ -16,28 +16,27 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.BalancePolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class BalancePolicyRepositoryImpl extends AbstractRepositoryImplementation<BalancePolicy> implements BalancePolicyRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(BalancePolicy.class, em);
+        setSimpleJpaRepository(BalancePolicy.class, genericDaoService);
         setStatusService(statusService);
     }
 

@@ -19,6 +19,7 @@ package io.galeb.api.services;
 import io.galeb.core.entity.Account;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -26,18 +27,19 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 @Service
-@Transactional
 public class AccountDaoService {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Transactional
     public Account save(Account account) {
         entityManager.persist(account);
         return find(account.getUsername());
     }
 
     @Cacheable(value = "userDetails")
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Account find(String username) {
         Account accountPersisted = null;
         try {

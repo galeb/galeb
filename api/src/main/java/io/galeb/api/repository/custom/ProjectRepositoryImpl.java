@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.Project;
@@ -23,21 +24,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Project> implements ProjectRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Project.class, em);
+        setSimpleJpaRepository(Project.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -48,15 +47,14 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
             return ((Project) criteria).getId();
         }
         if (criteria instanceof Long) {
-            Project project = em.find(Project.class, criteria);
+            Project project = (Project) genericDaoService.findOne(Project.class, (Long) criteria);
             if (project == null) {
                 return NOT_FOUND;
             }
             return project.getId();
         }
         if (criteria instanceof String) {
-            String query = "SELECT t FROM Project t WHERE t.name = :name";
-            Project project = em.createQuery(query, Project.class).setParameter("name", criteria).getSingleResult();
+            Project project = (Project) genericDaoService.findByName(Project.class, (String) criteria);
             return project.getId();
         }
         return -1;

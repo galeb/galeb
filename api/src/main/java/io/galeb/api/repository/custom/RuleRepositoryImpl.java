@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
@@ -27,8 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
@@ -38,8 +37,8 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
 
     private static final Class<? extends AbstractEntity> ENTITY_CLASS = Rule.class;
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
@@ -49,7 +48,7 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Rule.class, em);
+        setSimpleJpaRepository(Rule.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -64,17 +63,16 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
         long projectId = -1L;
         try {
             if (criteria instanceof Rule) {
-                rule = em.find(Rule.class, ((Rule) criteria).getId());
+                rule = (Rule) genericDaoService.findOne(Rule.class, ((Rule) criteria).getId());
             }
             if (criteria instanceof Long) {
-                rule = em.find(Rule.class, criteria);
+                rule = (Rule) genericDaoService.findOne(Rule.class, (Long) criteria);
                 if (rule == null) {
                     return NOT_FOUND;
                 }
             }
             if (criteria instanceof String) {
-                String query = "SELECT r FROM Rule r WHERE r.name = :name";
-                rule = em.createQuery(query, Rule.class).setParameter("name", criteria).getSingleResult();
+                rule = (Rule) genericDaoService.findByName(Rule.class, (String) criteria);
             }
             if (criteria instanceof Project) {
                 projectId = ((Project) criteria).getId();

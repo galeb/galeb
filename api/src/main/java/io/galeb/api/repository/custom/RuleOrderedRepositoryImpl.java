@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
@@ -25,16 +26,14 @@ import io.galeb.core.entity.RuleOrdered;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<RuleOrdered> implements RuleOrderedRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
@@ -44,7 +43,7 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(RuleOrdered.class, em);
+        setSimpleJpaRepository(RuleOrdered.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -58,10 +57,10 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
         RuleOrdered ruleOrdered = null;
         try {
             if (criteria instanceof RuleOrdered) {
-                ruleOrdered  = em.find(RuleOrdered.class, ((RuleOrdered) criteria).getId());
+                ruleOrdered  = (RuleOrdered) genericDaoService.findOne(RuleOrdered.class, ((RuleOrdered) criteria).getId());
             }
             if (criteria instanceof Long) {
-                ruleOrdered = em.find(RuleOrdered.class, criteria);
+                ruleOrdered  = (RuleOrdered) genericDaoService.findOne(RuleOrdered.class, (Long) criteria);
                 if (ruleOrdered == null) {
                     return NOT_FOUND;
                 }
@@ -70,9 +69,7 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
         if (ruleOrdered == null) {
             return -1L;
         }
-        List<Project> projects = em.createNamedQuery("projectsFromRuleOrdered", Project.class)
-                .setParameter("id", ruleOrdered.getId())
-                .getResultList();
+        List<Project> projects = genericDaoService.projectsFromRuleOrdered(ruleOrdered.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

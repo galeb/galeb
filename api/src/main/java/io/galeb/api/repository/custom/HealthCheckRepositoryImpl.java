@@ -16,28 +16,27 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.HealthCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class HealthCheckRepositoryImpl extends AbstractRepositoryImplementation<HealthCheck> implements HealthCheckRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(HealthCheck.class, em);
+        setSimpleJpaRepository(HealthCheck.class, genericDaoService);
         setStatusService(statusService);
     }
 

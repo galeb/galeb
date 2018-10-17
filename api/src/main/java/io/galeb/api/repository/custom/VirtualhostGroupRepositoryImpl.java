@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Project;
@@ -23,22 +24,20 @@ import io.galeb.core.entity.VirtualhostGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementation<VirtualhostGroup> implements VirtualhostGroupRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(VirtualhostGroup.class, em);
+        setSimpleJpaRepository(VirtualhostGroup.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -48,10 +47,10 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
         long projectId = -1L;
         try {
             if (criteria instanceof VirtualhostGroup) {
-                virtualhostGroup = em.find(VirtualhostGroup.class, ((VirtualhostGroup) criteria).getId());
+                virtualhostGroup = (VirtualhostGroup) genericDaoService.findOne(VirtualhostGroup.class, ((VirtualhostGroup) criteria).getId());
             }
             if (criteria instanceof Long) {
-                virtualhostGroup = em.find(VirtualhostGroup.class, criteria);
+                virtualhostGroup = (VirtualhostGroup) genericDaoService.findOne(VirtualhostGroup.class, (Long) criteria);
                 if (virtualhostGroup == null) {
                     return NOT_FOUND;
                 }
@@ -62,9 +61,7 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
         } catch (Exception ignored) {}
         if (projectId > -1L) return projectId;
         if (virtualhostGroup == null) return -1L;
-        List<Project> projects = em.createNamedQuery("projectFromVirtualhostGroup", Project.class)
-                .setParameter("id", virtualhostGroup.getId())
-                .getResultList();
+        List<Project> projects = genericDaoService.projectFromVirtualhostGroup(virtualhostGroup.getId());
         if (projects == null || projects.isEmpty()) return -1L;
         return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }

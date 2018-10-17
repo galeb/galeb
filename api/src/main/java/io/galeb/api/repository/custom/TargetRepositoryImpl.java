@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
@@ -25,16 +26,14 @@ import io.galeb.core.entity.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Target> implements TargetRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
@@ -44,7 +43,7 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Target.class, em);
+        setSimpleJpaRepository(Target.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -58,26 +57,23 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
         Target target = null;
         try {
             if (criteria instanceof Target) {
-                target = em.find(Target.class, ((Target) criteria).getId());
+                target = (Target) genericDaoService.findOne(Target.class, ((Target) criteria).getId());
             }
             if (criteria instanceof Long) {
-                target = em.find(Target.class, criteria);
+                target = (Target) genericDaoService.findOne(Target.class, (Long) criteria);
                 if (target == null) {
                     return NOT_FOUND;
                 }
             }
             if (criteria instanceof String) {
-                String query = "SELECT t FROM Target t WHERE t.name = :name";
-                target = em.createQuery(query, Target.class).setParameter("name", criteria).getSingleResult();
+                target = (Target) genericDaoService.findByName(Target.class, (String) criteria);
             }
         } catch (Exception ignored) {
         }
         if (target == null) {
             return -1L;
         }
-        List<Project> projects = em.createNamedQuery("projectFromTarget", Project.class)
-                .setParameter("id", target.getId())
-                .getResultList();
+        List<Project> projects = genericDaoService.projectsFromTarget(target.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

@@ -16,6 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.Team;
@@ -23,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,15 +31,15 @@ import java.util.Set;
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> implements TeamRepositoryCustom, WithRoles {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    private GenericDaoService genericDaoService;
 
     @Autowired
     private StatusService statusService;
 
     @PostConstruct
     private void init() {
-        setSimpleJpaRepository(Team.class, em);
+        setSimpleJpaRepository(Team.class, genericDaoService);
         setStatusService(statusService);
     }
 
@@ -53,21 +52,18 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
             }
         }
         if (criteria instanceof Long) {
-            Team team = em.find(Team.class, criteria);
+            Team team = (Team) genericDaoService.findOne(Team.class, (Long) criteria);
             return roles(team);
         }
         if (criteria instanceof String) {
-            String query = "SELECT t FROM Team t WHERE t.name = :name";
-            Team team = em.createQuery(query, Team.class).setParameter("name", criteria).getSingleResult();
+            Team team = (Team) genericDaoService.findByName(Team.class, (String) criteria);
             return roles(team);
         }
         return Collections.emptySet();
     }
 
     private boolean isAccountLinkedWithTeam(long accountId, long teamId) {
-        List<Team> teams = em.createNamedQuery("teamLinkedToAccount", Team.class)
-                .setParameter("account_id", accountId)
-                .setParameter("team_id", teamId).getResultList();
+        List<Team> teams = genericDaoService.teamLinkedToAccount(accountId, teamId);
         return teams != null && !teams.isEmpty();
     }
 

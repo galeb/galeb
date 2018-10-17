@@ -17,6 +17,7 @@
 package io.galeb.api.repository.custom;
 
 import com.google.common.reflect.TypeToken;
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
@@ -32,8 +33,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,20 +51,21 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
-    private EntityManager em;
     private TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
     private Class<? super T> entityClass = typeToken.getRawType();
+    private GenericDaoService genericDaoService;
 
     public void setStatusService(StatusService statusService) {
         this.statusService = statusService;
     }
 
-    public void setSimpleJpaRepository(Class<T> klazz, EntityManager entityManager) {
+    public void setSimpleJpaRepository(Class<T> klazz, GenericDaoService genericDaoService) {
         if (this.simpleJpaRepository != null) return;
-        this.simpleJpaRepository = new SimpleJpaRepository<>(klazz, entityManager);
-        this.em = entityManager;
+        this.simpleJpaRepository = new SimpleJpaRepository<>(klazz, genericDaoService.entityManager());
+        this.genericDaoService = genericDaoService;
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public T findOne(Long id) {
         T entity = simpleJpaRepository.findOne(id);
         setStatus(entity);
@@ -83,9 +83,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return simpleJpaRepository.saveAndFlush(entity);
     }
 
-
     @SuppressWarnings("unchecked")
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Page<T> findAll(Pageable pageable) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         boolean isViewAll;
@@ -104,18 +102,12 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         String username = account.getUsername();
         String queryName = entityClass.getSimpleName() + "Default";
 
-        TypedQuery<?> query;
+        List<?> queryResult;
         if (isViewAll) {
-            query = em.createQuery("SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity", entityClass);
+            queryResult = genericDaoService.findAll((Class<T>) entityClass, pageable);
         } else {
-            query = em.createNamedQuery(queryName, entityClass);
-            query.setParameter("username", username);
+            queryResult = genericDaoService.findAllNamed(queryName, (Class<T>) entityClass, username, pageable);
         }
-
-        query.setFirstResult(pageable.getOffset());
-        query.setMaxResults(pageable.getPageSize());
-
-        List<?> queryResult = query.getResultList();
         Page<T> page = new PageImpl<>((List<T>) queryResult, pageable, queryResult.size());
         for (T entity: page) {
             setStatus(entity);
@@ -153,9 +145,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     private boolean isAccountLinkedWithProject(long accountId, long projectId) {
-        List<Project> projects = em.createNamedQuery("projectLinkedToAccount", Project.class)
-                .setParameter("account_id", accountId)
-                .setParameter("project_id", projectId).getResultList();
+        List<Project> projects = genericDaoService.projectLinkedToAccount(accountId, projectId);
         if (projects == null || projects.isEmpty()) {
             LOGGER.warn("Project id " + projectId + " not linked with account id " + accountId);
             return false;
@@ -163,36 +153,26 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         return true;
     }
 
-    protected Set<String> mergeRoles(long projectId) {
+    public Set<String> mergeRoles(long projectId) {
         Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         long accountId = account.getId();
         List<RoleGroup> roleGroupsFromProject = new ArrayList<>();
         if (projectId != -1) {
-            roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
-                    .setParameter("account_id", accountId)
-                    .setParameter("project_id", projectId)
-                    .getResultList();
+            roleGroupsFromProject = genericDaoService.roleGroupsFromProject(accountId, projectId);
         }
         return roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream()).distinct().map(Enum::toString).collect(Collectors.toSet());
     }
 
     @Override
-    @Cacheable(value = "mergeAllRolesOf")
     public Set<String> mergeAllRolesOf(Account account) {
         long accountId = account.getId();
-        List<RoleGroup> roleGroupsFromTeams = em.createNamedQuery("roleGroupsFromTeams", RoleGroup.class)
-                .setParameter("id", accountId)
-                .getResultList();
+        List<RoleGroup> roleGroupsFromTeams = genericDaoService.roleGroupsFromTeams(accountId);
         Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet());
-        List<RoleGroup> roleGroupsFromAccount = em.createNamedQuery("roleGroupsFromAccount", RoleGroup.class)
-                .setParameter("id", accountId)
-                .getResultList();
+        List<RoleGroup> roleGroupsFromAccount = genericDaoService.roleGroupsFromAccount(accountId);
         roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet()));
-        List<RoleGroup> roleGroupsFromProject = em.createNamedQuery("roleGroupsFromProjectByAccountId", RoleGroup.class)
-                .setParameter("id", accountId)
-                .getResultList();
+        List<RoleGroup> roleGroupsFromProject = genericDaoService.roleGroupsFromProjectByAccountId(accountId);
         roles.addAll(roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream())
                 .distinct().map(Enum::toString).collect(Collectors.toSet()));
         return roles;

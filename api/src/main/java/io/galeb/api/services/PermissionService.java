@@ -16,20 +16,20 @@
 
 package io.galeb.api.services;
 
+import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.custom.WithRoles;
 import io.galeb.api.services.AuditService.AuditType;
-import io.galeb.core.entity.*;
+import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Account;
+import io.galeb.core.entity.WithGlobal;
+import java.util.Collections;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.Collections;
-import java.util.Set;
 
 @SuppressWarnings("WeakerAccess, unused")
 @Service("perm")
@@ -42,8 +42,8 @@ public class PermissionService {
         VIEW
     }
 
-    @PersistenceContext
-    private EntityManager em;
+    @Autowired
+    GenericDaoService genericDaoService;
 
     @Autowired
     private AuditService auditService;
@@ -123,7 +123,7 @@ public class PermissionService {
 
     private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {
         if (criteria instanceof Long && entityClass != null) {
-            AbstractEntity entity = em.find(entityClass, (Long) criteria);
+            AbstractEntity entity = genericDaoService.findOne(entityClass, (Long) criteria);
             if (entity instanceof WithGlobal && ((WithGlobal) entity).getGlobal()) {
                 String criteriaName = entityClass.getSimpleName();
                 auditService.logAccess("", Collections.emptySet(), true, criteriaName, Action.VIEW.toString(), criteria, AuditType.GLOBAL);

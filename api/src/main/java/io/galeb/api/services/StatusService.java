@@ -21,6 +21,7 @@ import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Target;
 import io.galeb.core.entity.WithStatus.Status;
 import io.galeb.core.services.ChangesService;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,11 +40,19 @@ public class StatusService {
 
     private static final Logger LOGGER = LogManager.getLogger(StatusService.class);
 
+    private static final String FORMAT_KEY_HEALTH = "health:{0}:{1}:{2}";
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
     @Autowired
     ChangesService changesService;
 
-    @Autowired
-    HealthStatusService healthStatusService;
+    public int envWithStatusCount(Long envId) {
+        String id = String.valueOf(envId);
+        Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
+        return keys == null ? 0 : keys.size();
+    }
 
     public Map<Long, Status> status(AbstractEntity entity) {
         if (entity instanceof Environment) {
@@ -75,7 +85,7 @@ public class StatusService {
         if (anyEnvironment.isPresent()) {
             if (anyEnvironment.get() instanceof Environment) {
                 final Environment environment = anyEnvironment.get();
-                envWithStatus = healthStatusService.envWithStatusCount(environment.getId());
+                envWithStatus = envWithStatusCount(environment.getId());
             } else {
                 LOGGER.error("Target ID " + target.getId() +
                         " is INCONSISTENT. Is NOT Environment instance of Environment class ???" +

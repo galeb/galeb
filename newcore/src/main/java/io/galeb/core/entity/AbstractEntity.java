@@ -19,7 +19,6 @@ package io.galeb.core.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.galeb.core.entity.annotations.JsonCustomProperties;
-import io.galeb.core.security.SpringSecurityAuditorAware;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -147,10 +146,5 @@ public abstract class AbstractEntity implements Serializable {
     public void setAllEnvironments(Set<Environment> allEnvironments) {
         this.allEnvironments = allEnvironments;
     }
-
-//    private String getCurrentAuditor() {
-//        final SpringSecurityAuditorAware auditorAware = new SpringSecurityAuditorAware();
-//        return auditorAware.getCurrentAuditor();
-//    }
 
 }

@@ -45,19 +45,19 @@ public class GenericDaoService {
         return em;
     }
 
-//    @Cacheable(value = "findOne", key = "{ #classEntity.name, #id }")
+   @Cacheable(value = "findOne", key = "{ #classEntity.name, #id }")
     public AbstractEntity findOne(Class<? extends AbstractEntity> classEntity, Long id) {
         return em.find(classEntity, id);
     }
 
-//    @Cacheable(value = "findByName", key = "{ #classEntity.name, #name }")
+    @Cacheable(value = "findByName", key = "{ #classEntity.name, #name }")
     public AbstractEntity findByName(Class<? extends AbstractEntity> classEntity, String name) {
         return em.createQuery("SELECT e FROM " + classEntity.getSimpleName() + " e WHERE e.name = :name", classEntity)
             .setParameter("name", name)
             .getSingleResult();
     }
 
-//    @Cacheable(value = "findAll", key = "{ #entityClass.name, #pageable }")
+    @Cacheable(value = "findAll", key = "{ #entityClass.name, #pageable }")
     public List<? extends AbstractEntity> findAll(Class<? extends AbstractEntity> entityClass, Pageable pageable) {
         TypedQuery<? extends AbstractEntity> query = em.createQuery("SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity", entityClass);
         query.setFirstResult(pageable.getOffset());
@@ -66,7 +66,7 @@ public class GenericDaoService {
         return query.getResultList();
     }
 
-//    @Cacheable(value = "findAllNamed", key = "{ #namedquery, #entityClass.name, #username, #pageable.offset, #pageable.pageNumber, #pageable.pageSize, #pageable }")
+    @Cacheable(value = "findAllNamed", key = "{ #namedquery, #entityClass.name, #username, #pageable.offset, #pageable.pageNumber, #pageable.pageSize, #pageable }")
     public List<? extends AbstractEntity> findAllNamed(String namedquery, Class<? extends AbstractEntity> entityClass, String username, Pageable pageable) {
         TypedQuery<? extends AbstractEntity> query = em.createNamedQuery(namedquery, entityClass).setParameter("username", username);
         query.setFirstResult(pageable.getOffset());

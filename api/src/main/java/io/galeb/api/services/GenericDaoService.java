@@ -62,16 +62,16 @@ public class GenericDaoService {
         TypedQuery<? extends AbstractEntity> query = em.createQuery("SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity", entityClass);
         query.setFirstResult(pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
-
+        // TODO: Sorting?
         return query.getResultList();
     }
 
-    @Cacheable(value = "findAllNamed", key = "{ #namedquery, #entityClass.name, #username, #pageable.offset, #pageable.pageNumber, #pageable.pageSize, #pageable }")
+    @Cacheable(value = "findAllNamed", key = "{ #namedquery, #entityClass.name, #username, #pageable }")
     public List<? extends AbstractEntity> findAllNamed(String namedquery, Class<? extends AbstractEntity> entityClass, String username, Pageable pageable) {
         TypedQuery<? extends AbstractEntity> query = em.createNamedQuery(namedquery, entityClass).setParameter("username", username);
         query.setFirstResult(pageable.getOffset());
         query.setMaxResults(pageable.getPageSize());
-
+        // TODO: Sorting?
         return query.getResultList();
     }
 

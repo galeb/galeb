@@ -24,13 +24,19 @@ import io.galeb.core.services.ChangesService;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StatusService {
+
+    private static final Logger LOGGER = LogManager.getLogger(StatusService.class);
 
     @Autowired
     ChangesService changesService;
@@ -48,7 +54,7 @@ public class StatusService {
         if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
-        if (entity instanceof Target && ((Target) entity).getHealthStatus().size() < healthStatusService.count(allEnvironments.stream().findAny().get().getId())) {
+        if (entity instanceof Target && targetHasEnvUnregistered((Target) entity, allEnvironments)) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
@@ -60,6 +66,23 @@ public class StatusService {
         allEnvironmentsWithChanges.forEach(e -> mapStatus.put(e, Status.PENDING));
 
         return mapStatus;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private boolean targetHasEnvUnregistered(final Target target, final Set<Environment> allEnvironments) {
+        final Optional<Environment> anyEnvironment = allEnvironments.stream().findAny();
+        int envWithStatus = -1;
+        if (anyEnvironment.isPresent()) {
+            if (anyEnvironment.get() instanceof Environment) {
+                final Environment environment = anyEnvironment.get();
+                envWithStatus = healthStatusService.envWithStatusCount(environment.getId());
+            } else {
+                LOGGER.error("Target ID " + target.getId() +
+                        " is INCONSISTENT. Is NOT Environment instance of Environment class ???" +
+                        " (real class: " + anyEnvironment.get().getClass() + ")");
+            }
+        }
+        return target.getHealthStatus().size() < envWithStatus;
     }
 
 }

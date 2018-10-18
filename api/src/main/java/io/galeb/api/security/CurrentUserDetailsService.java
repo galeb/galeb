@@ -36,7 +36,7 @@ public class CurrentUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = genericDaoService.find(username);
+        Account account = genericDaoService.findAccount(username);
         if (account == null) {
             String errMsg = "Account " + username + " NOT FOUND";
             LOGGER.error(errMsg);

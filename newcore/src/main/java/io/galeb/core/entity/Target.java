@@ -16,7 +16,6 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -41,7 +40,7 @@ public class Target extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool"))
     private Pool pool;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "target", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "target", cascade = CascadeType.REMOVE)
     private Set<HealthStatus> healthStatus = new HashSet<>();
 
     @Column(nullable = false)
@@ -56,13 +55,6 @@ public class Target extends AbstractEntity implements WithStatus {
 
     public void setPool(Pool pool) {
         this.pool = pool;
-    }
-
-    @JsonIgnore
-    public HealthStatus.Status healthStatusConsolidated() {
-        return this.healthStatus.stream().anyMatch(h -> h.getStatus().equals(HealthStatus.Status.HEALTHY)) ?
-               HealthStatus.Status.HEALTHY :
-               this.healthStatus.stream().map(HealthStatus::getStatus).findAny().orElse(HealthStatus.Status.UNKNOWN);
     }
 
     public Set<HealthStatus> getHealthStatus() {

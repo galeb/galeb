@@ -17,12 +17,11 @@
 package io.galeb.api.repository.custom;
 
 import com.google.common.reflect.TypeToken;
-import io.galeb.api.dao.GenericDaoService;
+import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

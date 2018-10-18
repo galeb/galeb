@@ -16,7 +16,6 @@
 
 package io.galeb.api.services;
 
-import io.galeb.api.dao.GenericDaoService;
 import io.galeb.api.repository.custom.WithRoles;
 import io.galeb.api.services.AuditService.AuditType;
 import io.galeb.core.entity.AbstractEntity;

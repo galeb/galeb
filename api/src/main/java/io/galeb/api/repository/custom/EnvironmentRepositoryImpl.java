@@ -16,7 +16,7 @@
 
 package io.galeb.api.repository.custom;
 
-import io.galeb.api.dao.GenericDaoService;
+import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;

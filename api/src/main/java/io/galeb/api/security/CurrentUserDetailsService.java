@@ -16,7 +16,7 @@
 
 package io.galeb.api.security;
 
-import io.galeb.api.services.AccountDaoService;
+import io.galeb.api.services.GenericDaoService;
 import io.galeb.core.entity.Account;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,11 +32,11 @@ public class CurrentUserDetailsService implements UserDetailsService {
     private static final Logger LOGGER = LogManager.getLogger(CurrentUserDetailsService.class);
 
     @Autowired
-    private AccountDaoService accountDaoService;
+    private GenericDaoService genericDaoService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountDaoService.find(username);
+        Account account = genericDaoService.find(username);
         if (account == null) {
             String errMsg = "Account " + username + " NOT FOUND";
             LOGGER.error(errMsg);

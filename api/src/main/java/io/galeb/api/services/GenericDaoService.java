@@ -17,6 +17,7 @@
 package io.galeb.api.services;
 
 import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Account;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import org.springframework.cache.annotation.Cacheable;
@@ -153,6 +155,16 @@ public class GenericDaoService {
         return em.createNamedQuery("teamLinkedToAccount", Team.class)
             .setParameter("account_id", accountId)
             .setParameter("team_id", teamId).getResultList();
+    }
+
+    @Cacheable(value = "userDetails")
+    public Account find(String username) {
+        Account accountPersisted = null;
+        try {
+            accountPersisted = em.createQuery("SELECT a FROM Account a WHERE a.username = :username", Account.class)
+                    .setParameter("username", username).getSingleResult();
+        } catch (NoResultException ignored) {}
+        return accountPersisted;
     }
 
 }

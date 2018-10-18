@@ -1,7 +1,7 @@
 RPM_VER=$(GALEB_VERSION)
 VERSION=${RPM_VER}
 RELEASE=$(shell date +%y%m%d%H%M)
-SERVICES=api
+SERVICES=router api legba kratos health
 
 deploy-snapshot:
 	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local

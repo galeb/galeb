@@ -16,9 +16,8 @@ public class HealthStatusService {
     private static final String FORMAT_KEY_HEALTH = "health:{0}:{1}:{2}";
 
     public int envWithStatusCount(Long envId) {
-        //TODO: Id (string) not used
         String id = String.valueOf(envId);
-        Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, envId, "*", "*"));
+        Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
         return keys == null ? 0 : keys.size();
     }
 }

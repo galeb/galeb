@@ -21,6 +21,8 @@ import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -71,18 +73,31 @@ public class GenericDaoService {
         return query.getResultList();
     }
 
-//    @Cacheable(value = "roleGroupsFromTeams", key = "#accountId")
-    public List<RoleGroup> roleGroupsFromTeams(Long accountId) {
+    @Cacheable(value = "mergeAllRolesOf", key = "#accountId")
+    public Set<String> mergeAllRolesOf(Long accountId) {
+        //TODO: INNER JOIN roleGroupsFromTeams, roleGroupsFromAccount & roleGroupsFromProjectByAccountId ?
+
+        List<RoleGroup> roleGroupsFromTeams = roleGroupsFromTeams(accountId);
+        Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
+                .map(Enum::toString).collect(Collectors.toSet());
+        List<RoleGroup> roleGroupsFromAccount = roleGroupsFromAccount(accountId);
+        roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
+                .map(Enum::toString).collect(Collectors.toSet()));
+        List<RoleGroup> roleGroupsFromProject = roleGroupsFromProjectByAccountId(accountId);
+        roles.addAll(roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream())
+                .map(Enum::toString).collect(Collectors.toSet()));
+        return roles;
+    }
+
+    private List<RoleGroup> roleGroupsFromTeams(Long accountId) {
         return rolegroupsNamedQuery("roleGroupsFromTeams", accountId);
     }
 
-//    @Cacheable(value = "roleGroupsFromAccount", key = "#accountId")
-    public List<RoleGroup> roleGroupsFromAccount(Long accountId) {
+    private List<RoleGroup> roleGroupsFromAccount(Long accountId) {
         return rolegroupsNamedQuery("roleGroupsFromAccount", accountId);
     }
 
-//    @Cacheable(value = "roleGroupsFromProjectByAccountId", key = "#accountId")
-    public List<RoleGroup> roleGroupsFromProjectByAccountId(Long accountId) {
+    private List<RoleGroup> roleGroupsFromProjectByAccountId(Long accountId) {
         return rolegroupsNamedQuery("roleGroupsFromProjectByAccountId", accountId);
     }
 

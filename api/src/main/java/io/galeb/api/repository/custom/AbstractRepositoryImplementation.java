@@ -50,6 +50,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
     private StatusService statusService;
+    @SuppressWarnings("UnstableApiUsage")
     private TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
     private Class<? super T> entityClass = typeToken.getRawType();
     private GenericDaoService genericDaoService;
@@ -164,17 +165,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
 
     @Override
     public Set<String> mergeAllRolesOf(Account account) {
-        long accountId = account.getId();
-        List<RoleGroup> roleGroupsFromTeams = genericDaoService.roleGroupsFromTeams(accountId);
-        Set<String> roles = roleGroupsFromTeams.stream().flatMap(rg -> rg.getRoles().stream())
-                .distinct().map(Enum::toString).collect(Collectors.toSet());
-        List<RoleGroup> roleGroupsFromAccount = genericDaoService.roleGroupsFromAccount(accountId);
-        roles.addAll(roleGroupsFromAccount.stream().flatMap(rg -> rg.getRoles().stream())
-                .distinct().map(Enum::toString).collect(Collectors.toSet()));
-        List<RoleGroup> roleGroupsFromProject = genericDaoService.roleGroupsFromProjectByAccountId(accountId);
-        roles.addAll(roleGroupsFromProject.stream().flatMap(rg -> rg.getRoles().stream())
-                .distinct().map(Enum::toString).collect(Collectors.toSet()));
-        return roles;
+        return genericDaoService.mergeAllRolesOf(account.getId());
     }
 
     public Set<String> roles(Object criteria) {

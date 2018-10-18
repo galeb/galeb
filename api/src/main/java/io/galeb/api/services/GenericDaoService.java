@@ -86,7 +86,7 @@ public class GenericDaoService {
         return rolegroupsNamedQuery("roleGroupsFromProjectByAccountId", accountId);
     }
 
-    private List<RoleGroup> rolegroupsNamedQuery(String namedquery, long id) {
+    private List<RoleGroup> rolegroupsNamedQuery(String namedquery, Long id) {
         return em.createNamedQuery(namedquery, RoleGroup.class)
             .setParameter("id", id)
             .getResultList();
@@ -112,7 +112,7 @@ public class GenericDaoService {
         return projectsNamedQuery("projectFromVirtualhostGroup", id);
     }
 
-    private List<Project> projectsNamedQuery(String namedquery, long id) {
+    private List<Project> projectsNamedQuery(String namedquery, Long id) {
         return em.createNamedQuery(namedquery, Project.class)
             .setParameter("id", id)
             .getResultList();

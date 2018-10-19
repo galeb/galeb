@@ -67,7 +67,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    @Cacheable(value = "findOneJpa", key = "{ #root.methodName, #root.targetClass.name, #root.target.class.name, #p0 }")
+    @Cacheable(value = "cache_findOneJpa", key = "{ #root.methodName, #root.targetClass.name, #root.target.class.name, #p0 }")
     public T findOneJpa(Long id) {
         return simpleJpaRepository.findOne(id);
     }

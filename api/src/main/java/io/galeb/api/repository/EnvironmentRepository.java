@@ -40,13 +40,13 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#environment, #this)")
-    @CacheEvict(value = "findAllByTargetId", allEntries = true)
+    @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     Environment save(@Param("environment") Environment environment);
 
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @CacheEvict(value = "findAllByTargetId", allEntries = true)
+    @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     void delete(@Param("id") Long id);
 
     @ExposeFilterSwagger
@@ -55,7 +55,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join e.pools as p " +
             "inner join p.targets as t " +
             "WHERE t.id = :targetId")
-    @Cacheable(value = "findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
+    @Cacheable(value = "cache_findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
     @ExposeFilterSwagger

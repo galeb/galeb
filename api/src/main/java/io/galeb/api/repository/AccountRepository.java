@@ -37,16 +37,16 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#account, #this)")
     @Caching(evict = {
-            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "userDetails", key = "#p0.username")
+            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "cache_userDetails", key = "#p0.username")
     })
     Account save(@Param("account") Account account);
 
     @Override
     @RestResource(exported = false)
     @Caching(evict = {
-            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "userDetails", key = "#p0.username")
+            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "cache_userDetails", key = "#p0.username")
     })
     Account saveByPass(@Param("account") Account account);
 
@@ -54,8 +54,8 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     @Caching(evict = {
-            @CacheEvict(value = "mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "userDetails", allEntries = true)
+            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+            @CacheEvict(value = "cache_userDetails", allEntries = true)
     })
     void delete(@Param("id") Long id);
 

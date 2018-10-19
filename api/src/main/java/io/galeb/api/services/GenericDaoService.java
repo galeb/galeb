@@ -141,7 +141,7 @@ public class GenericDaoService {
             .getResultList();
     }
 
-//    @Cacheable(value = "projectLinkedToAccount", key = "{ #p0, #p1 }")
+    @Cacheable(value = "projectLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Project> projectLinkedToAccount(Long accountId, Long projectId) {
         return em.createNamedQuery("projectLinkedToAccount", Project.class)
@@ -149,7 +149,7 @@ public class GenericDaoService {
             .setParameter("project_id", projectId).getResultList();
     }
 
-//    @Cacheable(value = "roleGroupsFromProject", key = "{ #p0, #p1 }")
+//    @Cacheable(value = "roleGroupsFromProject", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<RoleGroup> roleGroupsFromProject(Long accountId, Long projectId) {
         return em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
@@ -158,7 +158,7 @@ public class GenericDaoService {
             .getResultList();
     }
 
-//    @Cacheable(value = "teamLinkedToAccount", key = "{ #p0, #p1 }")
+//    @Cacheable(value = "teamLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Team> teamLinkedToAccount(Long accountId, Long teamId) {
         return em.createNamedQuery("teamLinkedToAccount", Team.class)

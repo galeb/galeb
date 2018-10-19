@@ -22,7 +22,6 @@ import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -67,7 +66,6 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    @Cacheable(value = "cache_findOneJpa", key = "{ #root.methodName, #root.targetClass.name, #root.target.class.name, #p0 }")
     public T findOneJpa(Long id) {
         return simpleJpaRepository.findOne(id);
     }

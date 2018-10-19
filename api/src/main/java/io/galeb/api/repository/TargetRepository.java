@@ -18,6 +18,8 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.TargetRepositoryCustom;
 import io.galeb.core.entity.Target;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,10 +33,20 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
 
     @Override
     @PreAuthorize("@perm.allowSave(#target, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }")
+    })
     Target save(@Param("target") Target target);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }")
+    })
     void delete(@Param("id") Long id);
 
     @Override

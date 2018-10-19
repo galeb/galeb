@@ -18,6 +18,7 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.HealthStatusRepositoryCustom;
 import io.galeb.core.entity.HealthStatus;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,10 +32,12 @@ public interface HealthStatusRepository extends JpaRepository<HealthStatus, Long
 
     @Override
     @PreAuthorize("@perm.allowSave(#healthstatus, #this)")
+    @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true)
     HealthStatus save(@Param("healthstatus") HealthStatus healthstatus);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true)
     void delete(@Param("id") Long id);
 
     @Override

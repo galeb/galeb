@@ -35,24 +35,33 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     @Override
     @PreAuthorize("@perm.allowSave(#account, #this)")
     @Caching(evict = {
-            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "cache_userDetails", key = "#p0.username")
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
+        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_userDetailsDao", key = "#p0.username")
     })
     Account save(@Param("account") Account account);
 
     @Override
     @RestResource(exported = false)
     @Caching(evict = {
-            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "cache_userDetails", key = "#p0.username")
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
+        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_userDetailsDao", key = "#p0.username")
     })
     Account saveByPass(@Param("account") Account account);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     @Caching(evict = {
-            @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-            @CacheEvict(value = "cache_userDetails", allEntries = true)
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
+        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_userDetailsDao", allEntries = true)
     })
     void delete(@Param("id") Long id);
 

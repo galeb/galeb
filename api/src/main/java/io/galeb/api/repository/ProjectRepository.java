@@ -18,6 +18,8 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.ProjectRepositoryCustom;
 import io.galeb.core.entity.Project;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,10 +33,30 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
 
     @Override
     @PreAuthorize("@perm.allowSave(#project, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+    })
     Project save(@Param("project") Project project);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
+        @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
+        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+    })
     void delete(@Param("id") Long id);
 
     @Override

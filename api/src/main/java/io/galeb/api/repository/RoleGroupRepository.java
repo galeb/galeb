@@ -18,6 +18,8 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.RoleGroupRepositoryCustom;
 import io.galeb.core.entity.RoleGroup;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,14 +34,26 @@ public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long>, Rol
 
     @Override
     @PreAuthorize("@perm.allowSave(#rolegroup, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+    })
     RoleGroup save(@Param("rolegroup") RoleGroup rolegroup);
 
     @Override
     @RestResource(exported = false)
+    @Caching(evict = {
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+    })
     RoleGroup saveByPass(@Param("rolegroup") RoleGroup roleGroup);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @Caching(evict = {
+        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+    })
     void delete(@Param("id") Long id);
 
     @Override

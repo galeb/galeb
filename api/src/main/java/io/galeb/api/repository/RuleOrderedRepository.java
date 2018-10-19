@@ -18,6 +18,7 @@ package io.galeb.api.repository;
 
 import io.galeb.api.repository.custom.RuleOrderedRepositoryCustom;
 import io.galeb.core.entity.RuleOrdered;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,10 +32,12 @@ public interface RuleOrderedRepository extends JpaRepository<RuleOrdered, Long>,
 
     @Override
     @PreAuthorize("@perm.allowSave(#ruleordered, #this)")
+    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
     RuleOrdered save(@Param("ruleordered") RuleOrdered ruleordered);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
     void delete(@Param("id") Long id);
 
     @Override

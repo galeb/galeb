@@ -19,6 +19,7 @@ package io.galeb.api.repository;
 import io.galeb.api.repository.custom.VirtualhostGroupRepositoryCustom;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,10 +37,12 @@ public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGro
     @Override
     @RestResource(exported = false)
     @PreAuthorize("@perm.allowSave(#virtualhostgroup, #this)")
+    @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true)
     VirtualhostGroup save(@Param("virtualhostgroup") VirtualhostGroup virtualhostgroup);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true)
     void delete(@Param("id") Long id);
 
     @Override

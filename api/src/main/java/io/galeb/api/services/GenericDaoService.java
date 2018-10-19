@@ -45,13 +45,11 @@ public class GenericDaoService {
         return em;
     }
 
-    @Cacheable(value = "cache_findOneDao", unless = "#result == null", key = "{ #root.methodName, #p0.name, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public AbstractEntity findOne(Class<? extends AbstractEntity> classEntity, Long id) {
         return em.find(classEntity, id);
     }
 
-    @Cacheable(value = "cache_findByNameDao", unless = "#result == null", key = "{ #root.methodName, #p0.name, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public AbstractEntity findByName(Class<? extends AbstractEntity> classEntity, String name) {
         return em.createQuery("SELECT e FROM " + classEntity.getSimpleName() + " e WHERE e.name = :name", classEntity)
@@ -59,7 +57,6 @@ public class GenericDaoService {
             .getSingleResult();
     }
 
-    @Cacheable(value = "cache_findAllDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0.name, #p1?.hashCode() }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<? extends AbstractEntity> findAll(Class<? extends AbstractEntity> entityClass, Pageable pageable) {
         TypedQuery<? extends AbstractEntity> query = em.createQuery("SELECT DISTINCT entity From " + entityClass.getSimpleName() + " entity", entityClass);
@@ -69,7 +66,6 @@ public class GenericDaoService {
         return query.getResultList();
     }
 
-    @Cacheable(value = "cache_findAllNamedDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1.name, #p2, #p3?.hashCode() }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<? extends AbstractEntity> findAllNamed(String namedquery, Class<? extends AbstractEntity> entityClass, String username, Pageable pageable) {
         TypedQuery<? extends AbstractEntity> query = em.createNamedQuery(namedquery, entityClass).setParameter("username", username);
@@ -149,7 +145,7 @@ public class GenericDaoService {
             .setParameter("project_id", projectId).getResultList();
     }
 
-//    @Cacheable(value = "cache_roleGroupsFromProject", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
+    @Cacheable(value = "cache_roleGroupsFromProject", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<RoleGroup> roleGroupsFromProject(Long accountId, Long projectId) {
         return em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
@@ -158,7 +154,7 @@ public class GenericDaoService {
             .getResultList();
     }
 
-//    @Cacheable(value = "cache_teamLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
+    @Cacheable(value = "cache_teamLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Team> teamLinkedToAccount(Long accountId, Long teamId) {
         return em.createNamedQuery("teamLinkedToAccount", Team.class)

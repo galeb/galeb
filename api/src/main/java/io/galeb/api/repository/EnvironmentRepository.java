@@ -51,7 +51,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join e.pools as p " +
             "inner join p.targets as t " +
             "WHERE t.id = :targetId")
-    @Cacheable(value = "cache_findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
+    @Cacheable(value = "cache_findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ 'findAllByTargetId', #p0 }")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
     @RestResource(exported = false)

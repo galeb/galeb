@@ -28,10 +28,10 @@ import java.util.Set;
                 name = "projectLinkedToAccount",
                 query = "SELECT p FROM Project p INNER JOIN p.teams t INNER JOIN t.accounts a WHERE a.id = :account_id AND p.id = :project_id"),
         @NamedQuery(
-                name = "projectHealthStatus",
+                name = "projectFromHealthStatus",
                 query = "SELECT p FROM Project p INNER JOIN p.pools pools INNER JOIN pools.targets t INNER JOIN t.healthStatus h WHERE h.id = :id"),
         @NamedQuery(
-                name = "projectsFromRuleOrdered",
+                name = "projectFromRuleOrdered",
                 query = "SELECT p FROM Project p INNER JOIN p.rules r INNER JOIN r.rulesOrdered ro WHERE ro.id = :id"),
         @NamedQuery(
                 name = "projectFromVirtualhostGroup",

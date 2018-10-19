@@ -40,6 +40,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     @Override
     @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#environment, #this)")
+    @CacheEvict(value = "findAllByTargetId", allEntries = true)
     Environment save(@Param("environment") Environment environment);
 
     @Override
@@ -54,7 +55,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join e.pools as p " +
             "inner join p.targets as t " +
             "WHERE t.id = :targetId")
-    @Cacheable(value = "findAllByTargetId")
+    @Cacheable(value = "findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
     @ExposeFilterSwagger
@@ -82,7 +83,6 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join p.rules as r " +
             "WHERE r.id = :ruleId")
     Set<Environment> findAllByRuleId(@Param("ruleId") long ruleId);
-
 
     @Override
     @ExposeFilterSwagger

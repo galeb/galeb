@@ -69,7 +69,7 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
         if (ruleOrdered == null) {
             return -1L;
         }
-        List<Project> projects = genericDaoService.projectsFromRuleOrdered(ruleOrdered.getId());
+        List<Project> projects = genericDaoService.projectFromRuleOrdered(ruleOrdered.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

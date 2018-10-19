@@ -65,7 +65,7 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
         if (healthStatus == null) {
             return -1L;
         }
-        List<Project> projects = genericDaoService.projectsHealthStatus(healthStatus.getId());
+        List<Project> projects = genericDaoService.projectFromHealthStatus(healthStatus.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

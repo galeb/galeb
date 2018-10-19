@@ -16,8 +16,8 @@
 
 package io.galeb.api.repository.custom;
 
-import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.repository.EnvironmentRepository;
+import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
@@ -73,7 +73,7 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
         if (target == null) {
             return -1L;
         }
-        List<Project> projects = genericDaoService.projectsFromTarget(target.getId());
+        List<Project> projects = genericDaoService.projectFromTarget(target.getId());
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

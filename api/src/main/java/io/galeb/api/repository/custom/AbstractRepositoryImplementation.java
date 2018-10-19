@@ -67,7 +67,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    @Cacheable(value = "findOneJpa", key = "{ #root.targetClass.name, #root.target.class.name, #p0 }")
+    @Cacheable(value = "findOneJpa", key = "{ #root.methodName, #root.targetClass.name, #root.target.class.name, #p0 }")
     public T findOneJpa(Long id) {
         return simpleJpaRepository.findOne(id);
     }
@@ -93,7 +93,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public Page<T> findAll(Pageable pageable) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         boolean isViewAll;
-        boolean isView = false;
+        boolean isView;
         Set<String> roles = mergeAllRolesOf(account);
         String roleView = entityClass.getSimpleName().toUpperCase() + "_VIEW";
         isView = roles.contains(roleView);

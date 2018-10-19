@@ -48,7 +48,7 @@ public class StatusService {
     @Autowired
     ChangesService changesService;
 
-    public int envWithStatusCount(Long envId) {
+    private int envWithStatusCount(Long envId) {
         String id = String.valueOf(envId);
         Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
         return keys == null ? 0 : keys.size();
@@ -60,6 +60,10 @@ public class StatusService {
             return Collections.singletonMap(entity.getId(), exists ? Status.PENDING : Status.OK);
         }
         final Set<Environment> allEnvironments = entity.getAllEnvironments();
+        if (allEnvironments == null || allEnvironments.isEmpty()) {
+            LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+            return Collections.emptyMap();
+        }
         final Boolean isQuarantine;
         if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
@@ -80,10 +84,6 @@ public class StatusService {
 
     @SuppressWarnings("ConstantConditions")
     private boolean targetHasEnvUnregistered(final Target target, final Set<Environment> allEnvironments) {
-        if (allEnvironments == null || allEnvironments.isEmpty()) {
-            LOGGER.error("Target ID " + target.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
-            return false;
-        }
         final Optional<Environment> anyEnvironment = allEnvironments.stream().findAny();
         int envWithStatus = -1;
         if (anyEnvironment.isPresent()) {
@@ -91,8 +91,8 @@ public class StatusService {
                 final Environment environment = anyEnvironment.get();
                 envWithStatus = envWithStatusCount(environment.getId());
             } else {
-                LOGGER.error("Target ID " + target.getId() +
-                        " is INCONSISTENT. Is NOT Environment instance of Environment class ???" +
+                LOGGER.error("Target ID " + target.getId() + " is INCONSISTENT. " +
+                        "Is NOT Environment instance of the Environment class ???" +
                         " (real class: " + anyEnvironment.get().getClass() + ")");
             }
         }

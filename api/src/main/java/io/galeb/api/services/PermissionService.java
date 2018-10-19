@@ -65,11 +65,14 @@ public class PermissionService {
             return false;
         }
 
-        Set<String> roles = repository.mergeAllRolesOf(account);
-
         String classSimpleName = repository.classEntity().getSimpleName();
-        String roleUpperCase = classSimpleName.toUpperCase() + "_" + action;
+        Set<String> roles = repository.mergeAllRolesOf(account);
+        if (roles == null) {
+            LOGGER.error(classSimpleName + " / (account  " + account.getUsername() + "): mergeAllRolesOf FAILED. Roles is NULL");
+            return false;
+        }
 
+        String roleUpperCase = classSimpleName.toUpperCase() + "_" + action;
         boolean allow = false;
         AuditType audiType = AuditType.ROLE;
         boolean isAccount = criteria instanceof Account;

@@ -17,6 +17,7 @@
 package io.galeb.core.configuration.db;
 
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.Optional;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 public class DatabaseConfiguration {
 
+    private static final String DB_MAX_POOL_SIZE             = Optional.ofNullable(System.getenv("DB_MAX_POOL_SIZE")).orElse("100");
+    private static final String DB_CONN_TIMEOUT              = Optional.ofNullable(System.getenv("DB_CONN_TIMEOUT")).orElse("0");
+    private static final String DB_AUTOCOMMIT                = Optional.ofNullable(System.getenv("DB_AUTOCOMMIT")).orElse("false");
+    private static final String DB_CACHE_PREP_STMTS          = Optional.ofNullable(System.getenv("DB_CACHE_PREP_STMTS")).orElse("true");
+    private static final String DB_PREP_STMT_CACHE_SIZE      = Optional.ofNullable(System.getenv("DB_PREP_STMT_CACHE_SIZE")).orElse("1024");
+    private static final String DB_USE_SERVER_PREP_STMTS     = Optional.ofNullable(System.getenv("DB_USE_SERVER_PREP_STMTS")).orElse("true");
+    private static final String DB_PREP_STMT_CACHE_SQL_LIMIT = Optional.ofNullable(System.getenv("DB_PREP_STMT_CACHE_SQL_LIMIT")).orElse("1024");
+
     @Bean
     @Primary
     public DataSourceProperties dataSourceProperties() {
@@ -35,6 +44,16 @@ public class DatabaseConfiguration {
 
     @Bean
     public HikariDataSource dataSource(DataSourceProperties properties) {
-        return (HikariDataSource) properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        HikariDataSource hikariDataSource = (HikariDataSource) properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
+        hikariDataSource.setConnectionTimeout(Long.parseLong(DB_CONN_TIMEOUT));
+        hikariDataSource.setMaximumPoolSize(Integer.parseInt(DB_MAX_POOL_SIZE));
+        hikariDataSource.setAutoCommit(Boolean.parseBoolean(DB_AUTOCOMMIT));
+        hikariDataSource.setConnectionTestQuery("SELECT 1");
+        hikariDataSource.addDataSourceProperty("cachePrepStmts", Boolean.parseBoolean(DB_CACHE_PREP_STMTS));
+        hikariDataSource.addDataSourceProperty("prepStmtCacheSize", Integer.parseInt(DB_PREP_STMT_CACHE_SIZE));
+        hikariDataSource.addDataSourceProperty("prepStmtCacheSqlLimit", Integer.parseInt(DB_PREP_STMT_CACHE_SQL_LIMIT));
+        hikariDataSource.addDataSourceProperty("useServerPrepStmts", Boolean.parseBoolean(DB_USE_SERVER_PREP_STMTS));
+
+        return hikariDataSource;
     }
 }

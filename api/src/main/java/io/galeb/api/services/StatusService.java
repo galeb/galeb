@@ -80,6 +80,10 @@ public class StatusService {
 
     @SuppressWarnings("ConstantConditions")
     private boolean targetHasEnvUnregistered(final Target target, final Set<Environment> allEnvironments) {
+        if (allEnvironments == null || allEnvironments.isEmpty()) {
+            LOGGER.error("Target ID " + target.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+            return false;
+        }
         final Optional<Environment> anyEnvironment = allEnvironments.stream().findAny();
         int envWithStatus = -1;
         if (anyEnvironment.isPresent()) {

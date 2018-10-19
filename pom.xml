@@ -58,7 +58,11 @@
   <modules>
     <module>core</module>
     <module>newcore</module>
+    <module>router</module>
+    <module>health</module>
     <module>api</module>
+    <module>kratos</module>
+    <module>legba</module>
   </modules>
 
   <organization>

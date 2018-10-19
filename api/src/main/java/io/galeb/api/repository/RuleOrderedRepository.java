@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.RuleOrderedRepositoryCustom;
 import io.galeb.core.entity.RuleOrdered;
 import org.springframework.data.domain.Page;
@@ -31,26 +30,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface RuleOrderedRepository extends JpaRepository<RuleOrdered, Long>, RuleOrderedRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#ruleordered, #this)")
     RuleOrdered save(@Param("ruleordered") RuleOrdered ruleordered);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     RuleOrdered findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<RuleOrdered> findAll(Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<RuleOrdered> findByVirtualhostgroupIdAndEnvironmentId(@Param("vhgid") Long vhgid, @Param("envid") Long envid, Pageable pageable);
 }

@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.RoleGroupRepositoryCustom;
 import io.galeb.core.entity.RoleGroup;
 import org.springframework.data.domain.Page;
@@ -32,7 +31,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long>, RoleGroupRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#rolegroup, #this)")
     RoleGroup save(@Param("rolegroup") RoleGroup rolegroup);
 
@@ -41,17 +39,14 @@ public interface RoleGroupRepository extends JpaRepository<RoleGroup, Long>, Rol
     RoleGroup saveByPass(@Param("rolegroup") RoleGroup roleGroup);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     RoleGroup findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<RoleGroup> findAll(Pageable pageable);
 

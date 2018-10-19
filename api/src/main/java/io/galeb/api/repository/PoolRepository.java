@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.PoolRepositoryCustom;
 import io.galeb.core.entity.Pool;
 import org.springframework.data.domain.Page;
@@ -31,30 +30,24 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface PoolRepository extends JpaRepository<Pool, Long>, PoolRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#pool, #this)")
     Pool save(@Param("pool") Pool pool);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Pool findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Pool> findAll(Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Pool> findByName(@Param("name") String name, Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Pool> findByNameContaining(@Param("name") String name, Pageable pageable);
 

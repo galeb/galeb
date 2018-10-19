@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.HealthStatusRepositoryCustom;
 import io.galeb.core.entity.HealthStatus;
 import org.springframework.data.domain.Page;
@@ -31,22 +30,18 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface HealthStatusRepository extends JpaRepository<HealthStatus, Long>, HealthStatusRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#healthstatus, #this)")
     HealthStatus save(@Param("healthstatus") HealthStatus healthstatus);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     HealthStatus findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<HealthStatus> findAll(Pageable pageable);
 }

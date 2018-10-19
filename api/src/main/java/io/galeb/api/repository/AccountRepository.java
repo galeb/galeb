@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.AccountRepositoryCustom;
 import io.galeb.core.entity.Account;
 import org.springframework.cache.annotation.CacheEvict;
@@ -34,7 +33,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface AccountRepository extends JpaRepository<Account, Long>, AccountRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#account, #this)")
     @Caching(evict = {
             @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
@@ -51,7 +49,6 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     Account saveByPass(@Param("account") Account account);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     @Caching(evict = {
             @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
@@ -60,20 +57,16 @@ public interface AccountRepository extends JpaRepository<Account, Long>, Account
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Account findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Account> findAll(Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Account findByUsername(@Param("username") String username);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Account> findByUsernameContaining(@Param("username") String username, Pageable pageable);
 }

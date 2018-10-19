@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.TeamRepositoryCustom;
 import io.galeb.core.entity.Team;
 import org.springframework.data.domain.Page;
@@ -32,34 +31,27 @@ import org.springframework.security.access.prepost.PreAuthorize;
 public interface TeamRepository extends JpaRepository<Team, Long>, TeamRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#team, #this)")
     Team save(@Param("team") Team team);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     void delete(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(#id, #this)")
     Team findOne(@Param("id") Long id);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Team> findAll(Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Team> findByName(@Param("name") String name, Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Team> findByNameContaining(@Param("name") String name, Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Team> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
 

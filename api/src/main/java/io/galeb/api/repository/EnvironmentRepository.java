@@ -16,7 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.annotations.ExposeFilterSwagger;
 import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
 import io.galeb.core.entity.Environment;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,18 +37,15 @@ import java.util.Set;
 public interface EnvironmentRepository extends JpaRepository<Environment, Long>, EnvironmentRepositoryCustom {
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowSave(#environment, #this)")
     @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     Environment save(@Param("environment") Environment environment);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     void delete(@Param("id") Long id);
 
-    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.pools as p " +
@@ -58,7 +54,6 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     @Cacheable(value = "cache_findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
-    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.virtualhosts as v " +
@@ -67,7 +62,6 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "WHERE ro.id = :ruleorderedId")
     Set<Environment> findAllByRuleOrderedId(@Param("ruleorderedId") long ruleorderedId);
 
-    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.virtualhosts as v " +
@@ -76,7 +70,6 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     @PreAuthorize("@perm.allowView(null , #this)")
     List<Environment> findAllByVirtualhostgroupId(@Param("vhgid") long vhgid);
 
-    @ExposeFilterSwagger
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +
             "inner join e.pools as p " +
@@ -85,19 +78,15 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
     Set<Environment> findAllByRuleId(@Param("ruleId") long ruleId);
 
     @Override
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findAll(Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findByName(@Param("name") String name, Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findByNameContaining(@Param("name") String name, Pageable pageable);
 
-    @ExposeFilterSwagger
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Environment> findFirst10ByNameContaining(@Param("name") String name, Pageable pageable);
 }

@@ -25,12 +25,13 @@ import java.util.*;
         @NamedQuery(
                 name = "TargetDefault",
                 query = "SELECT DISTINCT entity From Target entity WHERE entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool INNER JOIN pool.rules r INNER JOIN r.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
-                        "WHERE a.username = :username AND r.global = false) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool WHERE pool.global = true) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool INNER JOIN pool.rules r WHERE r.global = true)")
+                            "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool " +
+                            "INNER JOIN pool.project p INNER JOIN p.teams t INNER JOIN t.accounts a " +
+                            "WHERE a.username = :username AND pool.global = false) " +
+                        "OR entity.id IN " +
+                            "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool WHERE pool.global = true) " +
+                        "OR entity.id IN " +
+                            "(SELECT entity.id FROM Target entity INNER JOIN entity.pool pool INNER JOIN pool.rules r WHERE r.global = true)")
 })
 @Entity
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name_pool_id", columnNames = { "name", "pool_id" }) })

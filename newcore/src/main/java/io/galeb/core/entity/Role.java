@@ -16,6 +16,7 @@
 
 package io.galeb.core.entity;
 
+@SuppressWarnings("unused")
 public enum Role {
     ACCOUNT_CREATE,
     ACCOUNT_CREATE_ALL,

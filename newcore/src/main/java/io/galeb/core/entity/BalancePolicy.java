@@ -26,7 +26,7 @@ import java.util.Set;
 @NamedQueries({
         @NamedQuery(
                 name = "BalancePolicyDefault",
-                query = "SELECT DISTINCT entity From BalancePolicy entity")
+                query = "SELECT DISTINCT entity From BalancePolicy entity WHERE :username IS NOT NULL")
 })
 
 @Entity

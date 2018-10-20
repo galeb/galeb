@@ -23,7 +23,7 @@ import java.util.Map;
 @NamedQueries({
         @NamedQuery(
                 name = "HealthCheckDefault",
-                query = "SELECT DISTINCT entity From HealthCheck entity")
+                query = "SELECT DISTINCT entity From HealthCheck entity WHERE :username IS NOT NULL")
 })
 
 @Entity

@@ -20,6 +20,7 @@ import io.galeb.core.enums.SystemEnv;
 import java.io.IOException;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.zalando.logbook.Correlation;
@@ -41,6 +42,11 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
 
     @Override
     public String format(final Precorrelation<HttpRequest> precorrelation) throws IOException {
+        // Not logging GET/HEAD methods
+        if (precorrelation.getRequest().getMethod().equalsIgnoreCase(HttpMethod.GET.name()) ||
+            precorrelation.getRequest().getMethod().equalsIgnoreCase(HttpMethod.HEAD.name())) {
+            return "";
+        }
         final Map<String, Object> content = delegate.prepare(precorrelation);
         content.put("principal", getPrincipal());
         content.put("tags", LOGGING_TAGS);
@@ -49,10 +55,8 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
 
     @Override
     public String format(final Correlation<HttpRequest, HttpResponse> correlation) throws IOException {
-        final Map<String, Object> content = delegate.prepare(correlation);
-        content.put("principal", getPrincipal());
-        content.put("tags", LOGGING_TAGS);
-        return delegate.format(content);
+        // Not logging Response
+        return "";
     }
 
     private String getPrincipal() {

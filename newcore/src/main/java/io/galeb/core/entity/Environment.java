@@ -24,7 +24,7 @@ import java.util.*;
 @NamedQueries({
         @NamedQuery(
                 name = "EnvironmentDefault",
-                query = "SELECT DISTINCT entity From Environment entity")
+                query = "SELECT DISTINCT entity From Environment entity WHERE :username IS NOT NULL")
 })
 
 @Entity

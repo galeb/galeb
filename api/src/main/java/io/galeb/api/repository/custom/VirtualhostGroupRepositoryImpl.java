@@ -16,15 +16,19 @@
 
 package io.galeb.api.repository.custom;
 
+import io.galeb.api.repository.EnvironmentRepository;
 import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
+import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.VirtualhostGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementation<VirtualhostGroup> implements VirtualhostGroupRepositoryCustom, WithRoles {
@@ -35,10 +39,18 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
     @Autowired
     private StatusService statusService;
 
+    @Autowired
+    private EnvironmentRepository environmentRepository;
+
     @PostConstruct
     private void init() {
         setSimpleJpaRepository(VirtualhostGroup.class, genericDaoService);
         setStatusService(statusService);
+    }
+
+    @Override
+    protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
+        return new HashSet<>(environmentRepository.findAllByVirtualhostgroupId(entity.getId()));
     }
 
     @Override

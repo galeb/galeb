@@ -21,8 +21,11 @@ import io.galeb.api.services.AuditService.AuditType;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.WithGlobal;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,9 +127,8 @@ public class PermissionService {
     }
 
     private boolean hasGlobal(Object criteria, Class<? extends AbstractEntity> entityClass) {
-        if (criteria instanceof Long && entityClass != null) {
-            AbstractEntity entity = genericDaoService.findOne(entityClass, (Long) criteria);
-            if (entity instanceof WithGlobal && ((WithGlobal) entity).getGlobal()) {
+        if (criteria instanceof Long && entityClass != null && Arrays.asList((entityClass.getInterfaces())).contains(WithGlobal.class)) {
+            if (genericDaoService.isGlobal(entityClass.getSimpleName(), (Long) criteria)) {
                 String criteriaName = entityClass.getSimpleName();
                 auditService.logAccess("", Collections.emptySet(), true, criteriaName, Action.VIEW.toString(), criteria, AuditType.GLOBAL);
                 return true;

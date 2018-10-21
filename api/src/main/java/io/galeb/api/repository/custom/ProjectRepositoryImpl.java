@@ -47,15 +47,13 @@ public class ProjectRepositoryImpl extends AbstractRepositoryImplementation<Proj
             return ((Project) criteria).getId();
         }
         if (criteria instanceof Long) {
-            Project project = (Project) genericDaoService.findOne(Project.class, (Long) criteria);
-            if (project == null) {
-                return NOT_FOUND;
-            }
-            return project.getId();
+            return getIdIfExist(criteria);
         }
         if (criteria instanceof String) {
             Project project = (Project) genericDaoService.findByName(Project.class, (String) criteria);
-            return project.getId();
+            if (project != null) {
+                return project.getId();
+            }
         }
         return -1;
 

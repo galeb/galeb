@@ -55,26 +55,19 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
 
     @Override
     protected long getProjectId(Object criteria) {
-        VirtualhostGroup virtualhostGroup = null;
-        long projectId = -1L;
         try {
-            if (criteria instanceof VirtualhostGroup) {
-                virtualhostGroup = (VirtualhostGroup) genericDaoService.findOne(VirtualhostGroup.class, ((VirtualhostGroup) criteria).getId());
-            }
-            if (criteria instanceof Long) {
-                virtualhostGroup = (VirtualhostGroup) genericDaoService.findOne(VirtualhostGroup.class, (Long) criteria);
-                if (virtualhostGroup == null) {
-                    return NOT_FOUND;
-                }
-            }
             if (criteria instanceof Project) {
-                projectId = ((Project)criteria).getId();
+                return ((Project)criteria).getId();
             }
-        } catch (Exception ignored) {}
-        if (projectId > -1L) return projectId;
-        if (virtualhostGroup == null) return -1L;
-        List<Project> projects = genericDaoService.projectFromVirtualhostGroup(virtualhostGroup.getId());
-        if (projects == null || projects.isEmpty()) return -1L;
-        return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
+            long id = getIdIfExist(criteria);
+            if (id < 1L) {
+                return id;
+            }
+            List<Project> projects = genericDaoService.projectFromVirtualhostGroup(id);
+            if (projects == null || projects.isEmpty()) return -1L;
+            return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
+        } catch (Exception ignored) {
+            return -1L;
+        }
     }
 }

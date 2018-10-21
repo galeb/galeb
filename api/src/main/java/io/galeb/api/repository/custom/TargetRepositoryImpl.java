@@ -54,29 +54,28 @@ public class TargetRepositoryImpl extends AbstractRepositoryImplementation<Targe
 
     @Override
     protected long getProjectId(Object criteria) {
-        Target target = null;
         try {
-            if (criteria instanceof Target) {
-                target = (Target) genericDaoService.findOne(Target.class, ((Target) criteria).getId());
-            }
-            if (criteria instanceof Long) {
-                target = (Target) genericDaoService.findOne(Target.class, (Long) criteria);
-                if (target == null) {
+            long id;
+            if (criteria instanceof String) {
+                Target target = (Target) genericDaoService.findByName(Target.class, (String) criteria);
+                if (target != null) {
+                    id = target.getId();
+                } else {
                     return NOT_FOUND;
                 }
+            } else {
+                id = getIdIfExist(criteria);
             }
-            if (criteria instanceof String) {
-                target = (Target) genericDaoService.findByName(Target.class, (String) criteria);
+            if (id < 1L) {
+                return id;
             }
+            List<Project> projects = genericDaoService.projectFromTarget(id);
+            if (projects == null || projects.isEmpty()) {
+                return -1;
+            }
+            return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
         } catch (Exception ignored) {
-        }
-        if (target == null) {
-            return -1L;
-        }
-        List<Project> projects = genericDaoService.projectFromTarget(target.getId());
-        if (projects == null || projects.isEmpty()) {
             return -1;
         }
-        return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
 }

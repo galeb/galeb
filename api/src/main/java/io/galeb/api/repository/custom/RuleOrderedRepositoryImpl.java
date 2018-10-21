@@ -54,25 +54,18 @@ public class RuleOrderedRepositoryImpl extends AbstractRepositoryImplementation<
 
     @Override
     protected long getProjectId(Object criteria) {
-        RuleOrdered ruleOrdered = null;
         try {
-            if (criteria instanceof RuleOrdered) {
-                ruleOrdered  = (RuleOrdered) genericDaoService.findOne(RuleOrdered.class, ((RuleOrdered) criteria).getId());
+            long id = getIdIfExist(criteria);
+            if (id < 1L) {
+                return id;
             }
-            if (criteria instanceof Long) {
-                ruleOrdered  = (RuleOrdered) genericDaoService.findOne(RuleOrdered.class, (Long) criteria);
-                if (ruleOrdered == null) {
-                    return NOT_FOUND;
-                }
+            List<Project> projects = genericDaoService.projectFromRuleOrdered(id);
+            if (projects == null || projects.isEmpty()) {
+                return -1;
             }
-        } catch (Exception ignored) {}
-        if (ruleOrdered == null) {
+            return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
+        } catch (Exception ignored) {
             return -1L;
         }
-        List<Project> projects = genericDaoService.projectFromRuleOrdered(ruleOrdered.getId());
-        if (projects == null || projects.isEmpty()) {
-            return -1;
-        }
-        return projects.stream().map(AbstractEntity::getId).findAny().orElse(-1L);
     }
 }

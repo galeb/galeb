@@ -51,12 +51,14 @@ public class TeamRepositoryImpl extends AbstractRepositoryImplementation<Team> i
                 return mergeAllRolesOf(account);
             }
         }
+        Team team = null;
         if (criteria instanceof Long) {
-            Team team = (Team) genericDaoService.findOne(Team.class, (Long) criteria);
-            return roles(team);
+            team = (Team) genericDaoService.findOne(Team.class, (Long) criteria);
         }
         if (criteria instanceof String) {
-            Team team = (Team) genericDaoService.findByName(Team.class, (String) criteria);
+            team = (Team) genericDaoService.findByName(Team.class, (String) criteria);
+        }
+        if (team != null) {
             return roles(team);
         }
         return Collections.emptySet();

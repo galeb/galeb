@@ -59,25 +59,27 @@ public class RuleRepositoryImpl extends AbstractRepositoryImplementation<Rule> i
 
     @Override
     protected long getProjectId(Object criteria) {
-        Rule rule = null;
-        long projectId = -1L;
         try {
-            if (criteria instanceof Rule) {
-                rule = (Rule) genericDaoService.findOne(Rule.class, ((Rule) criteria).getId());
+            if (criteria instanceof Project) {
+                return ((Project) criteria).getId();
             }
+            if (criteria instanceof Rule) {
+                return ((Rule) criteria).getProject().getId();
+            }
+            Rule rule = null;
             if (criteria instanceof Long) {
                 rule = (Rule) genericDaoService.findOne(Rule.class, (Long) criteria);
-                if (rule == null) {
-                    return NOT_FOUND;
-                }
             }
             if (criteria instanceof String) {
                 rule = (Rule) genericDaoService.findByName(Rule.class, (String) criteria);
             }
-            if (criteria instanceof Project) {
-                projectId = ((Project) criteria).getId();
+            if (rule != null) {
+                return rule.getProject().getId();
+            } else {
+                return NOT_FOUND;
             }
-        } catch (Exception ignored) {}
-        return projectId > -1L ? projectId : (rule != null ? rule.getProject().getId() : -1L);
+        } catch (Exception ignored) {
+            return -1L;
+        }
     }
 }

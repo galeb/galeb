@@ -24,9 +24,7 @@ import io.galeb.core.entity.Project;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation<HealthStatus> implements HealthStatusRepositoryCustom, WithRoles {
@@ -44,28 +42,15 @@ public class HealthStatusRepositoryImpl extends AbstractRepositoryImplementation
     }
 
     @Override
-    public Set<String> roles(Object criteria) {
-        return Collections.emptySet();
-    }
-
-    @Override
     protected long getProjectId(Object criteria) {
-        HealthStatus healthStatus = null;
+        long id = -1L;
         try {
-            if (criteria instanceof HealthStatus) {
-                healthStatus = (HealthStatus) genericDaoService.findOne(HealthStatus.class, ((HealthStatus) criteria).getId());
-            }
-            if (criteria instanceof Long) {
-                healthStatus = (HealthStatus) genericDaoService.findOne(HealthStatus.class, (Long) criteria);
-                if (healthStatus == null) {
-                    return NOT_FOUND;
-                }
-            }
+            id = getIdIfExist(criteria);
         } catch (Exception ignored) {}
-        if (healthStatus == null) {
-            return -1L;
+        if (id < 1L) {
+            return id;
         }
-        List<Project> projects = genericDaoService.projectFromHealthStatus(healthStatus.getId());
+        List<Project> projects = genericDaoService.projectFromHealthStatus(id);
         if (projects == null || projects.isEmpty()) {
             return -1;
         }

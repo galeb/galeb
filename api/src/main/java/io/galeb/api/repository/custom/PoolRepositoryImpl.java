@@ -49,19 +49,24 @@ public class PoolRepositoryImpl extends AbstractRepositoryImplementation<Pool> i
 
     @Override
     protected long getProjectId(Object criteria) {
-        Pool pool = null;
-        if (criteria instanceof Pool) {
-            pool = (Pool) genericDaoService.findOne(Pool.class, ((Pool) criteria).getId());
-        }
-        if (criteria instanceof Long) {
-            pool = (Pool) genericDaoService.findOne(Pool.class, (Long) criteria);
-            if (pool == null) {
+        try {
+            if (criteria instanceof Pool) {
+                return ((Pool) criteria).getProject().getId();
+            }
+            Pool pool = null;
+            if (criteria instanceof Long) {
+                pool = (Pool) genericDaoService.findOne(Pool.class, (Long) criteria);
+            }
+            if (criteria instanceof String) {
+                pool = (Pool) genericDaoService.findByName(Pool.class, (String) criteria);
+            }
+            if (pool != null) {
+                return pool.getProject().getId();
+            } else {
                 return NOT_FOUND;
             }
+        } catch (Exception ignore) {
+            return -1L;
         }
-        if (criteria instanceof String) {
-            pool = (Pool) genericDaoService.findByName(Pool.class, (String)criteria);
-        }
-        return pool != null ? pool.getProject().getId() : -1L;
     }
 }

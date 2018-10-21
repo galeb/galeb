@@ -54,25 +54,27 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
 
     @Override
     protected long getProjectId(Object criteria) {
-        VirtualHost virtualHost = null;
-        long projectId = -1L;
         try {
+            long id = -1L;
+            if (criteria instanceof Project) {
+                return ((Project) criteria).getId();
+            }
             if (criteria instanceof VirtualHost) {
-                virtualHost = (VirtualHost) genericDaoService.findOne(VirtualHost.class, ((VirtualHost) criteria).getId());
+                return ((VirtualHost) criteria).getProject().getId();
             }
-            if (criteria instanceof Long) {
-                virtualHost = (VirtualHost) genericDaoService.findOne(VirtualHost.class, (Long) criteria);
-                if (virtualHost == null) {
-                    return NOT_FOUND;
-                }
-            }
+            VirtualHost virtualHost = null;
             if (criteria instanceof String) {
                 virtualHost = (VirtualHost) genericDaoService.findByName(VirtualHost.class, (String) criteria);
             }
-            if (criteria instanceof Project) {
-                projectId = ((Project) criteria).getId();
+            if (criteria instanceof Long) {
+                virtualHost = (VirtualHost) genericDaoService.findOne(VirtualHost.class, (Long) criteria);
+            }
+            if (virtualHost != null) {
+                return virtualHost.getProject().getId();
+            } else {
+                return NOT_FOUND;
             }
         } catch (Exception ignored) {}
-        return projectId > -1L ? projectId : (virtualHost != null ? virtualHost.getProject().getId() : -1L);
+        return -1L;
     }
 }

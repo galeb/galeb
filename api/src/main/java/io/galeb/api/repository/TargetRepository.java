@@ -36,7 +36,8 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @Caching(evict = {
         @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
         @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }")
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }"),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0.getId() }")
     })
     Target save(@Param("target") Target target);
 
@@ -45,7 +46,8 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @Caching(evict = {
         @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
         @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }")
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }"),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0 }")
     })
     void delete(@Param("id") Long id);
 

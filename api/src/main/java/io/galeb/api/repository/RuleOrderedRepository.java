@@ -19,6 +19,7 @@ package io.galeb.api.repository;
 import io.galeb.api.repository.custom.RuleOrderedRepositoryCustom;
 import io.galeb.core.entity.RuleOrdered;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,12 +33,18 @@ public interface RuleOrderedRepository extends JpaRepository<RuleOrdered, Long>,
 
     @Override
     @PreAuthorize("@perm.allowSave(#ruleordered, #this)")
-    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'RuleOrdered', #p0.getId() }")
+    })
     RuleOrdered save(@Param("ruleordered") RuleOrdered ruleordered);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'RuleOrdered', #p0 }")
+    })
     void delete(@Param("id") Long id);
 
     @Override

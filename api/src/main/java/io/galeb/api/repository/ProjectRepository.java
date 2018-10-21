@@ -41,7 +41,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
         @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
         @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
         @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Project', #p0.getId() }")
     })
     Project save(@Param("project") Project project);
 
@@ -55,7 +56,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
         @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
         @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
         @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true)
+        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Project', #p0 }")
     })
     void delete(@Param("id") Long id);
 

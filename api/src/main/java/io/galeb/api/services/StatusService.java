@@ -18,6 +18,7 @@ package io.galeb.api.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.Target;
 import io.galeb.core.entity.WithStatus.Status;
 import io.galeb.core.services.ChangesService;
@@ -61,7 +62,9 @@ public class StatusService {
         }
         final Set<Environment> allEnvironments = entity.getAllEnvironments();
         if (allEnvironments == null || allEnvironments.isEmpty()) {
-            LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+            if (!(entity instanceof Rule)) {
+                LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+            }
             return Collections.emptyMap();
         }
         final Boolean isQuarantine;

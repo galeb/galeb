@@ -16,8 +16,10 @@
 
 package io.galeb.api.log;
 
+import io.galeb.core.entity.Account;
 import io.galeb.core.enums.SystemEnv;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.springframework.http.HttpMethod;
@@ -55,8 +57,15 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
 
     @Override
     public String format(final Correlation<HttpRequest, HttpResponse> correlation) throws IOException {
-        // Not logging Response
-        return "";
+        if (correlation.getRequest().getMethod().equalsIgnoreCase(HttpMethod.GET.name()) ||
+            correlation.getRequest().getMethod().equalsIgnoreCase(HttpMethod.HEAD.name())) {
+            return "";
+        }
+        final Map<String, Object> content = delegate.prepare(correlation);
+        content.put("bodyResponse", correlation.getOriginalResponse().getBodyAsString());
+        content.put("principal", getPrincipal());
+        content.put("tags", LOGGING_TAGS);
+        return delegate.format(content);
     }
 
     private String getPrincipal() {

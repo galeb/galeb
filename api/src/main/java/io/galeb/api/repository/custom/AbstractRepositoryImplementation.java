@@ -65,6 +65,24 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         this.genericDaoService = genericDaoService;
     }
 
+    protected long getIdIfExist(Object criteria) {
+        long id = -1L;
+        if (criteria == null) {
+            return NOT_FOUND;
+        }
+        if (criteria instanceof AbstractEntity) {
+            id = ((AbstractEntity) criteria).getId();
+        }
+        if (criteria instanceof Long) {
+            id = (long) criteria;
+        }
+        boolean exist = genericDaoService.exist(entityClass.getSimpleName(), id);
+        if (!exist) {
+            return NOT_FOUND;
+        }
+        return id;
+    }
+
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public T findOneJpa(Long id) {
         return simpleJpaRepository.findOne(id);

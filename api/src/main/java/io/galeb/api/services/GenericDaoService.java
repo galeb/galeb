@@ -18,6 +18,7 @@ package io.galeb.api.services;
 
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Account;
+import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
@@ -28,7 +29,11 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GenericDaoService {
+
+    private static final Logger LOGGER = LogManager.getLogger(GenericDaoService.class);
 
     @PersistenceContext
     private EntityManager em;
@@ -173,4 +180,33 @@ public class GenericDaoService {
         return accountPersisted;
     }
 
+    @Cacheable(value = "cache_entityExist", key = "{ 'exist', #p0, #p1 }")
+    public boolean exist(String entityName, Long id) {
+        try {
+            final Query query = em.createNativeQuery("SElECT e.id FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
+            return query.getSingleResult() != null;
+        } catch (NoResultException ignore) {
+            // NOT_FOUND
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return false;
+    }
+
+    public boolean isGlobal(String entityName, Long id) {
+        try {
+            final Query query = em.createNativeQuery("SElECT e.global FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
+            final Object result = query.getSingleResult();
+            return result != null && (boolean) result;
+        } catch (NoResultException ignore) {
+            // NOT_FOUND
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return false;
+    }
+
+    private String nativeTable(String entityName) {
+        return HealthStatus.class.getSimpleName().equals(entityName) ? "health_status" : entityName.toLowerCase();
+    }
 }

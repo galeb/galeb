@@ -41,7 +41,7 @@ public class Target extends AbstractEntity implements WithStatus {
     @JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool"))
     private Pool pool;
 
-    @OneToMany(mappedBy = "target", cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "target", cascade = CascadeType.REMOVE)
     private Set<HealthStatus> healthStatus = new HashSet<>();
 
     @Column(nullable = false)

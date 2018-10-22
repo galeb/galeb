@@ -16,6 +16,8 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -37,6 +39,7 @@ public class HealthStatus extends AbstractEntity {
         UNKNOWN
     }
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "target_id", nullable = false, foreignKey = @ForeignKey(name="FK_healthstatus_target"))
     private Target target;

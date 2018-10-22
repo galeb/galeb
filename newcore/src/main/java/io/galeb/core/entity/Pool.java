@@ -16,6 +16,8 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -37,20 +39,25 @@ import java.util.*;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
 public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
 
+    @JsonManagedReference
     @ManyToMany(mappedBy = "pools")
     private Set<Rule> rules= new HashSet<>();
 
+    @JsonBackReference
     @ManyToOne(optional = false)
     @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
     private Environment environment;
 
+    @JsonManagedReference
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "pool", cascade = CascadeType.REMOVE)
     private Set<Target> targets = new HashSet<>();
 
+    @JsonBackReference
     @ManyToOne(optional = false)
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_project"))
     private Project project;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "balancepolicy_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_balancepolicy"))
     private BalancePolicy balancepolicy;

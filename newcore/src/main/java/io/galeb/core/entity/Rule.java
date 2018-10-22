@@ -16,6 +16,8 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -34,11 +36,13 @@ import java.util.*;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_rule_name", columnNames = { "name" }) })
 public class Rule extends AbstractEntity implements WithStatus, WithGlobal {
 
+    @JsonBackReference
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name="FK_pool_rule_id")),
             inverseJoinColumns=@JoinColumn(name = "pool_id", foreignKey = @ForeignKey(name="FK_rule_pool_id")))
     private Set<Pool> pools = new HashSet<>();
 
+    @JsonBackReference
     @ManyToOne(optional = false)
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_rule_project"))
     private Project project;
@@ -51,6 +55,7 @@ public class Rule extends AbstractEntity implements WithStatus, WithGlobal {
     @Column(nullable = false)
     private String name;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "rule", cascade = CascadeType.REMOVE)
     private List<RuleOrdered> rulesOrdered = new ArrayList<>();
 

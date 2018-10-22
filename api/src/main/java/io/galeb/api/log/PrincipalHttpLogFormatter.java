@@ -16,10 +16,8 @@
 
 package io.galeb.api.log;
 
-import io.galeb.core.entity.Account;
 import io.galeb.core.enums.SystemEnv;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.springframework.http.HttpMethod;

@@ -16,7 +16,7 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 import javax.persistence.*;
 import java.util.HashMap;
@@ -35,11 +35,11 @@ import java.util.Set;
 @Table(name = "virtualhostgroup")
 public class VirtualhostGroup extends AbstractEntity implements WithStatus {
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy = "virtualhostgroup", cascade = CascadeType.REMOVE)
     public Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy = "virtualhostgroup", cascade = CascadeType.REMOVE)
     public Set<RuleOrdered> rulesordered = new HashSet<>();
 

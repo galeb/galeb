@@ -16,7 +16,7 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -64,19 +64,19 @@ public class RoleGroup extends AbstractEntity  {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
 
-    @JsonBackReference
+
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_account_id")),
             inverseJoinColumns = @JoinColumn(name = "account_id", nullable = false, foreignKey = @ForeignKey(name = "FK_account_rolegroup_id")))
     public Set<Account> accounts = new HashSet<>();
 
-    @JsonBackReference
+
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_project_id")),
             inverseJoinColumns = @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_project_rolegroup_id")))
     public Set<Project> projects = new HashSet<>();
 
-    @JsonBackReference
+
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(joinColumns = @JoinColumn(name = "rolegroup_id", foreignKey = @ForeignKey(name = "FK_rolegroup_team_id")),
             inverseJoinColumns = @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "FK_team_rolegroup_id")))

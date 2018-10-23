@@ -1,6 +1,8 @@
 package io.galeb.kratos.scheduler;
 
 import com.google.gson.Gson;
+import io.galeb.core.common.JmsTargetPoolTransport;
+import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
@@ -56,24 +58,24 @@ public class ScheduledProducer {
         final String schedId = UUID.randomUUID().toString();
         long start = System.currentTimeMillis();
         final AtomicInteger counter = new AtomicInteger(0);
-        environmentRepository.findAll().stream().forEach(env -> {
+        environmentRepository.findAll().forEach(env -> {
             String environmentName = env.getName().replaceAll("[ ]+", "_").toLowerCase();
             long environmentId = env.getId();
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ")");
             Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(0, PAGE_SIZE));
-            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, environmentId, counter));
+            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(new JmsTargetPoolTransport(target, target.getPool()), environmentId, counter));
             long size = targetsPage.getTotalElements();
             for (int page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
                     targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
-                    StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(target, environmentId, counter));
+                    StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(new JmsTargetPoolTransport(target, target.getPool()), environmentId, counter));
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     break;
                 }
             }
             Map<String, String> mapLog = new HashMap<>();
-            mapLog.put("class", ScheduledProducer.class.getSimpleName().toString());
+            mapLog.put("class", ScheduledProducer.class.getSimpleName());
             mapLog.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
             mapLog.put("schedId", schedId);
             mapLog.put("countTarget", String.valueOf(counter.get()));
@@ -85,15 +87,15 @@ public class ScheduledProducer {
         });
     }
 
-    private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {
+    private void sendToQueue(final JmsTargetPoolTransport jmsTargetPoolTransport, long envId, final AtomicInteger counter) {
         try {
             MessageCreator messageCreator = session -> {
                 counter.incrementAndGet();
-                Message message = session.createObjectMessage(target);
-                String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
+                Message message = session.createObjectMessage(jmsTargetPoolTransport);
+                String uniqueId = "ID:" + jmsTargetPoolTransport.getTarget().getId() + "-" + jmsTargetPoolTransport.getTarget().getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
 
-                if (LOGGER.isDebugEnabled()) LOGGER.debug("JMSMessageID: " + uniqueId + " - Target " + target.getName());
+                if (LOGGER.isDebugEnabled()) LOGGER.debug("JMSMessageID: " + uniqueId + " - Target " + jmsTargetPoolTransport.getTarget().getName());
                 return message;
             };
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);

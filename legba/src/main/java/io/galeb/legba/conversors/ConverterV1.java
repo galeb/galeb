@@ -104,7 +104,7 @@ public class ConverterV1 implements Converter {
                 Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
                         .stream()
                         .filter(hs -> (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) && !hs.getStatus().equals(
-                            Status.FAIL))
+                            Status.FAIL) || hs.getStatus() == null)
                         .collect(Collectors.toSet());
                 healthStatusesOK.stream().forEach(hs -> {
                     keysFullHash.add(hs.getLastModifiedAt().toString());

@@ -7,6 +7,7 @@ import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
@@ -54,6 +57,7 @@ public class ScheduledProducer {
     }
 
     @Scheduled(fixedDelay = 10000L)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public void sendToTargetsToQueue() {
         final String schedId = UUID.randomUUID().toString();
         long start = System.currentTimeMillis();
@@ -62,13 +66,12 @@ public class ScheduledProducer {
             String environmentName = env.getName().replaceAll("[ ]+", "_").toLowerCase();
             long environmentId = env.getId();
             LOGGER.info("[sch " + schedId + "] Sending targets to queue " + QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId + " (" + environmentName + ")");
-            Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(0, PAGE_SIZE));
-            StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(new JmsTargetPoolTransport(target, target.getPool()), environmentId, counter));
+            int page = 0;
+            Page<Target> targetsPage = sendTargets(counter, environmentName, environmentId, page);
             long size = targetsPage.getTotalElements();
-            for (int page = 1; page <= size/PAGE_SIZE; page++) {
+            for (page = 1; page <= size/PAGE_SIZE; page++) {
                 try {
-                    targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
-                    StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> sendToQueue(new JmsTargetPoolTransport(target, target.getPool()), environmentId, counter));
+                    sendTargets(counter, environmentName, environmentId, page);
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     break;
@@ -85,6 +88,16 @@ public class ScheduledProducer {
             LOGGER.info(gson.toJson(mapLog));
             counter.set(0);
         });
+    }
+
+    private Page<Target> sendTargets(AtomicInteger counter, String environmentName, long environmentId, int page) {
+        Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
+        StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
+            final Pool pool = target.getPool();
+            LOGGER.debug("Send target " + target.getName() + " (pool " + pool.getName() + ")");
+            sendToQueue(new JmsTargetPoolTransport(target, pool), environmentId, counter);
+        });
+        return targetsPage;
     }
 
     private void sendToQueue(final JmsTargetPoolTransport jmsTargetPoolTransport, long envId, final AtomicInteger counter) {

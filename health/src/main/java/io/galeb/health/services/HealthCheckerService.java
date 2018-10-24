@@ -16,13 +16,13 @@
 
 package io.galeb.health.services;
 
-import com.google.gson.Gson;
 import io.galeb.core.common.JmsTargetPoolTransport;
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.util.CallBackQueue;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -30,14 +30,10 @@ import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -46,8 +42,6 @@ import static org.asynchttpclient.Dsl.config;
 @SuppressWarnings("FieldCanBeLocal")
 @Service
 public class HealthCheckerService {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final boolean keepAlive                   = Boolean.parseBoolean(SystemEnv.TEST_KEEPALIVE.getValue());
     private final int     connectionTimeout           = Integer.parseInt(SystemEnv.TEST_CONN_TIMEOUT.getValue());
@@ -59,9 +53,6 @@ public class HealthCheckerService {
 
     private static final String HEALTHCHECKER_USERAGENT = "Galeb_HealthChecker/1.0";
     private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
-    private static final String LOGGING_TAGS  = SystemEnv.LOGGING_TAGS.getValue();
-
-    private final Gson gson = new Gson();
 
     @Autowired
     public HealthCheckerService(final CallBackQueue callBackQueue) {
@@ -81,6 +72,7 @@ public class HealthCheckerService {
         Pool pool = jmsTargetPoolTransport.getPool();
         if (pool != null) {
             final String poolName = pool.getName();
+            final String correlation = jmsTargetPoolTransport.getCorrelation();
             final String hcPath = Optional.ofNullable(pool.getHcPath()).orElse("/");
             final String hcStatusCode = Optional.ofNullable(pool.getHcHttpStatusCode()).orElse("");
             final String hcBody = Optional.ofNullable(pool.getHcBody()).orElse("");
@@ -139,26 +131,25 @@ public class HealthCheckerService {
                     healthStatus.setSource(ZONE_ID);
                     healthStatus.setStatus(status);
                     healthStatus.setStatusDetailed(reason);
-                    String logMessage = buildLogMessage(reason);
-                    logger.info(logMessage);
+                    sendLog(reason);
                     if (!reason.equals(lastReason)) {
-                        callBackQueue.update(healthStatus);
+                        callBackQueue.update(healthStatus, correlation);
                     }
                     callBackQueue.register(ZONE_ID);
                 }
 
-                private String buildLogMessage(String reason) {
-                    Map<String, String> mapLog = new HashMap<>();
-                    mapLog.put("pool", poolName);
-                    mapLog.put("expectedBody", hcBody);
-                    mapLog.put("expectedStatusCode", hcStatusCode);
-                    mapLog.put("host", hcHost);
-                    mapLog.put("fullUrl", target.getName() + hcPath);
-                    mapLog.put("connectionTimeout", connectionTimeout + "");
-                    mapLog.put("result", reason);
-                    mapLog.put("requestTime", (System.currentTimeMillis() - start) + "");
-                    mapLog.put("tags", LOGGING_TAGS);
-                    return gson.toJson(mapLog);
+                private void sendLog(String reason) {
+                    JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                    eventToLogger.put("pool", poolName);
+                    eventToLogger.put("expectedBody", hcBody);
+                    eventToLogger.put("expectedStatusCode", hcStatusCode);
+                    eventToLogger.put("host", hcHost);
+                    eventToLogger.put("fullUrl", target.getName() + hcPath);
+                    eventToLogger.put("connectionTimeout", connectionTimeout + "");
+                    eventToLogger.put("result", reason);
+                    eventToLogger.put("correlation", correlation);
+                    eventToLogger.put("requestTime", (System.currentTimeMillis() - start) + "");
+                    eventToLogger.sendInfo();
                 }
 
             });

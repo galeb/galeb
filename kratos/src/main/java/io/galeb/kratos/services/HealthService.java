@@ -16,6 +16,7 @@
 
 package io.galeb.kratos.services;
 
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.kratos.services.HealthSchema.Health;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -23,8 +24,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,6 @@ import org.springframework.util.Assert;
 
 @Service
 public class HealthService {
-
-    private static final Log LOGGER = LogFactory.getLog(HealthService.class);
 
     /**
      * Description arguments:
@@ -86,12 +83,14 @@ public class HealthService {
                     sourceSchema.getHealths().add(health);
 
                 } catch (Exception e) {
-                    LOGGER.error(e.getMessage(), e);
+                    JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+                    errorEvent.sendError(e);
                 }
             });
             return envs;
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+            errorEvent.sendError(e);
         }
         return Collections.emptySet();
     }
@@ -102,7 +101,8 @@ public class HealthService {
             redisTemplate.opsForValue()
                 .set(message, String.valueOf(System.currentTimeMillis()), REGISTER_TTL, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+            errorEvent.sendError(e);
         }
     }
 

@@ -20,6 +20,7 @@ import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 public class JmsTargetPoolTransport implements Serializable {
 
@@ -57,5 +58,9 @@ public class JmsTargetPoolTransport implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(target, pool);
+    }
+
+    public String getCorrelation() {
+        return UUID.randomUUID().toString();
     }
 }

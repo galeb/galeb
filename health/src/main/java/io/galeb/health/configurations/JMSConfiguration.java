@@ -19,9 +19,9 @@ package io.galeb.health.configurations;
 import io.galeb.core.common.JmsTargetPoolTransport;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.services.HealthCheckerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.jms.JMSException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -29,16 +29,12 @@ import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
-import javax.jms.JMSException;
-
 @SuppressWarnings("Duplicates")
 @Configuration
 @EnableJms
 public class JMSConfiguration implements JmsListenerConfigurer {
 
     private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue() + "_" + SystemEnv.ENVIRONMENT_ID.getValue();
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final HealthCheckerService healthCheckerService;
 
@@ -59,7 +55,8 @@ public class JMSConfiguration implements JmsListenerConfigurer {
                     healthCheckerService.check(message.getBody(JmsTargetPoolTransport.class));
                 }
             } catch (JMSException e) {
-                logger.error(e.getMessage(), e);
+                JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                eventToLogger.sendError(e);
             }
         });
         endpointRegistrar.registerEndpoint(endpoint);

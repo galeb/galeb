@@ -1,5 +1,7 @@
 package io.galeb.kratos.scheduler;
 
+import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
+
 import com.google.gson.Gson;
 import io.galeb.core.common.JmsTargetPoolTransport;
 import io.galeb.core.entity.Pool;
@@ -7,7 +9,13 @@ import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.StreamSupport;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +27,8 @@ import org.springframework.jms.core.MessageCreator;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.StreamSupport;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Service
 @ConditionalOnProperty(value = "app.scheduling.enabled", havingValue = "true", matchIfMissing = true)

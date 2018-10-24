@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.galeb.core.enums.SystemEnv;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,85 +28,93 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings("unused")
-public class JsonLogger extends ObjectNode {
+public class JsonEventToLogger extends ObjectNode {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private static final Map<Class, Logger> LOGGERS = new ConcurrentHashMap<>();
+    private static final ObjectMapper       MAPPER       = new ObjectMapper();
+    private static final Map<Class, Logger> LOGGERS      = new ConcurrentHashMap<>();
+    private static final String             LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     private final Logger logger;
 
-    public static JsonLogger instance(final Class klazz) {
-        return new JsonLogger(LOGGERS.computeIfAbsent(klazz, v -> LogManager.getLogger(klazz)));
+    public JsonEventToLogger(final Class klazz) {
+        this(LOGGERS.computeIfAbsent(klazz, v -> LogManager.getLogger(klazz)));
+        put("class", klazz.getSimpleName());
+        put("source", System.getenv("HOSTNAME"));
+        put("tags", LOGGING_TAGS);
+        put("timestamp", System.currentTimeMillis());
     }
 
-    private JsonLogger(Logger logger) {
+    private JsonEventToLogger(Logger logger) {
         this(JsonNodeFactory.instance, logger);
     }
 
-    private JsonLogger(JsonNodeFactory nc, Logger logger) {
+    private JsonEventToLogger(JsonNodeFactory nc, Logger logger) {
         this(nc, new LinkedHashMap<>(), logger);
     }
 
-    private JsonLogger(JsonNodeFactory nc, Map<String, JsonNode> kids, Logger logger) {
+    private JsonEventToLogger(JsonNodeFactory nc, Map<String, JsonNode> kids, Logger logger) {
         super(nc, kids);
         this.logger = logger;
     }
 
-    public void debug() {
-        logger.debug(toString());
-    }
-
-    public void debug(Throwable throwable) {
-        put("throwableMessage", throwable.getMessage());
-        try {
-            set("throwable_stack", MAPPER.convertValue(throwable, JsonNode.class));
-        } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage(), e);
+    public void sendDebug() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(toString());
         }
-        debug();
     }
 
-    public void info() {
+    public void sendDebug(Throwable throwable) {
+        if (logger.isDebugEnabled()) {
+            put("throwableMessage", throwable.getMessage());
+            try {
+                set("throwable_stack", MAPPER.convertValue(throwable, JsonNode.class));
+            } catch (IllegalArgumentException e) {
+                logger.error(e.getMessage(), e);
+            }
+            sendDebug();
+        }
+    }
+
+    public void sendInfo() {
         logger.info(toString());
     }
 
-    public void info(Throwable throwable) {
+    public void sendInfo(Throwable throwable) {
         put("throwableMessage", throwable.getMessage());
         try {
             set("throwable_stack", MAPPER.convertValue(throwable, JsonNode.class));
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage(), e);
         }
-        info();
+        sendInfo();
     }
 
-    public void warn() {
+    public void sendWarn() {
         logger.warn(toString());
     }
 
-    public void warn(Throwable throwable) {
+    public void sendWarn(Throwable throwable) {
         put("throwableMessage", throwable.getMessage());
         try {
             set("throwable_stack", MAPPER.convertValue(throwable, JsonNode.class));
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage(), e);
         }
-        warn();
+        sendWarn();
     }
 
-    public void error() {
+    public void sendError() {
         logger.error(toString());
     }
 
-    public void error(Throwable throwable) {
+    public void sendError(Throwable throwable) {
         put("throwableMessage", throwable.getMessage());
         try {
             set("throwable_stack", MAPPER.convertValue(throwable, JsonNode.class));
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage(), e);
         }
-        error();
+        sendError();
     }
 
 }

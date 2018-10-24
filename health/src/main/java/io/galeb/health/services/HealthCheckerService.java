@@ -17,6 +17,7 @@
 package io.galeb.health.services;
 
 import com.google.gson.Gson;
+import io.galeb.core.common.JmsTargetPoolTransport;
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Pool;
@@ -75,8 +76,9 @@ public class HealthCheckerService {
                 .setUserAgent(HEALTHCHECKER_USERAGENT).build());
     }
 
-    public void check(Target target) {
-        Pool pool = target.getPool();
+    public void check(JmsTargetPoolTransport jmsTargetPoolTransport) {
+        Target target = jmsTargetPoolTransport.getTarget();
+        Pool pool = jmsTargetPoolTransport.getPool();
         if (pool != null) {
             final String poolName = pool.getName();
             final String hcPath = Optional.ofNullable(pool.getHcPath()).orElse("/");

@@ -16,6 +16,7 @@
 
 package io.galeb.health.configurations;
 
+import io.galeb.core.common.JmsTargetPoolTransport;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.health.services.HealthCheckerService;
@@ -55,7 +56,7 @@ public class JMSConfiguration implements JmsListenerConfigurer {
         endpoint.setMessageListener(message -> {
             try {
                 if (message.isBodyAssignableTo(Target.class)) {
-                    healthCheckerService.check(message.getBody(Target.class));
+                    healthCheckerService.check(message.getBody(JmsTargetPoolTransport.class));
                 }
             } catch (JMSException e) {
                 logger.error(e.getMessage(), e);

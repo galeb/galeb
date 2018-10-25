@@ -73,8 +73,8 @@ public class ScheduledProducer {
             eventToLogger.put("schedId", schedId);
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
-            eventToLogger.put("countTarget", String.valueOf(counter.get()));
-            eventToLogger.put("time", String.valueOf(System.currentTimeMillis() - start));
+            eventToLogger.put("countTarget", counter.get());
+            eventToLogger.put("time", System.currentTimeMillis() - start);
             eventToLogger.sendInfo();
 
             counter.set(0);

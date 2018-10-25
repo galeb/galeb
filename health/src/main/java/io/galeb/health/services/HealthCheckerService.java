@@ -145,10 +145,10 @@ public class HealthCheckerService {
                     eventToLogger.put("expectedStatusCode", hcStatusCode);
                     eventToLogger.put("host", hcHost);
                     eventToLogger.put("fullUrl", target.getName() + hcPath);
-                    eventToLogger.put("connectionTimeout", connectionTimeout + "");
+                    eventToLogger.put("connectionTimeout", connectionTimeout);
                     eventToLogger.put("result", reason);
                     eventToLogger.put("correlation", correlation);
-                    eventToLogger.put("requestTime", (System.currentTimeMillis() - start) + "");
+                    eventToLogger.put("requestTime", (System.currentTimeMillis() - start));
                     eventToLogger.sendInfo();
                 }
 

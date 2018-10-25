@@ -3,11 +3,15 @@ package io.galeb.legba.conversors;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.HealthStatus.Status;
+import io.galeb.core.entity.Target;
 import io.galeb.core.entity.VirtualHost;
-import io.galeb.legba.model.v2.*;
 
+import io.galeb.legba.model.v2.Pool;
+import io.galeb.legba.model.v2.Rule;
+import io.galeb.legba.model.v2.RuleOrdered;
+import io.galeb.legba.model.v2.VirtualhostGroup;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ConverterV2 implements Converter {
 
@@ -18,7 +22,7 @@ public class ConverterV2 implements Converter {
     @Override
     public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String networkId, Long envId) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
-        virtualHostList.stream().forEach(vh -> {
+        virtualHostList.forEach(vh -> {
 
             io.galeb.legba.model.v2.VirtualHost v = new io.galeb.legba.model.v2.VirtualHost();
             v.setName(vh.getName());
@@ -36,7 +40,7 @@ public class ConverterV2 implements Converter {
 
         VirtualhostGroup vhg = new VirtualhostGroup();
         Set<RuleOrdered> ruleOrdereds = new HashSet<>();
-        virtualhostgroup.getRulesordered().stream().forEach(ro -> {
+        virtualhostgroup.getRulesordered().forEach(ro -> {
             RuleOrdered roLocal = new RuleOrdered();
             roLocal.setOrder(ro.getOrder());
 
@@ -56,26 +60,33 @@ public class ConverterV2 implements Converter {
 
     private Set<Pool> convertPools(Set<io.galeb.core.entity.Pool> pools, String numRouters, String networkId) {
         Set<Pool> poolsLocal = new HashSet<>();
-        pools.stream().forEach(p -> {
+        pools.forEach(p -> {
             Pool pool = new Pool();
             pool.setName(p.getName());
             pool.setDiscoveredMembersSize(numRouters);
 
-            Set<Target> targets = new HashSet<>();
-            p.getTargets().stream().forEach(t -> {
-                Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
-                        .stream()
-                        .filter(hs -> (networkId == null || hs.getSource().equals(networkId)) && hs.getStatus().equals(HealthStatus.Status.HEALTHY))
-                        .collect(Collectors.toSet());
-                healthStatusesOK.stream().forEach(hs -> {
-                    Target target = new Target();
-                    target.setName(hs.getTarget().getName());
-                    targets.add(target);
-                });
+            Set<io.galeb.legba.model.v2.Target> targets = new HashSet<>();
+            p.getTargets().forEach(t -> {
+                Set<HealthStatus> healthStatuses = t.getHealthStatus();
+                if (healthStatuses == null || healthStatuses.isEmpty()) {
+                    targets.add(newTargetV2(t));
+                } else {
+                    healthStatuses.stream()
+                        .filter(hs ->
+                            (networkId == null || hs.getSource().equals(networkId)) &&
+                            !hs.getStatus().equals(Status.FAIL))
+                        .forEach(hs -> targets.add(newTargetV2(t)));
+                }
             });
             pool.setTargets(targets);
             poolsLocal.add(pool);
         });
         return poolsLocal;
+    }
+
+    private io.galeb.legba.model.v2.Target newTargetV2(Target target) {
+        io.galeb.legba.model.v2.Target targetV2 = new io.galeb.legba.model.v2.Target();
+        target.setName(target.getName());
+        return targetV2;
     }
 }

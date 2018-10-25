@@ -1,26 +1,32 @@
 package io.galeb.legba.conversors;
 
+import static com.google.common.hash.Hashing.sha256;
+
 import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.HealthStatus.Status;
+import io.galeb.core.entity.Target;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.WithStatus;
 import io.galeb.legba.model.v1.RuleType;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.util.StringUtils;
-
-import static com.google.common.hash.Hashing.sha256;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class ConverterV1 implements Converter {
 
-    public static final String API_VERSION = "v1";
+    // @formatter:off
+    public static final  String API_VERSION                  = "v1";
     private static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
-    public static final String PROP_CONN_PER_THREAD         = "connPerThread";
-    public static final String FULLHASH_PROP = "fullhash";
+    public static final  String PROP_CONN_PER_THREAD         = "connPerThread";
+    public static final  String FULLHASH_PROP                = "fullhash";
+    // @formatter:on
 
     private final Gson gson = new GsonBuilder().serializeNulls().create();
 
@@ -28,7 +34,7 @@ public class ConverterV1 implements Converter {
     public String convertToString(List<VirtualHost> virtualHostList, String numRouters, String version, String zoneId, Long envId) {
         List<io.galeb.legba.model.v1.VirtualHost> list = new ArrayList<>();
         List<String> keysFullHash = new ArrayList<>();
-        virtualHostList.stream().forEach(vh -> {
+        virtualHostList.forEach(vh -> {
             keysFullHash.add(vh.getLastModifiedAt().toString());
 
             io.galeb.legba.model.v1.VirtualHost v = new io.galeb.legba.model.v1.VirtualHost();
@@ -62,7 +68,7 @@ public class ConverterV1 implements Converter {
 
         Set<io.galeb.legba.model.v1.Rule> rules = new HashSet<>();
 
-        virtualhostgroup.getRulesordered().stream().forEach(ro -> {
+        virtualhostgroup.getRulesordered().forEach(ro -> {
             keysFullHash.add(ro.getLastModifiedAt().toString());
             keysFullHash.add(ro.getRule().getLastModifiedAt().toString());
 
@@ -71,7 +77,7 @@ public class ConverterV1 implements Converter {
             rule.setName(ro.getRule().getName());
             rule.setRuleType(new RuleType("UrlPath"));
 
-            HashMap<String, String> properties = new HashMap();
+            HashMap<String, String> properties = new HashMap<>();
             properties.put("match", ro.getRule().getMatching());
             properties.put("order", ro.getOrder().toString());
             rule.setProperties(properties);
@@ -100,23 +106,31 @@ public class ConverterV1 implements Converter {
                 pool.getProperties().put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
             }
 
-            p.getTargets().stream().filter(t -> !t.getStatus().equals(WithStatus.Status.DELETED)).forEach(t -> {
-                Set<HealthStatus> healthStatusesOK = t.getHealthStatus()
-                        .stream()
-                        .filter(hs -> (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) && !hs.getStatus().equals(
-                            Status.FAIL) || hs.getStatus() == null)
-                        .collect(Collectors.toSet());
-                healthStatusesOK.stream().forEach(hs -> {
-                    keysFullHash.add(hs.getLastModifiedAt().toString());
-                    keysFullHash.add(hs.getTarget().getLastModifiedAt().toString());
-
-                    io.galeb.legba.model.v1.Target target = new io.galeb.legba.model.v1.Target();
-                    target.setName(hs.getTarget().getName());
-                    targets.add(target);
-                });
+            p.getTargets().stream().filter(t -> !WithStatus.Status.DELETED.equals(t.getStatus())).forEach(t -> {
+                final Set<HealthStatus> healthStatuses = t.getHealthStatus();
+                if (healthStatuses == null || healthStatuses.isEmpty()) {
+                    targets.add(newTargetV1(t, keysFullHash));
+                } else {
+                    healthStatuses.stream()
+                        .filter(hs ->
+                            (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) &&
+                            hs.getStatus() != null ||
+                            !Status.FAIL.equals(hs.getStatus()))
+                        .forEach(hs -> {
+                            keysFullHash.add(hs.getLastModifiedAt().toString());
+                            targets.add(newTargetV1(t, keysFullHash));
+                        });
+                }
             });
             pool.setTargets(targets);
         });
         return pool;
+    }
+
+    private io.galeb.legba.model.v1.Target newTargetV1(final Target target, final List<String> keysFullHash) {
+        io.galeb.legba.model.v1.Target targetV1 = new io.galeb.legba.model.v1.Target();
+        targetV1.setName(target.getName());
+        keysFullHash.add(target.getLastModifiedAt().toString());
+        return targetV1;
     }
 }

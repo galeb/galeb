@@ -51,7 +51,7 @@ public class JMSConfiguration implements JmsListenerConfigurer {
         endpoint.setConcurrency("5-5");
         endpoint.setMessageListener(message -> {
             try {
-                if (message.isBodyAssignableTo(Target.class)) {
+                if (message.isBodyAssignableTo(JmsTargetPoolTransport.class)) {
                     healthCheckerService.check(message.getBody(JmsTargetPoolTransport.class));
                 }
             } catch (JMSException e) {

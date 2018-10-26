@@ -92,35 +92,34 @@ public class ScheduledProducer {
         StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
             Pool pool = target.getPool();
             PoolDTO poolDTO = new PoolDTO();
-                poolDTO.setName(pool.getName());
-                poolDTO.setHcPath(pool.getHcPath());
-                poolDTO.setHcHttpStatusCode(pool.getHcHttpStatusCode());
-                poolDTO.setHcBody(pool.getHcBody());
-                poolDTO.setHcHost(pool.getHcHost());
-                poolDTO.setHcHttpMethod(pool.getHcHttpMethod());
+            poolDTO.setName(pool.getName());
+            poolDTO.setHcPath(pool.getHcPath());
+            poolDTO.setHcHttpStatusCode(pool.getHcHttpStatusCode());
+            poolDTO.setHcBody(pool.getHcBody());
+            poolDTO.setHcHost(pool.getHcHost());
+            poolDTO.setHcHttpMethod(pool.getHcHttpMethod());
             try {
                 JmsTargetPoolTransport transport = new JmsTargetPoolTransport(target, poolDTO);
                 sendToQueue(transport, environmentId, counter);
             }catch (Exception e){
-                loggerEvent(target, poolDTO, e,false,null,null,null);
+                loggerEvent(target, poolDTO, e, true, null, null, null);
             }
 
         });
         return targetsPage;
     }
 
-    private void loggerEvent(Target target, PoolDTO pool, Exception e,Boolean exception,String uniqueId,Long envId,String corretation) {
+    private void loggerEvent(Target target, PoolDTO pool, Exception e, Boolean exception, String uniqueId, Long envId, String corretation) {
         JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
         errorEvent.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
         errorEvent.put("target", target.getName());
         errorEvent.put("pool", pool.getName());
         errorEvent.put("correlation", corretation);
-        if(exception){
+        if (exception) {
+            errorEvent.sendError(e);
+        } else {
             errorEvent.put("jmsMessageId", uniqueId);
             errorEvent.sendInfo();
-
-        }else{
-            errorEvent.sendError(e);
         }
 
     }
@@ -135,12 +134,12 @@ public class ScheduledProducer {
                 Message message = session.createObjectMessage(jmsTargetPoolTransport);
                 String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
-                loggerEvent(target, pool, null,true,uniqueId,envId,corretation);
+                loggerEvent(target, pool, null, false, uniqueId, envId, corretation);
                 return message;
             };
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
-            loggerEvent(target, pool, e,false,null,null,corretation);
+            loggerEvent(target, pool, e, true, null, null, corretation);
         }
     }
 

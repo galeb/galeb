@@ -17,7 +17,6 @@
 package io.galeb.core.configuration.db;
 
 import com.zaxxer.hikari.HikariDataSource;
-import java.util.Optional;
 
 import io.galeb.core.enums.SystemEnv;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;

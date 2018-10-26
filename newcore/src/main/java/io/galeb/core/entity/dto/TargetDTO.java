@@ -16,6 +16,10 @@
 
 package io.galeb.core.entity.dto;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import java.io.Serializable;
 import java.util.Objects;
@@ -25,22 +29,32 @@ public class TargetDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Target target;
-    private final PoolDTO pool;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private final JsonNode target;
+    private final JsonNode pool;
     private final String correlation;
 
-    public TargetDTO(Target target, PoolDTO pool) {
-        this.target = target;
-        this.pool = pool;
+    public TargetDTO(Target target) {
+        this.target = MAPPER.valueToTree(target);
+        this.pool = MAPPER.valueToTree(target.getPool());
         this.correlation = UUID.randomUUID().toString();
     }
 
     public Target getTarget() {
-        return target;
+        try {
+            return MAPPER.treeToValue(target, Target.class);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 
-    public PoolDTO getPool() {
-        return pool;
+    public Pool getPool() {
+        try {
+            return MAPPER.treeToValue(pool, Pool.class);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 
     @Override
@@ -52,13 +66,13 @@ public class TargetDTO implements Serializable {
             return false;
         }
         TargetDTO that = (TargetDTO) o;
-        return Objects.equals(target, that.target) &&
-            Objects.equals(pool, that.pool);
+        return Objects.equals(getTarget(), that.getTarget()) &&
+            Objects.equals(getPool(), that.getPool());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(target, pool);
+        return Objects.hash(getTarget(), getPool());
     }
 
     public String getCorrelation() {

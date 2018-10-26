@@ -18,15 +18,13 @@ public class CopyService {
         listVirtualHost = virtualHostRepository.findAllByEnvironmentId(envId);
         listVirtualHost.stream().forEach(vh -> {
             vh.getEnvironments();
-            vh.getVirtualhostgroup().getRulesordered().stream().forEach(ro -> {
-                ro.getRule().getPools().stream().forEach(p -> {
-                    p.getBalancepolicy();
-                    p.getHcHeaders();
-                    p.getTargets().stream().forEach( t -> {
-                        t.getHealthStatus().stream().forEach(hs -> {});
-                    });
+            vh.getVirtualhostgroup().getRulesordered().stream().forEach(ro -> ro.getRule().getPools().stream().forEach(p -> {
+                p.getBalancepolicy();
+                p.getHcHeaders();
+                p.getTargets().stream().forEach( t -> {
+                    t.getHealthStatus().stream().forEach(hs -> {});
                 });
-            });
+            }));
         });
         return listVirtualHost;
     }

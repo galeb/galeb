@@ -2,9 +2,8 @@ package io.galeb.kratos.scheduler;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
-import io.galeb.core.entity.dto.TargetDTO;
-import io.galeb.core.entity.dto.PoolDTO;
 import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
@@ -85,56 +84,50 @@ public class ScheduledProducer {
     private Page<Target> sendTargets(AtomicInteger counter, String environmentName, long environmentId, int page) {
         Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
         StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
-            Pool pool = target.getPool();
-            PoolDTO poolDTO = new PoolDTO();
-            poolDTO.setName(pool.getName());
-            poolDTO.setHcPath(pool.getHcPath());
-            poolDTO.setHcHttpStatusCode(pool.getHcHttpStatusCode());
-            poolDTO.setHcBody(pool.getHcBody());
-            poolDTO.setHcHost(pool.getHcHost());
-            poolDTO.setHcHttpMethod(pool.getHcHttpMethod());
             try {
-                TargetDTO transport = new TargetDTO(target, poolDTO);
-                sendToQueue(transport, environmentId, counter);
-            }catch (Exception e){
-                loggerEvent(target, poolDTO, e, true, null, null, null);
+                sendToQueue(target, environmentId, counter);
+            } catch (Exception e){
+                loggerEvent(target, e, null, null, null);
             }
 
         });
         return targetsPage;
     }
 
-    private void loggerEvent(Target target, PoolDTO pool, Exception e, Boolean exception, String uniqueId, Long envId, String corretation) {
-        JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-        errorEvent.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
-        errorEvent.put("target", target.getName());
-        errorEvent.put("pool", pool.getName());
-        errorEvent.put("correlation", corretation);
-        if (exception) {
-            errorEvent.sendError(e);
-        } else {
-            errorEvent.put("jmsMessageId", uniqueId);
-            errorEvent.sendInfo();
+    private void loggerEvent(Target target, Object e, String uniqueId, Long envId, String corretation) {
+        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
+        event.put("target", target.getName());
+        Pool pool = target.getPool();
+        event.put("pool", pool.getName());
+        if (corretation != null) {
+            event.put("correlation", corretation);
         }
-
+        if (uniqueId != null) {
+            event.put("jmsMessageId", uniqueId);
+        }
+        if (e instanceof Exception) {
+            event.sendError((Exception) e);
+        } else {
+            event.sendInfo();
+        }
     }
 
-    private void sendToQueue(final TargetDTO jmsTargetPoolTransport, long envId, final AtomicInteger counter) {
-        final Target target = jmsTargetPoolTransport.getTarget();
-        final PoolDTO pool = jmsTargetPoolTransport.getPool();
-        final String corretation = jmsTargetPoolTransport.getCorrelation();
+    private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {
+        TargetDTO targetDTO = new TargetDTO(target);
+        final String corretation = targetDTO.getCorrelation();
         try {
             MessageCreator messageCreator = session -> {
                 counter.incrementAndGet();
-                Message message = session.createObjectMessage(jmsTargetPoolTransport);
+                Message message = session.createObjectMessage(targetDTO);
                 String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
-                loggerEvent(target, pool, null, false, uniqueId, envId, corretation);
+                loggerEvent(target, null, uniqueId, envId, corretation);
                 return message;
             };
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
-            loggerEvent(target, pool, e, true, null, null, corretation);
+            loggerEvent(target, e, null, null, corretation);
         }
     }
 

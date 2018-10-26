@@ -2,13 +2,19 @@ package io.galeb.kratos.scheduler;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.galeb.core.common.JmsTargetPoolTransport;
+import io.galeb.core.common.PoolDTO;
+import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.StreamSupport;
@@ -84,16 +90,44 @@ public class ScheduledProducer {
     private Page<Target> sendTargets(AtomicInteger counter, String environmentName, long environmentId, int page) {
         Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
         StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
-            final Pool pool = target.getPool();
-            JmsTargetPoolTransport transport = new JmsTargetPoolTransport(target, pool);
-            sendToQueue(transport, environmentId, counter);
+            Pool pool = target.getPool();
+            PoolDTO poolDTO = new PoolDTO();
+                poolDTO.setName(pool.getName());
+                poolDTO.setHcPath(pool.getHcPath());
+                poolDTO.setHcHttpStatusCode(pool.getHcHttpStatusCode());
+                poolDTO.setHcBody(pool.getHcBody());
+                poolDTO.setHcHost(pool.getHcHost());
+                poolDTO.setHcHttpMethod(pool.getHcHttpMethod());
+            try {
+                JmsTargetPoolTransport transport = new JmsTargetPoolTransport(target, poolDTO);
+                sendToQueue(transport, environmentId, counter);
+            }catch (Exception e){
+                loggerEvent(target, poolDTO, e,false,null,null,null);
+            }
+
         });
         return targetsPage;
     }
 
+    private void loggerEvent(Target target, PoolDTO pool, Exception e,Boolean exception,String uniqueId,Long envId,String corretation) {
+        JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+        errorEvent.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
+        errorEvent.put("target", target.getName());
+        errorEvent.put("pool", pool.getName());
+        errorEvent.put("correlation", corretation);
+        if(exception){
+            errorEvent.put("jmsMessageId", uniqueId);
+            errorEvent.sendInfo();
+
+        }else{
+            errorEvent.sendError(e);
+        }
+
+    }
+
     private void sendToQueue(final JmsTargetPoolTransport jmsTargetPoolTransport, long envId, final AtomicInteger counter) {
         final Target target = jmsTargetPoolTransport.getTarget();
-        final Pool pool = jmsTargetPoolTransport.getPool();
+        final PoolDTO pool = jmsTargetPoolTransport.getPool();
         final String corretation = jmsTargetPoolTransport.getCorrelation();
         try {
             MessageCreator messageCreator = session -> {
@@ -101,25 +135,12 @@ public class ScheduledProducer {
                 Message message = session.createObjectMessage(jmsTargetPoolTransport);
                 String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
-
-                JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
-                eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
-                eventToLogger.put("target", target.getName());
-                eventToLogger.put("pool", pool.getName());
-                eventToLogger.put("correlation", corretation);
-                eventToLogger.put("jmsMessageId", uniqueId);
-                eventToLogger.sendInfo();
-
+                loggerEvent(target, pool, null,true,uniqueId,envId,corretation);
                 return message;
             };
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
-            JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-            errorEvent.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
-            errorEvent.put("target", target.getName());
-            errorEvent.put("pool", pool.getName());
-            errorEvent.put("correlation", corretation);
-            errorEvent.sendError(e);
+            loggerEvent(target, pool, e,false,null,null,corretation);
         }
     }
 

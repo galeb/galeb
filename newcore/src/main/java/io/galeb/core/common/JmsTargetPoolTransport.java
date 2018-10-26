@@ -27,9 +27,9 @@ public class JmsTargetPoolTransport implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Target target;
-    private final Pool pool;
+    private final PoolDTO pool;
 
-    public JmsTargetPoolTransport(Target target, Pool pool) {
+    public JmsTargetPoolTransport(Target target, PoolDTO pool) {
         this.target = target;
         this.pool = pool;
     }
@@ -38,9 +38,10 @@ public class JmsTargetPoolTransport implements Serializable {
         return target;
     }
 
-    public Pool getPool() {
+    public PoolDTO getPool() {
         return pool;
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -63,4 +64,5 @@ public class JmsTargetPoolTransport implements Serializable {
     public String getCorrelation() {
         return UUID.randomUUID().toString();
     }
+
 }

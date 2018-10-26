@@ -16,8 +16,7 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.core.common.JmsTargetPoolTransport;
-import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.JmsTargetPoolTransport;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.services.HealthCheckerService;

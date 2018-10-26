@@ -16,8 +16,8 @@
 
 package io.galeb.health.services;
 
-import io.galeb.core.common.JmsTargetPoolTransport;
-import io.galeb.core.common.PoolDTO;
+import io.galeb.core.entity.dto.JmsTargetPoolTransport;
+import io.galeb.core.entity.dto.PoolDTO;
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;

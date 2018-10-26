@@ -2,8 +2,8 @@ package io.galeb.kratos.scheduler;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
-import io.galeb.core.common.JmsTargetPoolTransport;
-import io.galeb.core.common.PoolDTO;
+import io.galeb.core.entity.dto.JmsTargetPoolTransport;
+import io.galeb.core.entity.dto.PoolDTO;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.enums.SystemEnv;

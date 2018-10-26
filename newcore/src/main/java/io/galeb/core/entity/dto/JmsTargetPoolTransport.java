@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.galeb.core.common;
+package io.galeb.core.entity.dto;
 
 import io.galeb.core.entity.Target;
 import java.io.Serializable;

@@ -30,9 +30,11 @@ import org.apache.logging.log4j.Logger;
 @SuppressWarnings("unused")
 public class JsonEventToLogger extends ObjectNode {
 
+    // @formatter:off
     private static final ObjectMapper       MAPPER       = new ObjectMapper();
     private static final Map<Class, Logger> LOGGERS      = new ConcurrentHashMap<>();
     private static final String             LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
+    // @formatter:on
 
     private final Logger logger;
 

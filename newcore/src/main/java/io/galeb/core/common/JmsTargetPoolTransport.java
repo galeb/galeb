@@ -16,7 +16,6 @@
 
 package io.galeb.core.common;
 
-import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import java.io.Serializable;
 import java.util.Objects;
@@ -28,10 +27,12 @@ public class JmsTargetPoolTransport implements Serializable {
 
     private final Target target;
     private final PoolDTO pool;
+    private final String correlation;
 
     public JmsTargetPoolTransport(Target target, PoolDTO pool) {
         this.target = target;
         this.pool = pool;
+        this.correlation = UUID.randomUUID().toString();
     }
 
     public Target getTarget() {
@@ -41,7 +42,6 @@ public class JmsTargetPoolTransport implements Serializable {
     public PoolDTO getPool() {
         return pool;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -62,7 +62,6 @@ public class JmsTargetPoolTransport implements Serializable {
     }
 
     public String getCorrelation() {
-        return UUID.randomUUID().toString();
+        return this.correlation;
     }
-
 }

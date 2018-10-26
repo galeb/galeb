@@ -16,7 +16,7 @@
 
 package io.galeb.health.services;
 
-import io.galeb.core.entity.dto.JmsTargetPoolTransport;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.entity.dto.PoolDTO;
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
@@ -69,7 +69,7 @@ public class HealthCheckerService {
                 .setUserAgent(HEALTHCHECKER_USERAGENT).build());
     }
 
-    public void check(JmsTargetPoolTransport jmsTargetPoolTransport) {
+    public void check(TargetDTO jmsTargetPoolTransport) {
         final Target target = jmsTargetPoolTransport.getTarget();
         final PoolDTO pool = jmsTargetPoolTransport.getPool();
         final String correlation = jmsTargetPoolTransport.getCorrelation();

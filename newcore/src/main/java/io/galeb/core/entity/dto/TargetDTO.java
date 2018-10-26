@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-public class JmsTargetPoolTransport implements Serializable {
+public class TargetDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -29,7 +29,7 @@ public class JmsTargetPoolTransport implements Serializable {
     private final PoolDTO pool;
     private final String correlation;
 
-    public JmsTargetPoolTransport(Target target, PoolDTO pool) {
+    public TargetDTO(Target target, PoolDTO pool) {
         this.target = target;
         this.pool = pool;
         this.correlation = UUID.randomUUID().toString();
@@ -51,7 +51,7 @@ public class JmsTargetPoolTransport implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        JmsTargetPoolTransport that = (JmsTargetPoolTransport) o;
+        TargetDTO that = (TargetDTO) o;
         return Objects.equals(target, that.target) &&
             Objects.equals(pool, that.pool);
     }

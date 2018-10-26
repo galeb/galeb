@@ -16,7 +16,7 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.core.entity.dto.JmsTargetPoolTransport;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.services.HealthCheckerService;
@@ -50,8 +50,8 @@ public class JMSConfiguration implements JmsListenerConfigurer {
         endpoint.setConcurrency("5-5");
         endpoint.setMessageListener(message -> {
             try {
-                if (message.isBodyAssignableTo(JmsTargetPoolTransport.class)) {
-                    healthCheckerService.check(message.getBody(JmsTargetPoolTransport.class));
+                if (message.isBodyAssignableTo(TargetDTO.class)) {
+                    healthCheckerService.check(message.getBody(TargetDTO.class));
                 }
             } catch (JMSException e) {
                 JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());

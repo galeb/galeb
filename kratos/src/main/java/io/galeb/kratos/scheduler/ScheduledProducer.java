@@ -2,7 +2,7 @@ package io.galeb.kratos.scheduler;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
-import io.galeb.core.entity.dto.JmsTargetPoolTransport;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.entity.dto.PoolDTO;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
@@ -94,7 +94,7 @@ public class ScheduledProducer {
             poolDTO.setHcHost(pool.getHcHost());
             poolDTO.setHcHttpMethod(pool.getHcHttpMethod());
             try {
-                JmsTargetPoolTransport transport = new JmsTargetPoolTransport(target, poolDTO);
+                TargetDTO transport = new TargetDTO(target, poolDTO);
                 sendToQueue(transport, environmentId, counter);
             }catch (Exception e){
                 loggerEvent(target, poolDTO, e, true, null, null, null);
@@ -119,7 +119,7 @@ public class ScheduledProducer {
 
     }
 
-    private void sendToQueue(final JmsTargetPoolTransport jmsTargetPoolTransport, long envId, final AtomicInteger counter) {
+    private void sendToQueue(final TargetDTO jmsTargetPoolTransport, long envId, final AtomicInteger counter) {
         final Target target = jmsTargetPoolTransport.getTarget();
         final PoolDTO pool = jmsTargetPoolTransport.getPool();
         final String corretation = jmsTargetPoolTransport.getCorrelation();

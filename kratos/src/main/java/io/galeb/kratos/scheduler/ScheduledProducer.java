@@ -55,25 +55,18 @@ public class ScheduledProducer {
             String environmentName = env.getName().replaceAll("[ ]+", "_").toLowerCase();
             long environmentId = env.getId();
             int page = 0;
-            Page<Target> targetsPage = sendTargets(counter, environmentName, environmentId, page);
+            final Page<Target> targetsPage = sendTargets(counter, environmentName, environmentId, page);
             long size = targetsPage.getTotalElements();
             for (page = 1; page <= size/PAGE_SIZE; page++) {
-                try {
-                    sendTargets(counter, environmentName, environmentId, page);
-                } catch (Exception e) {
-                    JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-                    errorEvent.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
-                    errorEvent.sendError(e);
-                    break;
-                }
+                sendTargets(counter, environmentName, environmentId, page);
             }
-
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
             eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
             eventToLogger.put("schedId", schedId);
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
             eventToLogger.put("countTarget", counter.get());
+            eventToLogger.put("totalTargets", size);
             eventToLogger.put("time", System.currentTimeMillis() - start);
             eventToLogger.sendInfo();
 
@@ -84,24 +77,19 @@ public class ScheduledProducer {
     private Page<Target> sendTargets(AtomicInteger counter, String environmentName, long environmentId, int page) {
         Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
         StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
-            try {
-                sendToQueue(target, environmentId, counter);
-            } catch (Exception e){
-                loggerEvent(target, e, null, null, null);
-            }
-
+            sendToQueue(target, environmentId, counter);
         });
         return targetsPage;
     }
 
-    private void loggerEvent(Target target, Object e, String uniqueId, Long envId, String corretation) {
+    private void loggerEvent(Target target, Object e, String uniqueId, Long envId, String correlation) {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
         event.put("target", target.getName());
         Pool pool = target.getPool();
         event.put("pool", pool.getName());
-        if (corretation != null) {
-            event.put("correlation", corretation);
+        if (correlation != null) {
+            event.put("correlation", correlation);
         }
         if (uniqueId != null) {
             event.put("jmsMessageId", uniqueId);
@@ -114,20 +102,25 @@ public class ScheduledProducer {
     }
 
     private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {
-        TargetDTO targetDTO = new TargetDTO(target);
-        final String corretation = targetDTO.getCorrelation();
-        try {
-            MessageCreator messageCreator = session -> {
+        MessageCreator messageCreator = session -> {
+            try {
                 counter.incrementAndGet();
+                final TargetDTO targetDTO = new TargetDTO(target);
                 Message message = session.createObjectMessage(targetDTO);
-                String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
+                String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" +
+                    (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
-                loggerEvent(target, null, uniqueId, envId, corretation);
+                loggerEvent(target, null, uniqueId, envId, targetDTO.getCorrelation());
                 return message;
-            };
+            } catch (Exception e) {
+                loggerEvent(target, e, null, null, null);
+            }
+            return null;
+        };
+        try {
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
-            loggerEvent(target, e, null, null, corretation);
+            loggerEvent(target, e, null, null, null);
         }
     }
 

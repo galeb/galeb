@@ -2,6 +2,7 @@ package io.galeb.kratos.scheduler;
 
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
+import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.entity.Target;
@@ -9,8 +10,14 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -51,22 +58,25 @@ public class ScheduledProducer {
         final String schedId = UUID.randomUUID().toString();
         long start = System.currentTimeMillis();
         final AtomicInteger counter = new AtomicInteger(0);
-        environmentRepository.findAll().forEach(env -> {
+        environmentRepository.findAll().stream().collect(shuffleEnvironments()).forEach(env -> {
             String environmentName = env.getName().replaceAll("[ ]+", "_").toLowerCase();
             long environmentId = env.getId();
-            int page = 0;
-            final Page<Target> targetsPage = sendTargets(counter, environmentName, environmentId, page);
-            long size = targetsPage.getTotalElements();
-            for (page = 1; page <= size/PAGE_SIZE; page++) {
+            Long numTargets = targetRepository.countTargetsBy(env.getName());
+            final LinkedList<Integer> pages = IntStream.rangeClosed(0, (int) (numTargets / PAGE_SIZE)).boxed()
+                .collect(shufflePages());
+
+            while (!pages.isEmpty()) {
+                int page = pages.removeLast();
                 sendTargets(counter, environmentName, environmentId, page);
             }
+
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
             eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
             eventToLogger.put("schedId", schedId);
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
-            eventToLogger.put("countTarget", counter.get());
-            eventToLogger.put("totalTargets", size);
+            eventToLogger.put("sentTargets", counter.get());
+            eventToLogger.put("readTargets", numTargets);
             eventToLogger.put("time", System.currentTimeMillis() - start);
             eventToLogger.sendInfo();
 
@@ -74,15 +84,35 @@ public class ScheduledProducer {
         });
     }
 
+    private Collector<Environment, ?, List<Environment>> shuffleEnvironments() {
+        return Collectors.collectingAndThen(Collectors.toList(),
+            collected -> {
+                Collections.shuffle(collected);
+                return collected;
+            });
+    }
+
+    private Collector<Integer, ?, LinkedList<Integer>> shufflePages() {
+        return Collectors.collectingAndThen(Collectors.toCollection(LinkedList::new),
+            collected -> {
+                Collections.shuffle(collected);
+                return collected;
+            });
+    }
+
     private Page<Target> sendTargets(AtomicInteger counter, String environmentName, long environmentId, int page) {
         Page<Target> targetsPage = targetRepository.findByEnvironmentName(environmentName, new PageRequest(page, PAGE_SIZE));
         StreamSupport.stream(targetsPage.spliterator(), false).forEach(target -> {
-            sendToQueue(target, environmentId, counter);
+            sendToQueue(target, environmentId, counter, page);
         });
         return targetsPage;
     }
 
-    private void loggerEvent(Target target, Object e, String uniqueId, Long envId, String correlation) {
+    private void logException(Target target, Exception e) {
+        logEvent(target, e, null, null, null);
+    }
+
+    private void logEvent(Target target, Object context, String uniqueId, Long envId, String correlation) {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
         event.put("target", target.getName());
@@ -94,14 +124,17 @@ public class ScheduledProducer {
         if (uniqueId != null) {
             event.put("jmsMessageId", uniqueId);
         }
-        if (e instanceof Exception) {
-            event.sendError((Exception) e);
+        if (context instanceof Integer) {
+            event.put("context", String.valueOf(context));
+        }
+        if (context instanceof Exception) {
+            event.sendError((Exception) context);
         } else {
             event.sendInfo();
         }
     }
 
-    private void sendToQueue(final Target target, long envId, final AtomicInteger counter) {
+    private void sendToQueue(final Target target, long envId, final AtomicInteger counter, Integer page) {
         MessageCreator messageCreator = session -> {
             try {
                 counter.incrementAndGet();
@@ -110,17 +143,17 @@ public class ScheduledProducer {
                 String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" +
                     (System.currentTimeMillis() / 10000L);
                 defineUniqueId(message, uniqueId);
-                loggerEvent(target, null, uniqueId, envId, targetDTO.getCorrelation());
+                logEvent(target, page, uniqueId, envId, targetDTO.getCorrelation());
                 return message;
             } catch (Exception e) {
-                loggerEvent(target, e, null, null, null);
+                logException(target, e);
             }
             return null;
         };
         try {
             template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
-            loggerEvent(target, e, null, null, null);
+            logException(target, e);
         }
     }
 

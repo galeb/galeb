@@ -14,4 +14,7 @@ public interface TargetRepository extends JpaRepository<Target, Long> {
     @Query("SELECT t FROM Target t INNER JOIN t.pool p WHERE p.environment.name = :env")
     Page<Target> findByEnvironmentName(@Param("env") String env, Pageable pageable);
 
+    @Query("SELECT COUNT(t.id) FROM Target t INNER JOIN t.pool p WHERE p.environment.name = :env")
+    Long countTargetsBy(@Param("env") String env);
+
 }

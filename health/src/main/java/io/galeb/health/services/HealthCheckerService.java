@@ -16,27 +16,28 @@
 
 package io.galeb.health.services;
 
-import io.galeb.core.entity.HealthStatus.Status;
-import io.galeb.core.entity.dto.TargetDTO;
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
+
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.HealthStatus.Status;
 import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.util.CallBackQueue;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import static org.asynchttpclient.Dsl.asyncHttpClient;
-import static org.asynchttpclient.Dsl.config;
 
 @SuppressWarnings("FieldCanBeLocal")
 @Service
@@ -75,7 +76,7 @@ public class HealthCheckerService {
         final Map<String, Object> properties = targetDTO.getProperties();
         final String correlation = targetDTO.getCorrelation();
         try {
-            final Target target = (Target) properties.get(TargetDTO.TARGET);
+            final Target target = targetDTO.getTarget();
             final String poolName = (String) properties.get(TargetDTO.POOL_NAME);
             final String hcPath = (String) properties.get(TargetDTO.HC_PATH);
             final String hcStatusCode = (String) properties.get(TargetDTO.HC_HTTP_STATUS_CODE);
@@ -85,11 +86,8 @@ public class HealthCheckerService {
             final HealthCheck.HttpMethod method = HealthCheck.HttpMethod.valueOf((String) properties.get(TargetDTO.HC_HTTP_METHOD));
             final HttpHeaders headers = new DefaultHttpHeaders();
             ((Map<String, String>) properties.get(TargetDTO.HC_HEADERS)).forEach(headers::add);
-            final Set<HealthStatus> healthStatus = (Set<HealthStatus>) properties.get(TargetDTO.HEALTH_STATUS);
-
-            final String lastReason = healthStatus.stream()
-                .filter(hs -> ZONE_ID.equals(hs.getSource()))
-                .map(HealthStatus::getStatusDetailed).findAny().orElse("");
+            final String lastReason = Optional.ofNullable(targetDTO.getHealthStatus(ZONE_ID)
+                .orElse(new HealthStatus()).getStatusDetailed()).orElse("");
             long start = System.currentTimeMillis();
 
             RequestBuilder requestBuilder = new RequestBuilder(method.toString()).setHeaders(headers)
@@ -138,13 +136,13 @@ public class HealthCheckerService {
 
                 private void definePropertiesAndUpdate(Status status, String reason) {
                     HealthStatus healthStatus = new HealthStatus();
-                    healthStatus.setTarget(target);
                     healthStatus.setSource(ZONE_ID);
                     healthStatus.setStatus(status);
                     healthStatus.setStatusDetailed(reason);
+                    target.setHealthStatus(Collections.singleton(healthStatus));
                     sendLog(reason);
                     if (!reason.equals(lastReason)) {
-                        callBackQueue.update(healthStatus, correlation);
+                        callBackQueue.update(targetDTO);
                     }
                     callBackQueue.register(ZONE_ID);
                 }

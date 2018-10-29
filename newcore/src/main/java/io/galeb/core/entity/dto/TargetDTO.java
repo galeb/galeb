@@ -16,13 +16,16 @@
 
 package io.galeb.core.entity.dto;
 
+import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class TargetDTO implements Serializable {
@@ -96,5 +99,15 @@ public class TargetDTO implements Serializable {
 
     public String getCorrelation() {
         return this.correlation;
+    }
+
+    public Target getTarget() {
+        return (Target) properties.get(TARGET);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Optional<HealthStatus> getHealthStatus(String source) {
+        return ((Set<HealthStatus>)properties.get(HEALTH_STATUS)).stream()
+            .filter(h -> h.getSource().equals(source)).findAny();
     }
 }

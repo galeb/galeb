@@ -2,6 +2,7 @@ package io.galeb.kratos.queue;
 
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
@@ -37,13 +38,19 @@ public class CallbackConsumer {
     }
 
     @JmsListener(destination = QUEUE_HEALTH_CALLBACK)
-    public void callback(HealthStatus healthStatus) {
+    public void callback(TargetDTO targetDTO) {
         try {
-            if (healthStatus != null) {
-                HealthStatus tempHealthStatus = healthStatusRepository.findBySourceAndTargetId(healthStatus.getSource(), healthStatus.getTarget().getId());
+            if (targetDTO != null) {
+                final String correlation = targetDTO.getCorrelation();
+                final HealthStatus healthStatus = targetDTO.getTarget().getHealthStatus()
+                    .stream().findAny().orElse(new HealthStatus());
+                final String source = healthStatus.getSource();
+                final Long targetId = targetDTO.getTarget().getId();
+
+                HealthStatus tempHealthStatus = healthStatusRepository.findBySourceAndTargetId(source, targetId);
                 if (tempHealthStatus == null) {
                     tempHealthStatus = healthStatus;
-                    Target target = targetRepository.findOne(healthStatus.getTarget().getId());
+                    Target target = targetRepository.findOne(targetId);
                     tempHealthStatus.setTarget(target);
                 }
 
@@ -57,6 +64,7 @@ public class CallbackConsumer {
 
                 JsonEventToLogger jsonLogger =  new JsonEventToLogger(this.getClass());
                 jsonLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+                jsonLogger.put("correlation", correlation);
                 jsonLogger.put("healthStatus_source", tempHealthStatus.getSource());
                 jsonLogger.put("healthStatus_statusDetailed", tempHealthStatus.getStatusDetailed());
                 jsonLogger.put("healthStatus_status", tempHealthStatus.getStatus().name());

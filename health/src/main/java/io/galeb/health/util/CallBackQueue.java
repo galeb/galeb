@@ -19,6 +19,8 @@ package io.galeb.health.util;
 import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import javax.jms.Message;
@@ -32,6 +34,7 @@ public class CallBackQueue {
 
     private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
     private static final String QUEUE_HEALTH_REGISTER = "health-register";
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     private final JmsTemplate jmsTemplate;
 
@@ -40,23 +43,26 @@ public class CallBackQueue {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void update(HealthStatus healthStatus, String correlation) {
+    public void update(TargetDTO targetDTO) {
+        String correlation = targetDTO.getCorrelation();
         try {
             jmsTemplate.send(QUEUE_HEALTH_CALLBACK, session -> {
-                Message message = session.createObjectMessage(healthStatus);
-                String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
+                Message message = session.createObjectMessage(targetDTO);
+                Target target = targetDTO.getTarget();
+                String uniqueId = "ID:" + target.getName() + "-" + ZONE_ID + "_" + System.currentTimeMillis();
                 message.setStringProperty("_HQ_DUPL_ID", uniqueId);
                 message.setJMSMessageID(uniqueId);
                 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+                HealthStatus healthStatus = targetDTO.getHealthStatus(ZONE_ID).orElse(new HealthStatus());
 
                 JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
                 eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
                 eventToLogger.put("jmsMessageId", uniqueId);
                 eventToLogger.put("correlation", correlation);
-                eventToLogger.put("healthStatus_source", healthStatus.getSource());
+                eventToLogger.put("healthStatus_source", ZONE_ID);
                 eventToLogger.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
                 eventToLogger.put("healthStatus_status", healthStatus.getStatus().name());
-                eventToLogger.put("healthStatus_target", healthStatus.getTarget().getName());
+                eventToLogger.put("healthStatus_target", target.getName());
                 eventToLogger.sendInfo();
                 return message;
             });

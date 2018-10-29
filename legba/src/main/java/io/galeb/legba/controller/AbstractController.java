@@ -13,7 +13,7 @@ public class AbstractController {
         if (StringUtils.isNumber(envname)) {
             return Long.parseLong(envname);
         } else {
-            return environmentRepository.findByNameIgnoreCase(envname).getId();
+            return environmentRepository.idFromName(envname);
         }
     }
 }

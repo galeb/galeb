@@ -112,29 +112,35 @@ public class ConverterV1 implements Converter {
     private io.galeb.legba.model.v1.Pool convertPools(Set<io.galeb.core.entity.Pool> pools, int numRouters,
         String zoneId, Long envId, List<String> keysFullHash) {
 
-        io.galeb.legba.model.v1.Pool pool = new io.galeb.legba.model.v1.Pool();
-        Set<io.galeb.legba.model.v1.Target> targets = new HashSet<>();
+        io.galeb.legba.model.v1.Pool poolV1 = new io.galeb.legba.model.v1.Pool();
+        Set<io.galeb.legba.model.v1.Target> targetsV1 = new HashSet<>();
 
+        long tempPoolSizeV1 = -1L;
         for (Pool poolV2: pools) {
             if (poolV2.getEnvironment().getId() != envId) {
                 continue;
             }
             keysFullHash.add(poolV2.getLastModifiedAt().toString());
 
-            pool.setName(poolV2.getName());
+            poolV1.setName(poolV2.getName());
             io.galeb.legba.model.v1.BalancePolicy tempBalancePolicy = new io.galeb.legba.model.v1.BalancePolicy();
             tempBalancePolicy.setName(poolV2.getBalancepolicy().getName());
-            pool.setBalancePolicy(tempBalancePolicy);
+            poolV1.setBalancePolicy(tempBalancePolicy);
 
-            if (poolV2.getPoolSize() > -1) {
-                pool.getProperties().put(PROP_CONN_PER_THREAD, String.valueOf(poolV2.getPoolSize()));
-                pool.getProperties().put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
+            long poolSizeV2 = poolV2.getPoolSize();
+            if (poolSizeV2 > -1L) {
+                tempPoolSizeV1 = Math.max(tempPoolSizeV1, poolSizeV2);
             }
 
-            poolV2.getTargets().stream().filter(t -> !WithStatus.Status.DELETED.equals(t.getStatus())).forEach(t -> {
-                final Set<HealthStatus> healthStatuses = t.getHealthStatus();
+            final Set<Target> targetsV2 = poolV2.getTargets();
+            for (Target targetV2: targetsV2) {
+                if (WithStatus.Status.DELETED.equals(targetV2.getStatus().get(envId))) {
+                    continue;
+                }
+                keysFullHash.add(targetV2.getLastModifiedAt().toString());
+                final Set<HealthStatus> healthStatuses = targetV2.getHealthStatus();
                 if (healthStatuses == null || healthStatuses.isEmpty()) {
-                    targets.add(newTargetV1(t, keysFullHash));
+                    targetsV1.add(newTargetV1(targetV2));
                 } else {
                     healthStatuses.stream()
                         .filter(hs ->
@@ -143,18 +149,24 @@ public class ConverterV1 implements Converter {
                             !Status.FAIL.equals(hs.getStatus()))
                         .forEach(hs -> {
                             keysFullHash.add(hs.getLastModifiedAt().toString());
-                            targets.add(newTargetV1(t, keysFullHash));
+                            targetsV1.add(newTargetV1(targetV2));
                         });
                 }
-            });
+            }
         }
-        return pool.setTargets(targets);
+        if (tempPoolSizeV1 > -1L) {
+            final long poolSizeV1 = tempPoolSizeV1;
+            poolV1.setProperties(new HashMap<String, String>(){{
+                put(PROP_CONN_PER_THREAD, String.valueOf(poolSizeV1));
+                put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
+            }});
+        }
+        return poolV1.setTargets(targetsV1);
     }
 
-    private io.galeb.legba.model.v1.Target newTargetV1(final Target target, final List<String> keysFullHash) {
+    private io.galeb.legba.model.v1.Target newTargetV1(final Target target) {
         io.galeb.legba.model.v1.Target targetV1 = new io.galeb.legba.model.v1.Target();
         targetV1.setName(target.getName());
-        keysFullHash.add(target.getLastModifiedAt().toString());
         return targetV1;
     }
 

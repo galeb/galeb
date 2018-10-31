@@ -40,26 +40,19 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "v.id as v_id, " //0
             + "v.last_modified_at as v_last_modified_at, " //1
             + "v.name as v_name, " //2
-            + "v.quarantine as v_quarantine, " //3
             + "ro.last_modified_at as ro_last_modified_at, " //4
             + "ro.rule_order as ro_order, " //5
-            + "ro.quarantine as ro_quarantine, " //6
             + "r.last_modified_at as r_last_modified_at, " //7
             + "r.global as r_global, " //8
             + "r.name as r_name, " //9
             + "r.matching as r_matching, " //10
-            + "r.quarantine as r_quarantine, " //11
             + "p.last_modified_at as p_last_modified_at, " //12
             + "p.name as p_name, " //13
-            + "p.quarantine as p_quarantine, " //14
             + "p.pool_size as p_pool_size, " //15
             + "bp.name as bp_name, " //16
             + "t.last_modified_at as t_last_modified_at, " //17
             + "t.name as t_name, " //18
-            + "t.quarantine as t_quarantine, " //19
-            + "hs.last_modified_at as hs_last_modified_at, " //20
-            + "hs.source as hs_source, " //21
-            + "hs.status as hs_status " //22
+            + "hs.last_modified_at as hs_last_modified_at " //20
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "
@@ -70,7 +63,9 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "INNER JOIN balancepolicy bp on p.balancepolicy_id=bp.id "
             + "INNER JOIN target t on t.pool_id=p.id "
             + "LEFT OUTER JOIN health_status hs on hs.target_id=t.id "
-            + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid";
+            + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid AND "
+                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) AND "
+                    + "hs.status IS NULL OR hs.status != 'FAIL'";
 
     // @formatter:on
 

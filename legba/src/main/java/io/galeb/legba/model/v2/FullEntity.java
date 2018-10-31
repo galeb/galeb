@@ -27,51 +27,37 @@ public class FullEntity implements Serializable {
     private final Long vId;
     private final String vName;
     private final Date vLastModifiedAt;
-    private final Boolean vQuarantine;
     private final Date roLastModifiedAt;
     private final Integer roOrder;
-    private final Boolean roQuarantine;
     private final Date rLastModifiedAt;
     private final Boolean rGlobal;
     private final String rName;
     private final String rMatching;
-    private final Boolean rQuarantine;
     private final Date pLastModifiedAt;
     private final String pName;
-    private final Boolean pQuarantine;
     private final Integer pPoolSize;
     private final String bpName;
     private final Date tLastModifiedAt;
     private final String tName;
-    private final Boolean tQuarantine;
     private final Date hsLastModifiedAt;
-    private final String hsSource;
-    private final String hsStatus;
 
     public FullEntity(Object[] objects) {
         this.vId = ((BigInteger) objects[0]).longValue();
         this.vLastModifiedAt = (Date) objects[1];
         this.vName = (String) objects[2];
-        this.vQuarantine = (Boolean) objects[3];
-        this.roLastModifiedAt = (Date) objects[4];
-        this.roOrder = (Integer) objects[5];
-        this.roQuarantine = (Boolean) objects[6];
-        this.rLastModifiedAt = (Date) objects[7];
-        this.rGlobal = (Boolean) objects[8];
-        this.rName = (String) objects[9];
-        this.rMatching = (String) objects[10];
-        this.rQuarantine = (Boolean) objects[11];
-        this.pLastModifiedAt = (Date) objects[12];
-        this.pName = (String) objects[13];
-        this.pQuarantine = (Boolean) objects[14];
-        this.pPoolSize = ((BigInteger) objects[15]).intValue();
-        this.bpName = (String) objects[16];
-        this.tLastModifiedAt = (Date) objects[17];
-        this.tName = (String) objects[18];
-        this.tQuarantine = (Boolean) objects[19];
-        this.hsLastModifiedAt = (Date) objects[20];
-        this.hsSource = (String) objects[21];
-        this.hsStatus = (String) objects[22];
+        this.roLastModifiedAt = (Date) objects[3];
+        this.roOrder = (Integer) objects[4];
+        this.rLastModifiedAt = (Date) objects[5];
+        this.rGlobal = (Boolean) objects[6];
+        this.rName = (String) objects[7];
+        this.rMatching = (String) objects[8];
+        this.pLastModifiedAt = (Date) objects[9];
+        this.pName = (String) objects[10];
+        this.pPoolSize = ((BigInteger) objects[11]).intValue();
+        this.bpName = (String) objects[12];
+        this.tLastModifiedAt = (Date) objects[13];
+        this.tName = (String) objects[14];
+        this.hsLastModifiedAt = (Date) objects[15];
     }
 
     public Long getvId() {
@@ -86,20 +72,12 @@ public class FullEntity implements Serializable {
         return vLastModifiedAt;
     }
 
-    public Boolean getvQuarantine() {
-        return vQuarantine;
-    }
-
     public Date getRoLastModifiedAt() {
         return roLastModifiedAt;
     }
 
     public Integer getRoOrder() {
         return roOrder;
-    }
-
-    public Boolean getRoQuarantine() {
-        return roQuarantine;
     }
 
     public Date getrLastModifiedAt() {
@@ -118,20 +96,12 @@ public class FullEntity implements Serializable {
         return rMatching;
     }
 
-    public Boolean getrQuarantine() {
-        return rQuarantine;
-    }
-
     public Date getpLastModifiedAt() {
         return pLastModifiedAt;
     }
 
     public String getpName() {
         return pName;
-    }
-
-    public Boolean getpQuarantine() {
-        return pQuarantine;
     }
 
     public Integer getpPoolSize() {
@@ -150,19 +120,7 @@ public class FullEntity implements Serializable {
         return tName;
     }
 
-    public Boolean gettQuarantine() {
-        return tQuarantine;
-    }
-
     public Date getHsLastModifiedAt() {
         return hsLastModifiedAt;
-    }
-
-    public String getHsSource() {
-        return hsSource;
-    }
-
-    public String getHsStatus() {
-        return hsStatus;
     }
 }

@@ -33,6 +33,14 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +54,10 @@ import java.util.stream.Collectors;
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
     public static final String ALIAS_OF      = "alias_of";
-    public static final long   WAIT_TIMEOUT  = 10000; // ms
+    public static final long   WAIT_TIMEOUT  = Long.parseLong(
+        Optional.ofNullable(System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms
+
+    private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Gson gson = new GsonBuilder()
@@ -81,9 +92,9 @@ public class Updater {
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
-                    updateEtagIfNecessary(virtualhosts);
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
+                    updateEtagIfNecessary(virtualhosts);
                     logger.info("Processed " + count + " virtualhost(s): Done");
                 } else {
                     logger.error("Virtualhosts Empty. Request problem?");
@@ -93,18 +104,27 @@ public class Updater {
             wait.set(false);
         };
         String etag = cache.etag();
+        List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
-        managerClient.getVirtualhosts(envName, etag, resultCallBack);
-        // force wait
-        long currentWaitTimeOut = System.currentTimeMillis();
-        while (wait.get()) {
-            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) break;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                ErrorLogger.logError(e, this.getClass());
+        Future<?> future = singleThreadExecutor.submit(() ->
+            managerClient.getVirtualhosts(envName, etag, resultCallBack));
+        try {
+            future.get(WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
+            return;
+        } catch (TimeoutException timeoutException) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(timeoutException.getMessage(), timeoutException);
             }
+        } catch (InterruptedException | ExecutionException e) {
+            ErrorLogger.logError(e, this.getClass());
         }
+        rollback(lastCache);
+    }
+
+    private void rollback(List<VirtualHost> lastCache) {
+        cleanup(lastCache);
+        lastCache.forEach(this::updateCache);
+        updateEtagIfNecessary(lastCache);
     }
 
     private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {

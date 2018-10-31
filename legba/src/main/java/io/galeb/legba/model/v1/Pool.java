@@ -27,6 +27,10 @@ public class Pool extends AbstractEntity {
 
     public Pool() {}
 
+    public Set<Target> getTargets() {
+        return targets;
+    }
+
     public Pool setTargets(Set<Target> targets) {
         if (targets != null) {
             updateHash();

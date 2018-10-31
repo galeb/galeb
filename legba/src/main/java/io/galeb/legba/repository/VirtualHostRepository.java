@@ -37,22 +37,22 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
 
     String FULL_ENTITIES_SQL =
         "SELECT "
-            + "v.id as v_id, " //0
-            + "v.last_modified_at as v_last_modified_at, " //1
-            + "v.name as v_name, " //2
-            + "ro.last_modified_at as ro_last_modified_at, " //4
-            + "ro.rule_order as ro_order, " //5
-            + "r.last_modified_at as r_last_modified_at, " //7
-            + "r.global as r_global, " //8
-            + "r.name as r_name, " //9
-            + "r.matching as r_matching, " //10
-            + "p.last_modified_at as p_last_modified_at, " //12
-            + "p.name as p_name, " //13
-            + "p.pool_size as p_pool_size, " //15
-            + "bp.name as bp_name, " //16
-            + "t.last_modified_at as t_last_modified_at, " //17
-            + "t.name as t_name, " //18
-            + "hs.last_modified_at as hs_last_modified_at " //20
+            + "v.id as v_id, "                               //0
+            + "v.last_modified_at as v_last_modified_at, "   //1
+            + "v.name as v_name, "                           //2
+            + "ro.last_modified_at as ro_last_modified_at, " //3
+            + "ro.rule_order as ro_order, "                  //4
+            + "r.last_modified_at as r_last_modified_at, "   //5
+            + "r.global as r_global, "                       //6
+            + "r.name as r_name, "                           //7
+            + "r.matching as r_matching, "                   //8
+            + "p.last_modified_at as p_last_modified_at, "   //9
+            + "p.name as p_name, "                           //10
+            + "p.pool_size as p_pool_size, "                 //11
+            + "bp.name as bp_name, "                         //12
+            + "t.last_modified_at as t_last_modified_at, "   //13
+            + "t.name as t_name, "                           //14
+            + "hs.last_modified_at as hs_last_modified_at "  //15
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "

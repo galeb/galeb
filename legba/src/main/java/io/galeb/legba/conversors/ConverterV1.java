@@ -27,19 +27,19 @@ import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.Target;
-import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.entity.VirtualhostGroup;
-import io.galeb.core.entity.WithStatus;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.model.v1.RuleType;
+import io.galeb.legba.model.v2.FullEntity;
 import io.galeb.legba.repository.VirtualHostRepository;
 import io.galeb.legba.services.RoutersService;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -67,7 +67,8 @@ public class ConverterV1 implements Converter {
     @Override
     public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId) {
         final List<io.galeb.legba.model.v1.VirtualHost> virtualHostsV1 = new ArrayList<>();
-        final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
+        final List<FullEntity> virtualHostsV2 = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
+                                                .collect(Collectors.toList());
         int numRouters = routersService.get(envId.toString(), groupId);
 
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
@@ -80,17 +81,21 @@ public class ConverterV1 implements Converter {
         environmentV1.setId(envId);
         environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, version));
 
-        for (VirtualHost vh2: virtualHostsV2) {
+        for (FullEntity fullEntity: virtualHostsV2) {
             final List<String> keysFullHash = new ArrayList<>();
-            keysFullHash.add(vh2.getLastModifiedAt().toString());
+            Date virtualhostLastModifiedAt = fullEntity.getvLastModifiedAt();
+            String virtualhostName = fullEntity.getvName();
+            keysFullHash.add(virtualhostLastModifiedAt.toString());
             final io.galeb.legba.model.v1.VirtualHost vh1 = new io.galeb.legba.model.v1.VirtualHost();
-            vh1.setName(vh2.getName());
+            vh1.setName(virtualhostName);
+            /*
             final VirtualhostGroup virtualhostgroupV2 = vh2.getVirtualhostgroup();
             final Set<RuleOrdered> rulesorderedV2 = virtualhostgroupV2.getRulesordered();
             vh1.setRules(convertVirtualhostGroup(rulesorderedV2, numRouters, zoneId, envId, keysFullHash));
+            */
             vh1.setEnvironment(environmentV1);
             String key = String.join("", keysFullHash);
-            String fullHashVH =  sha256().hashString(key, Charsets.UTF_8).toString();
+            String fullHashVH = sha256().hashString(key, Charsets.UTF_8).toString();
             vh1.setProperties(Collections.singletonMap(FULLHASH_PROP, fullHashVH));
 
             virtualHostsV1.add(vh1);
@@ -104,7 +109,7 @@ public class ConverterV1 implements Converter {
         final Set<io.galeb.legba.model.v1.Rule> rulesV1 = new HashSet<>();
         final RuleType ruleType = new RuleType("UrlPath");
 
-        for (RuleOrdered ruleOrdered: rulesordered) {
+        for (RuleOrdered ruleOrdered : rulesordered) {
             keysFullHash.add(ruleOrdered.getLastModifiedAt().toString());
             Rule ruleV2 = ruleOrdered.getRule();
             keysFullHash.add(ruleV2.getLastModifiedAt().toString());
@@ -114,7 +119,7 @@ public class ConverterV1 implements Converter {
             ruleV1.setName(ruleV2.getName());
             ruleV1.setRuleType(ruleType);
 
-            ruleV1.setProperties(new HashMap<String, String>(){{
+            ruleV1.setProperties(new HashMap<String, String>() {{
                 put("match", ruleV2.getMatching());
                 put("order", ruleOrdered.getOrder().toString());
             }});
@@ -132,7 +137,7 @@ public class ConverterV1 implements Converter {
         Set<io.galeb.legba.model.v1.Target> targetsV1 = new HashSet<>();
 
         long tempPoolSizeV1 = -1L;
-        for (Pool poolV2: pools) {
+        for (Pool poolV2 : pools) {
             if (poolV2.getEnvironment().getId() != envId) {
                 continue;
             }
@@ -149,8 +154,8 @@ public class ConverterV1 implements Converter {
             }
 
             final Set<Target> targetsV2 = poolV2.getTargets();
-            for (Target targetV2: targetsV2) {
-                if (WithStatus.Status.DELETED.equals(targetV2.getStatus().get(envId))) {
+            for (Target targetV2 : targetsV2) {
+                if (targetV2.isQuarantine()) {
                     continue;
                 }
                 keysFullHash.add(targetV2.getLastModifiedAt().toString());
@@ -161,8 +166,8 @@ public class ConverterV1 implements Converter {
                     healthStatuses.stream()
                         .filter(hs ->
                             (StringUtils.isEmpty(zoneId) || hs.getSource().equals(zoneId)) &&
-                            hs.getStatus() != null ||
-                            !Status.FAIL.equals(hs.getStatus()))
+                                hs.getStatus() != null ||
+                                !Status.FAIL.equals(hs.getStatus()))
                         .forEach(hs -> {
                             keysFullHash.add(hs.getLastModifiedAt().toString());
                             targetsV1.add(newTargetV1(targetV2));
@@ -172,7 +177,7 @@ public class ConverterV1 implements Converter {
         }
         if (tempPoolSizeV1 > -1L) {
             final long poolSizeV1 = tempPoolSizeV1;
-            poolV1.setProperties(new HashMap<String, String>(){{
+            poolV1.setProperties(new HashMap<String, String>() {{
                 put(PROP_CONN_PER_THREAD, String.valueOf(poolSizeV1));
                 put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
             }});

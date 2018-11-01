@@ -109,16 +109,22 @@ public class Updater {
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();
+        boolean failed = false;
         while (wait.get()) {
-            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT)
+            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) {
+                failed = true;
                 break;
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                failed = true;
                 ErrorLogger.logError(e, this.getClass());
             }
         }
-        rollback(lastCache);
+        if (failed) {
+            rollback(lastCache);
+        }
     }
 
     private void rollback(List<VirtualHost> lastCache) {

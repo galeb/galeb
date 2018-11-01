@@ -106,17 +106,17 @@ public class Updater {
         String etag = cache.etag();
         List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
-        Future<?> future = singleThreadExecutor.submit(() ->
-            managerClient.getVirtualhosts(envName, etag, resultCallBack));
-        try {
-            future.get(WAIT_TIMEOUT, TimeUnit.MILLISECONDS);
-            return;
-        } catch (TimeoutException timeoutException) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(timeoutException.getMessage(), timeoutException);
+        managerClient.getVirtualhosts(envName, etag, resultCallBack);
+        // force wait
+        long currentWaitTimeOut = System.currentTimeMillis();
+        while (wait.get()) {
+            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT)
+                break;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                ErrorLogger.logError(e, this.getClass());
             }
-        } catch (InterruptedException | ExecutionException e) {
-            ErrorLogger.logError(e, this.getClass());
         }
         rollback(lastCache);
     }

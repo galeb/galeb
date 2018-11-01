@@ -19,9 +19,9 @@ package io.galeb.router.sync;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.VirtualHostsNotExpired;
 import io.galeb.router.client.ExtendedProxyClient;
@@ -34,30 +34,21 @@ import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import java.util.ArrayList;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
     public static final String ALIAS_OF      = "alias_of";
     public static final long   WAIT_TIMEOUT  = Long.parseLong(
         Optional.ofNullable(System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms
-
-    private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Gson gson = new GsonBuilder()

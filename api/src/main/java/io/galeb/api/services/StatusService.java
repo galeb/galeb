@@ -71,9 +71,6 @@ public class StatusService {
         if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
-        if (entity instanceof Target && targetHasEnvUnregistered((Target) entity, allEnvironments)) {
-            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
-        }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
         Set<Long> allEnvironmentIdsEntity = allEnvironments.stream().map(Environment::getId).collect(Collectors.toSet());
         allEnvironmentIdsEntity.removeAll(allEnvironmentsWithChanges);
@@ -83,23 +80,6 @@ public class StatusService {
         allEnvironmentsWithChanges.forEach(e -> mapStatus.put(e, Status.PENDING));
 
         return mapStatus;
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private boolean targetHasEnvUnregistered(final Target target, final Set<Environment> allEnvironments) {
-        final Optional<Environment> anyEnvironment = allEnvironments.stream().findAny();
-        int envWithStatus = -1;
-        if (anyEnvironment.isPresent()) {
-            if (anyEnvironment.get() instanceof Environment) {
-                final Environment environment = anyEnvironment.get();
-                envWithStatus = envWithStatusCount(environment.getId());
-            } else {
-                LOGGER.error("Target ID " + target.getId() + " is INCONSISTENT. " +
-                        "Is NOT Environment instance of the Environment class ???" +
-                        " (real class: " + anyEnvironment.get().getClass() + ")");
-            }
-        }
-        return target.getHealthStatus().size() < envWithStatus;
     }
 
 }

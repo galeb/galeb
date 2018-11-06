@@ -48,7 +48,7 @@ public class ScheduleProducerTest {
 
     @Before
     public void setupScheduleProducer() {
-        scheduledProducer = new ScheduledProducer(targetRepository, environmentRepository, jmsTemplate);
+        scheduledProducer = new ScheduledProducer(targetRepository, environmentRepository);
     }
 
     @Test

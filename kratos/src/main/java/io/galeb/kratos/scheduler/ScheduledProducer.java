@@ -22,6 +22,7 @@ import java.util.stream.StreamSupport;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,13 +44,15 @@ public class ScheduledProducer {
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
-    private final JmsTemplate template;
+
+    @Qualifier("templateTopic")
+    @Autowired
+    private JmsTemplate templateTopic;
 
     @Autowired
-    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template) {
+    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository) {
         this.targetRepository = targetRepository;
         this.environmentRepository = environmentRepository;
-        this.template = template;
     }
 
     @Scheduled(fixedDelay = 10000L)
@@ -151,7 +154,7 @@ public class ScheduledProducer {
             return null;
         };
         try {
-            template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
+            templateTopic.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
         } catch (Exception e) {
             logException(target, e);
         }

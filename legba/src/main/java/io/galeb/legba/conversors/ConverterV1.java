@@ -69,6 +69,7 @@ public class ConverterV1 implements Converter {
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
         long numVirtualhosts = fullEntities.stream().map(FullEntity::getvId).distinct().count();
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("message", "Converting to string");
         event.put("numVirtualHost", String.valueOf(numVirtualhosts));
         event.put("numRouters", numRouters);
         event.put("correlation", logCorrelation);

@@ -8,11 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
 
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-import org.springframework.jms.config.JmsListenerContainerFactory;
-import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
-
-
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
@@ -59,22 +54,4 @@ public class TemplateConfiguration {
         return cachingConnectionFactory;
     }
 
-    @Bean(name="connectionFactoryTopic")
-    public CachingConnectionFactory cachingConnectionFactoryTopic() throws JMSException {
-        CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(BROKER_CONN);
-        connectionFactory.setUser(BROKER_USER);
-        connectionFactory.setPassword(BROKER_PASS);
-        cachingConnectionFactory.setTargetConnectionFactory(connectionFactory);
-        return cachingConnectionFactory;
-    }
-
-    @Bean
-    public JmsListenerContainerFactory jmsFactoryTopic(ConnectionFactory connectionFactoryTopic,
-                                                       DefaultJmsListenerContainerFactoryConfigurer configurer) {
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        configurer.configure(factory, connectionFactoryTopic);
-        factory.setPubSubDomain(true);
-        return factory;
-    }
 }

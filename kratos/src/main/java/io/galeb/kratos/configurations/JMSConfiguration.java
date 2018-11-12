@@ -19,7 +19,6 @@ package io.galeb.kratos.configurations;
 import io.galeb.core.enums.SystemEnv;
 import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -71,14 +70,6 @@ public class JMSConfiguration {
         jmsTemplate.setReceiveTimeout(RECEIVE_TIMEOUT_NO_WAIT);
         jmsTemplate.setTimeToLive(JMS_TIMEOUT);
         return jmsTemplate;
-    }
-
-    @Qualifier("templateTopic")
-    @Bean
-    public JmsTemplate jmsTemplateTopic(ConnectionFactory connectionFactory) {
-        JmsTemplate jmsTemplateTopic = new JmsTemplate(connectionFactory);
-        jmsTemplateTopic.setPubSubDomain(true);
-        return jmsTemplateTopic;
     }
 
 }

@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListenerConfigurer;
-import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
@@ -37,9 +36,6 @@ public class JMSConfiguration implements JmsListenerConfigurer {
     private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue() + "_" + SystemEnv.ENVIRONMENT_ID.getValue();
 
     private final HealthCheckerService healthCheckerService;
-
-    @Autowired
-    private JmsListenerContainerFactory jmsFactoryTopic;
 
     @Autowired
     public JMSConfiguration(HealthCheckerService healthCheckerService) {
@@ -62,7 +58,6 @@ public class JMSConfiguration implements JmsListenerConfigurer {
                 eventToLogger.sendError(e);
             }
         });
-        endpointRegistrar.setContainerFactory(jmsFactoryTopic);
         endpointRegistrar.registerEndpoint(endpoint);
     }
 }

@@ -33,7 +33,13 @@ import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 @EnableJms
 public class JMSConfiguration implements JmsListenerConfigurer {
 
-    private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue() + "_" + SystemEnv.ENVIRONMENT_ID.getValue();
+    private static final String QUEUE_NAME_SEPARATOR = "_";
+
+    // @formatter:off
+    private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue()     + QUEUE_NAME_SEPARATOR +
+                                             SystemEnv.ENVIRONMENT_ID.getValue() + QUEUE_NAME_SEPARATOR +
+                                             SystemEnv.ZONE_ID.getValue().toLowerCase();
+    // @formatter:on
 
     private final HealthCheckerService healthCheckerService;
 

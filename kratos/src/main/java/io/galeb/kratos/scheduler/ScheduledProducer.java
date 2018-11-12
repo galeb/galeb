@@ -21,6 +21,9 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import javax.jms.JMSException;
 import javax.jms.Message;
+
+import io.galeb.kratos.services.HealthSchema;
+import io.galeb.kratos.services.HealthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
@@ -44,12 +47,14 @@ public class ScheduledProducer {
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
     private final JmsTemplate template;
+    private final HealthService healthService;
 
     @Autowired
-    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template) {
+    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template, HealthService healthService) {
         this.targetRepository = targetRepository;
         this.environmentRepository = environmentRepository;
         this.template = template;
+        this.healthService = healthService;
     }
 
     @Scheduled(fixedDelay = 10000L)
@@ -153,7 +158,20 @@ public class ScheduledProducer {
             return null;
         };
         try {
-            template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
+            Set<HealthSchema.Env> healthEnvs = healthService.get(String.valueOf(envId));
+            for (HealthSchema.Env healthEnv : healthEnvs) {
+                for (HealthSchema.Source source : healthEnv.getSources()) {
+                    if (source != null) {
+                        String queueName = QUEUE_GALEB_HEALTH_PREFIX + "_" + envId + "_" + source.getName().toLowerCase();
+                        template.send(queueName, messageCreator);
+                    } else {
+                        JsonEventToLogger event = new JsonEventToLogger(this.getClass());q
+                        event.put("message", "Error sending target to queue. Source is null");
+                        event.sendError();
+                    }
+                }
+            }
+
         } catch (Exception e) {
             logException(target, e);
         }

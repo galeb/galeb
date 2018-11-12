@@ -49,6 +49,7 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
         }
         final Map<String, Object> content = delegate.prepare(precorrelation);
         content.put("principal", getPrincipal());
+        content.put("message", "Request message");
         content.put("tags", LOGGING_TAGS);
         return delegate.format(content);
     }
@@ -62,6 +63,7 @@ public class PrincipalHttpLogFormatter implements HttpLogFormatter {
         final Map<String, Object> content = delegate.prepare(correlation);
         content.put("bodyResponse", correlation.getOriginalResponse().getBodyAsString());
         content.put("principal", getPrincipal());
+        content.put("message", "Response message");
         content.put("tags", LOGGING_TAGS);
         return delegate.format(content);
     }

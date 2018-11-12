@@ -73,6 +73,7 @@ public class ScheduledProducer {
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
             eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
             eventToLogger.put("schedId", schedId);
+            eventToLogger.put("message", "Sending all targets to environment queue");
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
             eventToLogger.put("sentTargets", counter.get());
@@ -116,6 +117,7 @@ public class ScheduledProducer {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
         event.put("target", target.getName());
+        event.put("message", "Sending target to queue");
         Pool pool = target.getPool();
         event.put("pool", pool.getName());
         if (correlation != null) {

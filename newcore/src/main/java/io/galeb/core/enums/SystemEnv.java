@@ -303,6 +303,13 @@ public enum SystemEnv {
     DB_CONN_TIMEOUT               ("DB_CONN_TIMEOUT",               0L),
 
     /**
+     * The property controls the maximum lifetime of a connection in the pool. An in-use connection will never
+     * be retired, only when it is closed will it then be removed. On a connection-by-connection basis, minor
+     * negative attenuation is applied to avoid mass-extinction in the pool.
+     */
+    DB_MAX_LIFE_TIME               ("DB_MAX_LIFE_TIME",             1800000),
+
+    /**
      * Set the default auto-commit behavior of connections in the pool.
      */
     DB_AUTOCOMMIT                 ("DB_AUTOCOMMIT",                 Boolean.FALSE),

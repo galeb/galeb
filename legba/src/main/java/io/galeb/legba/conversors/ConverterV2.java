@@ -53,6 +53,7 @@ public class ConverterV2 implements Converter {
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
         int numRouters = routersService.get(envId.toString(), groupId);
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("message", "Converting to string");
         event.put("numRouters", numRouters);
         event.put("numVirtualHost", String.valueOf(virtualHostsV2.size()));
         event.put("correlation", logCorrelation);

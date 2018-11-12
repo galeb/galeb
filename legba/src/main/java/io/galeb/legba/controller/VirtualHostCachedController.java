@@ -82,6 +82,7 @@ public class VirtualHostCachedController extends AbstractController {
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
 
+        event.put("message", "Processing VirtualHostCached");
         event.put("actualVersion", actualVersion);
         event.put("environmentId", String.valueOf(envId));
         event.put("environmentName", envName);

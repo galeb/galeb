@@ -47,7 +47,6 @@ public class JMSConfiguration implements JmsListenerConfigurer {
         SimpleJmsListenerEndpoint endpoint = new SimpleJmsListenerEndpoint();
         endpoint.setId(QUEUE_NAME);
         endpoint.setDestination(QUEUE_NAME);
-        endpoint.setConcurrency("5-5");
         endpoint.setMessageListener(message -> {
             try {
                 if (message.isBodyAssignableTo(TargetDTO.class)) {
@@ -55,6 +54,7 @@ public class JMSConfiguration implements JmsListenerConfigurer {
                 }
             } catch (JMSException e) {
                 JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                eventToLogger.put("message", "Error processing message from queue");
                 eventToLogger.sendError(e);
             }
         });

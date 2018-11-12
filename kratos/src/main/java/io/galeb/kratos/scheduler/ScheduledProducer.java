@@ -166,7 +166,7 @@ public class ScheduledProducer {
                         String queueName = QUEUE_GALEB_HEALTH_PREFIX + "_" + envId + "_" + source.getName().toLowerCase();
                         template.send(queueName, messageCreator);
                     } else {
-                        JsonEventToLogger event = new JsonEventToLogger(this.getClass());q
+                        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                         event.put("message", "Error sending target to queue. Source is null");
                         event.sendError();
                     }

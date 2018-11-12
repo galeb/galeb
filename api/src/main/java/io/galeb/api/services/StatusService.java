@@ -41,19 +41,11 @@ public class StatusService {
 
     private static final Logger LOGGER = LogManager.getLogger(StatusService.class);
 
-    private static final String FORMAT_KEY_HEALTH = "health:{0}:{1}:{2}";
-
     @Autowired
     StringRedisTemplate redisTemplate;
 
     @Autowired
     ChangesService changesService;
-
-    private int envWithStatusCount(Long envId) {
-        String id = String.valueOf(envId);
-        Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
-        return keys == null ? 0 : keys.size();
-    }
 
     public Map<Long, Status> status(AbstractEntity entity) {
         if (entity instanceof Environment) {

@@ -10,6 +10,7 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import io.galeb.kratos.services.HealthSchema.Source;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -161,15 +162,23 @@ public class ScheduledProducer {
         try {
             Set<HealthSchema.Env> healthEnvs = healthService.get(String.valueOf(envId));
             for (HealthSchema.Env healthEnv : healthEnvs) {
-                for (HealthSchema.Source source : healthEnv.getSources()) {
-                    if (source != null) {
-                        String queueName = QUEUE_GALEB_HEALTH_PREFIX + "_" + envId + "_" + source.getName().toLowerCase();
-                        template.send(queueName, messageCreator);
-                    } else {
-                        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-                        event.put("message", "Error sending target to queue. Source is null");
-                        event.sendError();
+                final Set<Source> sources = healthEnv.getSources();
+                if (sources != null && !sources.isEmpty()) {
+                    for (HealthSchema.Source source : sources) {
+                        if (source != null) {
+                            String queueName =
+                                QUEUE_GALEB_HEALTH_PREFIX + "_" + envId + "_" + source.getName().toLowerCase();
+                            template.send(queueName, messageCreator);
+                        } else {
+                            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                            event.put("message", "Error sending target to queue. Source is null");
+                            event.sendError();
+                        }
                     }
+                } else {
+                    JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                    event.put("message", "Error sending target to queue. Env.[]Source is null");
+                    event.sendError();
                 }
             }
 

@@ -45,6 +45,8 @@ public class ScheduledProducer {
 
     private static final int    PAGE_SIZE                 = 100;
     private static final String QUEUE_GALEB_HEALTH_PREFIX = SystemEnv.QUEUE_NAME.getValue();
+    private static final String QUEUE_SEPARATOR           = "-";
+    private static final String MESSAGE_ID_SEPARATOR      = "-";
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
@@ -78,7 +80,7 @@ public class ScheduledProducer {
             }
 
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
-            eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
+            eventToLogger.put("queuePrefix", QUEUE_GALEB_HEALTH_PREFIX + QUEUE_SEPARATOR + environmentId);
             eventToLogger.put("schedId", schedId);
             eventToLogger.put("message", "Sending all targets to environment queue");
             eventToLogger.put("environmentId", environmentId);
@@ -120,9 +122,9 @@ public class ScheduledProducer {
         logEvent(target, e, null, null, null);
     }
 
-    private void logEvent(Target target, Object context, String uniqueId, Long envId, String correlation) {
+    private void logEvent(Target target, Object context, String uniqueId, String queue, String correlation) {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
+        event.put("queue", queue);
         event.put("target", target.getName());
         event.put("message", "Sending target to queue");
         Pool pool = target.getPool();
@@ -144,21 +146,13 @@ public class ScheduledProducer {
     }
 
     private void sendToQueue(final Target target, long envId, final AtomicInteger counter, Integer page) {
-        MessageCreator messageCreator = session -> {
-            try {
-                counter.incrementAndGet();
-                final TargetDTO targetDTO = new TargetDTO(target);
-                Message message = session.createObjectMessage(targetDTO);
-                String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" +
-                    (System.currentTimeMillis() / 10000L);
-                defineUniqueId(message, uniqueId);
-                logEvent(target, page, uniqueId, envId, targetDTO.getCorrelation());
-                return message;
-            } catch (Exception e) {
-                logException(target, e);
-            }
-            return null;
-        };
+        // @formatter:off
+        final String queuePrefix = QUEUE_GALEB_HEALTH_PREFIX + QUEUE_SEPARATOR + envId;
+        final String uniqueIdPrefix = "ID:" + target.getId()               + MESSAGE_ID_SEPARATOR +
+                                      target.getLastModifiedAt().getTime() + MESSAGE_ID_SEPARATOR +
+                                      (System.currentTimeMillis() / 10000L);
+        // @formatter:on
+
         try {
             Set<HealthSchema.Env> healthEnvs = healthService.get(String.valueOf(envId));
             for (HealthSchema.Env healthEnv : healthEnvs) {
@@ -166,9 +160,22 @@ public class ScheduledProducer {
                 if (sources != null && !sources.isEmpty()) {
                     for (HealthSchema.Source source : sources) {
                         if (source != null) {
-                            String queueName =
-                                QUEUE_GALEB_HEALTH_PREFIX + "_" + envId + "_" + source.getName().toLowerCase();
-                            template.send(queueName, messageCreator);
+                            String sourceName = source.getName().toLowerCase();
+                            String queue = queuePrefix + QUEUE_SEPARATOR + sourceName;
+                            final TargetDTO targetDTO = new TargetDTO(target);
+                            logEvent(target, page, uniqueIdPrefix, queue, targetDTO.getCorrelation());
+                            template.send(queue, session -> {
+                                try {
+                                    counter.incrementAndGet();
+                                    Message message = session.createObjectMessage(targetDTO);
+                                    String uniqueId = uniqueIdPrefix + MESSAGE_ID_SEPARATOR + sourceName;
+                                    defineUniqueId(message, uniqueId);
+                                    return message;
+                                } catch (Exception e) {
+                                    logException(target, e);
+                                }
+                                return null;
+                            });
                         } else {
                             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                             event.put("message", "Error sending target to queue. Source is null");

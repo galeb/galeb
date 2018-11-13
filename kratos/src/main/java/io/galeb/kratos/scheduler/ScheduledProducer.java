@@ -162,13 +162,13 @@ public class ScheduledProducer {
                         if (source != null) {
                             String sourceName = source.getName().toLowerCase();
                             String queue = queuePrefix + QUEUE_SEPARATOR + sourceName;
+                            final String uniqueId = uniqueIdPrefix + MESSAGE_ID_SEPARATOR + sourceName;
                             final TargetDTO targetDTO = new TargetDTO(target);
-                            logEvent(target, page, uniqueIdPrefix, queue, targetDTO.getCorrelation());
+                            logEvent(target, page, uniqueId, queue, targetDTO.getCorrelation());
                             template.send(queue, session -> {
                                 try {
                                     counter.incrementAndGet();
                                     Message message = session.createObjectMessage(targetDTO);
-                                    String uniqueId = uniqueIdPrefix + MESSAGE_ID_SEPARATOR + sourceName;
                                     defineUniqueId(message, uniqueId);
                                     return message;
                                 } catch (Exception e) {

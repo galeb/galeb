@@ -45,7 +45,7 @@ public class ScheduledProducer {
 
     private static final int    PAGE_SIZE                 = 100;
     private static final String QUEUE_GALEB_HEALTH_PREFIX = SystemEnv.QUEUE_NAME.getValue();
-    private static final String QUEUE_SEPARATOR           = "-";
+    private static final String QUEUE_SEPARATOR           = SystemEnv.QUEUE_NAME_SEPARATOR.getValue();
     private static final String MESSAGE_ID_SEPARATOR      = "-";
 
     private final TargetRepository targetRepository;

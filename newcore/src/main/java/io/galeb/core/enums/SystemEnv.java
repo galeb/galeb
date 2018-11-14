@@ -68,6 +68,11 @@ public enum SystemEnv {
     QUEUE_NAME               ("QUEUE_NAME",               "galeb-health"),
 
     /**
+     * AMQP Queue name separator
+     */
+    QUEUE_NAME_SEPARATOR     ("QUEUE_NAME_SEPARATOR",     "-"),
+
+    /**
      * Tester request timeout (ms)
      */
     TEST_CONN_TIMEOUT        ("TEST_CONN_TIMEOUT",        2000),

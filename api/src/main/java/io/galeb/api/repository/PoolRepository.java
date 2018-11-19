@@ -61,4 +61,7 @@ public interface PoolRepository extends JpaRepository<Pool, Long>, PoolRepositor
     @PreAuthorize("@perm.allowView(null , #this)")
     Page<Pool> findByNameContaining(@Param("name") String name, Pageable pageable);
 
+    @PreAuthorize("@perm.allowView(#id, #this)")
+    Pool findByTargets_Id(@Param("id") Long id);
+
 }

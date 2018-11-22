@@ -1,7 +1,7 @@
 @active
 Feature: Flux
   Background: Flux
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     When request json body has:
       | name  | envOne |
     And send POST /environment

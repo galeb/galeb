@@ -23,7 +23,7 @@ jobs:
                 name: Build package
                 command: |
                   export GALEB_VERSION=$(cat /tmp/galeb_version)
-                  if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                  if [ "${CIRCLE_BRANCH}" == "test" ]; then
                     mvn package
                   else
                     mvn package -DskipTests

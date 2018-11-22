@@ -42,11 +42,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-
         <commons-logging.version>1.2</commons-logging.version>
         <jnr-posix.version>3.0.38</jnr-posix.version>
         <hikaricp.version>2.7.4</hikaricp.version>
         <disruptor.version>3.3.6</disruptor.version>
+        <javax.activation.version>1.1.1</javax.activation.version>
+        <javax.xml.bind.version>2.2.11</javax.xml.bind.version>
     </properties>
 
     <dependencies>
@@ -150,6 +151,26 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.6</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${javax.xml.bind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${javax.xml.bind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${javax.xml.bind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>${javax.activation.version}</version>
         </dependency>
     </dependencies>
 

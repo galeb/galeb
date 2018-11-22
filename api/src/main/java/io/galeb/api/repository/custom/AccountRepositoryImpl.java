@@ -21,6 +21,9 @@ import io.galeb.api.repository.RoleGroupRepository;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
+import java.math.BigInteger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +32,13 @@ import javax.annotation.PostConstruct;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.galeb.core.entity.RoleGroup.ROLEGROUP_SUPER_ADMIN;
 import static io.galeb.core.entity.RoleGroup.ROLEGROUP_USER_DEFAULT;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Account> implements AccountRepositoryCustom, WithRoles {
+
+    private static final Logger LOGGER = LogManager.getLogger(AccountRepositoryImpl.class);
 
     @Autowired
     private StatusService statusService;
@@ -53,7 +59,13 @@ public class AccountRepositoryImpl extends AbstractRepositoryImplementation<Acco
     @Transactional
     public Account saveByPass(Account entity) {
         Account account = super.saveByPass(entity);
-        RoleGroup roleGroup = roleGroupRepository.findByName(ROLEGROUP_USER_DEFAULT);
+        final RoleGroup roleGroup;
+        if (BigInteger.ONE.equals(genericDaoService.numAccounts())) {
+            roleGroup = roleGroupRepository.findByName(ROLEGROUP_SUPER_ADMIN);
+            LOGGER.warn("token: " + account.getApitoken());
+        } else {
+            roleGroup = roleGroupRepository.findByName(ROLEGROUP_USER_DEFAULT);
+        }
         roleGroup.getAccounts().add(entity);
         roleGroupRepository.saveByPass(roleGroup);
         return account;

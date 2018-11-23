@@ -7,6 +7,8 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
 import io.galeb.kratos.scheduler.ScheduledProducer;
+import io.galeb.kratos.services.HealthSchema;
+import io.galeb.kratos.services.HealthService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +26,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -37,6 +38,9 @@ public class ScheduleProducerTest {
 
     @Autowired
     private JmsTemplate jmsTemplate;
+
+    @Mock
+    private HealthService healthService;
 
     private ScheduledProducer scheduledProducer;
 
@@ -48,7 +52,7 @@ public class ScheduleProducerTest {
 
     @Before
     public void setupScheduleProducer() {
-        scheduledProducer = new ScheduledProducer(targetRepository, environmentRepository, jmsTemplate);
+        scheduledProducer = new ScheduledProducer(targetRepository, environmentRepository, jmsTemplate, healthService);
     }
 
     @Test
@@ -75,10 +79,17 @@ public class ScheduleProducerTest {
         Page<Target> page = new PageImpl<Target>(targets, pageable, 1);
         when(targetRepository.findByEnvironmentName("env1", pageable)).thenReturn(page);
 
+        String sourceName = "xxx";
+        String envId = String.valueOf(environment.getId());
+
+        Set<HealthSchema.Source> sources = Collections.singleton(new HealthSchema.Source(sourceName, Collections.emptySet()));
+        Set<HealthSchema.Env> envs = Collections.singleton(new HealthSchema.Env(envId, sources));
+        when(healthService.get(anyString())).thenReturn(envs);
+
         //Action
         scheduledProducer.sendToTargetsToQueue();
         jmsTemplate.setReceiveTimeout(5000);
-        Message message = jmsTemplate.receive(SystemEnv.QUEUE_NAME.getValue() + "_" + environment.getId());
+        Message message = jmsTemplate.receive(SystemEnv.QUEUE_NAME.getValue() + "_" + envId + "_" + sourceName);
 
         //Assert
         Assert.assertTrue(message.isBodyAssignableTo(Target.class));

@@ -10,10 +10,12 @@ import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.kratos.repository.EnvironmentRepository;
 import io.galeb.kratos.repository.TargetRepository;
+import io.galeb.kratos.services.HealthSchema.Source;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -21,6 +23,9 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import javax.jms.JMSException;
 import javax.jms.Message;
+
+import io.galeb.kratos.services.HealthSchema;
+import io.galeb.kratos.services.HealthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
@@ -40,16 +45,20 @@ public class ScheduledProducer {
 
     private static final int    PAGE_SIZE                 = 100;
     private static final String QUEUE_GALEB_HEALTH_PREFIX = SystemEnv.QUEUE_NAME.getValue();
+    private static final String QUEUE_SEPARATOR           = SystemEnv.QUEUE_NAME_SEPARATOR.getValue();
+    private static final String MESSAGE_ID_SEPARATOR      = "-";
 
     private final TargetRepository targetRepository;
     private final EnvironmentRepository environmentRepository;
     private final JmsTemplate template;
+    private final HealthService healthService;
 
     @Autowired
-    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template) {
+    public ScheduledProducer(TargetRepository targetRepository, EnvironmentRepository environmentRepository, JmsTemplate template, HealthService healthService) {
         this.targetRepository = targetRepository;
         this.environmentRepository = environmentRepository;
         this.template = template;
+        this.healthService = healthService;
     }
 
     @Scheduled(fixedDelay = 10000L)
@@ -71,8 +80,9 @@ public class ScheduledProducer {
             }
 
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
-            eventToLogger.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + environmentId);
+            eventToLogger.put("queuePrefix", QUEUE_GALEB_HEALTH_PREFIX + QUEUE_SEPARATOR + environmentId);
             eventToLogger.put("schedId", schedId);
+            eventToLogger.put("message", "Sending all targets to environment queue");
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
             eventToLogger.put("sentTargets", counter.get());
@@ -112,10 +122,11 @@ public class ScheduledProducer {
         logEvent(target, e, null, null, null);
     }
 
-    private void logEvent(Target target, Object context, String uniqueId, Long envId, String correlation) {
+    private void logEvent(Target target, Object context, String uniqueId, String queue, String correlation) {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        event.put("queue", QUEUE_GALEB_HEALTH_PREFIX + "_" + envId);
+        event.put("queue", queue);
         event.put("target", target.getName());
+        event.put("message", "Sending target to queue");
         Pool pool = target.getPool();
         event.put("pool", pool.getName());
         if (correlation != null) {
@@ -135,23 +146,49 @@ public class ScheduledProducer {
     }
 
     private void sendToQueue(final Target target, long envId, final AtomicInteger counter, Integer page) {
-        MessageCreator messageCreator = session -> {
-            try {
-                counter.incrementAndGet();
-                final TargetDTO targetDTO = new TargetDTO(target);
-                Message message = session.createObjectMessage(targetDTO);
-                String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" +
-                    (System.currentTimeMillis() / 10000L);
-                defineUniqueId(message, uniqueId);
-                logEvent(target, page, uniqueId, envId, targetDTO.getCorrelation());
-                return message;
-            } catch (Exception e) {
-                logException(target, e);
-            }
-            return null;
-        };
+        // @formatter:off
+        final String queuePrefix = QUEUE_GALEB_HEALTH_PREFIX + QUEUE_SEPARATOR + envId;
+        final String uniqueIdPrefix = "ID:" + target.getId()               + MESSAGE_ID_SEPARATOR +
+                                      target.getLastModifiedAt().getTime() + MESSAGE_ID_SEPARATOR +
+                                      (System.currentTimeMillis() / 10000L);
+        // @formatter:on
+
         try {
-            template.send(QUEUE_GALEB_HEALTH_PREFIX + "_" + envId, messageCreator);
+            Set<HealthSchema.Env> healthEnvs = healthService.get(String.valueOf(envId));
+            for (HealthSchema.Env healthEnv : healthEnvs) {
+                final Set<Source> sources = healthEnv.getSources();
+                if (sources != null && !sources.isEmpty()) {
+                    for (HealthSchema.Source source : sources) {
+                        if (source != null) {
+                            String sourceName = source.getName().toLowerCase();
+                            String queue = queuePrefix + QUEUE_SEPARATOR + sourceName;
+                            final String uniqueId = uniqueIdPrefix + MESSAGE_ID_SEPARATOR + sourceName;
+                            final TargetDTO targetDTO = new TargetDTO(target);
+                            logEvent(target, page, uniqueId, queue, targetDTO.getCorrelation());
+                            template.send(queue, session -> {
+                                try {
+                                    counter.incrementAndGet();
+                                    Message message = session.createObjectMessage(targetDTO);
+                                    defineUniqueId(message, uniqueId);
+                                    return message;
+                                } catch (Exception e) {
+                                    logException(target, e);
+                                }
+                                return null;
+                            });
+                        } else {
+                            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                            event.put("message", "Error sending target to queue. Source is null");
+                            event.sendError();
+                        }
+                    }
+                } else {
+                    JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                    event.put("message", "Error sending target to queue. Env.[]Source is null");
+                    event.sendError();
+                }
+            }
+
         } catch (Exception e) {
             logException(target, e);
         }

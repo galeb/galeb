@@ -22,7 +22,7 @@ import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.Team;
-
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +31,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.cache.annotation.Cacheable;
@@ -53,13 +52,28 @@ public class GenericDaoService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public BigInteger numAccounts() {
+        try {
+            return (BigInteger) em.createNativeQuery("SELECT COUNT(*) FROM account").getSingleResult();
+        } catch (NoResultException ignore) {
+            return BigInteger.ZERO;
+        }
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public AbstractEntity findOne(Class<? extends AbstractEntity> classEntity, Long id) {
         return em.find(classEntity, id);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public AbstractEntity findByName(Class<? extends AbstractEntity> classEntity, String name) {
-        return em.createQuery("SELECT e FROM " + classEntity.getSimpleName() + " e WHERE e.name = :name", classEntity)
+        String selectByName = "SELECT e FROM " + classEntity.getSimpleName();
+        if (Account.class.equals(classEntity)) {
+            selectByName = selectByName + " e WHERE e.username = :name";
+        } else {
+            selectByName = selectByName + " e WHERE e.name = :name";
+        }
+        return em.createQuery(selectByName, classEntity)
             .setParameter("name", name)
             .getSingleResult();
     }

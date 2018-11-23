@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Globo.com - ATeam
+ * Copyright (c) 2014-2018 Globo.com - ATeam
  * All rights reserved.
  *
  * This source is subject to the Apache License, Version 2.0.
@@ -26,6 +26,10 @@ public class Pool extends AbstractEntity {
     private BalancePolicy balancePolicy;
 
     public Pool() {}
+
+    public Set<Target> getTargets() {
+        return targets;
+    }
 
     public Pool setTargets(Set<Target> targets) {
         if (targets != null) {

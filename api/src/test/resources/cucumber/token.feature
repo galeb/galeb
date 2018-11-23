@@ -1,10 +1,10 @@
 @active
 Feature: Flux
   Scenario: token with user admin
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     And send GET /token
     Then the response status is 200
-    And the response search at 'username' equal to admin
+    And the response search at 'username' equal to adminTeamOne
     And the response search at 'admin' has boolean true
 
   Scenario: token with user default

@@ -144,12 +144,12 @@ public class HealthCheckerService {
                     if (!reason.equals(lastReason)) {
                         callBackQueue.update(targetDTO);
                     }
-                    callBackQueue.register(ZONE_ID);
                 }
 
                 private void sendLog(String reason) {
                     JsonEventToLogger eventToLogger = new JsonEventToLogger(ROOT_CLASS);
                     eventToLogger.put("pool", poolName);
+                    eventToLogger.put("message", "Processing check");
                     eventToLogger.put("expectedBody", hcBody);
                     eventToLogger.put("expectedStatusCode", hcStatusCode);
                     eventToLogger.put("host", hcHost);
@@ -164,6 +164,7 @@ public class HealthCheckerService {
         } catch (Exception e) {
             JsonEventToLogger errorEvent = new JsonEventToLogger(ROOT_CLASS);
             errorEvent.put("correlation", correlation);
+            errorEvent.put("message", "Error processing check");
             errorEvent.sendError(e);
         }
 

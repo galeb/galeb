@@ -53,4 +53,5 @@ public class TemplateConfiguration {
         cachingConnectionFactory.setCacheConsumers(true);
         return cachingConnectionFactory;
     }
+
 }

@@ -16,8 +16,6 @@
 
 package io.galeb.core.entity;
 
-
-
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -39,11 +37,9 @@ import java.util.*;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_target_name_pool_id", columnNames = { "name", "pool_id" }) })
 public class Target extends AbstractEntity implements WithStatus {
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pool_id", nullable = false, foreignKey = @ForeignKey(name="FK_target_pool"))
     private Pool pool;
-
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "target", cascade = CascadeType.REMOVE)
     private Set<HealthStatus> healthStatus = new HashSet<>();

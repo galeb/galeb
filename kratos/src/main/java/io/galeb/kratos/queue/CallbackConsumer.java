@@ -65,6 +65,7 @@ public class CallbackConsumer {
                 JsonEventToLogger jsonLogger =  new JsonEventToLogger(this.getClass());
                 jsonLogger.put("queue", QUEUE_HEALTH_CALLBACK);
                 jsonLogger.put("correlation", correlation);
+                jsonLogger.put("message", "Processing healthStatus from callback queue");
                 jsonLogger.put("healthStatus_source", tempHealthStatus.getSource());
                 jsonLogger.put("healthStatus_statusDetailed", tempHealthStatus.getStatusDetailed());
                 jsonLogger.put("healthStatus_status", tempHealthStatus.getStatus().name());
@@ -74,6 +75,7 @@ public class CallbackConsumer {
         } catch (Exception e) {
             JsonEventToLogger jsonLogger = new JsonEventToLogger(this.getClass());
             jsonLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+            jsonLogger.put("message", "Error during process healthStatus from callback queue - target: " + healthStatus.getTarget().getId());
             jsonLogger.sendError(e);
         }
     }

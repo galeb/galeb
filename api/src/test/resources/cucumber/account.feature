@@ -8,12 +8,12 @@ Feature: Account Support
       Then the response status is 200
       Given a REST client authenticated as accountOne with password ""
       Then the response status is 200
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
         | name     | teamOne              |
       And send POST /team
       Then the response status is 201
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
         | accounts         | [Account=adminTeamOne, Account=accountOne]      |
       And send PATCH /team/1
@@ -31,7 +31,7 @@ Feature: Account Support
       Then the response status is 404
 
     Scenario: Create duplicated Account
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
         | username     | accountOne              |
         | email    | accountOne@test.com               |
@@ -67,9 +67,9 @@ Feature: Account Support
       Then the response status is 403
 
     Scenario: Delete Account
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When send DELETE Account=adminTeamOne
       Then the response status is 204
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When send GET Account=adminTeamOne
       Then the response status is 404

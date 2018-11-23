@@ -34,20 +34,20 @@ public interface TargetRepository extends JpaRepository<Target, Long>, TargetRep
     @Override
     @PreAuthorize("@perm.allowSave(#target, #this)")
     @Caching(evict = {
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }"),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0.getId() }")
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true, beforeInvocation = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true, beforeInvocation = true),
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }", beforeInvocation = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0.getId() }", beforeInvocation = true)
     })
     Target save(@Param("target") Target target);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
     @Caching(evict = {
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }"),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0 }")
+        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true, beforeInvocation = true),
+        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true, beforeInvocation = true),
+        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }", beforeInvocation = true),
+        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0 }", beforeInvocation = true)
     })
     void delete(@Param("id") Long id);
 

@@ -19,9 +19,9 @@ package io.galeb.router.sync;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.VirtualHostsNotExpired;
 import io.galeb.router.client.ExtendedProxyClient;
@@ -33,20 +33,22 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Updater {
     public static final String FULLHASH_PROP = "fullhash";
     public static final String ALIAS_OF      = "alias_of";
-    public static final long   WAIT_TIMEOUT  = 10000; // ms
+    public static final long   WAIT_TIMEOUT  = Long.parseLong(
+        Optional.ofNullable(System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Gson gson = new GsonBuilder()
@@ -81,9 +83,9 @@ public class Updater {
                 if (virtualhostsFromManager != null) {
                     final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
                     logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
-                    updateEtagIfNecessary(virtualhosts);
                     cleanup(virtualhosts);
                     virtualhosts.forEach(this::updateCache);
+                    updateEtagIfNecessary(virtualhosts);
                     logger.info("Processed " + count + " virtualhost(s): Done");
                 } else {
                     logger.error("Virtualhosts Empty. Request problem?");
@@ -93,18 +95,33 @@ public class Updater {
             wait.set(false);
         };
         String etag = cache.etag();
+        List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();
+        boolean failed = false;
         while (wait.get()) {
-            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) break;
+            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) {
+                failed = true;
+                break;
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
+                failed = true;
                 ErrorLogger.logError(e, this.getClass());
             }
         }
+        if (failed) {
+            rollback(lastCache);
+        }
+    }
+
+    private void rollback(List<VirtualHost> lastCache) {
+        cleanup(lastCache);
+        lastCache.forEach(this::updateCache);
+        updateEtagIfNecessary(lastCache);
     }
 
     private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {

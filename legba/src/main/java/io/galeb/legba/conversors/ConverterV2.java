@@ -29,7 +29,6 @@ import io.galeb.legba.model.v2.Rule;
 import io.galeb.legba.model.v2.RuleOrdered;
 import io.galeb.legba.model.v2.VirtualhostGroup;
 import io.galeb.legba.repository.VirtualHostRepository;
-import io.galeb.legba.services.RoutersService;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,14 +43,10 @@ public class ConverterV2 implements Converter {
     @Autowired
     private VirtualHostRepository virtualHostRepository;
 
-    @Autowired
-    private RoutersService routersService;
-
     @Override
-    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId) {
+    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId, int numRouters) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
-        int numRouters = routersService.get(envId.toString(), groupId);
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("message", "Converting to string");
         event.put("numRouters", numRouters);

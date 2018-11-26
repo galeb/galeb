@@ -207,7 +207,8 @@ public class RoutersService {
         if (cache == null || "".equals(cache)) {
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
-            cache = converter.convertToString(logCorrelation, routerMeta.version, routerMeta.zoneId, Long.getLong(routerMeta.envId), routerMeta.groupId);
+            int numRouters = get(routerMeta.envId, routerMeta.groupId);
+            cache = converter.convertToString(logCorrelation, routerMeta.version, routerMeta.zoneId, Long.getLong(routerMeta.envId), routerMeta.groupId, numRouters);
             versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId, routerMeta.version);
         }
     }

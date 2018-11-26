@@ -27,7 +27,6 @@ import io.galeb.legba.model.v1.RuleType;
 import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.FullEntity;
 import io.galeb.legba.repository.VirtualHostRepository;
-import io.galeb.legba.services.RoutersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,20 +50,17 @@ public class ConverterV1 implements Converter {
     // @formatter:on
 
     private final VirtualHostRepository virtualHostRepository;
-    private final RoutersService routersService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public ConverterV1(VirtualHostRepository virtualHostRepository, RoutersService routersService) {
+    public ConverterV1(VirtualHostRepository virtualHostRepository) {
         this.virtualHostRepository = virtualHostRepository;
-        this.routersService = routersService;
     }
 
     @Override
-    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId) {
+    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId, int numRouters) {
         final List<FullEntity> fullEntities = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
                                                 .collect(Collectors.toList());
-        int numRouters = routersService.get(envId.toString(), groupId);
 
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
         long numVirtualhosts = fullEntities.stream().map(FullEntity::getvId).distinct().count();

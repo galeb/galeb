@@ -41,10 +41,10 @@ import java.util.*;
 
 import static io.galeb.core.enums.EnumHealthState.OK;
 import static io.galeb.core.enums.EnumPropHealth.PROP_HEALTHY;
+import static io.galeb.router.configurations.ManagerClientCacheConfiguration.FULLHASH_PROP;
 import static io.galeb.router.handlers.NameVirtualHostDefaultHandler.IPACL_ALLOW;
 import static io.galeb.router.handlers.RuleTargetHandler.RULE_MATCH;
 import static io.galeb.router.handlers.RuleTargetHandler.RULE_ORDER;
-import static io.galeb.router.sync.Updater.FULLHASH_PROP;
 
 @Configuration
 @Profile({ "test" })

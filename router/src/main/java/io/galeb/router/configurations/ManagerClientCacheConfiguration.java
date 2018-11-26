@@ -25,10 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import static io.galeb.router.sync.Updater.FULLHASH_PROP;
 
 @Configuration
 public class ManagerClientCacheConfiguration {
+
+    public static final String FULLHASH_PROP = "fullhash";
 
     @Bean
     ManagerClientCache managerClientCache() {

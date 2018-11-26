@@ -16,6 +16,8 @@
 
 package io.galeb.router.services;
 
+import static io.galeb.router.configurations.ManagerClientCacheConfiguration.FULLHASH_PROP;
+
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -56,7 +58,6 @@ public class UpdaterService {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdaterService.class);
 
-    public static final String FULLHASH_PROP = "fullhash";
     public static final String ALIAS_OF      = "alias_of";
     public static final long   WAIT_TIMEOUT  = Long.parseLong(Optional.ofNullable(
         System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms

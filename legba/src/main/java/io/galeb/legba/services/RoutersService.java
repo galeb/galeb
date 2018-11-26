@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Service
@@ -54,7 +53,13 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
+    private static final String ROUTER_MAP_CACHE_REBUILD_LOCK = "router-map-cache-rebuild-lock";
+
     private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+
+    private static long ROUTER_CONCURRENT_LOCK_TTL = 120000L; // Long.parseLong(SystemEnv.ROUTER_CONCURRENT_LOCK_TTL.getValue())
+
+    private static String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
     private final StringRedisTemplate redisTemplate;
     private final ChangesService changesService;
@@ -83,8 +88,6 @@ public class RoutersService {
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
 
         try {
-            Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
-
             final Set<JsonSchema.Env> envs = new HashSet<>();
             String keyEnvId = environmentId == null ? "*" : environmentId;
             redisTemplate.keys(MessageFormat.format(FORMAT_KEY_ROUTERS, keyEnvId, "*", "*")).forEach(key -> {
@@ -140,10 +143,9 @@ public class RoutersService {
 
         try {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, routerMeta.groupId, routerMeta.localIP);
-            Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
-
             registerRouterAndUpdateTtl(routerMeta, event, key);
-            updateRouterState(routerMeta, "v2", logCorrelation);
+            final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta, logCorrelation);
+            updateRouterMapCached(routerMeta, eTagRouters, logCorrelation);
         } catch (Exception e) {
             event.put("message",  "POST /routers/" + routerMeta.envId + " FAILED");
             event.sendError(e);
@@ -166,12 +168,21 @@ public class RoutersService {
         redisTemplate.opsForValue().set(key, routerMeta.version, REGISTER_TTL, TimeUnit.MILLISECONDS);
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private void updateRouterState(final RouterMeta routerMeta, String apiVersion, String logCorrelation)
+    private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation)
             throws ConverterNotFoundException {
 
-        Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
+        try {
+            if (redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK, "" + System.currentTimeMillis())) {
+                redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
+                deleteAllHasChangesProcessed(routerMeta, eTagRouters, logCorrelation);
+                rebuildRouterMapCached(routerMeta, logCorrelation);
+            }
+        } finally {
+            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK);
+        }
+    }
 
+    private Set<Long> processEtagsFromRouters(RouterMeta routerMeta, String logCorrelation) {
         Set<Long> eTagRouters = new HashSet<>();
         String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, "*", "*");
         redisTemplate.keys(keyAll).forEach(key -> {
@@ -187,15 +198,15 @@ public class RoutersService {
             }
             expireIfNecessaryAndIncrementVersion(routerMeta, logCorrelation, key);
         });
-        Long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        return eTagRouters;
+    }
 
-        changesService.listEntitiesWithOldestVersion(routerMeta.envId, minVersionRouter).stream()
-                .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))
-                .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(routerMeta.envId, hasChangeData, logCorrelation));
-
+    private void rebuildRouterMapCached(RouterMeta routerMeta, String logCorrelation)
+        throws ConverterNotFoundException {
         String cache = versionService.getCache(routerMeta.envId, routerMeta.zoneId, routerMeta.version);
         if (cache == null || "".equals(cache)) {
-            final Converter converter = getConverter(apiVersion);
+            // TODO: Add V2..Vx dynamic support
+            final Converter converter = getConverter(DEFAULT_API_VERSION);
             cache = converter.convertToString(logCorrelation, routerMeta.version, routerMeta.zoneId, Long.getLong(routerMeta.envId), routerMeta.groupId);
             versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId, routerMeta.version);
         }
@@ -227,6 +238,13 @@ public class RoutersService {
             throw new ConverterNotFoundException();
         }
         return converter;
+    }
+
+    private void deleteAllHasChangesProcessed(RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation) {
+        Long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        changesService.listEntitiesWithOldestVersion(routerMeta.envId, minVersionRouter).stream()
+            .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))
+            .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(routerMeta.envId, hasChangeData, logCorrelation));
     }
 
     private void deleteHasChangeAndEntityFromDB(String envId, HasChangeData<String, String, String> hasChangeData, String logCorrelation) {

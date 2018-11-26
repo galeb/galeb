@@ -16,6 +16,9 @@
 
 package io.galeb.legba.controller;
 
+import static io.galeb.core.common.GalebHttpHeaders.*;
+import static org.springframework.http.HttpHeaders.IF_NONE_MATCH;
+
 import com.google.gson.Gson;
 import io.galeb.legba.services.RoutersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +46,13 @@ public class RoutersController extends AbstractController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> headRouterMap(@RequestHeader(value = "X-Galeb-LocalIP") String routerLocalIP,
-                                           @RequestHeader(value = "X-Galeb-GroupID") String routerGroupId,
-                                           @RequestHeader(value = "X-Galeb-Environment") String envName,
-                                           @RequestHeader(value = "If-None-Match") String version) throws Exception {
+    public ResponseEntity<?> headRouterMap(@RequestHeader(value = X_GALEB_LOCAL_IP) String routerLocalIP,
+                                           @RequestHeader(value = X_GALEB_GROUP_ID) String routerGroupId,
+                                           @RequestHeader(value = X_GALEB_ENVIRONMENT) String envName,
+                                           @RequestHeader(value = IF_NONE_MATCH) String version,
+                                           @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId) throws Exception {
         Long envId = getEnvironmentId(envName);
-        routersService.put(routerGroupId, routerLocalIP, version, envId.toString());
+        routersService.put(routerGroupId, routerLocalIP, version, envId.toString(), zoneId);
         return ResponseEntity.ok().build();
     }
 

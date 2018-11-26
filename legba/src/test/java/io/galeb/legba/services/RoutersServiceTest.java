@@ -67,7 +67,7 @@ public class RoutersServiceTest {
         FLYWAY.setDataSource(dbUrl, dbUsername, dbPassword);
         FLYWAY.clean();
         FLYWAY.migrate();
-        redisTemplate.keys("*").stream().forEach(k -> redisTemplate.delete(k));
+        redisTemplate.keys("*").forEach(k -> redisTemplate.delete(k));
     }
 
     @Test
@@ -77,10 +77,11 @@ public class RoutersServiceTest {
         String localIP = "127.0.0.1";
         String version = "1";
         String envId = "1";
+        String zoneId = null;
 
         //Action
         routersService.REGISTER_TTL = Long.MAX_VALUE;
-        routersService.put(groupId, localIP, version, envId);
+        routersService.put(groupId, localIP, version, envId, zoneId);
         Set<JsonSchema.Env> envs = routersService.get(envId);
 
         //Assert
@@ -101,6 +102,7 @@ public class RoutersServiceTest {
         String versionOldest = "1";
         String versionNewest = "2";
         String envId = "1";
+        String zoneId = null;
 
         Environment env;
         Target target;
@@ -135,7 +137,7 @@ public class RoutersServiceTest {
 
         //Action
         routersService.REGISTER_TTL = Long.MAX_VALUE;
-        routersService.put(groupId, localIP, versionNewest, envId);
+        routersService.put(groupId, localIP, versionNewest, envId, zoneId);
         entityManager.clear();
 
         //Assert
@@ -153,6 +155,7 @@ public class RoutersServiceTest {
         String versionOldest = "1";
         String versionNewest = "2";
         String envId = "1";
+        String zoneId = null;
 
         Environment env = new Environment();
         env.setId(Long.valueOf(envId));
@@ -163,7 +166,7 @@ public class RoutersServiceTest {
 
         //Action
         routersService.REGISTER_TTL = Long.MAX_VALUE;
-        routersService.put(groupId, localIP, versionOldest, envId);
+        routersService.put(groupId, localIP, versionOldest, envId, zoneId);
 
         //Assert
         boolean hasChanges = changesService.hasByEnvironmentId(Long.valueOf(envId));
@@ -177,11 +180,12 @@ public class RoutersServiceTest {
         String localIP = "127.0.0.1";
         String version = "1";
         String envId = "1";
+        String zoneId = null;
 
         routersService.REGISTER_TTL = 1L;
 
         //Action
-        routersService.put(groupId, localIP, version, envId);
+        routersService.put(groupId, localIP, version, envId, zoneId);
 
         //Assert
         try {

@@ -21,10 +21,6 @@ import static org.springframework.http.HttpStatus.OK;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.services.VersionService;
-import io.galeb.legba.conversors.Converter;
-import io.galeb.legba.conversors.ConverterV1;
-import io.galeb.legba.conversors.ConverterV2;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +30,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -42,17 +37,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class VirtualHostCachedController extends AbstractController {
 
     private final VersionService versionService;
-    private final ConverterV1 converterV1;
-    private final ConverterV2 converterV2;
 
     private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
-    public VirtualHostCachedController(VersionService versionService,
-        ConverterV1 converterV1, ConverterV2 converterV2) {
+    public VirtualHostCachedController(VersionService versionService) {
         this.versionService = versionService;
-        this.converterV1 = converterV1;
-        this.converterV2 = converterV2;
     }
 
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
@@ -63,17 +53,7 @@ public class VirtualHostCachedController extends AbstractController {
                                                @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
 
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        String logCorrelation = UUID.randomUUID().toString();
-        final Converter converter;
-        if (apiVersion == null || ConverterV1.API_VERSION.equals(apiVersion)) {
-            converter = converterV1;
-        } else if (ConverterV2.API_VERSION.equals(apiVersion)) {
-            converter = converterV2;
-        } else {
-            throw new ConverterNotFoundException();
-        }
-        event.put("apiVersion", converter.getApiVersion());
-        event.put("correlation", logCorrelation);
+        event.put("apiVersion", apiVersion);
 
         Assert.notNull(envName, "Environment name is null");
         Assert.notNull(routerGroupId, "GroupID undefined");
@@ -96,12 +76,8 @@ public class VirtualHostCachedController extends AbstractController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envId.toString(), zoneId, actualVersion);
-        if (cache == null) {
-            cache = converter.convertToString(logCorrelation, actualVersion, zoneId, envId, routerGroupId);
-            versionService.setCache(cache, envId.toString(), zoneId, actualVersion);
-        }
-        if ("".equals(cache)) {
+        String cache = versionService.getCache(envId.toString(), zoneId == null ? "" : zoneId, actualVersion);
+        if (cache == null || "".equals(cache)) {
             event.put("status", HttpStatus.NOT_FOUND.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -111,10 +87,5 @@ public class VirtualHostCachedController extends AbstractController {
         event.sendInfo();
 
         return new ResponseEntity<>(cache, OK);
-    }
-
-    @ResponseStatus(value= HttpStatus.BAD_REQUEST, reason = "Converter not found")
-    public static class ConverterNotFoundException extends Exception {
-
     }
 }

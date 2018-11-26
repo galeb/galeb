@@ -284,7 +284,7 @@ public enum SystemEnv {
     ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE),
 
 
-    // MANAGER
+    // MANAGER/*
 
     /**
      * Cache expiration (seconds)
@@ -378,7 +378,14 @@ public enum SystemEnv {
      * verbose error messages when the connection to the server fails?
      * Setting this property to false removes at least two calls to System.getCurrentTimeMillis() per query.
      */
-    DB_MAINTAIN_TIME_STATS        ("DB_MAINTAIN_TIME_STATS",        Boolean.FALSE);
+    DB_MAINTAIN_TIME_STATS        ("DB_MAINTAIN_TIME_STATS",        Boolean.FALSE),
+
+    // MANAGER/LEGBA
+
+    /**
+     *
+     */
+    REGISTER_ROUTER_TTL           ("REGISTER_ROUTER_TTL",           30000L);
 
     // @formatter:on
 

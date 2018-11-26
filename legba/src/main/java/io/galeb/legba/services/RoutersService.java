@@ -56,23 +56,24 @@ public class RoutersService {
 
     private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
 
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
+    private final ChangesService changesService;
+    private final VersionService versionService;
+    private final ConverterV1 converterV1;
+    private final ConverterV2 converterV2;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    ChangesService changesService;
-
-    @Autowired
-    private VersionService versionService;
-
-    @Autowired
-    private ConverterV1 converterV1;
-
-    @Autowired
-    private ConverterV2 converterV2;
-
-    @Autowired
-    private EntityManagerFactory entityManagerFactory;
+    public RoutersService(StringRedisTemplate redisTemplate, ChangesService changesService,
+        VersionService versionService, ConverterV1 converterV1, ConverterV2 converterV2,
+        EntityManagerFactory entityManagerFactory) {
+        this.redisTemplate = redisTemplate;
+        this.changesService = changesService;
+        this.versionService = versionService;
+        this.converterV1 = converterV1;
+        this.converterV2 = converterV2;
+        this.entityManagerFactory = entityManagerFactory;
+    }
 
     public Set<JsonSchema.Env> get() {
         return get(null);

@@ -18,17 +18,17 @@ package io.galeb.legba.services;
 
 import io.galeb.core.common.EntitiesRegistrable;
 import io.galeb.core.common.HasChangeData;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
-import io.galeb.legba.common.ErrorLogger;
+import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.conversors.Converter;
 import io.galeb.legba.conversors.ConverterV1;
 import io.galeb.legba.conversors.ConverterV2;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -36,8 +36,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -48,8 +46,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Service
 public class RoutersService {
 
-    private static final Log LOGGER = LogFactory.getLog(RoutersService.class);
-
     /**
      * Description arguments:
      * {0} - Environment Id
@@ -58,7 +54,7 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
-    public static long REGISTER_TTL  = Long.valueOf(Optional.ofNullable(System.getenv("REGISTER_ROUTER_TTL")).orElse("30000")); // ms
+    private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -83,6 +79,8 @@ public class RoutersService {
     }
 
     public Set<JsonSchema.Env> get(String environmentId) {
+        final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+
         try {
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
 
@@ -115,7 +113,8 @@ public class RoutersService {
             });
             return envs;
         } catch (Exception e) {
-            ErrorLogger.logError(e, this.getClass());
+            event.put("message", "GET /routers/" + environmentId + " FAILED");
+            event.sendError(e);
         }
         return Collections.emptySet();
     }
@@ -133,71 +132,91 @@ public class RoutersService {
         return numRouters;
     }
 
-    public void put(String routerGroupId, String routerLocalIP, String routerVersion, String envId, String zoneId) {
+    public void put(final RouterMeta routerMeta) {
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         String logCorrelation = UUID.randomUUID().toString();
+        event.put("correlation", logCorrelation);
 
         try {
-            String key = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, routerGroupId, routerLocalIP);
+            String key = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, routerMeta.groupId, routerMeta.localIP);
             Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
-            if (!redisTemplate.hasKey(key)) {
-                Long versionIncremented = versionService.incrementVersion(envId);
 
-                event.put("correlation", logCorrelation);
-                event.put("keyAdded", key);
-                event.put("versionIncremented", String.valueOf(versionIncremented));
-                event.put("environmentId", envId);
-                event.put("routerGroupId", routerGroupId);
-                event.put("routerVersion", routerVersion);
-                event.put("zoneId", zoneId);
-                event.put("message", "Registering router");
-                event.sendInfo();
-            }
-            redisTemplate.opsForValue().set(key, routerVersion, REGISTER_TTL, TimeUnit.MILLISECONDS);
-            updateRouterState(envId, "v2", routerVersion, zoneId == null ? "" : zoneId, routerGroupId, logCorrelation);
+            registerRouterAndUpdateTtl(routerMeta, event, key);
+            updateRouterState(routerMeta, "v2", logCorrelation);
         } catch (Exception e) {
-            ErrorLogger.logError(e, this.getClass());
+            event.put("message",  "POST /routers/" + routerMeta.envId + " FAILED");
+            event.sendError(e);
         }
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private void updateRouterState(
-            String envId,
-            String apiVersion,
-            String routerVersion,
-            String zoneId,
-            String groupId,
-            String logCorrelation)
+    private void registerRouterAndUpdateTtl(RouterMeta routerMeta, JsonEventToLogger event, String key) {
+        if (!redisTemplate.hasKey(key)) {
+            Long versionIncremented = versionService.incrementVersion(routerMeta.envId);
 
-        throws ConverterNotFoundException {
+            event.put("keyAdded", key);
+            event.put("versionIncremented", String.valueOf(versionIncremented));
+            event.put("environmentId", routerMeta.envId);
+            event.put("routerGroupId", routerMeta.groupId);
+            event.put("routerVersion", routerMeta.version);
+            event.put("zoneId", routerMeta.zoneId);
+            event.put("message", "Registering router");
+            event.sendInfo();
+        }
+        redisTemplate.opsForValue().set(key, routerMeta.version, REGISTER_TTL, TimeUnit.MILLISECONDS);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void updateRouterState(final RouterMeta routerMeta, String apiVersion, String logCorrelation)
+            throws ConverterNotFoundException {
+
         Assert.notNull(redisTemplate, StringRedisTemplate.class.getSimpleName() + " IS NULL");
+
         Set<Long> eTagRouters = new HashSet<>();
-        String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, envId, "*", "*");
+        String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, "*", "*");
         redisTemplate.keys(keyAll).forEach(key -> {
             try {
                 eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
             } catch (NumberFormatException e) {
-                LOGGER.warn("Version is not a number. Verify the environment " + envId);
-            }
-            Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
-            if (ttl == null || ttl < (REGISTER_TTL/2)) {
-                redisTemplate.delete(key);
-                Long versionIncremented = versionService.incrementVersion(envId);
                 final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", logCorrelation);
                 event.put("keyExpired", key);
-                event.put("versionIncremented", String.valueOf(versionIncremented));
-                event.put("environmentId", envId);
-                event.put("message", "Update router state");
-                event.sendInfo();
+                event.put("environmentId", routerMeta.envId);
+                event.put("message", "Version is not a number. Verify the environment " + routerMeta.envId);
+                event.sendWarn();
             }
+            expireIfNecessaryAndIncrementVersion(routerMeta, logCorrelation, key);
         });
-        Long versionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        Long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
 
-        changesService.listEntitiesWithOldestVersion(envId, versionRouter).stream()
+        changesService.listEntitiesWithOldestVersion(routerMeta.envId, minVersionRouter).stream()
                 .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))
-                .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(envId, hasChangeData, logCorrelation));
+                .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(routerMeta.envId, hasChangeData, logCorrelation));
 
+        String cache = versionService.getCache(routerMeta.envId, routerMeta.zoneId, routerMeta.version);
+        if (cache == null || "".equals(cache)) {
+            final Converter converter = getConverter(apiVersion);
+            cache = converter.convertToString(logCorrelation, routerMeta.version, routerMeta.zoneId, Long.getLong(routerMeta.envId), routerMeta.groupId);
+            versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId, routerMeta.version);
+        }
+    }
+
+    private void expireIfNecessaryAndIncrementVersion(RouterMeta routerMeta, String logCorrelation, String key) {
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
+        if (ttl == null || ttl < (REGISTER_TTL/2)) {
+            redisTemplate.delete(key);
+            // increment version to force num routers property rebuilding
+            Long versionIncremented = versionService.incrementVersion(routerMeta.envId);
+            final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            event.put("correlation", logCorrelation);
+            event.put("keyExpired", key);
+            event.put("versionIncremented", String.valueOf(versionIncremented));
+            event.put("environmentId", routerMeta.envId);
+            event.put("message", "Update router state");
+            event.sendInfo();
+        }
+    }
+
+    private Converter getConverter(String apiVersion) throws ConverterNotFoundException {
         final Converter converter;
         if (apiVersion == null || ConverterV1.API_VERSION.equals(apiVersion)) {
             converter = converterV1;
@@ -206,12 +225,7 @@ public class RoutersService {
         } else {
             throw new ConverterNotFoundException();
         }
-
-        String cache = versionService.getCache(envId, zoneId, routerVersion);
-        if (cache == null || "".equals(cache)) {
-            cache = converter.convertToString(logCorrelation, routerVersion, zoneId, Long.getLong(envId), groupId);
-            versionService.setCache(cache, envId, zoneId, routerVersion);
-        }
+        return converter;
     }
 
     private void deleteHasChangeAndEntityFromDB(String envId, HasChangeData<String, String, String> hasChangeData, String logCorrelation) {
@@ -219,6 +233,11 @@ public class RoutersService {
         String entityId = hasChangeData.entityId();
         final EntityManager entityManager = entityManagerFactory.createEntityManager();
         final EntityTransaction transaction = entityManager.getTransaction();
+        final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("correlation", logCorrelation);
+        event.put("entityId", entityId);
+        event.put("entityClass", entityClass);
+        event.put("environmentId", envId);
         try {
             transaction.begin();
             Query query = entityManager.createQuery("DELETE FROM " + entityClass + " e WHERE e.id = :entityId AND e.quarantine = true");
@@ -226,18 +245,14 @@ public class RoutersService {
             int numEntities = query.executeUpdate();
             transaction.commit();
             if (numEntities > 0) {
-                final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-                event.put("correlation", logCorrelation);
-                event.put("entityIdDeleted", entityId);
-                event.put("entityClassDeleted", entityClass);
-                event.put("environmentId", envId);
                 event.put("message", "Delete HasChange and Entity from DB");
                 event.sendInfo();
             }
             changesService.delete(hasChangeData.key());
         } catch (Exception e) {
             transaction.rollback();
-            LOGGER.error(e.getMessage(), e);
+            event.put("message", "Delete HasChange and Entity from DB FAILED");
+            event.sendError(e);
         } finally {
             entityManager.close();
         }

@@ -46,14 +46,24 @@ public class RoutersController extends AbstractController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> headRouterMap(@RequestHeader(value = X_GALEB_LOCAL_IP) String routerLocalIP,
+    public ResponseEntity<?> registerRouter(@RequestHeader(value = X_GALEB_LOCAL_IP) String routerLocalIP,
                                            @RequestHeader(value = X_GALEB_GROUP_ID) String routerGroupId,
                                            @RequestHeader(value = X_GALEB_ENVIRONMENT) String envName,
                                            @RequestHeader(value = IF_NONE_MATCH) String version,
                                            @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId) throws Exception {
-        Long envId = getEnvironmentId(envName);
-        routersService.put(routerGroupId, routerLocalIP, version, envId.toString(), zoneId);
+        final Long envId = getEnvironmentId(envName);
+        final RouterMeta routerMeta = new RouterMeta();
+        routerMeta.envId = envId.toString();
+        routerMeta.groupId = routerGroupId;
+        routerMeta.localIP = routerLocalIP;
+        routerMeta.version = version;
+        routerMeta.zoneId = zoneId;
+        routersService.put(routerMeta);
         return ResponseEntity.ok().build();
+    }
+
+    public static class RouterMeta {
+        public String groupId, localIP, version, envId, zoneId;
     }
 
 }

@@ -171,8 +171,9 @@ public class RoutersService {
             throws ConverterNotFoundException {
 
         String zoneId = routerMeta.zoneId;
+        boolean lock = false;
         try {
-            if (lockerService.notLocked(zoneId)) {
+            if (lock = lockerService.notLocked(zoneId)) {
                 lockerService.setExpireLock(zoneId);
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
@@ -184,7 +185,9 @@ public class RoutersService {
                 rebuildRouterMapCached(routerMeta);
             }
         } finally {
-            lockerService.release(zoneId, routerMeta.correlation);
+            if (lock) {
+                lockerService.release(zoneId, routerMeta.correlation);
+            }
         }
     }
 

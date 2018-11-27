@@ -47,7 +47,7 @@ public class ConverterV2 implements Converter {
     @Override
     public String convertToString(final RouterMeta routerMeta, int numRouters) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
-        Long envId = Long.getLong(routerMeta.envId);
+        long envId = Long.parseLong(routerMeta.envId);
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("message", "Converting to string");

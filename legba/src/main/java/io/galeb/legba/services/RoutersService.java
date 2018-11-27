@@ -30,7 +30,6 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -170,14 +169,32 @@ public class RoutersService {
 
     private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation)
             throws ConverterNotFoundException {
-
         try {
-            if (redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK, "" + System.currentTimeMillis())) {
-                redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
-                deleteAllHasChangesProcessed(routerMeta, eTagRouters, logCorrelation);
-                rebuildRouterMapCached(routerMeta, logCorrelation);
+            if (redisLock()) {
+                deleteAllHasChangesProcessed(routerMeta, eTagRouters);
+                rebuildRouterMapCached(routerMeta);
             }
         } finally {
+            releaseRedisLock();
+        }
+    }
+
+    private synchronized boolean redisLock() {
+        boolean result = redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK, "" + System.currentTimeMillis());
+        redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
+
+        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("message", "Getting lock");
+        event.sendInfo();
+
+        return result;
+    }
+
+    private void releaseRedisLock() {
+        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK)) {
+            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            event.put("message", "Releasing lock");
+            event.sendInfo();
             redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK);
         }
     }
@@ -185,45 +202,55 @@ public class RoutersService {
     private Set<Long> processEtagsFromRouters(RouterMeta routerMeta) {
         Set<Long> eTagRouters = new HashSet<>();
         String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, "*", "*");
-        redisTemplate.keys(keyAll).forEach(key -> {
+        redisTemplate.keys(keyAll).forEach(routerKey -> {
             String logCorrelation = routerMeta.correlation;
             try {
-                eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
+                eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(routerKey)));
             } catch (NumberFormatException e) {
                 final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", logCorrelation);
-                event.put("keyExpired", key);
+                event.put("keyExpired", routerKey);
                 event.put("environmentId", routerMeta.envId);
                 event.put("message", "Version is not a number. Verify the environment " + routerMeta.envId);
                 event.sendWarn();
             }
-            expireIfNecessaryAndIncrementVersion(routerMeta, key);
+            expireIfNecessaryAndIncrementVersion(routerMeta, routerKey);
         });
         return eTagRouters;
     }
 
-    private void rebuildRouterMapCached(RouterMeta routerMeta, String logCorrelation)
-        throws ConverterNotFoundException {
-        String cache = versionService.getCache(routerMeta.envId, routerMeta.zoneId, routerMeta.version);
+    private void rebuildRouterMapCached(RouterMeta routerMeta)
+            throws ConverterNotFoundException {
+
+        String cache = versionService.getCache(routerMeta.envId, routerMeta.zoneId);
         if (cache == null || "".equals(cache)) {
+            long start = System.currentTimeMillis();
+
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
             int numRouters = get(routerMeta.envId, routerMeta.groupId);
             cache = converter.convertToString(routerMeta, numRouters);
-            versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId, routerMeta.version);
+            versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId);
+
+            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            event.put("message", "New Cache DONE");
+            event.put("correlation", routerMeta.correlation);
+            event.put("cacheSize", cache.length());
+            event.put("cacheTimeMS", System.currentTimeMillis() - start);
+            event.sendInfo();
         }
     }
 
-    private void expireIfNecessaryAndIncrementVersion(RouterMeta routerMeta, String key) {
-        Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
+    private void expireIfNecessaryAndIncrementVersion(RouterMeta routerMeta, String routerKey) {
+        Long ttl = redisTemplate.getExpire(routerKey, TimeUnit.MILLISECONDS);
         if (ttl == null || ttl < (REGISTER_TTL/2)) {
-            redisTemplate.delete(key);
+            redisTemplate.delete(routerKey);
             // increment version to force num routers property rebuilding
             Long versionIncremented = versionService.incrementVersion(routerMeta.envId);
             final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             String logCorrelation = routerMeta.correlation;
             event.put("correlation", logCorrelation);
-            event.put("keyExpired", key);
+            event.put("keyExpired", routerKey);
             event.put("versionIncremented", String.valueOf(versionIncremented));
             event.put("environmentId", routerMeta.envId);
             event.put("message", "Update router state");
@@ -243,8 +270,9 @@ public class RoutersService {
         return converter;
     }
 
-    private void deleteAllHasChangesProcessed(RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation) {
+    private void deleteAllHasChangesProcessed(RouterMeta routerMeta, final Set<Long> eTagRouters) {
         Long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        String logCorrelation = routerMeta.correlation;
         changesService.listEntitiesWithOldestVersion(routerMeta.envId, minVersionRouter).stream()
             .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))
             .forEach(hasChangeData -> deleteHasChangeAndEntityFromDB(routerMeta.envId, hasChangeData, logCorrelation));

@@ -48,7 +48,7 @@ public class VirtualHostCachedController extends AbstractController {
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
     public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
                                                @PathVariable String envName,
-                                               @RequestHeader(value = "If-None-Match", required = false) String version,
+                                               @RequestHeader(value = "If-None-Match", required = false) String routerVersion,
                                                @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,
                                                @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
 
@@ -57,7 +57,7 @@ public class VirtualHostCachedController extends AbstractController {
 
         Assert.notNull(envName, "Environment name is null");
         Assert.notNull(routerGroupId, "GroupID undefined");
-        Assert.notNull(version, "version undefined");
+        Assert.notNull(routerVersion, "version undefined");
 
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
@@ -70,14 +70,15 @@ public class VirtualHostCachedController extends AbstractController {
         event.put("zoneId", zoneId);
         event.put("tags", LOGGING_TAGS);
 
-        if (version.equals(actualVersion)) {
+        if (routerVersion.equals(actualVersion)) {
             event.put("status", HttpStatus.NOT_MODIFIED.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envId.toString(), zoneId == null ? "" : zoneId, actualVersion);
+        String cache = versionService.getCache(envId.toString(), zoneId == null ? "" : zoneId);
         if (cache == null || "".equals(cache)) {
+            event.put("message", "Cache NOT FOUND");
             event.put("status", HttpStatus.NOT_FOUND.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

@@ -60,7 +60,7 @@ public class ConverterV1 implements Converter {
 
     @Override
     public String convertToString(final RouterMeta routerMeta, int numRouters) {
-        long envId = Long.getLong(routerMeta.envId);
+        long envId = Long.parseLong(routerMeta.envId);
         final List<FullEntity> fullEntities = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
                                                 .collect(Collectors.toList());
 

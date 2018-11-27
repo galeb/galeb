@@ -26,10 +26,12 @@ public class JsonSchema {
     @SuppressWarnings({"unused", "WeakerAccess"})
     public static class Env {
         private final String envId;
+        private final String version;
         private final Set<GroupID> groupIDs;
 
-        public Env(String envId, Set<GroupID> groupIDs) {
+        public Env(String envId, String version, Set<GroupID> groupIDs) {
             this.envId = envId;
+            this.version = version;
             this.groupIDs = groupIDs;
         }
 
@@ -37,6 +39,8 @@ public class JsonSchema {
         public String getEnvId() {
             return envId;
         }
+
+        public String getVersion() { return version; }
 
         public Set<GroupID> getGroupIDs() {
             return groupIDs;

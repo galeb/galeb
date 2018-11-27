@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import io.galeb.core.log.JsonEventToLogger;
+import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
 import io.galeb.legba.model.v1.RuleType;
 import io.galeb.legba.model.v1.VirtualHost;
@@ -58,7 +59,8 @@ public class ConverterV1 implements Converter {
     }
 
     @Override
-    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId, int numRouters) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters) {
+        long envId = Long.getLong(routerMeta.envId);
         final List<FullEntity> fullEntities = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
                                                 .collect(Collectors.toList());
 
@@ -66,14 +68,15 @@ public class ConverterV1 implements Converter {
         long numVirtualhosts = fullEntities.stream().map(FullEntity::getvId).distinct().count();
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("message", "Converting to string");
+        event.put("envId", envId);
         event.put("numVirtualHost", String.valueOf(numVirtualhosts));
         event.put("numRouters", numRouters);
-        event.put("correlation", logCorrelation);
+        event.put("correlation", routerMeta.correlation);
         event.sendInfo();
 
         io.galeb.legba.model.v1.Environment environmentV1 = new io.galeb.legba.model.v1.Environment();
         environmentV1.setId(envId);
-        environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, version));
+        environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, routerMeta.version));
 
         ObjectNode json = objectMapper.createObjectNode();
         final RuleType ruleType = new RuleType("UrlPath");

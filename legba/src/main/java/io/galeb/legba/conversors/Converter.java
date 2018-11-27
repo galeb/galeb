@@ -16,9 +16,11 @@
 
 package io.galeb.legba.conversors;
 
+import io.galeb.legba.controller.RoutersController.RouterMeta;
+
 public interface Converter {
 
-    String convertToString(String logCorrelation, String version, String networkId, Long envId, String groupId, int numRouters);
+    String convertToString(RouterMeta routerMeta, int numRouters);
 
     String getApiVersion();
 }

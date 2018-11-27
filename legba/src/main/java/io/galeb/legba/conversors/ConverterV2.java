@@ -24,6 +24,7 @@ import io.galeb.core.entity.Target;
 import io.galeb.core.entity.VirtualHost;
 
 import io.galeb.core.log.JsonEventToLogger;
+import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v2.Pool;
 import io.galeb.legba.model.v2.Rule;
 import io.galeb.legba.model.v2.RuleOrdered;
@@ -44,20 +45,21 @@ public class ConverterV2 implements Converter {
     private VirtualHostRepository virtualHostRepository;
 
     @Override
-    public String convertToString(String logCorrelation, String version, String zoneId, Long envId, String groupId, int numRouters) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
+        Long envId = Long.getLong(routerMeta.envId);
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("message", "Converting to string");
         event.put("numRouters", numRouters);
         event.put("numVirtualHost", String.valueOf(virtualHostsV2.size()));
-        event.put("correlation", logCorrelation);
+        event.put("correlation", routerMeta.correlation);
         event.sendInfo();
         virtualHostsV2.forEach(vh -> {
             io.galeb.legba.model.v2.VirtualHost v = new io.galeb.legba.model.v2.VirtualHost();
             v.setName(vh.getName());
-            v.setVersion(version);
-            v.setVirtualhostGroup(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, zoneId, groupId, envId));
+            v.setVersion(routerMeta.version);
+            v.setVirtualhostGroup(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, routerMeta.zoneId, routerMeta.groupId, envId));
             list.add(v);
 
         });

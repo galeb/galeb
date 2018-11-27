@@ -143,7 +143,7 @@ public class RoutersService {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, routerMeta.groupId, routerMeta.localIP);
             registerRouterAndUpdateTtl(routerMeta, event, key);
             final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta);
-            updateRouterMapCached(routerMeta, eTagRouters, logCorrelation);
+            updateRouterMapCached(routerMeta, eTagRouters);
         } catch (Exception e) {
             event.put("message",  "POST /routers/" + routerMeta.envId + " FAILED");
             event.sendError(e);
@@ -166,13 +166,14 @@ public class RoutersService {
         redisTemplate.opsForValue().set(key, routerMeta.version, REGISTER_TTL, TimeUnit.MILLISECONDS);
     }
 
-    private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation)
+    private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters)
             throws ConverterNotFoundException {
         try {
             if (lockerService.lock()) {
                 lockerService.setExpireLock();
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                event.put("correlation", routerMeta.correlation);
                 event.put("message", "Getting lock");
                 event.sendInfo();
 

@@ -21,6 +21,7 @@ import static org.springframework.http.HttpHeaders.IF_NONE_MATCH;
 
 import com.google.gson.Gson;
 import io.galeb.core.log.JsonEventToLogger;
+import io.galeb.core.services.VersionService;
 import io.galeb.legba.services.RoutersService;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class RoutersController extends AbstractController {
 
     @Autowired
     RoutersService routersService;
+
+    @Autowired
+    VersionService versionService;
 
     @RequestMapping(method = RequestMethod.GET)
     public String routerMap() {
@@ -54,11 +58,14 @@ public class RoutersController extends AbstractController {
                                            @RequestHeader(value = IF_NONE_MATCH) String version,
                                            @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId) throws Exception {
         final Long envId = getEnvironmentId(envName);
+        String actualVersion = versionService.getActualVersion(envId.toString());
+
         final RouterMeta routerMeta = new RouterMeta();
         routerMeta.envId = envId.toString();
         routerMeta.groupId = routerGroupId;
         routerMeta.localIP = routerLocalIP;
-        routerMeta.version = version;
+        routerMeta.version = "EMPTY".equals(version) ? "0" : version;
+        routerMeta.actualVersion = actualVersion;
         routerMeta.zoneId = zoneId;
         routerMeta.correlation = UUID.randomUUID().toString();
 
@@ -67,7 +74,8 @@ public class RoutersController extends AbstractController {
         event.put("envId", routerMeta.envId);
         event.put("groupId", routerMeta.groupId);
         event.put("localIP", routerMeta.localIP);
-        event.put("version", routerMeta.version);
+        event.put("routerVersion", routerMeta.version);
+        event.put("actualVersion", actualVersion);
         event.put("zoneId", routerMeta.zoneId);
         event.put("correlation", routerMeta.correlation);
         event.sendInfo();
@@ -77,7 +85,7 @@ public class RoutersController extends AbstractController {
     }
 
     public static class RouterMeta {
-        public String groupId, localIP, version, envId, zoneId, correlation;
+        public String groupId, localIP, version, actualVersion, envId, zoneId, correlation;
     }
 
 }

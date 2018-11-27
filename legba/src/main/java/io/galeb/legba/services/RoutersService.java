@@ -138,13 +138,13 @@ public class RoutersService {
 
     public void put(final RouterMeta routerMeta) {
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        String logCorrelation = UUID.randomUUID().toString();
+        String logCorrelation = routerMeta.correlation;
         event.put("correlation", logCorrelation);
 
         try {
             String key = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, routerMeta.groupId, routerMeta.localIP);
             registerRouterAndUpdateTtl(routerMeta, event, key);
-            final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta, logCorrelation);
+            final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta);
             updateRouterMapCached(routerMeta, eTagRouters, logCorrelation);
         } catch (Exception e) {
             event.put("message",  "POST /routers/" + routerMeta.envId + " FAILED");
@@ -182,10 +182,11 @@ public class RoutersService {
         }
     }
 
-    private Set<Long> processEtagsFromRouters(RouterMeta routerMeta, String logCorrelation) {
+    private Set<Long> processEtagsFromRouters(RouterMeta routerMeta) {
         Set<Long> eTagRouters = new HashSet<>();
         String keyAll = MessageFormat.format(FORMAT_KEY_ROUTERS, routerMeta.envId, "*", "*");
         redisTemplate.keys(keyAll).forEach(key -> {
+            String logCorrelation = routerMeta.correlation;
             try {
                 eTagRouters.add(Long.valueOf(redisTemplate.opsForValue().get(key)));
             } catch (NumberFormatException e) {
@@ -196,7 +197,7 @@ public class RoutersService {
                 event.put("message", "Version is not a number. Verify the environment " + routerMeta.envId);
                 event.sendWarn();
             }
-            expireIfNecessaryAndIncrementVersion(routerMeta, logCorrelation, key);
+            expireIfNecessaryAndIncrementVersion(routerMeta, key);
         });
         return eTagRouters;
     }
@@ -213,13 +214,14 @@ public class RoutersService {
         }
     }
 
-    private void expireIfNecessaryAndIncrementVersion(RouterMeta routerMeta, String logCorrelation, String key) {
+    private void expireIfNecessaryAndIncrementVersion(RouterMeta routerMeta, String key) {
         Long ttl = redisTemplate.getExpire(key, TimeUnit.MILLISECONDS);
         if (ttl == null || ttl < (REGISTER_TTL/2)) {
             redisTemplate.delete(key);
             // increment version to force num routers property rebuilding
             Long versionIncremented = versionService.incrementVersion(routerMeta.envId);
             final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            String logCorrelation = routerMeta.correlation;
             event.put("correlation", logCorrelation);
             event.put("keyExpired", key);
             event.put("versionIncremented", String.valueOf(versionIncremented));

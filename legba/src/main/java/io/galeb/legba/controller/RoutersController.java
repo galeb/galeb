@@ -20,7 +20,9 @@ import static io.galeb.core.common.GalebHttpHeaders.*;
 import static org.springframework.http.HttpHeaders.IF_NONE_MATCH;
 
 import com.google.gson.Gson;
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.services.RoutersService;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,12 +60,24 @@ public class RoutersController extends AbstractController {
         routerMeta.localIP = routerLocalIP;
         routerMeta.version = version;
         routerMeta.zoneId = zoneId;
+        routerMeta.correlation = UUID.randomUUID().toString();
+
+        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+        event.put("message", "Calling RoutersController.registerRouter");
+        event.put("envId", routerMeta.envId);
+        event.put("groupId", routerMeta.groupId);
+        event.put("localIP", routerMeta.localIP);
+        event.put("version", routerMeta.version);
+        event.put("zoneId", routerMeta.zoneId);
+        event.put("correlation", routerMeta.correlation);
+        event.sendInfo();
+
         routersService.put(routerMeta);
         return ResponseEntity.ok().build();
     }
 
     public static class RouterMeta {
-        public String groupId, localIP, version, envId, zoneId;
+        public String groupId, localIP, version, envId, zoneId, correlation;
     }
 
 }

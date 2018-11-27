@@ -144,7 +144,7 @@ public class ConverterV1 implements Converter {
                 virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.gettLastModifiedAt().toString());
                 if (fullEntity.getHsLastModifiedAt() != null) {
                     lastKetFullHash = virtualhostFullHash.get(vh1);
-                    virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getHsLastModifiedAt().toString());
+                    virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getHsLastModifiedAt());
                 }
             }
             ruleV1.setPool(poolV1);

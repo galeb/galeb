@@ -97,11 +97,12 @@ public class RoutersService {
                     String env = (String) positions[0];
                     String groupId = (String) positions[1];
                     String localIp = (String) positions[2];
+                    String version = versionService.getActualVersion(env);
 
                     JsonSchema.Env envSchema = envs.stream()
                             .filter(e -> e.getEnvId().equals(env))
                             .findAny()
-                            .orElseGet(() -> new JsonSchema.Env(env, new HashSet<>()));
+                            .orElseGet(() -> new JsonSchema.Env(env, version, new HashSet<>()));
                     JsonSchema.GroupID groupIDSchema = envSchema.getGroupIDs().stream()
                             .filter(g -> g.getGroupID().equals(groupId))
                             .findAny()
@@ -212,16 +213,18 @@ public class RoutersService {
 
         final String envId = routerMeta.envId;
         final String zoneId = routerMeta.zoneId;
-        String cache = versionService.getCache(envId, zoneId);
+        final String actualVersion = routerMeta.actualVersion;
+
+        String cache = versionService.getCache(envId, zoneId, actualVersion);
+
         if (cache == null || "".equals(cache)) {
             long start = System.currentTimeMillis();
 
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
             int numRouters = get(envId, routerMeta.groupId);
-            final String actualVersion = versionService.getActualVersion(envId);
             cache = converter.convertToString(routerMeta, numRouters, actualVersion);
-            versionService.setCache(cache, envId, zoneId);
+            versionService.setCache(cache, envId, zoneId, actualVersion);
 
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("message", "New Cache DONE");

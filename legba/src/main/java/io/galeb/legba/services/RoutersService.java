@@ -259,7 +259,7 @@ public class RoutersService {
     }
 
     private void deleteAllHasChangesProcessed(RouterMeta routerMeta, final Set<Long> eTagRouters) {
-        Long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
+        long minVersionRouter = eTagRouters.stream().mapToLong(i -> i).min().orElse(-1L);
         String logCorrelation = routerMeta.correlation;
         changesService.listEntitiesWithOldestVersion(routerMeta.envId, minVersionRouter).stream()
             .filter(hasChangeData -> EntitiesRegistrable.contains(hasChangeData.entityClassName()))

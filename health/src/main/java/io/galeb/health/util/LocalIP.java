@@ -1,18 +1,14 @@
 package io.galeb.health.util;
 
+import io.galeb.core.log.JsonEventToLogger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LocalIP {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(LocalIP.class);
 
     public static String encode() {
         final List<String> ipList = new ArrayList<>();
@@ -32,7 +28,9 @@ public class LocalIP {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error(ExceptionUtils.getStackTrace(e));
+            JsonEventToLogger eventToLogger = new JsonEventToLogger(LocalIP.class);
+            eventToLogger.put("message", "Error trying get LocalIP");
+            eventToLogger.sendError(e);
         }
         String ip = String.join("-", ipList);
         if ("".equals(ip)) {

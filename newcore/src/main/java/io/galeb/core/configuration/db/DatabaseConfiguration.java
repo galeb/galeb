@@ -17,7 +17,6 @@
 package io.galeb.core.configuration.db;
 
 import com.zaxxer.hikari.HikariDataSource;
-import java.util.Optional;
 
 import io.galeb.core.enums.SystemEnv;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -37,6 +36,7 @@ public class DatabaseConfiguration {
     // @formatter:off
     private static final Integer DB_MAX_POOL_SIZE              = Integer.valueOf(SystemEnv.DB_MAX_POOL_SIZE.getValue());
     private static final Long    DB_CONN_TIMEOUT               = Long.valueOf(SystemEnv.DB_CONN_TIMEOUT.getValue());
+    private static final Long    DB_MAX_LIFE_TIME              = Long.valueOf(SystemEnv.DB_MAX_LIFE_TIME.getValue());
     private static final Boolean DB_AUTOCOMMIT                 = Boolean.valueOf(SystemEnv.DB_AUTOCOMMIT.getValue());
     private static final Boolean DB_CACHE_PREP_STMTS           = Boolean.valueOf(SystemEnv.DB_CACHE_PREP_STMTS.getValue());
     private static final Integer DB_PREP_STMT_CACHE_SIZE       = Integer.valueOf(SystemEnv.DB_PREP_STMT_CACHE_SIZE.getValue());
@@ -61,6 +61,7 @@ public class DatabaseConfiguration {
         HikariDataSource hikariDataSource = (HikariDataSource) properties.initializeDataSourceBuilder().type(HikariDataSource.class).build();
         hikariDataSource.setConnectionTimeout(DB_CONN_TIMEOUT);
         hikariDataSource.setMaximumPoolSize(DB_MAX_POOL_SIZE);
+        hikariDataSource.setMaxLifetime(DB_MAX_LIFE_TIME);
         hikariDataSource.setAutoCommit(DB_AUTOCOMMIT);
         hikariDataSource.setConnectionTestQuery("SELECT 1");
         hikariDataSource.addDataSourceProperty("cachePrepStmts", DB_CACHE_PREP_STMTS);

@@ -16,66 +16,63 @@
 
 package io.galeb.health.util;
 
-import com.google.gson.Gson;
+import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
+
 import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.galeb.core.log.JsonEventToLogger;
+import javax.jms.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-
-import javax.jms.Message;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Component
 public class CallBackQueue {
 
     private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
     private static final String QUEUE_HEALTH_REGISTER = "health-register";
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     private final JmsTemplate jmsTemplate;
-
-    private final Gson gson = new Gson();
-
-    private static final String LOGGING_TAGS  = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
     public CallBackQueue(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void update(HealthStatus healthStatus) {
+    public void update(TargetDTO targetDTO) {
+        String correlation = targetDTO.getCorrelation();
         try {
             jmsTemplate.send(QUEUE_HEALTH_CALLBACK, session -> {
-                Message message = session.createObjectMessage(healthStatus);
-                String uniqueId = "ID:" + healthStatus.getTarget().getName() + "-" + healthStatus.getSource() + "_" + System.currentTimeMillis();
+                Message message = session.createObjectMessage(targetDTO);
+                Target target = targetDTO.getTarget();
+                String uniqueId = "ID:" + target.getName() + "-" + ZONE_ID + "_" + System.currentTimeMillis();
                 message.setStringProperty("_HQ_DUPL_ID", uniqueId);
                 message.setJMSMessageID(uniqueId);
                 message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+                HealthStatus healthStatus = targetDTO.getHealthStatus(ZONE_ID).orElse(new HealthStatus());
 
-                Map<String, String> mapLog = new HashMap<>();
-                mapLog.put("class", CallBackQueue.class.getSimpleName());
-                mapLog.put("queue", QUEUE_HEALTH_CALLBACK);
-                mapLog.put("jmsMessageId", uniqueId);
-                mapLog.put("healthStatus_source", healthStatus.getSource());
-                mapLog.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
-                mapLog.put("healthStatus_status", healthStatus.getStatus().name());
-                mapLog.put("healthStatus_target", healthStatus.getTarget().getName());
-                mapLog.put("tags", LOGGING_TAGS);
-
-                logger.info(gson.toJson(mapLog));
+                JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+                eventToLogger.put("message", "Sending to callback queue");
+                eventToLogger.put("jmsMessageId", uniqueId);
+                eventToLogger.put("correlation", correlation);
+                eventToLogger.put("healthStatus_source", ZONE_ID);
+                eventToLogger.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
+                eventToLogger.put("healthStatus_status", healthStatus.getStatus().name());
+                eventToLogger.put("healthStatus_target", target.getName());
+                eventToLogger.sendInfo();
                 return message;
             });
         } catch (JmsException e) {
-            logger.error(e.getMessage(), e);
+            JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+            eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+            eventToLogger.put("message", "Error sending to callback queue");
+            eventToLogger.put("correlation", correlation);
+            eventToLogger.sendError(e);
         }
     }
 

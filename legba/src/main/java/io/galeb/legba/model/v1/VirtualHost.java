@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Globo.com - ATeam
+ * Copyright (c) 2014-2018 Globo.com - ATeam
  * All rights reserved.
  *
  * This source is subject to the Apache License, Version 2.0.
@@ -37,6 +37,10 @@ public class VirtualHost extends AbstractEntity {
             this.rules.clear();
             this.rules.addAll(rules);
         }
+    }
+
+    public Environment getEnvironment() {
+        return environment;
     }
 
     public void setEnvironment(Environment environment) {

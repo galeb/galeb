@@ -43,7 +43,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldBadRequestWhenPassingApiVersionInexistent() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
+        when(versionService.getCache("1", "zone-local")).thenReturn(null);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
@@ -56,7 +56,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldOkResponseWhenNotPassingApiVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local","2")).thenReturn(null);
+        when(versionService.getCache("1", "zone-local")).thenReturn(null);
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
@@ -74,7 +74,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldOkResponseWhenDoesNotExistsCache() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local","2")).thenReturn(null);
+        when(versionService.getCache("1", "zone-local")).thenReturn(null);
         when(routersService.get("1", "group-local")).thenReturn(1);
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
@@ -105,7 +105,7 @@ public class VirtualHostCachedControllerTest {
     @Test
     public void shouldNotFoundResponse() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local","2")).thenReturn("");
+        when(versionService.getCache("1", "zone-local")).thenReturn("");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");

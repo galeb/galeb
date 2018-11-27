@@ -16,7 +16,7 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -32,15 +32,15 @@ import java.util.*;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_environment_name", columnNames = { "name" }) })
 public class Environment extends AbstractEntity implements WithStatus {
 
-    @JsonManagedReference
+
     @ManyToMany(mappedBy = "environments")
     private Set<VirtualHost> virtualhosts = new HashSet<>();
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy = "environment")
     private Set<Pool> pools = new HashSet<>();
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy = "environment")
     private Set<RuleOrdered> rulesordered = new HashSet<>();
 

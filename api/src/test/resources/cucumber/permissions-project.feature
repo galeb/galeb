@@ -20,7 +20,7 @@ Feature: Validate permissions for create, update (specific and all fields), get 
       Then the response status is 201
       Given a REST client authenticated as superadmin with password ""
       Then the response status is 200
-      Given a REST client authenticated as admin with password pass
+      Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
         | accounts         | [Account=superadmin]      |
       And send PATCH RoleGroup=SUPER_ADMIN

@@ -16,11 +16,11 @@
 
 package io.galeb.health.configurations;
 
-import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.services.HealthCheckerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.jms.JMSException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -28,16 +28,16 @@ import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
-import javax.jms.JMSException;
-
 @SuppressWarnings("Duplicates")
 @Configuration
 @EnableJms
 public class JMSConfiguration implements JmsListenerConfigurer {
 
-    private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue() + "_" + SystemEnv.ENVIRONMENT_ID.getValue();
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    // @formatter:off
+    private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue()     + SystemEnv.QUEUE_NAME_SEPARATOR.getValue() +
+                                             SystemEnv.ENVIRONMENT_ID.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue() +
+                                             SystemEnv.ZONE_ID.getValue().toLowerCase();
+    // @formatter:on
 
     private final HealthCheckerService healthCheckerService;
 
@@ -54,11 +54,13 @@ public class JMSConfiguration implements JmsListenerConfigurer {
         endpoint.setConcurrency("5-5");
         endpoint.setMessageListener(message -> {
             try {
-                if (message.isBodyAssignableTo(Target.class)) {
-                    healthCheckerService.check(message.getBody(Target.class));
+                if (message.isBodyAssignableTo(TargetDTO.class)) {
+                    healthCheckerService.check(message.getBody(TargetDTO.class));
                 }
             } catch (JMSException e) {
-                logger.error(e.getMessage(), e);
+                JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                eventToLogger.put("message", "Error processing message from queue");
+                eventToLogger.sendError(e);
             }
         });
         endpointRegistrar.registerEndpoint(endpoint);

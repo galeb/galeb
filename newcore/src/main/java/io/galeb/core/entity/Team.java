@@ -16,8 +16,8 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -38,20 +38,20 @@ import java.util.Set;
 @Table(uniqueConstraints = { @UniqueConstraint(name = "UK_team_name", columnNames = { "name" }) })
 public class Team extends AbstractEntity {
 
-    @JsonBackReference
+
     @ManyToMany
     @JoinTable(joinColumns=@JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name="FK_team_id")),
             inverseJoinColumns=@JoinColumn(name = "account_id", foreignKey = @ForeignKey(name="FK_account_id")))
     private Set<Account> accounts = new HashSet<>();
 
-    @JsonManagedReference
+
     @ManyToMany(mappedBy = "teams")
     private Set<Project> projects = new HashSet<>();
 
     @Column(nullable = false)
     private String name;
 
-    @JsonManagedReference
+
     @ManyToMany(mappedBy = "teams", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 

@@ -1,12 +1,12 @@
 @active
 Feature: RuleOrdered tests
   Background:
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     When request json body has:
       | name  | envOne |
     And send POST /environment
     Then the response status is 201
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     When request json body has:
       | name  | balancePolicyOne |
     And send POST /balancepolicy
@@ -118,7 +118,7 @@ Feature: RuleOrdered tests
     Then property name contains ruleTwo
 
   Scenario: Should patch the relationship environment
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     When request json body has:
       | name  | envTwo |
     And send POST /environment
@@ -137,7 +137,7 @@ Feature: RuleOrdered tests
     Then property name contains envTwo
 
   Scenario: Should patch the relationship virtualhostgroup
-    Given a REST client authenticated as admin with password pass
+    Given a REST client authenticated as adminTeamOne with password pass
     When request json body has:
       | name  | vhTwo |
       | project  | Project=projOne |

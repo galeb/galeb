@@ -16,7 +16,7 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -34,7 +34,7 @@ import java.util.Set;
 @Table(name = "balancepolicy", uniqueConstraints = { @UniqueConstraint(name = "UK_balancepolicy_name", columnNames = { "name" }) })
 public class BalancePolicy extends AbstractEntity {
 
-    @JsonManagedReference
+
     @OneToMany(mappedBy = "balancepolicy")
     private Set<Pool> pools = new HashSet<>();
 

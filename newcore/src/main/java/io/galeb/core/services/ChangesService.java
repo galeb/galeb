@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -73,12 +72,12 @@ public class ChangesService {
         return keys.stream().map(key -> Long.parseLong(key.split(":")[1])).collect(Collectors.toSet());
     }
 
-    public List<HasChangeData<String, String, String>> listEntitiesWithOldestVersion(String envid, Long minRouterVersion) {
+    public List<HasChangeData<String, String, String>> listEntitiesWithOldestVersion(String envid, long minRouterVersion) {
         final List<HasChangeData<String, String, String>> hasChangeDataList = new ArrayList<>();
         String hasChangeKeyPattern = MessageFormat.format(FORMAT_KEY_HAS_CHANGE, envid, "*", "*", "*");
         keys(hasChangeKeyPattern).forEach(hasChangeKey -> {
             String hasChangeVersion = redisTemplate.opsForValue().get(hasChangeKey);
-            if (minRouterVersion >= Long.valueOf(hasChangeVersion)) {
+            if (minRouterVersion >= Long.parseLong(hasChangeVersion)) {
                 try {
                     String entityId = (String) new MessageFormat(FORMAT_KEY_HAS_CHANGE).parse(hasChangeKey)[2];
                     String entityClass = (String) new MessageFormat(FORMAT_KEY_HAS_CHANGE).parse(hasChangeKey)[1];

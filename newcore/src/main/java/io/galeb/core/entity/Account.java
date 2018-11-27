@@ -17,7 +17,7 @@
 package io.galeb.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -75,11 +75,11 @@ public class Account extends AbstractEntity implements UserDetails {
 
     private Boolean resettoken = false;
 
-    @JsonManagedReference
+
     @ManyToMany(mappedBy = "accounts")
     private Set<Team> teams = new HashSet<>();
 
-    @JsonManagedReference
+
     @ManyToMany(mappedBy = "accounts", fetch = FetchType.EAGER)
     private Set<RoleGroup> rolegroups = new HashSet<>();
 

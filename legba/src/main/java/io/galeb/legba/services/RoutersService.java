@@ -52,11 +52,7 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
-    private static final String ROUTER_MAP_CACHE_REBUILD_LOCK = "router-map-cache-rebuild-lock";
-
     private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
-
-    private static long ROUTER_CONCURRENT_LOCK_TTL = 120000L; // Long.parseLong(SystemEnv.ROUTER_CONCURRENT_LOCK_TTL.getValue())
 
     private static String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
@@ -66,23 +62,26 @@ public class RoutersService {
     private final ConverterV1 converterV1;
     private final ConverterV2 converterV2;
     private final EntityManagerFactory entityManagerFactory;
+    private final LockerService lockerService;
 
     @Autowired
     public RoutersService(StringRedisTemplate redisTemplate, ChangesService changesService,
-        VersionService versionService, ConverterV1 converterV1, ConverterV2 converterV2,
-        EntityManagerFactory entityManagerFactory) {
+                          VersionService versionService, ConverterV1 converterV1, ConverterV2 converterV2,
+                          EntityManagerFactory entityManagerFactory, LockerService lockerService) {
         this.redisTemplate = redisTemplate;
         this.changesService = changesService;
         this.versionService = versionService;
         this.converterV1 = converterV1;
         this.converterV2 = converterV2;
         this.entityManagerFactory = entityManagerFactory;
+        this.lockerService = lockerService;
     }
 
     public Set<JsonSchema.Env> get() {
         return get(null);
     }
 
+    @SuppressWarnings("Duplicates")
     public Set<JsonSchema.Env> get(String environmentId) {
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
 
@@ -170,32 +169,18 @@ public class RoutersService {
     private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters, String logCorrelation)
             throws ConverterNotFoundException {
         try {
-            if (redisLock()) {
+            if (lockerService.lock()) {
+                lockerService.setExpireLock();
+
+                JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                event.put("message", "Getting lock");
+                event.sendInfo();
+
                 deleteAllHasChangesProcessed(routerMeta, eTagRouters);
                 rebuildRouterMapCached(routerMeta);
             }
         } finally {
-            releaseRedisLock();
-        }
-    }
-
-    private synchronized boolean redisLock() {
-        boolean result = redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK, "" + System.currentTimeMillis());
-        redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
-
-        JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        event.put("message", "Getting lock");
-        event.sendInfo();
-
-        return result;
-    }
-
-    private void releaseRedisLock() {
-        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK)) {
-            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-            event.put("message", "Releasing lock");
-            event.sendInfo();
-            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK);
+            lockerService.release();
         }
     }
 
@@ -222,15 +207,18 @@ public class RoutersService {
     private void rebuildRouterMapCached(RouterMeta routerMeta)
             throws ConverterNotFoundException {
 
-        String cache = versionService.getCache(routerMeta.envId, routerMeta.zoneId);
+        final String envId = routerMeta.envId;
+        final String zoneId = routerMeta.zoneId;
+        String cache = versionService.getCache(envId, zoneId);
         if (cache == null || "".equals(cache)) {
             long start = System.currentTimeMillis();
 
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
-            int numRouters = get(routerMeta.envId, routerMeta.groupId);
-            cache = converter.convertToString(routerMeta, numRouters);
-            versionService.setCache(cache, routerMeta.envId, routerMeta.zoneId);
+            int numRouters = get(envId, routerMeta.groupId);
+            final String actualVersion = versionService.getActualVersion(envId);
+            cache = converter.convertToString(routerMeta, numRouters, actualVersion);
+            versionService.setCache(cache, envId, zoneId);
 
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("message", "New Cache DONE");

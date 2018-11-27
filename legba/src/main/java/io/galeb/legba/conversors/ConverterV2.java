@@ -45,7 +45,7 @@ public class ConverterV2 implements Converter {
     private VirtualHostRepository virtualHostRepository;
 
     @Override
-    public String convertToString(final RouterMeta routerMeta, int numRouters) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
         long envId = Long.parseLong(routerMeta.envId);
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);
@@ -58,7 +58,7 @@ public class ConverterV2 implements Converter {
         virtualHostsV2.forEach(vh -> {
             io.galeb.legba.model.v2.VirtualHost v = new io.galeb.legba.model.v2.VirtualHost();
             v.setName(vh.getName());
-            v.setVersion(routerMeta.version);
+            v.setVersion(version);
             v.setVirtualhostGroup(convertVirtualhostGroup(vh.getVirtualhostgroup(), numRouters, routerMeta.zoneId, routerMeta.groupId, envId));
             list.add(v);
 

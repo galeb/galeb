@@ -59,7 +59,7 @@ public class ConverterV1 implements Converter {
     }
 
     @Override
-    public String convertToString(final RouterMeta routerMeta, int numRouters) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
         long envId = Long.parseLong(routerMeta.envId);
         final List<FullEntity> fullEntities = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
                                                 .collect(Collectors.toList());
@@ -76,7 +76,7 @@ public class ConverterV1 implements Converter {
 
         io.galeb.legba.model.v1.Environment environmentV1 = new io.galeb.legba.model.v1.Environment();
         environmentV1.setId(envId);
-        environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, routerMeta.version));
+        environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, version));
 
         ObjectNode json = objectMapper.createObjectNode();
         final RuleType ruleType = new RuleType("UrlPath");

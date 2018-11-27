@@ -20,7 +20,7 @@ import io.galeb.legba.controller.RoutersController.RouterMeta;
 
 public interface Converter {
 
-    String convertToString(RouterMeta routerMeta, int numRouters);
+    String convertToString(RouterMeta routerMeta, int numRouters, String version);
 
     String getApiVersion();
 }

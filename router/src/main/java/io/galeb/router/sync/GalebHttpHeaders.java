@@ -24,4 +24,5 @@ public enum GalebHttpHeaders {
     public static final String X_GALEB_ENVIRONMENT = PREFIX + "Environment";
     public static final String X_GALEB_LOCAL_IP    = PREFIX + "LocalIP";
     public static final String X_GALEB_SHOW_CACHE  = PREFIX + "Show-Cache";
+    public static final String X_GALEB_ZONE_ID  = PREFIX + "ZoneID";
 }

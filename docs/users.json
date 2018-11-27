@@ -1,0 +1,32 @@
+[
+  {
+    "dn": "cn=user1,dc=test",
+    "cn": "user1",
+    "attribute1": "value1",
+    "attribute2": "value2"
+  },
+  {
+    "dn": "cn=user2,dc=test",
+    "cn": "user2",
+    "attribute1": "value3",
+    "attribute2": "value4"
+  },
+  {
+    "dn": "cn=superadmin,dc=test",
+    "cn": "superadmin",
+    "attribute1": "value5",
+    "attribute2": "value6"
+  },
+  {
+    "dn": "cn=adminTeamOne,dc=test",
+    "cn": "adminTeamOne",
+    "attribute1": "value5",
+    "attribute2": "value6"
+  },
+  {
+    "dn": "cn=accountOne,dc=test",
+    "cn": "accountOne",
+    "attribute1": "value5",
+    "attribute2": "value6"
+  }
+]

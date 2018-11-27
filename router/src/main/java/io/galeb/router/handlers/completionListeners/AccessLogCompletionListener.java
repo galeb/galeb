@@ -56,7 +56,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
             final String bytesSentOrDash = responseBytesSent == 0L ? "-" : bytesSent; // %b
             final Integer responseTime = Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange))); // %D
             final String realDestAttached = exchange.getAttachment(HostSelector.REAL_DEST);
-            final String realDest = extractUpstreamField(exchange.getResponseHeaders(), realDestAttached);
+            final String realDest = realDestAttached != null ? realDestAttached : extractXGalebErrorHeader(exchange.getResponseHeaders());
             final String userAgent = requestHeader(Headers.USER_AGENT).readAttribute(exchange); // %{i,User-Agent}
             final String requestId = !"".equals(REQUESTID_HEADER) ? requestHeader(RequestIDHandler.requestIdHeader()).readAttribute(exchange) : null; // %{i,?REQUEST_ID?}
             final String xForwardedFor = requestHeader(Headers.X_FORWARDED_FOR).readAttribute(exchange); // %{i,X-Forwarded-For}

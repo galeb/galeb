@@ -1,0 +1,66 @@
+build:
+    project: '@project.artifactId@'
+    timestamp: '@timestamp@'
+    version: '@project.version@'
+
+endpoints:
+    autoconfig:  { enabled: false }
+    beans:       { enabled: false }
+    configprops: { enabled: false }
+    dump:        { enabled: false }
+    env:         { enabled: false }
+    health:      { enabled: true }
+    info:        { enabled: true }
+    mappings:    { enabled: false }
+    metrics:     { enabled: false }
+    shutdown:    { enabled: false }
+    trace:       { enabled: false }
+
+app:
+    scheduling:
+        enabled: false
+
+
+spring:
+    datasource:
+        driverClassName: ${GALEB_DB_DRIVER:org.h2.Driver}
+        password: ${GALEB_DB_PASS:}
+        url: ${GALEB_DB_URL:jdbc:h2:mem:galeb_api;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+        username: ${GALEB_DB_USER:sa}
+
+    h2:
+        console:
+            enabled: ${H2_CONSOLE_ENABLE:false}
+            path: /console
+            settings:
+                trace: false
+                web-allow-others: false
+
+    jackson:
+        date-format: yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+        default-property-inclusion: non-empty
+        deserialization: { use-big-decimal-for-floats: true }
+        property-naming-strategy: SNAKE_CASE
+        serialization: { write-dates-as-timestamps: false }
+
+    jpa:
+        database-platform: ${GALEB_DB_DIALECT:org.hibernate.dialect.H2Dialect}
+        hibernate:
+            ddl-auto: ${DDL_MODE:none}
+        properties:
+            hibernate:
+                format_sql: ${FORMAT_SQL:false}
+                show_sql: ${SHOW_SQL:false}
+                use_sql_comments: ${USE_COMMENTS:false}
+
+    main:
+        banner-mode: 'off'
+
+    redis:
+        url: ${REDIS_URL:redis://127.0.0.1:6379}
+
+    profiles:
+        active: development
+
+    flyway:
+        enabled: ${FLYWAY_ENABLED:true}

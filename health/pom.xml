@@ -52,7 +52,7 @@
     <parent>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-parent</artifactId>
-      <version>1.5.2.RELEASE</version>
+      <version>1.5.9.RELEASE</version>
     </parent>
 
     <properties>
@@ -61,11 +61,10 @@
 
         <org.apache.logging.log4j.version>2.8.1</org.apache.logging.log4j.version>
         <commons-lang3.version>3.4</commons-lang3.version>
-        <disruptor.version>3.3.6</disruptor.version>
         <metrics.version>3.2.2</metrics.version>
         <jodd.version>3.8.1</jodd.version>
         <guava.version>21.0</guava.version>
-        <asynchttpclient.version>2.1.0-alpha8</asynchttpclient.version>
+        <asynchttpclient.version>2.6.0</asynchttpclient.version>
         <metrics.version>3.2.2</metrics.version>
         <gson.version>2.8.0</gson.version>
         <spring-jms.version>4.3.7.RELEASE</spring-jms.version>
@@ -81,16 +80,26 @@
 
     <repositories>
        <repository>
-           <id>galeb_core</id>
-           <url>file://${project.basedir}/core/target</url>
+           <id>galeb_newcore</id>
+           <url>file://${project.basedir}/newcore/target</url>
        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>io.galeb</groupId>
-            <artifactId>galeb-core</artifactId>
+            <artifactId>galeb-newcore</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>biz.paluch.redis</groupId>
+                    <artifactId>lettuce</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -135,11 +144,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>${disruptor.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -224,6 +228,12 @@
             <version>${org.jacoco.agent.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.stefanbirkner</groupId>
+            <artifactId>system-rules</artifactId>
+            <version>1.17.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -245,6 +255,7 @@
                     <argLine>
                         ${surefireArgLine}
                         -server
+                        -Dserver.port=8080
                         -Xmx512m -Xss256k
                         -Dlog4j.configurationFile=src/main/resources/log4j2-spring.xml
                         -DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector
@@ -269,7 +280,6 @@
                         -Dcom.sun.management.jmxremote=true
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
-                        -Dcom.sun.management.jmxremote.port=5001
                     </jvmArguments>
                 </configuration>
             </plugin>

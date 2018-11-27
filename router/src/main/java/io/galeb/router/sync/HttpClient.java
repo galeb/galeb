@@ -18,6 +18,7 @@ package io.galeb.router.sync;
 
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
+import io.galeb.core.so.LocalIP;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.*;
@@ -44,6 +45,7 @@ public class HttpClient {
 
     private static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue();
     private static final String GROUP_ID = SystemEnv.GROUP_ID.getValue();
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     private final AsyncHttpClient asyncHttpClient;
 
@@ -63,6 +65,7 @@ public class HttpClient {
         try {
             RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                     .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
+                    .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                     .setHeader(IF_NONE_MATCH_STRING, etag);
             asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
                 @Override
@@ -90,40 +93,14 @@ public class HttpClient {
         }
     }
 
-    private static String localIpsEncoded() {
-        final List<String> ipList = new ArrayList<>();
-        try {
-            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
-            while (ifs.hasMoreElements()) {
-                NetworkInterface localInterface = ifs.nextElement();
-                if (!localInterface.isLoopback() && localInterface.isUp()) {
-                    Enumeration<InetAddress> ips = localInterface.getInetAddresses();
-                    while (ips.hasMoreElements()) {
-                        InetAddress ipaddress = ips.nextElement();
-                        if (ipaddress instanceof Inet4Address) {
-                            ipList.add(ipaddress.getHostAddress());
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error(ExceptionUtils.getStackTrace(e));
-        }
-        String ip = String.join("-", ipList);
-        if (ip == null || "".equals(ip)) {
-            ip = "undef-" + System.currentTimeMillis();
-        }
-        return ip.replaceAll("[:%]", "");
-    }
-
     public void post(String url, String etag) {
         RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                 .setMethod(HttpMethod.POST.name())
                 .setHeader(IF_NONE_MATCH_STRING, etag)
                 .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
                 .setHeader(X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
-                .setHeader(X_GALEB_LOCAL_IP, localIpsEncoded())
+                .setHeader(X_GALEB_LOCAL_IP, LocalIP.encode())
+                .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                 .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
             @Override

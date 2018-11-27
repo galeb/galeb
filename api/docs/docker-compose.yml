@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+
+  mysql:
+    image: mysql:5.6
+    container_name: galeb_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: galeb_api
+    ports:
+      - 3306:3306
+
+  redis:
+    image: redis:3.2.6-alpine
+    container_name: galeb_redis
+    command: redis-server --appendonly yes
+    ports:
+      - 6379:6379
+
+  fake-oauth2:
+    image: tuxmonteiro/galeb-fake-oauth2
+    container_name: galeb_oauth
+    ports:
+      - 9000:9000
+
+  ldap:
+    image: tuxmonteiro/ldap-mock:latest
+    container_name: galeb_ldap
+    volumes:
+      - "./users.json:/usr/src/app/users/users.json"
+    ports:
+      - 3890:3890
+

@@ -16,24 +16,25 @@
 
 package io.galeb.health.util;
 
-import com.google.gson.Gson;
+import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
+
+import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Target;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.galeb.core.entity.dto.TargetDTO;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.log.JsonEventToLogger;
+import javax.jms.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-
-import javax.jms.Message;
-
-import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 @Component
 public class CallBackQueue {
 
-    private static final String HEALTH_CALLBACK_QUEUE = "health-callback";
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String QUEUE_HEALTH_CALLBACK = "health-callback";
+    private static final String QUEUE_HEALTH_REGISTER = "health-register";
+    private static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
 
     private final JmsTemplate jmsTemplate;
 
@@ -42,18 +43,41 @@ public class CallBackQueue {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void update(Target target) {
-        String targetStr = new Gson().toJson(target, Target.class);
-        jmsTemplate.send(HEALTH_CALLBACK_QUEUE, session -> {
-            Message message = session.createObjectMessage(targetStr);
-            String uniqueId = "ID:" + target.getName() + "-" + System.currentTimeMillis();
-            message.setStringProperty("_HQ_DUPL_ID", uniqueId);
-            message.setJMSMessageID(uniqueId);
-            message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+    public void update(TargetDTO targetDTO) {
+        String correlation = targetDTO.getCorrelation();
+        try {
+            jmsTemplate.send(QUEUE_HEALTH_CALLBACK, session -> {
+                Message message = session.createObjectMessage(targetDTO);
+                Target target = targetDTO.getTarget();
+                String uniqueId = "ID:" + target.getName() + "-" + ZONE_ID + "_" + System.currentTimeMillis();
+                message.setStringProperty("_HQ_DUPL_ID", uniqueId);
+                message.setJMSMessageID(uniqueId);
+                message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), uniqueId);
+                HealthStatus healthStatus = targetDTO.getHealthStatus(ZONE_ID).orElse(new HealthStatus());
 
-            logger.info("JMSMessageID: " + uniqueId + " - Target " + target.getName());
-            return message;
-        });
+                JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+                eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+                eventToLogger.put("message", "Sending to callback queue");
+                eventToLogger.put("jmsMessageId", uniqueId);
+                eventToLogger.put("correlation", correlation);
+                eventToLogger.put("healthStatus_source", ZONE_ID);
+                eventToLogger.put("healthStatus_statusDetailed", healthStatus.getStatusDetailed());
+                eventToLogger.put("healthStatus_status", healthStatus.getStatus().name());
+                eventToLogger.put("healthStatus_target", target.getName());
+                eventToLogger.sendInfo();
+                return message;
+            });
+        } catch (JmsException e) {
+            JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
+            eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
+            eventToLogger.put("message", "Error sending to callback queue");
+            eventToLogger.put("correlation", correlation);
+            eventToLogger.sendError(e);
+        }
     }
 
+    public void register(String zoneId) {
+        String envId = SystemEnv.ENVIRONMENT_ID.getValue();
+        jmsTemplate.convertAndSend(QUEUE_HEALTH_REGISTER, "health:" + envId + ":" + zoneId + ":" + LocalIP.encode());
+    }
 }

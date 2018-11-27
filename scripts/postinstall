@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir -p /opt/logs/galeb || true
+chmod 777 -R /opt/logs/galeb || true
+/usr/bin/systemctl enable galeb || true

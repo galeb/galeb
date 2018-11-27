@@ -34,6 +34,11 @@ public enum SystemEnv {
     GROUP_ID              ("GROUP_ID",              "UNDEF"),
 
     /**
+     * Network ID.
+     */
+    ZONE_ID               ("ZONE_ID",               ""),
+
+    /**
      * Syslog server host.
      */
     SYSLOG_HOST           ("SYSLOG_HOST",           "127.0.0.1"),
@@ -250,7 +255,27 @@ public enum SystemEnv {
     /**
      * Enable JMX reporter (Undertow front-end metrics)
      */
-    ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE);
+    ENABLE_UNDERTOW_JMX   ("ENABLE_UNDERTOW_JMX",  Boolean.TRUE),
+
+    /**
+     * Statsd environment tag.
+     */
+    STATSD_ENVIRONMENT_TAG  ("STATSD_ENVIRONMENT_TAG",  "_ENV_."),
+
+    /**
+     * Statsd virtualhost tag.
+     */
+    STATSD_VIRTUALHOST_TAG  ("STATSD_VIRTUALHOST_TAG",  "_VH_."),
+
+    /**
+     * Statsd pool tag.
+     */
+    STATSD_POOL_TAG         ("STATSD_POOL_TAG",         "_POOL_."),
+
+    /**
+     * Statsd target tag.
+     */
+    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "_TARGET_.");
 
     /**
      * Gets SystemEnv value.

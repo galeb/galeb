@@ -28,7 +28,7 @@ abstract class ProcessorLocalStatusCode {
 
     static final int NOT_MODIFIED = 0;
 
-    private static final String UNKNOWN_TARGET  = "UNKNOWN";
+    private static final String UNKNOWN_TARGET  = "UNKNOWN_TARGET";
     private static final int OFFSET_LOCAL_ERROR = 400;
 
     final ResponseTimeAttribute responseTimeAttribute = new ResponseTimeAttribute(TimeUnit.MILLISECONDS);
@@ -54,12 +54,12 @@ abstract class ProcessorLocalStatusCode {
         return statusLogged;
     }
 
-    String extractUpstreamField(final HeaderMap responseHeaders, String tempRealDest) {
-        String upstreamField = tempRealDest;
-        if (upstreamField == null) {
-            final String headerGalebError = responseHeaders != null ? responseHeaders.getFirst(X_GALEB_ERROR) : null;
-            upstreamField = headerGalebError != null ? headerGalebError : UNKNOWN_TARGET;
-        }
-        return upstreamField;
+    String extractXGalebErrorHeader(final HeaderMap responseHeaders) {
+        final String headerGalebError = responseHeaders != null ? responseHeaders.getFirst(X_GALEB_ERROR) : null;
+        return headerGalebError != null ? headerGalebError : UNKNOWN_TARGET;
+    }
+
+    boolean targetIsUnknown(String target) {
+        return UNKNOWN_TARGET.equals(target);
     }
 }

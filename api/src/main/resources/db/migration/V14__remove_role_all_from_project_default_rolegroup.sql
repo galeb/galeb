@@ -1,0 +1,13 @@
+SET autocommit=0;
+START TRANSACTION;
+SELECT @A:=id FROM rolegroup WHERE rolegroup.name = 'PROJECT_DEFAULT';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='BALANCEPOLICY_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='ENVIRONMENT_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='HEALTHCHECK_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='HEALTHSTATUS_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='POOL_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='RULE_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='RULEORDERED_VIEW_ALL';
+DELETE FROM rolegroup_roles WHERE rolegroup_id=@A AND role='TARGET_VIEW_ALL';
+COMMIT;
+SET autocommit=1;

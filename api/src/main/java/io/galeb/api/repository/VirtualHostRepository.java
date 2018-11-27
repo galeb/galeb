@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2014-2018 Globo.com - ATeam
+ * All rights reserved.
+ *
+ * This source is subject to the Apache License, Version 2.0.
+ * Please see the LICENSE file for more information.
+ *
+ * Authors: See AUTHORS file
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.galeb.api.repository;
+
+import io.galeb.api.repository.custom.VirtualHostRepositoryCustom;
+import io.galeb.core.entity.VirtualHost;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+@SuppressWarnings({"unused", "unchecked"})
+@RepositoryRestResource(path = "virtualhost", collectionResourceRel = "virtualhost", itemResourceRel = "virtualhost")
+public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long>, VirtualHostRepositoryCustom {
+
+    @Override
+    @PreAuthorize("@perm.allowSave(#virtualhost, #this)")
+    @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true)
+    VirtualHost save(@Param("virtualhost") VirtualHost virtualhost);
+
+    @Override
+    @PreAuthorize("@perm.allowDelete(#id, #this)")
+    @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true)
+    void delete(@Param("id") Long id);
+
+    @Override
+    @PreAuthorize("@perm.allowView(#id, #this)")
+    VirtualHost findOne(@Param("id") Long id);
+
+    @Override
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualHost> findAll(Pageable pageable);
+
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualHost> findByName(@Param("name") String name, Pageable pageable);
+
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualHost> findByNameContaining(@Param("name") String name, Pageable pageable);
+
+    @PreAuthorize("@perm.allowView(null , #this)")
+    Page<VirtualHost> findByVirtualhostgroup_IdAndEnvironments_Name(@Param("vhgid") Long vhgid, @Param("envname") String envname, Pageable pageable);
+}

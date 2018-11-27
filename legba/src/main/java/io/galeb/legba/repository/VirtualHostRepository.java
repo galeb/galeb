@@ -52,7 +52,7 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "bp.name as bp_name, "                         //12
             + "t.last_modified_at as t_last_modified_at, "   //13
             + "t.name as t_name, "                           //14
-            + "hs.last_modified_at as hs_last_modified_at "  //15
+            + "GROUP_CONCAT(hs.last_modified_at) as hs_last_modified_at "  //15
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "
@@ -65,7 +65,8 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "LEFT OUTER JOIN health_status hs on hs.target_id=t.id "
             + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid AND "
                     + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) AND "
-                    + "hs.status IS NULL OR hs.status != 'FAIL'";
+                    + "(hs.status IS NULL OR hs.status != 'FAIL') "
+            + "GROUP BY hs.last_modified_at";
 
     // @formatter:on
 

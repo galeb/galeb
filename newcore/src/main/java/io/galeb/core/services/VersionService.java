@@ -52,12 +52,14 @@ public class VersionService {
         return version;
     }
 
-    public String getCache(String envId, String zoneId, String version) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, version));
+    public String getCache(String envId, String zoneId) {
+        String currentVersion = getActualVersion(envId);
+        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, currentVersion));
     }
 
-    public void setCache(String cache, String envId, String zoneId, String version) {
-        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, version), cache, 5, TimeUnit.MINUTES);
+    public void setCache(String cache, String envId, String zoneId) {
+        String currentVersion = getActualVersion(envId);
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, currentVersion), cache, 5, TimeUnit.MINUTES);
     }
 
     public Long incrementVersion(String envId) {

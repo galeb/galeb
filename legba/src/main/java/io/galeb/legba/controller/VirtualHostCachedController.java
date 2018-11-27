@@ -64,6 +64,7 @@ public class VirtualHostCachedController extends AbstractController {
 
         event.put("message", "Processing VirtualHostCached");
         event.put("actualVersion", actualVersion);
+        event.put("routerVersion", routerVersion);
         event.put("environmentId", String.valueOf(envId));
         event.put("environmentName", envName);
         event.put("groupId", routerGroupId);
@@ -76,7 +77,7 @@ public class VirtualHostCachedController extends AbstractController {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
         }
 
-        String cache = versionService.getCache(envId.toString(), zoneId == null ? "" : zoneId);
+        String cache = versionService.getCache(envId.toString(), zoneId, actualVersion);
         if (cache == null || "".equals(cache)) {
             event.put("message", "Cache NOT FOUND");
             event.put("status", HttpStatus.NOT_FOUND.toString());

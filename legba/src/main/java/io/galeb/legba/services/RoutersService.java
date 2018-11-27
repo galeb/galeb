@@ -168,9 +168,11 @@ public class RoutersService {
 
     private void updateRouterMapCached(final RouterMeta routerMeta, final Set<Long> eTagRouters)
             throws ConverterNotFoundException {
+
+        String zoneId = routerMeta.zoneId;
         try {
-            if (lockerService.lock()) {
-                lockerService.setExpireLock();
+            if (lockerService.notLocked(zoneId)) {
+                lockerService.setExpireLock(zoneId);
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", routerMeta.correlation);
@@ -181,7 +183,7 @@ public class RoutersService {
                 rebuildRouterMapCached(routerMeta);
             }
         } finally {
-            lockerService.release();
+            lockerService.release(zoneId, routerMeta.correlation);
         }
     }
 

@@ -28,7 +28,7 @@ public class LockerService {
 
     private static long ROUTER_CONCURRENT_LOCK_TTL = 120000L; // Long.parseLong(SystemEnv.ROUTER_CONCURRENT_LOCK_TTL.getValue())
 
-    private static final String ROUTER_MAP_CACHE_REBUILD_LOCK = "router-map-cache-rebuild-lock";
+    private static final String ROUTER_MAP_CACHE_REBUILD_LOCK = "lock-router-map-cache-rebuild";
 
     private final StringRedisTemplate redisTemplate;
 
@@ -37,20 +37,21 @@ public class LockerService {
         this.redisTemplate = redisTemplate;
     }
 
-    public void setExpireLock() {
-        redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
+    public void setExpireLock(String zoneId) {
+        redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
     }
 
-    public synchronized boolean lock() {
-        return redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK, "" + System.currentTimeMillis());
+    public synchronized boolean notLocked(String zoneId) {
+        return redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, "" + System.currentTimeMillis());
     }
 
-    public void release() {
-        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK)) {
+    public void release(String zoneId, String correlation) {
+        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId)) {
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("message", "Releasing lock");
+            event.put("correlation", correlation);
             event.sendInfo();
-            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK);
+            redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId);
         }
     }
 }

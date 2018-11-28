@@ -40,6 +40,7 @@ public class FullEntity implements Serializable {
     private final Date tLastModifiedAt;
     private final String tName;
     private final String hsLastModifiedAt;
+    private final String hsStatus;
 
     public FullEntity(Object[] objects) {
         this.vId = ((BigInteger) objects[0]).longValue();
@@ -58,6 +59,7 @@ public class FullEntity implements Serializable {
         this.tLastModifiedAt = (Date) objects[13];
         this.tName = (String) objects[14];
         this.hsLastModifiedAt = (String) objects[15];
+        this.hsStatus = (String) objects[16];
     }
 
     public Long getvId() {
@@ -122,5 +124,9 @@ public class FullEntity implements Serializable {
 
     public String getHsLastModifiedAt() {
         return hsLastModifiedAt;
+    }
+
+    public String getHsStatus() {
+        return hsStatus;
     }
 }

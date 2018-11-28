@@ -39,6 +39,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.hash.Hashing.sha256;
+import static io.galeb.core.entity.HealthStatus.Status.HEALTHY;
+import static io.galeb.core.entity.HealthStatus.Status.UNKNOWN;
 
 @Component
 public class ConverterV1 implements Converter {
@@ -61,8 +63,12 @@ public class ConverterV1 implements Converter {
     @Override
     public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
         long envId = Long.parseLong(routerMeta.envId);
-        final List<FullEntity> fullEntities = virtualHostRepository.fullEntity(envId).stream().map(FullEntity::new)
-                                                .collect(Collectors.toList());
+        String zoneId = routerMeta.zoneId;
+        final List<Object[]> fullEntitiesObjs = (zoneId == null) ?
+            virtualHostRepository.fullEntityZoneIdNull(envId) :
+            virtualHostRepository.fullEntity(envId, zoneId);
+
+        final List<FullEntity> fullEntities = fullEntitiesObjs.stream().map(FullEntity::new).collect(Collectors.toList());
 
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
         long numVirtualhosts = fullEntities.stream().map(FullEntity::getvId).distinct().count();
@@ -138,8 +144,17 @@ public class ConverterV1 implements Converter {
             }
 
             io.galeb.legba.model.v1.Target targetV1 = poolV1.getTargets().stream().filter(t -> t.getName().equals(fullEntity.gettName()))
-                    .findAny().orElse((io.galeb.legba.model.v1.Target) new io.galeb.legba.model.v1.Target().setName(fullEntity.gettName()));
-            if (poolV1.getTargets().add(targetV1)) {
+                    .findAny().orElseGet(() -> {
+                        if (fullEntity.getHsStatus() == null ||
+                            fullEntity.getHsStatus().contains(HEALTHY.name()) ||
+                            fullEntity.getHsStatus().contains(UNKNOWN.name())
+                        ) {
+                            return (io.galeb.legba.model.v1.Target) new io.galeb.legba.model.v1.Target().setName(fullEntity.gettName());
+                        }
+                        return null;
+                    });
+
+            if (targetV1 != null && poolV1.getTargets().add(targetV1)) {
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
                 virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.gettLastModifiedAt().toString());
                 if (fullEntity.getHsLastModifiedAt() != null) {

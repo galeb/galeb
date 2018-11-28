@@ -52,7 +52,8 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "bp.name as bp_name, "                         //12
             + "t.last_modified_at as t_last_modified_at, "   //13
             + "t.name as t_name, "                           //14
-            + "GROUP_CONCAT(hs.last_modified_at) as hs_last_modified_at "  //15
+            + "GROUP_CONCAT(hs.last_modified_at) as hs_last_modified_at, " //15
+            + "GROUP_CONCAT(hs.status) as hs_status "
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "
@@ -64,9 +65,7 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "INNER JOIN target t on t.pool_id=p.id "
             + "LEFT OUTER JOIN health_status hs on hs.target_id=t.id "
             + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid AND "
-                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) AND "
-                    + "(hs.status IS NULL OR hs.status != 'FAIL') "
-            + "GROUP BY hs.last_modified_at";
+                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) AND ";
 
     // @formatter:on
 
@@ -74,7 +73,10 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
     @Query(value = FIND_ALL_BY_ENV_ID_SQL)
     List<VirtualHost> findAllByEnvironmentId(@Param("envId") Long envId);
 
-    @Query(value = FULL_ENTITIES_SQL, nativeQuery = true)
-    List<Object[]> fullEntity(@Param("envid") Long envid);
+    @Query(value = FULL_ENTITIES_SQL + "(hs.status IS NULL OR (hs.status != 'FAIL' AND hs.source = :zoneid)) GROUP BY p.id, t.id", nativeQuery = true)
+    List<Object[]> fullEntity(@Param("envid") Long envid, @Param("zoneid") String zoneid);
+
+    @Query(value = FULL_ENTITIES_SQL + "(hs.status IS NULL OR (hs.status != 'FAIL')) GROUP BY p.id, t.id", nativeQuery = true)
+    List<Object[]> fullEntityZoneIdNull(@Param("envid") Long envid);
 
 }

@@ -52,8 +52,8 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "bp.name as bp_name, "                         //12
             + "t.last_modified_at as t_last_modified_at, "   //13
             + "t.name as t_name, "                           //14
-            + "GROUP_CONCAT(hs.last_modified_at) as hs_last_modified_at, " //15
-            + "GROUP_CONCAT(hs.status) as hs_status "
+            + "IFNULL(GROUP_CONCAT(hs.last_modified_at), 'NULL') as hs_last_modified_at, " //15
+            + "IFNULL(GROUP_CONCAT(hs.status), 'UNKNOWN') as hs_status " //16
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "

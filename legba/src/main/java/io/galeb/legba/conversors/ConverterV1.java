@@ -64,6 +64,7 @@ public class ConverterV1 implements Converter {
     public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
         long envId = Long.parseLong(routerMeta.envId);
         String zoneId = routerMeta.zoneId;
+
         final List<Object[]> fullEntitiesObjs = (zoneId == null) ?
             virtualHostRepository.fullEntityZoneIdNull(envId) :
             virtualHostRepository.fullEntity(envId, zoneId);

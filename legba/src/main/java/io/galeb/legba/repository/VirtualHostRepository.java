@@ -65,7 +65,7 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "INNER JOIN target t on t.pool_id=p.id "
             + "LEFT OUTER JOIN health_status hs on hs.target_id=t.id "
             + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid AND "
-                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) AND ";
+                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) ";
 
     // @formatter:on
 
@@ -73,10 +73,10 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
     @Query(value = FIND_ALL_BY_ENV_ID_SQL)
     List<VirtualHost> findAllByEnvironmentId(@Param("envId") Long envId);
 
-    @Query(value = FULL_ENTITIES_SQL + "(hs.status IS NULL OR (hs.status != 'FAIL' AND hs.source = :zoneid)) GROUP BY v.id, r.id, p.id, t.id", nativeQuery = true)
+    @Query(value = FULL_ENTITIES_SQL + "AND hs.source = :zoneid GROUP BY v.id, r.id, p.id, t.id", nativeQuery = true)
     List<Object[]> fullEntity(@Param("envid") Long envid, @Param("zoneid") String zoneid);
 
-    @Query(value = FULL_ENTITIES_SQL + "(hs.status IS NULL OR (hs.status != 'FAIL')) GROUP BY v.id, r.id, p.id, t.id", nativeQuery = true)
+    @Query(value = FULL_ENTITIES_SQL + "GROUP BY v.id, r.id, p.id, t.id", nativeQuery = true)
     List<Object[]> fullEntityZoneIdNull(@Param("envid") Long envid);
 
 }

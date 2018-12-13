@@ -90,19 +90,20 @@ public class ConverterV1 implements Converter {
         final Map<String, BalancePolicy> balancePolicyMap = new HashMap<>();
 
         for (QueryResultLine queryResultLine: queryResultLines) {
+            String virtualhostName = queryResultLine.getVirtualhostName();
             Optional<VirtualHost> vh1Optional;
             final VirtualHost vh1;
             if (!(vh1Optional = virtualhostFullHash.keySet().stream()
                     .filter(v -> v.getId() == queryResultLine.getVirtualhostId()).findAny()).isPresent()) {
                 vh1 = new VirtualHost();
-                vh1.setName(queryResultLine.getVirtualhostName());
+                vh1.setName(virtualhostName);
                 vh1.setEnvironment(environmentV1);
                 vh1.setId(queryResultLine.getVirtualhostId());
-                String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getVirtualhostLastModifiedAt().toString());
+
             } else {
                 vh1 = vh1Optional.get();
             }
+            calculeHash(vh1, queryResultLine, virtualhostFullHash);
 
             final Optional<io.galeb.legba.model.v1.Rule> ruleOptional = vh1.getRules().stream()
                     .filter(r -> r.getName().equals(queryResultLine.getRuleName())).findAny();
@@ -118,8 +119,6 @@ public class ConverterV1 implements Converter {
                     put("match", queryResultLine.getRuleMatching());
                     put("order", queryResultLine.getRuleOrderedOrder().toString());
                 }});
-                String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getRuleLastModifiedAt().toString());
             }
 
             io.galeb.legba.model.v1.Pool poolV1;
@@ -140,8 +139,6 @@ public class ConverterV1 implements Converter {
                     put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getpPoolSize()));
                     put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
                 }});
-                String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getPoolLastModifiedAt().toString());
             }
 
             io.galeb.legba.model.v1.Target targetV1 = poolV1.getTargets().stream().filter(t -> t.getName().equals(queryResultLine.getTargetName()))
@@ -154,20 +151,11 @@ public class ConverterV1 implements Converter {
                         return null;
                     });
 
-            if (targetV1 != null && poolV1.getTargets().add(targetV1)) {
-                String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getTargetLastModifiedAt().toString());
-                if (queryResultLine.getHealthStatusLastModifiedAt() != null) {
-                    lastKetFullHash = virtualhostFullHash.get(vh1);
-                    virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getHealthStatusLastModifiedAt());
-                }
+            if (targetV1 != null) {
+                poolV1.getTargets().add(targetV1);
             }
             ruleV1.setPool(poolV1);
-
-            if (vh1.getRules().add(ruleV1)) {
-                String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getRuleLastModifiedAt().toString());
-            }
+            vh1.getRules().add(ruleV1);
         }
 
         final ArrayNode virtualHostsV1 = json.putArray("virtualhosts");
@@ -178,6 +166,19 @@ public class ConverterV1 implements Converter {
             virtualHostsV1.add(objectMapper.convertValue(virtualHost, JsonNode.class));
         }
         return json.toString();
+    }
+
+    private void calculeHash(final VirtualHost virtualHostV1, final QueryResultLine queryResultLine, final Map<VirtualHost, String> virtualhostFullHash) {
+        String lastFullHash = virtualhostFullHash.get(virtualHostV1);
+        String fullHash = (lastFullHash != null ? lastFullHash : "") +
+            queryResultLine.getVirtualhostLastModifiedAt().toString() +
+            queryResultLine.getRuleOrderedLastModifiedAt().toString() +
+            queryResultLine.getRuleLastModifiedAt().toString() +
+            queryResultLine.getPoolLastModifiedAt().toString() +
+            queryResultLine.getTargetLastModifiedAt().toString() +
+            (queryResultLine.getHealthStatusLastModifiedAt() != null ? queryResultLine.getHealthStatusLastModifiedAt() : "NULL");
+
+        virtualhostFullHash.put(virtualHostV1, fullHash);
     }
 
     @Override

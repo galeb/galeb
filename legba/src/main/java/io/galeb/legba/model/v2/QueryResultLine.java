@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 
-public class FullEntity implements Serializable {
+public class QueryResultLine implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,7 +42,7 @@ public class FullEntity implements Serializable {
     private final String hsLastModifiedAt;
     private final String hsStatus;
 
-    public FullEntity(Object[] objects) {
+    public QueryResultLine(Object[] objects) {
         this.vId = ((BigInteger) objects[0]).longValue();
         this.vLastModifiedAt = (Date) objects[1];
         this.vName = (String) objects[2];

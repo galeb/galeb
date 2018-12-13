@@ -26,7 +26,7 @@ import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
 import io.galeb.legba.model.v1.RuleType;
 import io.galeb.legba.model.v1.VirtualHost;
-import io.galeb.legba.model.v2.FullEntity;
+import io.galeb.legba.model.v2.QueryResultLine;
 import io.galeb.legba.repository.VirtualHostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,8 +48,8 @@ public class ConverterV1 implements Converter {
     // @formatter:off
     public static final  String API_VERSION                  = "v1";
     private static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
-    public static final  String PROP_CONN_PER_THREAD         = "connPerThread";
-    public static final  String FULLHASH_PROP                = "fullhash";
+    private static final String PROP_CONN_PER_THREAD         = "connPerThread";
+    private static final String FULLHASH_PROP                = "fullhash";
     // @formatter:on
 
     private final VirtualHostRepository virtualHostRepository;
@@ -65,14 +65,14 @@ public class ConverterV1 implements Converter {
         long envId = Long.parseLong(routerMeta.envId);
         String zoneId = routerMeta.zoneId;
 
-        final List<Object[]> fullEntitiesObjs = (zoneId == null) ?
+        final List<Object[]> queryResultLinesObj = (zoneId == null) ?
             virtualHostRepository.fullEntityZoneIdNull(envId) :
             virtualHostRepository.fullEntity(envId, zoneId);
 
-        final List<FullEntity> fullEntities = fullEntitiesObjs.stream().map(FullEntity::new).collect(Collectors.toList());
+        final List<QueryResultLine> queryResultLines = queryResultLinesObj.stream().map(QueryResultLine::new).collect(Collectors.toList());
 
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
-        long numVirtualhosts = fullEntities.stream().map(FullEntity::getVirtualhostId).distinct().count();
+        long numVirtualhosts = queryResultLines.stream().map(QueryResultLine::getVirtualhostId).distinct().count();
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("message", "Converting to string");
         event.put("envId", envId);
@@ -89,44 +89,44 @@ public class ConverterV1 implements Converter {
         final RuleType ruleType = new RuleType("UrlPath");
         final Map<String, BalancePolicy> balancePolicyMap = new HashMap<>();
 
-        for (FullEntity fullEntity: fullEntities) {
+        for (QueryResultLine queryResultLine: queryResultLines) {
             Optional<VirtualHost> vh1Optional;
             final VirtualHost vh1;
             if (!(vh1Optional = virtualhostFullHash.keySet().stream()
-                    .filter(v -> v.getId() == fullEntity.getVirtualhostId()).findAny()).isPresent()) {
+                    .filter(v -> v.getId() == queryResultLine.getVirtualhostId()).findAny()).isPresent()) {
                 vh1 = new VirtualHost();
-                vh1.setName(fullEntity.getVirtualhostName());
+                vh1.setName(queryResultLine.getVirtualhostName());
                 vh1.setEnvironment(environmentV1);
-                vh1.setId(fullEntity.getVirtualhostId());
+                vh1.setId(queryResultLine.getVirtualhostId());
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getVirtualhostLastModifiedAt().toString());
+                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getVirtualhostLastModifiedAt().toString());
             } else {
                 vh1 = vh1Optional.get();
             }
 
             final Optional<io.galeb.legba.model.v1.Rule> ruleOptional = vh1.getRules().stream()
-                    .filter(r -> r.getName().equals(fullEntity.getRuleName())).findAny();
+                    .filter(r -> r.getName().equals(queryResultLine.getRuleName())).findAny();
             io.galeb.legba.model.v1.Rule ruleV1;
             if (ruleOptional.isPresent()) {
                 ruleV1 = ruleOptional.get();
             } else {
                 ruleV1 = new io.galeb.legba.model.v1.Rule();
-                ruleV1.setName(fullEntity.getRuleName());
-                ruleV1.setGlobal(fullEntity.getRuleGlobal());
+                ruleV1.setName(queryResultLine.getRuleName());
+                ruleV1.setGlobal(queryResultLine.getRuleGlobal());
                 ruleV1.setRuleType(ruleType);
                 ruleV1.setProperties(new HashMap<String, String>() {{
-                    put("match", fullEntity.getRuleMatching());
-                    put("order", fullEntity.getRuleOrderedOrder().toString());
+                    put("match", queryResultLine.getRuleMatching());
+                    put("order", queryResultLine.getRuleOrderedOrder().toString());
                 }});
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getRuleLastModifiedAt().toString());
+                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getRuleLastModifiedAt().toString());
             }
 
             io.galeb.legba.model.v1.Pool poolV1;
             if ((poolV1 = ruleV1.getPool()) == null) {
                 poolV1 = new io.galeb.legba.model.v1.Pool();
-                poolV1.setName(fullEntity.getPoolName());
-                String balancePolicyName = fullEntity.getBalancePolicyName();
+                poolV1.setName(queryResultLine.getPoolName());
+                String balancePolicyName = queryResultLine.getBalancePolicyName();
                 if (balancePolicyName != null) {
                     BalancePolicy balancePolicy;
                     if ((balancePolicy = balancePolicyMap.get(balancePolicyName)) == null) {
@@ -137,36 +137,36 @@ public class ConverterV1 implements Converter {
                     poolV1.setBalancePolicy(balancePolicy);
                 }
                 poolV1.setProperties(new HashMap<String, String>() {{
-                    put(PROP_CONN_PER_THREAD, String.valueOf(fullEntity.getpPoolSize()));
+                    put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getpPoolSize()));
                     put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
                 }});
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getPoolLastModifiedAt().toString());
+                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getPoolLastModifiedAt().toString());
             }
 
-            io.galeb.legba.model.v1.Target targetV1 = poolV1.getTargets().stream().filter(t -> t.getName().equals(fullEntity.getTargetName()))
+            io.galeb.legba.model.v1.Target targetV1 = poolV1.getTargets().stream().filter(t -> t.getName().equals(queryResultLine.getTargetName()))
                     .findAny().orElseGet(() -> {
-                        if (fullEntity.getHealthStatusStatus() == null ||
-                            fullEntity.getHealthStatusStatus().contains(HEALTHY.name()) ||
-                            fullEntity.getHealthStatusStatus().contains(UNKNOWN.name())) {
-                            return (io.galeb.legba.model.v1.Target) new io.galeb.legba.model.v1.Target().setName(fullEntity.getTargetName());
+                        if (queryResultLine.getHealthStatusStatus() == null ||
+                            queryResultLine.getHealthStatusStatus().contains(HEALTHY.name()) ||
+                            queryResultLine.getHealthStatusStatus().contains(UNKNOWN.name())) {
+                            return (io.galeb.legba.model.v1.Target) new io.galeb.legba.model.v1.Target().setName(queryResultLine.getTargetName());
                         }
                         return null;
                     });
 
             if (targetV1 != null && poolV1.getTargets().add(targetV1)) {
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getTargetLastModifiedAt().toString());
-                if (fullEntity.getHealthStatusLastModifiedAt() != null) {
+                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getTargetLastModifiedAt().toString());
+                if (queryResultLine.getHealthStatusLastModifiedAt() != null) {
                     lastKetFullHash = virtualhostFullHash.get(vh1);
-                    virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getHealthStatusLastModifiedAt());
+                    virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getHealthStatusLastModifiedAt());
                 }
             }
             ruleV1.setPool(poolV1);
 
             if (vh1.getRules().add(ruleV1)) {
                 String lastKetFullHash = virtualhostFullHash.get(vh1);
-                virtualhostFullHash.put(vh1, lastKetFullHash + fullEntity.getRuleLastModifiedAt().toString());
+                virtualhostFullHash.put(vh1, lastKetFullHash + queryResultLine.getRuleLastModifiedAt().toString());
             }
         }
 

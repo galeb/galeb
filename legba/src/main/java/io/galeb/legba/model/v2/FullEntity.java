@@ -62,47 +62,47 @@ public class FullEntity implements Serializable {
         this.hsStatus = (String) objects[16];
     }
 
-    public Long getvId() {
+    public Long getVirtualhostId() {
         return vId;
     }
 
-    public String getvName() {
+    public String getVirtualhostName() {
         return vName;
     }
 
-    public Date getvLastModifiedAt() {
+    public Date getVirtualhostLastModifiedAt() {
         return vLastModifiedAt;
     }
 
-    public Date getRoLastModifiedAt() {
+    public Date getRuleOrderedLastModifiedAt() {
         return roLastModifiedAt;
     }
 
-    public Integer getRoOrder() {
+    public Integer getRuleOrderedOrder() {
         return roOrder;
     }
 
-    public Date getrLastModifiedAt() {
+    public Date getRuleLastModifiedAt() {
         return rLastModifiedAt;
     }
 
-    public Boolean getrGlobal() {
+    public Boolean getRuleGlobal() {
         return rGlobal;
     }
 
-    public String getrName() {
+    public String getRuleName() {
         return rName;
     }
 
-    public String getrMatching() {
+    public String getRuleMatching() {
         return rMatching;
     }
 
-    public Date getpLastModifiedAt() {
+    public Date getPoolLastModifiedAt() {
         return pLastModifiedAt;
     }
 
-    public String getpName() {
+    public String getPoolName() {
         return pName;
     }
 
@@ -110,23 +110,23 @@ public class FullEntity implements Serializable {
         return pPoolSize;
     }
 
-    public String getBpName() {
+    public String getBalancePolicyName() {
         return bpName;
     }
 
-    public Date gettLastModifiedAt() {
+    public Date getTargetLastModifiedAt() {
         return tLastModifiedAt;
     }
 
-    public String gettName() {
+    public String getTargetName() {
         return tName;
     }
 
-    public String getHsLastModifiedAt() {
+    public String getHealthStatusLastModifiedAt() {
         return hsLastModifiedAt;
     }
 
-    public String getHsStatus() {
+    public String getHealthStatusStatus() {
         return hsStatus;
     }
 }

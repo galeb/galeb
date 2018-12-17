@@ -182,7 +182,10 @@
                         -Dcom.sun.management.jmxremote.authenticate=false
                         -Dcom.sun.management.jmxremote.ssl=false
                     </argLine>
-                    <skipTests>true</skipTests>
+                    <includes>
+                        <include>**/suites/*</include>
+                    </includes>
+                    <!-- <skipTests>true</skipTests> -->
                 </configuration>
             </plugin>
             <plugin>

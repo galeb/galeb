@@ -69,7 +69,7 @@ public class ConverterV1 implements Converter {
             virtualHostRepository.fullEntityZoneIdNull(envId) :
             virtualHostRepository.fullEntity(envId, zoneId);
 
-        final List<QueryResultLine> queryResultLines = queryResultLinesObj.stream().map(QueryResultLine::new).collect(Collectors.toList());
+        final List<QueryResultLine> queryResultLines = getQueryResultLines(queryResultLinesObj);
 
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
         long numVirtualhosts = queryResultLines.stream().map(QueryResultLine::getVirtualhostId).distinct().count();
@@ -160,15 +160,22 @@ public class ConverterV1 implements Converter {
 
         final ArrayNode virtualHostsV1 = json.putArray("virtualhosts");
         for (VirtualHost virtualHost: virtualhostFullHash.keySet()) {
-            String key = virtualhostFullHash.get(virtualHost);
-            String fullHashVH = sha256().hashString(key, Charsets.UTF_8).toString();
-            virtualHost.setProperties(Collections.singletonMap(FULLHASH_PROP, fullHashVH));
+            String rawFullHash = virtualhostFullHash.get(virtualHost);
+            virtualHost.setProperties(Collections.singletonMap(FULLHASH_PROP, makeHash(rawFullHash)));
             virtualHostsV1.add(objectMapper.convertValue(virtualHost, JsonNode.class));
         }
         return json.toString();
     }
 
-    private void calculeHash(final VirtualHost virtualHostV1, final QueryResultLine queryResultLine, final Map<VirtualHost, String> virtualhostFullHash) {
+    public String makeHash(String rawFullHash) {
+        return sha256().hashString(rawFullHash, Charsets.UTF_8).toString();
+    }
+
+    public List<QueryResultLine> getQueryResultLines(final List<Object[]> queryResultLinesObj) {
+        return queryResultLinesObj.stream().map(QueryResultLine::new).collect(Collectors.toList());
+    }
+
+    public Map<VirtualHost, String> calculeHash(final VirtualHost virtualHostV1, final QueryResultLine queryResultLine, final Map<VirtualHost, String> virtualhostFullHash) {
         String lastFullHash = virtualhostFullHash.get(virtualHostV1);
         String fullHash = (lastFullHash != null ? lastFullHash : "") +
             queryResultLine.getVirtualhostLastModifiedAt().toString() +
@@ -179,6 +186,8 @@ public class ConverterV1 implements Converter {
             (queryResultLine.getHealthStatusLastModifiedAt() != null ? queryResultLine.getHealthStatusLastModifiedAt() : "NULL");
 
         virtualhostFullHash.put(virtualHostV1, fullHash);
+
+        return virtualhostFullHash;
     }
 
     @Override

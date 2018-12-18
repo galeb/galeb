@@ -125,6 +125,7 @@ public class ConverterV1 implements Converter {
             }
             if (ruleV1 == null) {
                 ruleV1 = new io.galeb.legba.model.v1.Rule();
+                ruleV1.setId(queryResultLine.getRuleId());
                 ruleV1.setName(queryResultLine.getRuleName());
                 ruleV1.setGlobal(queryResultLine.getRuleGlobal());
                 ruleV1.setRuleType(ruleType);
@@ -165,6 +166,7 @@ public class ConverterV1 implements Converter {
             }
             if (targetV1 == null) {
                 targetV1 = new Target();
+                targetV1.setId(queryResultLine.getTargetId());
                 targetV1.setName(queryResultLine.getTargetName());
             }
 

@@ -245,6 +245,31 @@ public class ConverterV1Test {
         checkStateChanges(State.STATE_3, State.STATE_4);
     }
 
+    @Test
+    public void convertFromInitial() {
+        convertFrom(State.INITIAL);
+    }
+
+    @Test
+    public void convertFromState1() {
+        convertFrom(State.STATE_1);
+    }
+
+    @Test
+    public void convertFromState2() {
+        convertFrom(State.STATE_2);
+    }
+
+    @Test
+    public void convertFromState3() {
+        convertFrom(State.STATE_3);
+    }
+
+    @Test
+    public void convertFromState4() {
+        convertFrom(State.STATE_4);
+    }
+
     private String convertToString(State state) {
         RouterMeta routerMeta = new RouterMeta();
         routerMeta.envId = "1";
@@ -264,30 +289,16 @@ public class ConverterV1Test {
         return null;
     }
 
-    @Test
-    public void convertFromState1() {
-        String jsonStr = convertToString(State.STATE_1);
+    private void convertFrom(State state) {
+        String jsonStr = convertToString(state);
         if (jsonStr != null) {
             int numVirtualhosts = ((JSONArray) JsonPath.read(jsonStr, "$.virtualhosts[*]")).size();
             IntStream.range(0, numVirtualhosts).forEach(pos -> {
                 String virtualhostName = JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].name");
-                System.out.println(virtualhostName);
-                long numTargetsOrigin = states.get(State.STATE_1).stream().filter(line -> virtualhostName.equals(line[2])).count();
-                long numTargetsJson = ((JSONArray) JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].rules[*].pool.targets[*]")).size();
-                Assert.assertEquals("virtualhost " + virtualhostName + " target count problem", numTargetsOrigin, numTargetsJson);
-            });
-        }
-    }
-
-    @Test
-    public void convertFromState4() {
-        String jsonStr = convertToString(State.STATE_4);
-        if (jsonStr != null) {
-            int numVirtualhosts = ((JSONArray) JsonPath.read(jsonStr, "$.virtualhosts[*]")).size();
-            IntStream.range(0, numVirtualhosts).forEach(pos -> {
-                String virtualhostName = JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].name");
-                System.out.println(virtualhostName);
-                long numTargetsOrigin = states.get(State.STATE_4).stream().filter(line -> virtualhostName.equals(line[2])).count();
+                long numTargetsOrigin = states.get(state).stream().filter(line -> virtualhostName.equals(line[2]) &&
+                    (line[16] == null ||
+                        ((String)line[16]).contains(Status.HEALTHY.toString()) ||
+                        ((String)line[16]).contains(Status.UNKNOWN.toString()))).count();
                 long numTargetsJson = ((JSONArray) JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].rules[*].pool.targets[*]")).size();
                 Assert.assertEquals("virtualhost " + virtualhostName + " target count problem", numTargetsOrigin, numTargetsJson);
             });

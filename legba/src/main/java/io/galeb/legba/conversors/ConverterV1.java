@@ -24,7 +24,10 @@ import com.google.common.base.Charsets;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
+import io.galeb.legba.model.v1.Pool;
+import io.galeb.legba.model.v1.Rule;
 import io.galeb.legba.model.v1.RuleType;
+import io.galeb.legba.model.v1.Target;
 import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.QueryResultLine;
 import io.galeb.legba.repository.VirtualHostRepository;
@@ -35,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.hash.Hashing.sha256;
@@ -89,28 +91,39 @@ public class ConverterV1 implements Converter {
         final RuleType ruleType = new RuleType("UrlPath");
         final Map<String, BalancePolicy> balancePolicyMap = new HashMap<>();
 
-        for (QueryResultLine queryResultLine: queryResultLines) {
+        loopQueryResultLine: for (QueryResultLine queryResultLine: queryResultLines) {
+            if (queryResultLine.getVirtualhostLastModifiedAt() == null ||
+                queryResultLine.getRuleOrderedLastModifiedAt() == null ||
+                queryResultLine.getRuleLastModifiedAt() == null ||
+                queryResultLine.getPoolLastModifiedAt() == null ||
+                queryResultLine.getTargetLastModifiedAt() == null) {
+                break loopQueryResultLine;
+            }
+
             String virtualhostName = queryResultLine.getVirtualhostName();
-            Optional<VirtualHost> vh1Optional;
-            final VirtualHost vh1;
-            if (!(vh1Optional = virtualhostFullHash.keySet().stream()
-                    .filter(v -> v.getId() == queryResultLine.getVirtualhostId()).findAny()).isPresent()) {
+            VirtualHost vh1 = null;
+            loopVh: for (VirtualHost vhTemp: virtualhostFullHash.keySet()) {
+                if (vhTemp.getName().equals(queryResultLine.getVirtualhostName())) {
+                    vh1 = vhTemp;
+                    break loopVh;
+                }
+            }
+            if (vh1 == null) {
                 vh1 = new VirtualHost();
                 vh1.setName(virtualhostName);
                 vh1.setEnvironment(environmentV1);
                 vh1.setId(queryResultLine.getVirtualhostId());
-
-            } else {
-                vh1 = vh1Optional.get();
             }
             calculeHash(vh1, queryResultLine, virtualhostFullHash);
 
-            final Optional<io.galeb.legba.model.v1.Rule> ruleOptional = vh1.getRules().stream()
-                    .filter(r -> r.getName().equals(queryResultLine.getRuleName())).findAny();
-            io.galeb.legba.model.v1.Rule ruleV1;
-            if (ruleOptional.isPresent()) {
-                ruleV1 = ruleOptional.get();
-            } else {
+            Rule ruleV1 = null;
+            loopRule: for (Rule ruleTemp: vh1.getRules()) {
+                if (ruleTemp.getId() == queryResultLine.getRuleId()) {
+                    ruleV1 = ruleTemp;
+                    break loopRule;
+                }
+            }
+            if (ruleV1 == null) {
                 ruleV1 = new io.galeb.legba.model.v1.Rule();
                 ruleV1.setName(queryResultLine.getRuleName());
                 ruleV1.setGlobal(queryResultLine.getRuleGlobal());
@@ -119,11 +132,12 @@ public class ConverterV1 implements Converter {
                     put("match", queryResultLine.getRuleMatching());
                     put("order", queryResultLine.getRuleOrderedOrder().toString());
                 }});
+                vh1.getRules().add(ruleV1);
             }
 
-            io.galeb.legba.model.v1.Pool poolV1;
+            Pool poolV1;
             if ((poolV1 = ruleV1.getPool()) == null) {
-                poolV1 = new io.galeb.legba.model.v1.Pool();
+                poolV1 = new Pool();
                 poolV1.setName(queryResultLine.getPoolName());
                 String balancePolicyName = queryResultLine.getBalancePolicyName();
                 if (balancePolicyName != null) {
@@ -139,23 +153,26 @@ public class ConverterV1 implements Converter {
                     put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getpPoolSize()));
                     put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
                 }});
+                ruleV1.setPool(poolV1);
             }
 
-            io.galeb.legba.model.v1.Target targetV1 = poolV1.getTargets().stream().filter(t -> t.getName().equals(queryResultLine.getTargetName()))
-                    .findAny().orElseGet(() -> {
-                        if (queryResultLine.getHealthStatusStatus() == null ||
-                            queryResultLine.getHealthStatusStatus().contains(HEALTHY.name()) ||
-                            queryResultLine.getHealthStatusStatus().contains(UNKNOWN.name())) {
-                            return (io.galeb.legba.model.v1.Target) new io.galeb.legba.model.v1.Target().setName(queryResultLine.getTargetName());
-                        }
-                        return null;
-                    });
+            Target targetV1 = null;
+            loopTarget: for (Target targetTemp: poolV1.getTargets()) {
+                if (targetTemp.getId() == queryResultLine.getTargetId()) {
+                    targetV1 = targetTemp;
+                    break loopTarget;
+                }
+            }
+            if (targetV1 == null) {
+                targetV1 = new Target();
+                targetV1.setName(queryResultLine.getTargetName());
+            }
 
-            if (targetV1 != null) {
+            if (queryResultLine.getHealthStatusStatus() == null ||
+                    queryResultLine.getHealthStatusStatus().contains(HEALTHY.name()) ||
+                    queryResultLine.getHealthStatusStatus().contains(UNKNOWN.name())) {
                 poolV1.getTargets().add(targetV1);
             }
-            ruleV1.setPool(poolV1);
-            vh1.getRules().add(ruleV1);
         }
 
         final ArrayNode virtualHostsV1 = json.putArray("virtualhosts");

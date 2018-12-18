@@ -41,9 +41,11 @@ public class QueryResultLine implements Serializable {
     private final String tName;
     private final String hsLastModifiedAt;
     private final String hsStatus;
+    private final Long rId;
+    private final Long tId;
 
     public QueryResultLine(Object[] objects) {
-        this.vId = ((BigInteger) objects[0]).longValue();
+        this.vId = objects[0] instanceof BigInteger ? ((BigInteger) objects[0]).longValue() : (Long) objects[0];
         this.vLastModifiedAt = (Date) objects[1];
         this.vName = (String) objects[2];
         this.roLastModifiedAt = (Date) objects[3];
@@ -60,6 +62,8 @@ public class QueryResultLine implements Serializable {
         this.tName = (String) objects[14];
         this.hsLastModifiedAt = (String) objects[15];
         this.hsStatus = (String) objects[16];
+        this.rId = objects[17] instanceof BigInteger ? ((BigInteger) objects[17]).longValue() : (Long) objects[17];
+        this.tId = objects[18] instanceof BigInteger ? ((BigInteger) objects[18]).longValue() : (Long) objects[18];
     }
 
     public Long getVirtualhostId() {
@@ -128,5 +132,13 @@ public class QueryResultLine implements Serializable {
 
     public String getHealthStatusStatus() {
         return hsStatus;
+    }
+
+    public Long getRuleId() {
+        return rId;
+    }
+
+    public Long getTargetId() {
+        return tId;
     }
 }

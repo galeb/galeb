@@ -24,6 +24,7 @@ import com.google.common.base.Charsets;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
+import io.galeb.legba.model.v1.Environment;
 import io.galeb.legba.model.v1.Pool;
 import io.galeb.legba.model.v1.Rule;
 import io.galeb.legba.model.v1.RuleType;
@@ -83,7 +84,7 @@ public class ConverterV1 implements Converter {
         event.put("correlation", routerMeta.correlation);
         event.sendInfo();
 
-        io.galeb.legba.model.v1.Environment environmentV1 = new io.galeb.legba.model.v1.Environment();
+        Environment environmentV1 = new Environment();
         environmentV1.setId(envId);
         environmentV1.setProperties(Collections.singletonMap(FULLHASH_PROP, version));
 
@@ -124,7 +125,7 @@ public class ConverterV1 implements Converter {
                 }
             }
             if (ruleV1 == null) {
-                ruleV1 = new io.galeb.legba.model.v1.Rule();
+                ruleV1 = new Rule();
                 ruleV1.setId(queryResultLine.getRuleId());
                 ruleV1.setName(queryResultLine.getRuleName());
                 ruleV1.setGlobal(queryResultLine.getRuleGlobal());

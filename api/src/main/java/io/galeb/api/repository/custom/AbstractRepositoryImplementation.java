@@ -20,6 +20,7 @@ import com.google.common.reflect.TypeToken;
 import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.*;
+import io.galeb.core.exceptions.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
@@ -140,12 +141,18 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     @Transactional
     public void delete(Long id) {
         T entity = simpleJpaRepository.findOne(id);
+        // TODO: check if is necessary (will it really be send to routers? If not, delete immediately)
         if (entity instanceof WithStatus) {
+            checkConstraints(entity);
             entity.quarantine(true);
             simpleJpaRepository.saveAndFlush(entity);
         } else {
             simpleJpaRepository.delete(entity);
         }
+    }
+
+    private void checkConstraints(T entity) throws BadRequestException {
+        // TODO: Implementation. Abort if is not allowed
     }
 
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {

@@ -64,6 +64,7 @@ public class StatusService {
         if (allEnvironments == null || allEnvironments.isEmpty()) {
             if (!(entity instanceof Rule)) {
                 LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+                // TODO: return map with key=FAKE_ENVIRONMENT
             }
             return Collections.emptyMap();
         }

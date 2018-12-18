@@ -94,6 +94,7 @@ public abstract class AbstractHandler<T extends AbstractEntity> extends Abstract
     }
 
     private void registerChanges(T entity) {
+        // TODO: check if is necessary (it will really be send to routers. If not, delete immediately)
         if (!EntitiesRegistrable.contains(entity.getClass().getSimpleName())) {
             return;
         }

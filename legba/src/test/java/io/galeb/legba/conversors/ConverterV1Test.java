@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jayway.jsonpath.JsonPath;
 import io.galeb.core.entity.HealthStatus.Status;
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.QueryResultLine;
@@ -36,7 +37,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -56,7 +59,12 @@ public class ConverterV1Test {
         STATE_2,
         STATE_3,
         STATE_4,
-        STATE_5
+        STATE_5,
+        STATE_6,
+        STATE_7,
+        STATE_8,
+        STATE_9,
+        STATE_10
     }
 
     private HashMap<State, ConverterV1> converterV1 = new HashMap<>();
@@ -93,6 +101,36 @@ public class ConverterV1Test {
         put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_5, "virtualhost3"), true);
         put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_5, "virtualhost4"), false);
         put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_5, "virtualhost5"), false);
+
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_6, "virtualhost1"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_6, "virtualhost2"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_6, "virtualhost3"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_6, "virtualhost4"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_6, "virtualhost5"), false);
+
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_7, "virtualhost1"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_7, "virtualhost2"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_7, "virtualhost3"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_7, "virtualhost4"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_7, "virtualhost5"), false);
+
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_8, "virtualhost1"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_8, "virtualhost2"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_8, "virtualhost3"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_8, "virtualhost4"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_8, "virtualhost5"), false);
+
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_9, "virtualhost1"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_9, "virtualhost2"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_9, "virtualhost3"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_9, "virtualhost4"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_9, "virtualhost5"), false);
+
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_10, "virtualhost1"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_10, "virtualhost2"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_10, "virtualhost3"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_10, "virtualhost4"), false);
+        put(new <State, String> AbstractMap.SimpleEntry<State, String>(State.STATE_10, "virtualhost5"), false);
     }};
 
     private HashMap<State, List<Object[]>> states = new HashMap<State, List<Object[]>>() {{
@@ -205,6 +243,96 @@ public class ConverterV1Test {
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
         }));
 
+        put(State.STATE_6, Arrays.asList(new Object[][]{
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateOne, 0, dateOne, false, "rule1", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 1L, 1L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateOne, 1, dateOne, false, "rule2", "/2", dateOne, "pool2", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.2", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 2L, 2L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateOne, 2, dateOne, false, "rule3", "/", dateOne, "pool3", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.3", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 3L, 3L},
+
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateOne, 0, dateOne, false, "rule4", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 4L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateOne, 1, dateOne, false, "rule5", "/2", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 5L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateOne, 2, dateOne, false, "rule6", "/", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 6L, 1L},
+
+        {BigInteger.valueOf(3L), dateTwo, "virtualhost3", dateOne, 0, dateOne, false, "rule7", "/", dateOne, "pool4", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.4", dateOne.toString(), Status.HEALTHY.toString(), 7L, 4L},
+
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateOne, 0, dateOne, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.5", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 8L, 5L},
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateOne, 0, dateOne, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.6", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 8L, 6L},
+
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        }));
+
+        put(State.STATE_7, Arrays.asList(new Object[][]{
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 0, dateOne, false, "rule1", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 1L, 1L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 1, dateOne, false, "rule2", "/2", dateOne, "pool2", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.2", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 2L, 2L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 2, dateOne, false, "rule3", "/", dateOne, "pool3", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.3", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 3L, 3L},
+
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 0, dateOne, false, "rule4", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 4L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 1, dateOne, false, "rule5", "/2", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 5L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 2, dateOne, false, "rule6", "/", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 6L, 1L},
+
+        {BigInteger.valueOf(3L), dateTwo, "virtualhost3", dateTwo, 0, dateOne, false, "rule7", "/", dateOne, "pool4", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.4", dateOne.toString(), Status.HEALTHY.toString(), 7L, 4L},
+
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateOne, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.5", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 8L, 5L},
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateOne, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.6", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 8L, 6L},
+
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        }));
+
+        put(State.STATE_8, Arrays.asList(new Object[][]{
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 0, dateTwo, false, "rule1", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 1L, 1L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 1, dateTwo, false, "rule2", "/2", dateOne, "pool2", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.2", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 2L, 2L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 2, dateTwo, false, "rule3", "/", dateOne, "pool3", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.3", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 3L, 3L},
+
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 0, dateTwo, false, "rule4", "/1", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 4L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 1, dateTwo, false, "rule5", "/2", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 5L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 2, dateTwo, false, "rule6", "/", dateOne, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 6L, 1L},
+
+        {BigInteger.valueOf(3L), dateTwo, "virtualhost3", dateTwo, 0, dateTwo, false, "rule7", "/", dateOne, "pool4", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.4", dateOne.toString(), Status.HEALTHY.toString(), 7L, 4L},
+
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.5", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 8L, 5L},
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateOne, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.6", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 8L, 6L},
+
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        }));
+
+        put(State.STATE_9, Arrays.asList(new Object[][]{
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 0, dateTwo, false, "rule1", "/1", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 1L, 1L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 1, dateTwo, false, "rule2", "/2", dateTwo, "pool2", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.2", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 2L, 2L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 2, dateTwo, false, "rule3", "/", dateTwo, "pool3", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.3", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 3L, 3L},
+
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 0, dateTwo, false, "rule4", "/1", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 4L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 1, dateTwo, false, "rule5", "/2", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 5L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 2, dateTwo, false, "rule6", "/", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 6L, 1L},
+
+        {BigInteger.valueOf(3L), dateTwo, "virtualhost3", dateTwo, 0, dateTwo, false, "rule7", "/", dateTwo, "pool4", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.4", dateOne.toString(), Status.HEALTHY.toString(), 7L, 4L},
+
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateTwo, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.5", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 8L, 5L},
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateTwo, "pool5", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.6", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 8L, 6L},
+
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        }));
+
+        put(State.STATE_10, Arrays.asList(new Object[][]{
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 0, dateTwo, false, "rule1", "/1", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.1", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 1L, 1L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 1, dateTwo, false, "rule2", "/2", dateTwo, "pool2", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.2", dateTwo.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 2L, 2L},
+        {BigInteger.valueOf(1L), dateTwo, "virtualhost1", dateTwo, 2, dateTwo, false, "rule3", "/", dateTwo, "pool3", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.3", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 3L, 3L},
+
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 0, dateTwo, false, "rule4", "/1", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 4L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 1, dateTwo, false, "rule5", "/2", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 5L, 1L},
+        {BigInteger.valueOf(2L), dateTwo, "virtualhost2", dateTwo, 2, dateTwo, false, "rule6", "/", dateTwo, "pool1", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.1", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 6L, 1L},
+
+        {BigInteger.valueOf(3L), dateTwo, "virtualhost3", dateTwo, 0, dateTwo, false, "rule7", "/", dateTwo, "pool4", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.4", dateOne.toString(), Status.HEALTHY.toString(), 7L, 4L},
+
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateTwo, "pool5", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.5", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.FAIL.toString(), 8L, 5L},
+        {BigInteger.valueOf(4L), dateTwo, "virtualhost4", dateTwo, 0, dateTwo, false, "rule8", "/", dateTwo, "pool5", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.6", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 8L, 6L},
+
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        }));
+
         // @formatter:on
     }};
 
@@ -220,58 +348,28 @@ public class ConverterV1Test {
     }
 
     @Test
-    public void stateInitialToState2() {
-        checkStateChanges(State.INITIAL, State.STATE_1);
+    public void stateFlowTest() {
+        final Iterator<State> iterator = EnumSet.allOf(State.class).iterator();
+        while (iterator.hasNext()) {
+            State currentState = iterator.next();
+            if (iterator.hasNext()) {
+                State nextState = iterator.next();
+                JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+                event.put("event", "ConverterV1Test.stateFlowTest: state " + currentState + " to " + nextState);
+                event.sendInfo();
+                checkStateChanges(currentState, nextState);
+            }
+        }
     }
 
     @Test
-    public void state1ToState2() {
-        checkStateChanges(State.STATE_1, State.STATE_2);
-    }
-
-    @Test
-    public void state2ToState3() {
-        checkStateChanges(State.STATE_2, State.STATE_3);
-    }
-
-    @Test
-    public void state3ToState4() {
-        checkStateChanges(State.STATE_3, State.STATE_4);
-    }
-
-    @Test
-    public void state4ToState5() {
-        checkStateChanges(State.STATE_4, State.STATE_5);
-    }
-
-    @Test
-    public void convertFromInitial() {
-        convertFrom(State.INITIAL);
-    }
-
-    @Test
-    public void convertFromState1() {
-        convertFrom(State.STATE_1);
-    }
-
-    @Test
-    public void convertFromState2() {
-        convertFrom(State.STATE_2);
-    }
-
-    @Test
-    public void convertFromState3() {
-        convertFrom(State.STATE_3);
-    }
-
-    @Test
-    public void convertFromState4() {
-        convertFrom(State.STATE_4);
-    }
-
-    @Test
-    public void convertFromState5() {
-        convertFrom(State.STATE_5);
+    public void convertJsonTest() {
+        for (State currentState : EnumSet.allOf(State.class)) {
+            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            event.put("event", "ConverterV1Test.convertJsonTest: state " + currentState);
+            event.sendInfo();
+            convertFrom(currentState);
+        }
     }
 
     private void checkStateChanges(State currentState, State nextState) {

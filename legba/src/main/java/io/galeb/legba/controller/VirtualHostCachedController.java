@@ -16,9 +16,10 @@
 
 package io.galeb.legba.controller;
 
+import static org.springframework.http.HttpHeaders.IF_NONE_MATCH;
+import static io.galeb.core.common.GalebHttpHeaders.*;
 import static org.springframework.http.HttpStatus.OK;
 
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,10 @@ public class VirtualHostCachedController extends AbstractController {
     @RequestMapping(value="/{envName:.+}", method = RequestMethod.GET)
     public synchronized ResponseEntity showall(@PathVariable(required = false) String apiVersion,
                                                @PathVariable String envName,
-                                               @RequestHeader(value = "If-None-Match", required = false) String routerVersion,
-                                               @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,
-                                               @RequestHeader(value = "X-Galeb-CacheHash", required = false) String routerCacheHash,
-                                               @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
+                                               @RequestHeader(value = IF_NONE_MATCH, required = false) String routerVersion,
+                                               @RequestHeader(value = X_GALEB_GROUP_ID, required = false) String routerGroupId,
+                                               @RequestHeader(value = X_GALEB_CACHE_HASH, required = false) String routerCacheHash,
+                                               @RequestHeader(value = X_GALEB_ZONE_ID, required = false) String zoneId) throws Exception {
 
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("apiVersion", apiVersion);
@@ -70,15 +71,17 @@ public class VirtualHostCachedController extends AbstractController {
         event.put("groupId", routerGroupId);
         event.put("zoneId", zoneId);
 
-        String actualHash;
-        try {
-            actualHash = versionService.getActualHash(envId.toString(), zoneId, actualVersion);
-        } catch (IllegalStateException e) {
-            event.sendError(e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        String actualHash = null;
+        if (routerCacheHash != null) {
+            try {
+                actualHash = versionService.getActualHash(envId.toString(), zoneId, actualVersion);
+            } catch (IllegalStateException e) {
+                event.sendError(e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
         }
 
-        if (routerVersion.equals(actualVersion) && actualHash != null && actualHash.equals(routerCacheHash)) {
+        if (routerVersion.equals(actualVersion) && (routerCacheHash == null || (actualHash != null && actualHash.equals(routerCacheHash)))) {
             event.put("status", HttpStatus.NOT_MODIFIED.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();

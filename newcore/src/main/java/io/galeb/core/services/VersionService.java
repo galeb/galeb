@@ -57,7 +57,7 @@ public class VersionService {
         try {
             String actualHash = getActualHash(envId, zoneId, actualVersion);
             if (actualHash == null) {
-                actualHash = "*";
+                actualHash = "UNDEF";
             }
             return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion, actualHash));
         } catch (IllegalStateException ignore) {

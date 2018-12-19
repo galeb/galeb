@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
+import io.galeb.legba.model.v1.AbstractEntity;
 import io.galeb.legba.model.v1.BalancePolicy;
 import io.galeb.legba.model.v1.Environment;
 import io.galeb.legba.model.v1.Pool;
@@ -37,9 +38,12 @@ import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.QueryResultLine;
 import io.galeb.legba.repository.VirtualHostRepository;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,7 +182,7 @@ public class ConverterV1 implements Converter {
 
         final ArrayNode virtualHostsV1 = json.putArray("virtualhosts");
         final StringBuilder cacheHashTemp = new StringBuilder();
-        for (VirtualHost virtualHost: virtualhostFullHash.keySet()) {
+        for (VirtualHost virtualHost: virtualhostFullHash.keySet().stream().sorted(Comparator.comparing(AbstractEntity::getName)).collect(Collectors.toList())) {
             String rawFullHash = virtualhostFullHash.get(virtualHost);
             String virtualhostHash = makeHash(rawFullHash);
             cacheHashTemp.append(virtualhostHash);

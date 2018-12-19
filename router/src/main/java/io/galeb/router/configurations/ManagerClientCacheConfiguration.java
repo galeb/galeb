@@ -42,14 +42,16 @@ public class ManagerClientCacheConfiguration {
 
         private final ConcurrentHashMap<String, VirtualHost> virtualHosts = new ConcurrentHashMap<>();
 
-        private String envHash = null;
+        private String etag = null;
+
+        private String hash;
 
         public VirtualHost get(String hostName) {
             return virtualHosts.get(hostName);
         }
 
         public synchronized void put(String virtualhostName, final VirtualHost virtualHost) {
-            envHash = virtualHost.getEnvironment().getProperties().get(FULLHASH_PROP);
+            etag = virtualHost.getEnvironment().getProperties().get(FULLHASH_PROP);
             virtualHosts.put(virtualhostName, virtualHost);
         }
 
@@ -70,12 +72,12 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized String etag() {
-            return envHash == null ? EMPTY : envHash;
+            return etag == null ? EMPTY : etag;
         }
 
-        public synchronized void updateEtag(String newHash) {
-            Assert.notNull(newHash, "Update Etag not possible: new Hash IS NULL");
-            if (!newHash.equals(this.envHash)) this.envHash = newHash;
+        public synchronized void updateEtag(String newEtag) {
+            Assert.notNull(newEtag, "Update Etag not possible: new Etag IS NULL");
+            if (!newEtag.equals(this.etag)) this.etag = newEtag;
         }
 
         public List<VirtualHost> values() {
@@ -83,8 +85,19 @@ public class ManagerClientCacheConfiguration {
         }
 
         public synchronized void clear() {
-            envHash = null;
+            etag = null;
+            hash = null;
             virtualHosts.clear();
+        }
+
+        public synchronized ManagerClientCache setHash(String newHash) {
+            Assert.notNull(hash, "Update HASH not possible: new Hash IS NULL");
+            this.hash = newHash;
+            return this;
+        }
+
+        public synchronized String getHash() {
+            return hash;
         }
     }
 }

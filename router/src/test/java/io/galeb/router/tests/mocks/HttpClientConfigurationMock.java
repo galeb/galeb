@@ -98,7 +98,7 @@ public class HttpClientConfigurationMock {
             }
 
             @Override
-            public void post(String url, String etag) {
+            public void post(String url, String etag, String cacheHash) {
                 logger.info("sending POST to Manager (ignored) with etag " + etag);
             }
         };

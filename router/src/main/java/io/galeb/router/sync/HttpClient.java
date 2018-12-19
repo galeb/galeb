@@ -25,13 +25,6 @@ import org.asynchttpclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
 import static io.galeb.router.sync.GalebHttpHeaders.*;
 import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
@@ -93,13 +86,14 @@ public class HttpClient {
         }
     }
 
-    public void post(String url, String etag) {
+    public void post(String url, String etag, String cacheHash) {
         RequestBuilder requestBuilder = new RequestBuilder().setUrl(url)
                 .setMethod(HttpMethod.POST.name())
                 .setHeader(IF_NONE_MATCH_STRING, etag)
                 .setHeader(X_GALEB_GROUP_ID, GROUP_ID)
                 .setHeader(X_GALEB_ENVIRONMENT, ENVIRONMENT_NAME)
                 .setHeader(X_GALEB_LOCAL_IP, LocalIP.encode())
+                .setHeader("X-Galeb-CacheHash", cacheHash)
                 .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                 .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
         asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {

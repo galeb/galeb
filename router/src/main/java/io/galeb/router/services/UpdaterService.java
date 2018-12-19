@@ -119,7 +119,8 @@ public class UpdaterService {
         };
         String etag = cache.etag();
         List<VirtualHost> lastCache = new ArrayList<>(cache.values());
-        managerClient.register(etag);
+        String cacheHash = cache.getHash();
+        managerClient.register(etag, cacheHash);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
         // force wait
         long currentWaitTimeOut = System.currentTimeMillis();

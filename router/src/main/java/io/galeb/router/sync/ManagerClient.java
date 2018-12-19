@@ -68,8 +68,8 @@ public class ManagerClient {
         httpClient.getResponseBody(managerUrl + SystemEnv.MANAGER_MAP_PATH.getValue() + envname, etag, callback);
     }
 
-    public void register(String etag) {
-        httpClient.post(managerUrl + SystemEnv.MANAGER_ROUTERS_PATH.getValue(), etag);
+    public void register(String etag, String cacheHash) {
+        httpClient.post(managerUrl + SystemEnv.MANAGER_ROUTERS_PATH.getValue(), etag, cacheHash);
     }
 
     public interface ResultCallBack {

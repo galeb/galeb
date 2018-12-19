@@ -38,8 +38,6 @@ public class VirtualHostCachedController extends AbstractController {
 
     private final VersionService versionService;
 
-    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
-
     @Autowired
     public VirtualHostCachedController(VersionService versionService) {
         this.versionService = versionService;
@@ -50,6 +48,7 @@ public class VirtualHostCachedController extends AbstractController {
                                                @PathVariable String envName,
                                                @RequestHeader(value = "If-None-Match", required = false) String routerVersion,
                                                @RequestHeader(value = "X-Galeb-GroupID", required = false) String routerGroupId,
+                                               @RequestHeader(value = "X-Galeb-CacheHash", required = false) String routerCacheHash,
                                                @RequestHeader(value = "X-Galeb-ZoneID", required = false) String zoneId) throws Exception {
 
         final JsonEventToLogger event = new JsonEventToLogger(this.getClass());
@@ -65,13 +64,21 @@ public class VirtualHostCachedController extends AbstractController {
         event.put("message", "Processing VirtualHostCached");
         event.put("actualVersion", actualVersion);
         event.put("routerVersion", routerVersion);
+        event.put("routerCacheHash", routerCacheHash);
         event.put("environmentId", String.valueOf(envId));
         event.put("environmentName", envName);
         event.put("groupId", routerGroupId);
         event.put("zoneId", zoneId);
-        event.put("tags", LOGGING_TAGS);
 
-        if (routerVersion.equals(actualVersion)) {
+        String actualHash;
+        try {
+            actualHash = versionService.getActualHash(envId.toString(), zoneId, actualVersion);
+        } catch (IllegalStateException e) {
+            event.sendError(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        if (routerVersion.equals(actualVersion) && actualHash != null && actualHash.equals(routerCacheHash)) {
             event.put("status", HttpStatus.NOT_MODIFIED.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();

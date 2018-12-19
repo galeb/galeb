@@ -17,10 +17,11 @@
 package io.galeb.legba.conversors;
 
 import io.galeb.legba.controller.RoutersController.RouterMeta;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface Converter {
 
-    String convertToString(RouterMeta routerMeta, int numRouters, String version);
+    String convertToString(RouterMeta routerMeta, int numRouters, String version, final AtomicReference<String> cacheHash);
 
     boolean canSendTargetToRoute(String healthStatus);
 

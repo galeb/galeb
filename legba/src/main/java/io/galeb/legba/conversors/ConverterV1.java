@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -63,7 +64,7 @@ public class ConverterV1 implements Converter {
     }
 
     @Override
-    public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters, String version, final AtomicReference<String> cacheHash) {
         long envId = Long.parseLong(routerMeta.envId);
         String zoneId = routerMeta.zoneId;
 
@@ -176,11 +177,15 @@ public class ConverterV1 implements Converter {
         }
 
         final ArrayNode virtualHostsV1 = json.putArray("virtualhosts");
+        final StringBuilder cacheHashTemp = new StringBuilder();
         for (VirtualHost virtualHost: virtualhostFullHash.keySet()) {
             String rawFullHash = virtualhostFullHash.get(virtualHost);
-            virtualHost.setProperties(Collections.singletonMap(FULLHASH_PROP, makeHash(rawFullHash)));
+            String virtualhostHash = makeHash(rawFullHash);
+            cacheHashTemp.append(virtualhostHash);
+            virtualHost.setProperties(Collections.singletonMap(FULLHASH_PROP, virtualhostHash));
             virtualHostsV1.add(objectMapper.convertValue(virtualHost, JsonNode.class));
         }
+        cacheHash.set(makeHash(cacheHashTemp.toString()));
         return json.toString();
     }
 

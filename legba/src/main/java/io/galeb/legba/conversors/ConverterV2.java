@@ -31,6 +31,7 @@ import io.galeb.legba.model.v2.RuleOrdered;
 import io.galeb.legba.model.v2.VirtualhostGroup;
 import io.galeb.legba.repository.VirtualHostRepository;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class ConverterV2 implements Converter {
     private VirtualHostRepository virtualHostRepository;
 
     @Override
-    public String convertToString(final RouterMeta routerMeta, int numRouters, String version) {
+    public String convertToString(final RouterMeta routerMeta, int numRouters, String version, final AtomicReference<String> cacheHash) {
         List<io.galeb.legba.model.v2.VirtualHost> list = new ArrayList<>();
         long envId = Long.parseLong(routerMeta.envId);
         final List<VirtualHost> virtualHostsV2 = virtualHostRepository.findAllByEnvironmentId(envId);

@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import net.minidev.json.JSONArray;
 import org.junit.Assert;
@@ -422,7 +423,8 @@ public class ConverterV1Test {
         int numRouters = 2;
         String version = "1";
 
-        String jsonStr = converterV1.get(state).convertToString(routerMeta, numRouters, version);
+        AtomicReference<String> cacheHash = new AtomicReference<>(null);
+        String jsonStr = converterV1.get(state).convertToString(routerMeta, numRouters, version, cacheHash);
         try {
             MAPPER.readTree(jsonStr);
             return jsonStr;

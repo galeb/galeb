@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -226,8 +227,9 @@ public class RoutersService {
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
             int numRouters = get(envId, routerMeta.groupId);
-            cache = converter.convertToString(routerMeta, numRouters, actualVersion);
-            versionService.setCache(cache, envId, zoneId, actualVersion);
+            AtomicReference<String> cacheHash = new AtomicReference<>(null);
+            cache = converter.convertToString(routerMeta, numRouters, actualVersion, cacheHash);
+            versionService.setCache(cache, envId, zoneId, actualVersion, cacheHash.get());
 
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
             event.put("message", "New Cache DONE");

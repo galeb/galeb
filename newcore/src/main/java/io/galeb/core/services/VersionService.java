@@ -17,6 +17,7 @@
 package io.galeb.core.services;
 
 
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class VersionService {
      * {1} - Zone Id
      * {1} - Version number
      */
-    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}";
+    private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}:{3}";
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -53,11 +54,19 @@ public class VersionService {
     }
 
     public String getCache(String envId, String zoneId, String actualVersion) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion));
+        try {
+            String actualHash = getActualHash(envId, zoneId, actualVersion);
+            if (actualHash == null) {
+                actualHash = "*";
+            }
+            return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion, actualHash));
+        } catch (IllegalStateException ignore) {
+            return null;
+        }
     }
 
-    public void setCache(String cache, String envId, String zoneId, String actualVersion) {
-        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion), cache, 5, TimeUnit.MINUTES);
+    public void setCache(String cache, String envId, String zoneId, String actualVersion, String cacheHash) {
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion, cacheHash), cache, 5, TimeUnit.MINUTES);
     }
 
     public Long incrementVersion(String envId) {
@@ -65,5 +74,19 @@ public class VersionService {
         return redisTemplate.opsForValue().increment(keyFormatted, 1);
     }
 
+    public String getActualHash(String envId, String zoneId, String actualVersion) throws IllegalStateException {
+        Set<String> cacheKeys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion, "*"));
+        if (cacheKeys != null && !cacheKeys.isEmpty()) {
+            if (cacheKeys.size() == 1) {
+                return cacheKeys.stream().findAny()
+                    .orElse(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion, "UNDEF"))
+                    .split(":")[4];
+            }
+
+            throw new IllegalStateException(
+                "INVALID VERSION COUNTER: Version " + actualVersion + " has " + cacheKeys.size() + " caches");
+        }
+        return null;
+    }
 }
 

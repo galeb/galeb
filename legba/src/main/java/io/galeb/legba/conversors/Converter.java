@@ -22,5 +22,7 @@ public interface Converter {
 
     String convertToString(RouterMeta routerMeta, int numRouters, String version);
 
+    boolean canSendTargetToRoute(String healthStatus);
+
     String getApiVersion();
 }

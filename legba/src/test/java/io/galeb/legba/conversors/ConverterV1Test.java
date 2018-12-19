@@ -151,6 +151,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", "NULL", Status.UNKNOWN.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", "NULL", Status.UNKNOWN.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", "NULL", Status.UNKNOWN.toString(), 9L, 9L},
         }));
 
         put(State.STATE_1, Arrays.asList(new Object[][]{
@@ -169,6 +170,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.UNKNOWN.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateOne.toString(), Status.FAIL.toString() + "," + Status.FAIL.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateOne.toString(), Status.FAIL.toString() + "," + Status.FAIL.toString(), 9L, 9L},
         }));
 
         put(State.STATE_2, Arrays.asList(new Object[][]{
@@ -187,6 +189,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.FAIL.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.FAIL.toString(), 9L, 9L},
         }));
 
         put(State.STATE_3, Arrays.asList(new Object[][]{
@@ -205,6 +208,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_4, Arrays.asList(new Object[][]{
@@ -223,6 +227,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_5, Arrays.asList(new Object[][]{
@@ -241,6 +246,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateOne, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_6, Arrays.asList(new Object[][]{
@@ -259,6 +265,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateOne, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_7, Arrays.asList(new Object[][]{
@@ -277,6 +284,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateOne, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateOne, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_8, Arrays.asList(new Object[][]{
@@ -295,6 +303,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateOne, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateOne, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_9, Arrays.asList(new Object[][]{
@@ -313,6 +322,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool7", BigInteger.valueOf(1L), "default", dateOne, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         put(State.STATE_10, Arrays.asList(new Object[][]{
@@ -331,6 +341,7 @@ public class ConverterV1Test {
 
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.7", dateOne.toString(), Status.HEALTHY.toString() + "," + Status.HEALTHY.toString(), 9L, 7L},
         {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool6", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.8", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 8L},
+        {BigInteger.valueOf(5L), dateTwo, "virtualhost5", dateTwo, 0, dateTwo, false, "rule9", "/", dateTwo, "pool7", BigInteger.valueOf(1L), "default", dateTwo, "http://127.0.0.9", dateTwo.toString(), Status.FAIL.toString() + "," + Status.HEALTHY.toString(), 9L, 9L},
         }));
 
         // @formatter:on
@@ -428,9 +439,7 @@ public class ConverterV1Test {
             IntStream.range(0, numVirtualhosts).forEach(pos -> {
                 String virtualhostName = JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].name");
                 long numTargetsOrigin = states.get(state).stream().filter(line -> virtualhostName.equals(line[2]) &&
-                    (line[16] == null ||
-                        ((String)line[16]).contains(Status.HEALTHY.toString()) ||
-                        ((String)line[16]).contains(Status.UNKNOWN.toString()))).count();
+                    (converterV1.get(state).canSendTargetToRoute((String)line[16]))).count();
                 long numTargetsJson = ((JSONArray) JsonPath.read(jsonStr, "$.virtualhosts[" + pos + "].rules[*].pool.targets[*]")).size();
                 Assert.assertEquals("virtualhost " + virtualhostName + " target count problem", numTargetsOrigin, numTargetsJson);
             });

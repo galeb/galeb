@@ -16,6 +16,10 @@
 
 package io.galeb.legba.conversors;
 
+import static com.google.common.hash.Hashing.sha256;
+import static io.galeb.core.entity.HealthStatus.Status.HEALTHY;
+import static io.galeb.core.entity.HealthStatus.Status.UNKNOWN;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -32,18 +36,13 @@ import io.galeb.legba.model.v1.Target;
 import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.QueryResultLine;
 import io.galeb.legba.repository.VirtualHostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.google.common.hash.Hashing.sha256;
-import static io.galeb.core.entity.HealthStatus.Status.HEALTHY;
-import static io.galeb.core.entity.HealthStatus.Status.UNKNOWN;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ConverterV1 implements Converter {
@@ -171,9 +170,7 @@ public class ConverterV1 implements Converter {
                 targetV1.setName(queryResultLine.getTargetName());
             }
 
-            if (queryResultLine.getHealthStatusStatus() == null ||
-                    queryResultLine.getHealthStatusStatus().contains(HEALTHY.name()) ||
-                    queryResultLine.getHealthStatusStatus().contains(UNKNOWN.name())) {
+            if (canSendTargetToRoute(queryResultLine.getHealthStatusStatus())) {
                 poolV1.getTargets().add(targetV1);
             }
         }
@@ -208,6 +205,11 @@ public class ConverterV1 implements Converter {
         virtualhostFullHash.put(virtualHostV1, fullHash);
 
         return virtualhostFullHash;
+    }
+
+    @Override
+    public boolean canSendTargetToRoute(String healthStatus) {
+        return healthStatus == null || healthStatus.contains(HEALTHY.name()) || healthStatus.contains(UNKNOWN.name());
     }
 
     @Override

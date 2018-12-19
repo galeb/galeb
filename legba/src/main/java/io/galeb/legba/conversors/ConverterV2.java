@@ -123,6 +123,11 @@ public class ConverterV2 implements Converter {
     }
 
     @Override
+    public boolean canSendTargetToRoute(String healthStatus) {
+        return true;
+    }
+
+    @Override
     public String getApiVersion() {
         return API_VERSION;
     }

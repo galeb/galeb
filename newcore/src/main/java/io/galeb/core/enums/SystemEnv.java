@@ -385,7 +385,12 @@ public enum SystemEnv {
     /**
      *
      */
-    REGISTER_ROUTER_TTL           ("REGISTER_ROUTER_TTL",           30000L);
+    REGISTER_ROUTER_TTL           ("REGISTER_ROUTER_TTL",           30000L),
+
+    /**
+     * route map (cache) version ttl (milliseconds)
+     */
+    LEGBA_CACHE_EXPIRATION        ("LEGBA_CACHE_EXPIRATION",        60000L);
 
     // @formatter:on
 

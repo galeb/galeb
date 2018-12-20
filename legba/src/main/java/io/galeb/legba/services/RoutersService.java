@@ -52,9 +52,11 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
-    private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+    private static final long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
 
-    private static String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
+    private static final long LEGBA_CACHE_EXPIRATION = Long.parseLong(SystemEnv.LEGBA_CACHE_EXPIRATION.getValue());
+
+    private static final String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
     private final StringRedisTemplate redisTemplate;
     private final ChangesService changesService;
@@ -216,14 +218,20 @@ public class RoutersService {
 
         final String envId = routerMeta.envId;
         final String zoneId = routerMeta.zoneId;
-        final String actualVersion = routerMeta.actualVersion;
+        String actualVersion = routerMeta.actualVersion;
 
         String cache = versionService.getCache(envId, zoneId, actualVersion);
         String lastVersion = versionService.lastCacheVersion(envId, zoneId, actualVersion);
+        String cacheTime = versionService.getCacheTime(envId, zoneId);
 
-        if (cache == null || "".equals(cache) || Long.parseLong(actualVersion) > Long.parseLong(lastVersion)) {
+        boolean cacheExpired = cacheTime != null && System.currentTimeMillis() - Long.parseLong(cacheTime) > LEGBA_CACHE_EXPIRATION;
+        boolean hasChange = Long.parseLong(actualVersion) > Long.parseLong(lastVersion);
+
+        if (cache == null || "".equals(cache) || cacheExpired || hasChange) {
             long start = System.currentTimeMillis();
-
+            if (cacheExpired) {
+                actualVersion = Long.toString(versionService.incrementVersion(envId));
+            }
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
             int numRouters = get(envId, routerMeta.groupId);

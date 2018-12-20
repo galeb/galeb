@@ -43,6 +43,8 @@ public class VersionService {
      */
     private static final String FORMAT_KEY_CACHE = "cache:{0}:{1}:{2}";
 
+    private static final String FORMAT_KEY_LAST_CACHE_TIME = "lastCacheTime:{0}:{1}";
+
     @Autowired
     StringRedisTemplate redisTemplate;
 
@@ -58,8 +60,18 @@ public class VersionService {
         return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, lastCacheVersion(envId, zoneId, actualVersion)));
     }
 
+    public String getCacheTime(String envId, String zoneId) {
+        String keyLastCacheTimeRaw = MessageFormat.format(FORMAT_KEY_LAST_CACHE_TIME, envId, zoneId == null ? "*" : zoneId);
+        String keyLastCacheTime = redisTemplate.keys(keyLastCacheTimeRaw).stream().findAny().orElse(null);
+        if (keyLastCacheTime == null) {
+            return null;
+        }
+        return redisTemplate.opsForValue().get(keyLastCacheTime);
+    }
+
     public void setCache(String cache, String envId, String zoneId, String actualVersion) {
         redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion), cache, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(MessageFormat.format(FORMAT_KEY_LAST_CACHE_TIME, envId, zoneId), Long.toString(System.currentTimeMillis()));
     }
 
     public Long incrementVersion(String envId) {

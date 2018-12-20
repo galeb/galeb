@@ -385,7 +385,12 @@ public enum SystemEnv {
     /**
      *
      */
-    REGISTER_ROUTER_TTL           ("REGISTER_ROUTER_TTL",           30000L);
+    REGISTER_ROUTER_TTL           ("REGISTER_ROUTER_TTL",           30000L),
+
+    /**
+     * route map (cache) version ttl (milliseconds)
+     */
+    ROUTER_MAP_VERSION_TTL        ("ROUTER_MAP_VERSION_TTL",             60000L);
 
     // @formatter:on
 

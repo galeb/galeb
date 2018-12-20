@@ -219,8 +219,9 @@ public class RoutersService {
         final String actualVersion = routerMeta.actualVersion;
 
         String cache = versionService.getCache(envId, zoneId, actualVersion);
+        String lastVersion = versionService.lastCacheVersion(envId, zoneId, actualVersion);
 
-        if (cache == null || "".equals(cache)) {
+        if (cache == null || "".equals(cache) || Long.parseLong(actualVersion) > Long.parseLong(lastVersion)) {
             long start = System.currentTimeMillis();
 
             // TODO: Add V2..Vx dynamic support

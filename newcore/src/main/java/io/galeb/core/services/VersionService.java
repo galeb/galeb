@@ -17,6 +17,8 @@
 package io.galeb.core.services;
 
 
+import io.galeb.core.log.JsonEventToLogger;
+import java.util.Comparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -53,7 +55,7 @@ public class VersionService {
     }
 
     public String getCache(String envId, String zoneId, String actualVersion) {
-        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, actualVersion));
+        return redisTemplate.opsForValue().get(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, lastCacheVersion(envId, zoneId, actualVersion)));
     }
 
     public void setCache(String cache, String envId, String zoneId, String actualVersion) {
@@ -63,6 +65,22 @@ public class VersionService {
     public Long incrementVersion(String envId) {
         String keyFormatted = MessageFormat.format(FORMAT_KEY_VERSION, envId);
         return redisTemplate.opsForValue().increment(keyFormatted, 1);
+    }
+
+    public String lastCacheVersion(String envId, String zoneId, String actualVersion) {
+        String keyCache = MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId == null ? "*" : zoneId, "*");
+        String lastKeyCache = redisTemplate.keys(keyCache).stream().sorted(Comparator.reverseOrder()).limit(1).findAny()
+            .orElse(MessageFormat.format(FORMAT_KEY_CACHE, envId, zoneId, "0"));
+        String[] lastCacheVersionArray = lastKeyCache.split(":");
+        String lastCacheVersion = lastCacheVersionArray.length > 3 ? lastCacheVersionArray[3] : "0";
+        if (!lastCacheVersion.equals(actualVersion)) {
+            JsonEventToLogger event = new JsonEventToLogger(this.getClass());
+            event.put("message", "lastCacheVersion != actualVersion");
+            event.put("lastCacheVersion", lastCacheVersion);
+            event.put("actualVersion", actualVersion);
+            event.sendInfo();
+        }
+        return lastCacheVersion;
     }
 
 }

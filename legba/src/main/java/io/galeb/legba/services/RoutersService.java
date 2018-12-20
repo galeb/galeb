@@ -52,9 +52,13 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
-    private static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+    private static final String KEY_LAST_VERSION = "lastversion";
 
-    private static String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
+    private static final long ROUTER_MAP_VERSION_TTL = Long.parseLong(SystemEnv.ROUTER_MAP_VERSION_TTL.getValue());
+
+    private static final long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+
+    private static final String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
     private final StringRedisTemplate redisTemplate;
     private final ChangesService changesService;
@@ -98,6 +102,9 @@ public class RoutersService {
                     String groupId = (String) positions[1];
                     String localIp = (String) positions[2];
                     String version = versionService.getActualVersion(env);
+//                    String lastVersion = redisTemplate.opsForValue().get(KEY_LAST_VERSION);
+//                    boolean versionExpired = lastVersion != null && System.currentTimeMillis() - Long.parseLong(lastVersion) > ROUTER_MAP_VERSION_TTL;
+//                    redisTemplate.opsForValue().set(KEY_LAST_VERSION, Long.toString(System.currentTimeMillis()));
 
                     JsonSchema.Env envSchema = envs.stream()
                             .filter(e -> e.getEnvId().equals(env))

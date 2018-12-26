@@ -18,7 +18,6 @@ package io.galeb.legba.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class VirtualHostCachedController extends AbstractController {
 
     private final VersionService versionService;
-
-    private static final String LOGGING_TAGS = SystemEnv.LOGGING_TAGS.getValue();
 
     @Autowired
     public VirtualHostCachedController(VersionService versionService) {
@@ -61,15 +58,22 @@ public class VirtualHostCachedController extends AbstractController {
 
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
+        String lastVersion = versionService.lastCacheVersion(envId.toString(), zoneId, actualVersion);
 
-        event.put("message", "Processing VirtualHostCached");
+        event.put("message", "GET /virtualhostscached");
         event.put("actualVersion", actualVersion);
         event.put("routerVersion", routerVersion);
         event.put("environmentId", String.valueOf(envId));
         event.put("environmentName", envName);
         event.put("groupId", routerGroupId);
         event.put("zoneId", zoneId);
-        event.put("tags", LOGGING_TAGS);
+
+        if (Long.parseLong(routerVersion) > Long.parseLong(lastVersion)) {
+            event.put("status_detail", "routerVersion > lastVersion");
+            event.put("status", HttpStatus.NOT_FOUND.toString());
+            event.sendWarn();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
         if (routerVersion.equals(actualVersion)) {
             event.put("status", HttpStatus.NOT_MODIFIED.toString());
@@ -79,12 +83,13 @@ public class VirtualHostCachedController extends AbstractController {
 
         String cache = versionService.getCache(envId.toString(), zoneId, actualVersion);
         if (cache == null || "".equals(cache)) {
-            event.put("message", "Cache NOT FOUND");
+            event.put("status_detail", "Cache NOT FOUND");
             event.put("status", HttpStatus.NOT_FOUND.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
+        event.put("cache_size", cache.length());
         event.put("status", HttpStatus.OK.toString());
         event.sendInfo();
 

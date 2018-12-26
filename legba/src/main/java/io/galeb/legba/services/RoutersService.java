@@ -52,11 +52,9 @@ public class RoutersService {
      */
     private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
-    private static final String KEY_LAST_VERSION = "lastversion";
-
-    private static final long ROUTER_MAP_VERSION_TTL = Long.parseLong(SystemEnv.ROUTER_MAP_VERSION_TTL.getValue());
-
     private static final long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+
+    private static final long LEGBA_CACHE_EXPIRATION = Long.parseLong(SystemEnv.LEGBA_CACHE_EXPIRATION.getValue());
 
     private static final String DEFAULT_API_VERSION = ConverterV1.API_VERSION;
 
@@ -102,9 +100,6 @@ public class RoutersService {
                     String groupId = (String) positions[1];
                     String localIp = (String) positions[2];
                     String version = versionService.getActualVersion(env);
-//                    String lastVersion = redisTemplate.opsForValue().get(KEY_LAST_VERSION);
-//                    boolean versionExpired = lastVersion != null && System.currentTimeMillis() - Long.parseLong(lastVersion) > ROUTER_MAP_VERSION_TTL;
-//                    redisTemplate.opsForValue().set(KEY_LAST_VERSION, Long.toString(System.currentTimeMillis()));
 
                     JsonSchema.Env envSchema = envs.stream()
                             .filter(e -> e.getEnvId().equals(env))
@@ -223,13 +218,20 @@ public class RoutersService {
 
         final String envId = routerMeta.envId;
         final String zoneId = routerMeta.zoneId;
-        final String actualVersion = routerMeta.actualVersion;
+        String actualVersion = routerMeta.actualVersion;
 
         String cache = versionService.getCache(envId, zoneId, actualVersion);
+        String lastVersion = versionService.lastCacheVersion(envId, zoneId, actualVersion);
+        String cacheTime = versionService.getCacheTime(envId, zoneId);
 
-        if (cache == null || "".equals(cache)) {
+        boolean cacheExpired = cacheTime != null && System.currentTimeMillis() - Long.parseLong(cacheTime) > LEGBA_CACHE_EXPIRATION;
+        boolean hasChange = Long.parseLong(actualVersion) > Long.parseLong(lastVersion);
+
+        if (cache == null || "".equals(cache) || cacheExpired || hasChange) {
             long start = System.currentTimeMillis();
-
+            if (cacheExpired) {
+                actualVersion = Long.toString(versionService.incrementVersion(envId));
+            }
             // TODO: Add V2..Vx dynamic support
             final Converter converter = getConverter(DEFAULT_API_VERSION);
             int numRouters = get(envId, routerMeta.groupId);

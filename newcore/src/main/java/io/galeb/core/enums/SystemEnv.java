@@ -390,7 +390,7 @@ public enum SystemEnv {
     /**
      * route map (cache) version ttl (milliseconds)
      */
-    ROUTER_MAP_VERSION_TTL        ("ROUTER_MAP_VERSION_TTL",             60000L);
+    LEGBA_CACHE_EXPIRATION        ("LEGBA_CACHE_EXPIRATION",        60000L);
 
     // @formatter:on
 

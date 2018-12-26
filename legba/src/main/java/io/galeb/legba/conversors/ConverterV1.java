@@ -37,6 +37,7 @@ import io.galeb.legba.model.v1.VirtualHost;
 import io.galeb.legba.model.v2.QueryResultLine;
 import io.galeb.legba.repository.VirtualHostRepository;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,11 +93,26 @@ public class ConverterV1 implements Converter {
         final Map<String, BalancePolicy> balancePolicyMap = new HashMap<>();
 
         loopQueryResultLine: for (QueryResultLine queryResultLine: queryResultLines) {
-            if (queryResultLine.getVirtualhostLastModifiedAt() == null ||
-                queryResultLine.getRuleOrderedLastModifiedAt() == null ||
-                queryResultLine.getRuleLastModifiedAt() == null ||
-                queryResultLine.getPoolLastModifiedAt() == null ||
-                queryResultLine.getTargetLastModifiedAt() == null) {
+            final Date virtualhostLastModifiedAt = queryResultLine.getVirtualhostLastModifiedAt();
+            final Date ruleOrderedLastModifiedAt = queryResultLine.getRuleOrderedLastModifiedAt();
+            final Date ruleLastModifiedAt = queryResultLine.getRuleLastModifiedAt();
+            final Date poolLastModifiedAt = queryResultLine.getPoolLastModifiedAt();
+            final Date targetLastModifiedAt = queryResultLine.getTargetLastModifiedAt();
+            System.out.println(">>> " + queryResultLine.getVirtualhostName());
+            if (virtualhostLastModifiedAt == null || ruleOrderedLastModifiedAt == null ||
+                ruleLastModifiedAt == null || poolLastModifiedAt == null || targetLastModifiedAt == null) {
+
+                JsonEventToLogger eventAbortProcessing = new JsonEventToLogger(this.getClass());
+                eventAbortProcessing.put("message", "Aborting convertToString. Mandatory attribute is NULL");
+                eventAbortProcessing.put("virtualhostName", queryResultLine.getVirtualhostName());
+                eventAbortProcessing.put("virtualhostLastModifiedAt", virtualhostLastModifiedAt == null ? "NULL" : virtualhostLastModifiedAt.toString());
+                eventAbortProcessing.put("ruleOrderedLastModifiedAt", ruleOrderedLastModifiedAt == null ? "NULL" : ruleOrderedLastModifiedAt.toString());
+                eventAbortProcessing.put("ruleLastModifiedAt", ruleLastModifiedAt == null ? "NULL" : ruleLastModifiedAt.toString());
+                eventAbortProcessing.put("poolLastModifiedAt", poolLastModifiedAt == null ? "NULL" : poolLastModifiedAt.toString());
+                eventAbortProcessing.put("targetLastModifiedAt", targetLastModifiedAt == null ? "NULL" : targetLastModifiedAt.toString());
+                eventAbortProcessing.put("correlation", routerMeta.correlation);
+                eventAbortProcessing.sendWarn();
+
                 break loopQueryResultLine;
             }
 

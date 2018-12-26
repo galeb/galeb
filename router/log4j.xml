@@ -5,14 +5,14 @@
     <Property name="hostname">${env:HOSTNAME}</Property>
     <Property name="syslog_host">${env:SYSLOG_HOST}</Property>
     <Property name="syslog_port">${env:SYSLOG_PORT}</Property>
-    <Property name="tags">GALEB,${env:GROUP_ID},${env:ENVIRONMENT_NAME}</Property>
+    <Property name="tags">${env:LOGGING_TAGS}</Property>
   </Properties>
   <Appenders>
     <Socket name="SyslogAccess" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: %m%n"/>
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: %m\ttags: ${tags},ACCESS%n"/>
     </Socket>
     <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %enc{%m} %exception\ttags: ${tags},ROUTER,APP%n"/>
+      <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} router: [%p] %t %enc{%m} %exception\ttags: ${tags},APP%n"/>
     </Socket>
   </Appenders>
   <Loggers>

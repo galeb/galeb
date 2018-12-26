@@ -98,7 +98,6 @@ public class ConverterV1 implements Converter {
             final Date ruleLastModifiedAt = queryResultLine.getRuleLastModifiedAt();
             final Date poolLastModifiedAt = queryResultLine.getPoolLastModifiedAt();
             final Date targetLastModifiedAt = queryResultLine.getTargetLastModifiedAt();
-            System.out.println(">>> " + queryResultLine.getVirtualhostName());
             if (virtualhostLastModifiedAt == null || ruleOrderedLastModifiedAt == null ||
                 ruleLastModifiedAt == null || poolLastModifiedAt == null || targetLastModifiedAt == null) {
 

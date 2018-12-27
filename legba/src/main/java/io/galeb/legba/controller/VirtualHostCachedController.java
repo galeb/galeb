@@ -56,26 +56,28 @@ public class VirtualHostCachedController extends AbstractController {
         Assert.notNull(routerGroupId, "GroupID undefined");
         Assert.notNull(routerVersion, "version undefined");
 
+        String routerVersionParsed = "EMPTY".equals(routerVersion) ? "0": routerVersion;
+
         Long envId = getEnvironmentId(envName);
         String actualVersion = versionService.getActualVersion(envId.toString());
         String lastVersion = versionService.lastCacheVersion(envId.toString(), zoneId, actualVersion);
 
         event.put("message", "GET /virtualhostscached");
         event.put("actualVersion", actualVersion);
-        event.put("routerVersion", routerVersion);
+        event.put("routerVersion", routerVersionParsed);
         event.put("environmentId", String.valueOf(envId));
         event.put("environmentName", envName);
         event.put("groupId", routerGroupId);
         event.put("zoneId", zoneId);
 
-        if (Long.parseLong(routerVersion) > Long.parseLong(lastVersion)) {
+        if (Long.parseLong(routerVersionParsed) > Long.parseLong(lastVersion)) {
             event.put("status_detail", "routerVersion > lastVersion");
             event.put("status", HttpStatus.NOT_FOUND.toString());
             event.sendWarn();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        if (routerVersion.equals(actualVersion)) {
+        if (routerVersionParsed.equals(actualVersion)) {
             event.put("status", HttpStatus.NOT_MODIFIED.toString());
             event.sendInfo();
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();

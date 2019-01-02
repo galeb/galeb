@@ -55,7 +55,7 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "GROUP_CONCAT(IFNULL(hs.last_modified_at, 'NULL')) as hs_last_modified_at, " //15
             + "GROUP_CONCAT(IFNULL(hs.status, 'UNKNOWN')) as hs_status, " //16
             + "r.id as r_id, " // 17
-            + "t.id as t_id "  // 18
+            + "IFNULL(t.id, 0) as t_id "  // 18
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "
@@ -64,10 +64,10 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "INNER JOIN rule_pools rp on rp.rule_id=r.id "
             + "INNER JOIN pool p on rp.pool_id=p.id "
             + "INNER JOIN balancepolicy bp on p.balancepolicy_id=bp.id "
-            + "INNER JOIN target t on t.pool_id=p.id "
+            + "LEFT OUTER JOIN target t on t.pool_id=p.id "
             + "LEFT OUTER JOIN health_status hs on hs.target_id=t.id "
             + "WHERE v_e.environment_id=:envid AND p.environment_id=:envid AND ro.environment_id=:envid AND "
-                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR t.quarantine) ";
+                    + "NOT (v.quarantine OR ro.quarantine OR r.quarantine OR p.quarantine OR (t.quarantine IS NOT NULL AND t.quarantine)) ";
 
     // @formatter:on
 

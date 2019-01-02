@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -172,21 +173,26 @@ public class ConverterV1 implements Converter {
                 ruleV1.setPool(poolV1);
             }
 
-            Target targetV1 = null;
-            loopTarget: for (Target targetTemp: poolV1.getTargets()) {
-                if (targetTemp.getId() == queryResultLine.getTargetId()) {
-                    targetV1 = targetTemp;
-                    break loopTarget;
+            final Long targetId = queryResultLine.getTargetId();
+            final String targetName = queryResultLine.getTargetName();
+            if (targetName != null) {
+                Target targetV1 = null;
+                loopTarget:
+                for (Target targetTemp : poolV1.getTargets()) {
+                    if (targetTemp.getId() == targetId) {
+                        targetV1 = targetTemp;
+                        break loopTarget;
+                    }
                 }
-            }
-            if (targetV1 == null) {
-                targetV1 = new Target();
-                targetV1.setId(queryResultLine.getTargetId());
-                targetV1.setName(queryResultLine.getTargetName());
-            }
+                if (targetV1 == null) {
+                    targetV1 = new Target();
+                    targetV1.setId(targetId);
+                    targetV1.setName(targetName);
+                }
 
-            if (canSendTargetToRoute(queryResultLine.getHealthStatusStatus())) {
-                poolV1.getTargets().add(targetV1);
+                if (canSendTargetToRoute(queryResultLine.getHealthStatusStatus())) {
+                    poolV1.getTargets().add(targetV1);
+                }
             }
         }
 
@@ -214,7 +220,7 @@ public class ConverterV1 implements Converter {
             queryResultLine.getRuleOrderedLastModifiedAt().toString() +
             queryResultLine.getRuleLastModifiedAt().toString() +
             queryResultLine.getPoolLastModifiedAt().toString() +
-            queryResultLine.getTargetLastModifiedAt().toString() +
+            Optional.ofNullable(queryResultLine.getTargetLastModifiedAt()).orElse(new Date(0L)).toString() +
             (queryResultLine.getHealthStatusLastModifiedAt() != null ? queryResultLine.getHealthStatusLastModifiedAt() : "NULL");
 
         virtualhostFullHash.put(virtualHostV1, fullHash);

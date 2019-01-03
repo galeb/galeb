@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
@@ -47,6 +48,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConverterV1 implements Converter {
+
+    private static final boolean ENABLE_DISCOVERED_MEMBERS_SIZE = Boolean.valueOf(SystemEnv.ENABLE_DISCOVERED_MEMBERS_SIZE.getValue());
 
     // @formatter:off
     public static final  String API_VERSION                  = "v1";
@@ -116,23 +119,23 @@ public class ConverterV1 implements Converter {
             }
 
             String virtualhostName = queryResultLine.getVirtualhostName();
-            VirtualHost vh1 = null;
+            VirtualHost virtualhostV1 = null;
             loopVh: for (VirtualHost vhTemp: virtualhostFullHash.keySet()) {
                 if (vhTemp.getName().equals(queryResultLine.getVirtualhostName())) {
-                    vh1 = vhTemp;
+                    virtualhostV1 = vhTemp;
                     break loopVh;
                 }
             }
-            if (vh1 == null) {
-                vh1 = new VirtualHost();
-                vh1.setName(virtualhostName);
-                vh1.setEnvironment(environmentV1);
-                vh1.setId(queryResultLine.getVirtualhostId());
+            if (virtualhostV1 == null) {
+                virtualhostV1 = new VirtualHost();
+                virtualhostV1.setName(virtualhostName);
+                virtualhostV1.setEnvironment(environmentV1);
+                virtualhostV1.setId(queryResultLine.getVirtualhostId());
             }
-            calculeHash(vh1, queryResultLine, virtualhostFullHash);
+            calculeHash(virtualhostV1, queryResultLine, virtualhostFullHash, numRouters);
 
             Rule ruleV1 = null;
-            loopRule: for (Rule ruleTemp: vh1.getRules()) {
+            loopRule: for (Rule ruleTemp: virtualhostV1.getRules()) {
                 if (ruleTemp.getId() == queryResultLine.getRuleId()) {
                     ruleV1 = ruleTemp;
                     break loopRule;
@@ -148,7 +151,7 @@ public class ConverterV1 implements Converter {
                     put("match", queryResultLine.getRuleMatching());
                     put("order", queryResultLine.getRuleOrderedOrder().toString());
                 }});
-                vh1.getRules().add(ruleV1);
+                virtualhostV1.getRules().add(ruleV1);
             }
 
             Pool poolV1;
@@ -165,10 +168,12 @@ public class ConverterV1 implements Converter {
                     }
                     poolV1.setBalancePolicy(balancePolicy);
                 }
-                poolV1.setProperties(new HashMap<String, String>() {{
-                    put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getpPoolSize()));
-                    put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
-                }});
+                if (ENABLE_DISCOVERED_MEMBERS_SIZE) {
+                    poolV1.setProperties(new HashMap<String, String>() {{
+                        put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getPoolSize()));
+                        put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
+                    }});
+                }
                 ruleV1.setPool(poolV1);
             }
 
@@ -207,7 +212,12 @@ public class ConverterV1 implements Converter {
         return queryResultLinesObj.stream().map(QueryResultLine::new).collect(Collectors.toList());
     }
 
-    public Map<VirtualHost, String> calculeHash(final VirtualHost virtualHostV1, final QueryResultLine queryResultLine, final Map<VirtualHost, String> virtualhostFullHash) {
+    public Map<VirtualHost, String> calculeHash(
+        final VirtualHost virtualHostV1,
+        final QueryResultLine queryResultLine,
+        final Map<VirtualHost, String> virtualhostFullHash,
+        int numRouters) {
+
         String lastFullHash = virtualhostFullHash.get(virtualHostV1);
         String fullHash = (lastFullHash != null ? lastFullHash : "") +
             queryResultLine.getVirtualhostLastModifiedAt().toString() +
@@ -215,7 +225,8 @@ public class ConverterV1 implements Converter {
             queryResultLine.getRuleLastModifiedAt().toString() +
             queryResultLine.getPoolLastModifiedAt().toString() +
             queryResultLine.getTargetLastModifiedAt().toString() +
-            (queryResultLine.getHealthStatusLastModifiedAt() != null ? queryResultLine.getHealthStatusLastModifiedAt() : "NULL");
+            (queryResultLine.getHealthStatusLastModifiedAt() != null ? queryResultLine.getHealthStatusLastModifiedAt() : "NULL") +
+            (ENABLE_DISCOVERED_MEMBERS_SIZE ? String.valueOf(queryResultLine.getPoolSize()) + numRouters : "DISCOVERED_MEMBERS_SIZE_DISABLED");
 
         virtualhostFullHash.put(virtualHostV1, fullHash);
 

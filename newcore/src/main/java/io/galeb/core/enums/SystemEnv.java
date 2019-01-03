@@ -390,7 +390,12 @@ public enum SystemEnv {
     /**
      * route map (cache) version ttl (milliseconds)
      */
-    LEGBA_CACHE_EXPIRATION        ("LEGBA_CACHE_EXPIRATION",        60000L);
+    LEGBA_CACHE_EXPIRATION        ("LEGBA_CACHE_EXPIRATION",        60000L),
+
+    /**
+     * Enable discovered members size
+     */
+    ENABLE_DISCOVERED_MEMBERS_SIZE ("ENABLE_DISCOVERED_MEMBERS_SIZE", Boolean.FALSE);
 
     // @formatter:on
 

@@ -395,12 +395,12 @@ public class ConverterV1Test {
         for (QueryResultLine queryResultLine: queryResultLinesBefore) {
             VirtualHost v1 = new VirtualHost();
             v1.setName(queryResultLine.getVirtualhostName());
-            lastMapBefore = converterV1.get(currentState).calculeHash(v1, queryResultLine, virtualhostFullHashBefore);
+            lastMapBefore = converterV1.get(currentState).calculeHash(v1, queryResultLine, virtualhostFullHashBefore, 0);
         }
         for (QueryResultLine queryResultLine: queryResultLinesAfter) {
             VirtualHost v1 = new VirtualHost();
             v1.setName(queryResultLine.getVirtualhostName());
-            lastMapAfter = converterV1.get(nextState).calculeHash(v1, queryResultLine, virtualhostFullHashAfter);
+            lastMapAfter = converterV1.get(nextState).calculeHash(v1, queryResultLine, virtualhostFullHashAfter, 0);
         }
         for (VirtualHost virtualHost: lastMapBefore.keySet()) {
             String hashBefore = converterV1.get(currentState).makeHash(lastMapBefore.get(virtualHost));

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.galeb.core.enums.SystemEnv;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +44,7 @@ public class JsonEventToLogger extends ObjectNode {
         put("class", klazz.getSimpleName());
         put("hostname", System.getenv("HOSTNAME"));
         put("tags", LOGGING_TAGS);
-        put("timestamp", System.currentTimeMillis());
+        put("timestamp", Instant.now().getEpochSecond());
     }
 
     private JsonEventToLogger(Logger logger) {

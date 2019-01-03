@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.legba.controller.RoutersController.RouterMeta;
 import io.galeb.legba.model.v1.BalancePolicy;
@@ -47,6 +48,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConverterV1 implements Converter {
+
+    private static final boolean ENABLE_DISCOVERED_MEMBERS_SIZE = Boolean.valueOf(SystemEnv.ENABLE_DISCOVERED_MEMBERS_SIZE.getValue());
 
     // @formatter:off
     public static final  String API_VERSION                  = "v1";
@@ -165,10 +168,12 @@ public class ConverterV1 implements Converter {
                     }
                     poolV1.setBalancePolicy(balancePolicy);
                 }
-                poolV1.setProperties(new HashMap<String, String>() {{
-                    put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getpPoolSize()));
-                    put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
-                }});
+                if (ENABLE_DISCOVERED_MEMBERS_SIZE) {
+                    poolV1.setProperties(new HashMap<String, String>() {{
+                        put(PROP_CONN_PER_THREAD, String.valueOf(queryResultLine.getPoolSize()));
+                        put(PROP_DISCOVERED_MEMBERS_SIZE, String.valueOf(numRouters));
+                    }});
+                }
                 ruleV1.setPool(poolV1);
             }
 

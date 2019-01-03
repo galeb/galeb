@@ -35,7 +35,7 @@ public class QueryResultLine implements Serializable {
     private final String rMatching;
     private final Date pLastModifiedAt;
     private final String pName;
-    private final Integer pPoolSize;
+    private final Integer pSize;
     private final String bpName;
     private final Date tLastModifiedAt;
     private final String tName;
@@ -56,7 +56,7 @@ public class QueryResultLine implements Serializable {
         this.rMatching = (String) objects[8];
         this.pLastModifiedAt = (Date) objects[9];
         this.pName = (String) objects[10];
-        this.pPoolSize = ((BigInteger) objects[11]).intValue();
+        this.pSize = ((BigInteger) objects[11]).intValue();
         this.bpName = (String) objects[12];
         this.tLastModifiedAt = (Date) objects[13];
         this.tName = (String) objects[14];
@@ -110,8 +110,8 @@ public class QueryResultLine implements Serializable {
         return pName;
     }
 
-    public Integer getpPoolSize() {
-        return pPoolSize;
+    public Integer getPoolSize() {
+        return pSize;
     }
 
     public String getBalancePolicyName() {

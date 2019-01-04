@@ -213,7 +213,7 @@ public class GenericDaoService {
             final Query query;
             if (RuleOrdered.class.getSimpleName().equals(entityName)) {
                 query = em.createNativeQuery("SElECT r.global FROM " + nativeTable(entityName) +
-                    " e INNER JOIN rule r on e.rule_id = r.id WHERE e.id = :id")
+                    " e INNER JOIN rule r on e.rule_ruleordered_id = r.id WHERE e.id = :id")
                     .setParameter("id", id);
             } else {
                 query = em.createNativeQuery("SElECT e.global FROM " + nativeTable(entityName) +

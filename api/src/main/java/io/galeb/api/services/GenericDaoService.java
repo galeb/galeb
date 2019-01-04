@@ -21,6 +21,7 @@ import io.galeb.core.entity.Account;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
+import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.Team;
 import java.math.BigInteger;
 import java.util.List;
@@ -209,7 +210,16 @@ public class GenericDaoService {
 
     public boolean isGlobal(String entityName, Long id) {
         try {
-            final Query query = em.createNativeQuery("SElECT e.global FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
+            final Query query;
+            if (RuleOrdered.class.getSimpleName().equals(entityName)) {
+                query = em.createNativeQuery("SElECT r.global FROM " + nativeTable(entityName) +
+                    " e INNER JOIN rule r on e.rule_id = r.id WHERE e.id = :id")
+                    .setParameter("id", id);
+            } else {
+                query = em.createNativeQuery("SElECT e.global FROM " + nativeTable(entityName) +
+                    " e WHERE e.id = :id")
+                    .setParameter("id", id);
+            }
             final Object result = query.getSingleResult();
             return result != null && (boolean) result;
         } catch (NoResultException ignore) {

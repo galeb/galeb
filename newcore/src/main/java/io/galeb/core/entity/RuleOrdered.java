@@ -32,7 +32,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "ruleordered", uniqueConstraints = { @UniqueConstraint(name = "UK_order__rule_id__virtualhostgroup_id__environment_id", columnNames = { "rule_order", "rule_ruleordered_id", "virtualhostgroup_ruleordered_id", "environment_id" }) })
-public class RuleOrdered extends AbstractEntity implements WithStatus, Comparable<RuleOrdered> {
+public class RuleOrdered extends AbstractEntity implements WithStatus, WithGlobal, Comparable<RuleOrdered> {
 
     private static final long serialVersionUID = 1L;
 
@@ -99,6 +99,11 @@ public class RuleOrdered extends AbstractEntity implements WithStatus, Comparabl
     @Override
     public void setStatus(Map<Long, Status> status) {
         this.status = status;
+    }
+    
+    @Override
+    public Boolean getGlobal() {
+        return rule.getGlobal();
     }
 
     @Override

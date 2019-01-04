@@ -21,6 +21,7 @@ import io.galeb.core.entity.Account;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
+import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.Team;
 import java.math.BigInteger;
 import java.util.List;
@@ -197,7 +198,7 @@ public class GenericDaoService {
     @Cacheable(value = "cache_entityExist", key = "{ 'exist', #p0, #p1 }")
     public boolean exist(String entityName, Long id) {
         try {
-            final Query query = em.createNativeQuery("SElECT e.id FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
+            final Query query = em.createNativeQuery("SELECT e.id FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
             return query.getSingleResult() != null;
         } catch (NoResultException ignore) {
             // NOT_FOUND
@@ -209,7 +210,7 @@ public class GenericDaoService {
 
     public boolean isGlobal(String entityName, Long id) {
         try {
-            final Query query = em.createNativeQuery("SElECT e.global FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
+            final Query query = getQuery(entityName, id);
             final Object result = query.getSingleResult();
             return result != null && (boolean) result;
         } catch (NoResultException ignore) {
@@ -218,6 +219,19 @@ public class GenericDaoService {
             LOGGER.error(e.getMessage(), e);
         }
         return false;
+    }
+
+    private Query getQuery(String entityName, Long id) {
+        final String sqlselect = "SELECT r.global FROM " + nativeTable(entityName) + " e ";
+        final String sqlwhere = "WHERE e.id = :id";
+        final String fullquery;
+        if (RuleOrdered.class.getSimpleName().equals(entityName)) {
+            String joinRule = "INNER JOIN rule r ON e.rule_ruleordered_id = r.id ";
+            fullquery = sqlselect + joinRule + sqlwhere;
+        } else {
+            fullquery = sqlselect + sqlwhere;
+        }
+        return em.createNativeQuery(fullquery).setParameter("id", id);
     }
 
     private String nativeTable(String entityName) {

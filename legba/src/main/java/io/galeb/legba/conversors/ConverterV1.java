@@ -80,7 +80,7 @@ public class ConverterV1 implements Converter {
         final Map<VirtualHost, String> virtualhostFullHash = new HashMap<>();
         long numVirtualhosts = queryResultLines.stream().map(QueryResultLine::getVirtualhostId).distinct().count();
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        event.put("message", "Converting to string");
+        event.put("short_message", "Converting to string");
         event.put("envId", envId);
         event.put("numVirtualHost", String.valueOf(numVirtualhosts));
         event.put("numRouters", numRouters);
@@ -105,7 +105,7 @@ public class ConverterV1 implements Converter {
                 ruleLastModifiedAt == null || poolLastModifiedAt == null || targetLastModifiedAt == null) {
 
                 JsonEventToLogger eventAbortProcessing = new JsonEventToLogger(this.getClass());
-                eventAbortProcessing.put("message", "Aborting convertToString. Mandatory attribute is NULL");
+                eventAbortProcessing.put("short_message", "Aborting convertToString. Mandatory attribute is NULL");
                 eventAbortProcessing.put("virtualhostName", queryResultLine.getVirtualhostName());
                 eventAbortProcessing.put("virtualhostLastModifiedAt", virtualhostLastModifiedAt == null ? "NULL" : virtualhostLastModifiedAt.toString());
                 eventAbortProcessing.put("ruleOrderedLastModifiedAt", ruleOrderedLastModifiedAt == null ? "NULL" : ruleOrderedLastModifiedAt.toString());

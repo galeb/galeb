@@ -70,7 +70,7 @@ public class RoutersController extends AbstractController {
         routerMeta.correlation = UUID.randomUUID().toString();
 
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-        event.put("message", "Calling RoutersController.registerRouter");
+        event.put("short_message", "Calling RoutersController.registerRouter");
         event.put("envId", routerMeta.envId);
         event.put("groupId", routerMeta.groupId);
         event.put("localIP", routerMeta.localIP);

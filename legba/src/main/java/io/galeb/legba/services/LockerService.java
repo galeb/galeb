@@ -48,7 +48,7 @@ public class LockerService {
     public void release(String zoneId, String correlation) {
         if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId)) {
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-            event.put("message", "Releasing lock");
+            event.put("short_message", "Releasing lock");
             event.put("correlation", correlation);
             event.sendInfo();
             redisTemplate.delete(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId);

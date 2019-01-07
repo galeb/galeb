@@ -118,7 +118,7 @@ public class RoutersService {
             });
             return envs;
         } catch (Exception e) {
-            event.put("message", "GET /routers/" + environmentId + " FAILED");
+            event.put("short_message", "GET /routers/" + environmentId + " FAILED");
             event.sendError(e);
         }
         return Collections.emptySet();
@@ -148,7 +148,7 @@ public class RoutersService {
             final Set<Long> eTagRouters = processEtagsFromRouters(routerMeta);
             updateRouterMapCached(routerMeta, eTagRouters);
         } catch (Exception e) {
-            event.put("message",  "POST /routers/" + routerMeta.envId + " FAILED");
+            event.put("short_message",  "POST /routers/" + routerMeta.envId + " FAILED");
             event.sendError(e);
         }
     }
@@ -163,7 +163,7 @@ public class RoutersService {
             event.put("routerGroupId", routerMeta.groupId);
             event.put("routerVersion", routerMeta.version);
             event.put("zoneId", routerMeta.zoneId);
-            event.put("message", "Registering router");
+            event.put("short_message", "Registering router");
             event.sendInfo();
         }
         redisTemplate.opsForValue().set(key, routerMeta.version, REGISTER_TTL, TimeUnit.MILLISECONDS);
@@ -180,7 +180,7 @@ public class RoutersService {
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", routerMeta.correlation);
-                event.put("message", "Getting lock");
+                event.put("short_message", "Getting lock");
                 event.sendInfo();
 
                 deleteAllHasChangesProcessed(routerMeta, eTagRouters);
@@ -205,7 +205,7 @@ public class RoutersService {
                 event.put("correlation", logCorrelation);
                 event.put("keyExpired", routerKey);
                 event.put("environmentId", routerMeta.envId);
-                event.put("message", "Version is not a number. Verify the environment " + routerMeta.envId);
+                event.put("short_message", "Version is not a number. Verify the environment " + routerMeta.envId);
                 event.sendWarn();
             }
             expireIfNecessaryAndIncrementVersion(routerMeta, routerKey);
@@ -239,7 +239,7 @@ public class RoutersService {
             versionService.setCache(cache, envId, zoneId, actualVersion);
 
             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-            event.put("message", "New Cache DONE");
+            event.put("short_message", "New Cache DONE");
             event.put("correlation", routerMeta.correlation);
             event.put("cacheSize", cache.length());
             event.put("cacheTimeMS", System.currentTimeMillis() - start);
@@ -259,7 +259,7 @@ public class RoutersService {
             event.put("keyExpired", routerKey);
             event.put("versionIncremented", String.valueOf(versionIncremented));
             event.put("environmentId", routerMeta.envId);
-            event.put("message", "Update router state");
+            event.put("short_message", "Update router state");
             event.sendInfo();
         }
     }
@@ -301,13 +301,13 @@ public class RoutersService {
             int numEntities = query.executeUpdate();
             transaction.commit();
             if (numEntities > 0) {
-                event.put("message", "Delete HasChange and Entity from DB");
+                event.put("short_message", "Delete HasChange and Entity from DB");
                 event.sendInfo();
             }
             changesService.delete(hasChangeData.key());
         } catch (Exception e) {
             transaction.rollback();
-            event.put("message", "Delete HasChange and Entity from DB FAILED");
+            event.put("short_message", "Delete HasChange and Entity from DB FAILED");
             event.sendError(e);
         } finally {
             entityManager.close();

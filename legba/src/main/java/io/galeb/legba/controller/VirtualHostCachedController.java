@@ -62,7 +62,7 @@ public class VirtualHostCachedController extends AbstractController {
         String actualVersion = versionService.getActualVersion(envId.toString());
         String lastVersion = versionService.lastCacheVersion(envId.toString(), zoneId, actualVersion);
 
-        event.put("message", "GET /virtualhostscached");
+        event.put("short_message", "GET /virtualhostscached");
         event.put("actualVersion", actualVersion);
         event.put("routerVersion", routerVersionParsed);
         event.put("environmentId", String.valueOf(envId));

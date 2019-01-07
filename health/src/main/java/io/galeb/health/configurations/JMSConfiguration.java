@@ -59,7 +59,7 @@ public class JMSConfiguration implements JmsListenerConfigurer {
                 }
             } catch (JMSException e) {
                 JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
-                eventToLogger.put("message", "Error processing message from queue");
+                eventToLogger.put("short_message", "Error processing message from queue");
                 eventToLogger.sendError(e);
             }
         });

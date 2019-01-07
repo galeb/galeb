@@ -82,7 +82,7 @@ public class ScheduledProducer {
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
             eventToLogger.put("queuePrefix", QUEUE_GALEB_HEALTH_PREFIX + QUEUE_SEPARATOR + environmentId);
             eventToLogger.put("schedId", schedId);
-            eventToLogger.put("message", "Sending all targets to environment queue");
+            eventToLogger.put("short_message", "Sending all targets to environment queue");
             eventToLogger.put("environmentId", environmentId);
             eventToLogger.put("environmentName", environmentName);
             eventToLogger.put("sentTargets", counter.get());
@@ -126,7 +126,7 @@ public class ScheduledProducer {
         JsonEventToLogger event = new JsonEventToLogger(this.getClass());
         event.put("queue", queue);
         event.put("target", target.getName());
-        event.put("message", "Sending target to queue");
+        event.put("short_message", "Sending target to queue");
         Pool pool = target.getPool();
         event.put("pool", pool.getName());
         if (correlation != null) {
@@ -178,13 +178,13 @@ public class ScheduledProducer {
                             });
                         } else {
                             JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-                            event.put("message", "Error sending target to queue. Source is null");
+                            event.put("short_message", "Error sending target to queue. Source is null");
                             event.sendError();
                         }
                     }
                 } else {
                     JsonEventToLogger event = new JsonEventToLogger(this.getClass());
-                    event.put("message", "Error sending target to queue. Env.[]Source is null");
+                    event.put("short_message", "Error sending target to queue. Env.[]Source is null");
                     event.sendError();
                 }
             }

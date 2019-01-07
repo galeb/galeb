@@ -84,14 +84,14 @@ public class HealthService {
 
                 } catch (Exception e) {
                     JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-                    errorEvent.put("message", "Error processing healths - env: " + keyEnvId);
+                    errorEvent.put("short_message", "Error processing healths - env: " + keyEnvId);
                     errorEvent.sendError(e);
                 }
             });
             return envs;
         } catch (Exception e) {
             JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-            errorEvent.put("message", "Error processing healths");
+            errorEvent.put("short_message", "Error processing healths");
             errorEvent.sendError(e);
         }
         return Collections.emptySet();
@@ -104,7 +104,7 @@ public class HealthService {
                 .set(message, String.valueOf(System.currentTimeMillis()), REGISTER_TTL, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
-            errorEvent.put("message", "Error register healths");
+            errorEvent.put("short_message", "Error register healths");
             errorEvent.sendError(e);
         }
     }

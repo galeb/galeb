@@ -57,7 +57,7 @@ public class CallBackQueue {
 
                 JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
                 eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
-                eventToLogger.put("message", "Sending to callback queue");
+                eventToLogger.put("short_message", "Sending to callback queue");
                 eventToLogger.put("jmsMessageId", uniqueId);
                 eventToLogger.put("correlation", correlation);
                 eventToLogger.put("healthStatus_source", ZONE_ID);
@@ -70,7 +70,7 @@ public class CallBackQueue {
         } catch (JmsException e) {
             JsonEventToLogger eventToLogger = new JsonEventToLogger(this.getClass());
             eventToLogger.put("queue", QUEUE_HEALTH_CALLBACK);
-            eventToLogger.put("message", "Error sending to callback queue");
+            eventToLogger.put("short_message", "Error sending to callback queue");
             eventToLogger.put("correlation", correlation);
             eventToLogger.sendError(e);
         }

@@ -29,7 +29,7 @@ public class LocalIP {
             }
         } catch (Exception e) {
             JsonEventToLogger eventToLogger = new JsonEventToLogger(LocalIP.class);
-            eventToLogger.put("message", "Error trying get LocalIP");
+            eventToLogger.put("short_message", "Error trying get LocalIP");
             eventToLogger.sendError(e);
         }
         String ip = String.join("-", ipList);

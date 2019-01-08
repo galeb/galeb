@@ -152,7 +152,7 @@ public class HealthCheckerService {
                     eventToLogger.put("short_message", "Processing check");
                     eventToLogger.put("expectedBody", hcBody);
                     eventToLogger.put("expectedStatusCode", hcStatusCode);
-                    eventToLogger.put("host", hcHost);
+                    eventToLogger.put("hc_host", hcHost);
                     eventToLogger.put("fullUrl", target.getName() + hcPath);
                     eventToLogger.put("connectionTimeout", connectionTimeout);
                     eventToLogger.put("result", reason);

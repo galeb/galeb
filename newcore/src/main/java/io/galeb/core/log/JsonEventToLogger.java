@@ -42,7 +42,7 @@ public class JsonEventToLogger extends ObjectNode {
     public JsonEventToLogger(final Class klazz) {
         this(LOGGERS.computeIfAbsent(klazz, v -> LogManager.getLogger(klazz)));
         put("class", klazz.getSimpleName());
-        put("hostname", System.getenv("HOSTNAME"));
+        put("host", System.getenv("HOSTNAME"));
         put("tags", LOGGING_TAGS);
         put("timestamp", Instant.now().getEpochSecond());
     }

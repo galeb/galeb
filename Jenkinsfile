@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    node {
-      label 'galeb-pipeline'
-    }
-
-  }
+  agent any
   stages {
     stage('get last packages') {
       steps {

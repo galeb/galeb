@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'docker.artifactory.globoi.com/ateam/rhcircleci'
-    }
-
-  }
+  agent none
   stages {
     stage('get last packages') {
       steps {
@@ -22,8 +17,8 @@ done'''
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-${version}.el7.noarch.rpm root@${GALEB_API}:/tmp
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-${version}.el7.noarch.rpm && rm -f /tmp/galeb-api-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-${version}.el7.noarch.rpm root@${GALEB_API}:/tmp
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-${version}.el7.noarch.rpm && rm -f /tmp/galeb-api-${version}.el7.noarch.rpm"
  '''
           }
         }
@@ -31,8 +26,8 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-${version}.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-${version}.el7.noarch.rpm && rm -f /tmp/galeb-legba-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-${version}.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-${version}.el7.noarch.rpm && rm -f /tmp/galeb-legba-${version}.el7.noarch.rpm"
  '''
           }
         }
@@ -40,8 +35,8 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEG
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-${version}.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-${version}.el7.noarch.rpm && rm -f /tmp/galeb-kratos-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-${version}.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-${version}.el7.noarch.rpm && rm -f /tmp/galeb-kratos-${version}.el7.noarch.rpm"
  '''
           }
         }
@@ -49,8 +44,8 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRA
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-${version}.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-${version}.el7.noarch.rpm && rm -f /tmp/galeb-router-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-${version}.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-${version}.el7.noarch.rpm && rm -f /tmp/galeb-router-${version}.el7.noarch.rpm"
  '''
           }
         }
@@ -58,8 +53,8 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROU
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-${version}.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-${version}.el7.noarch.rpm && rm -f /tmp/galeb-health-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-${version}.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-${version}.el7.noarch.rpm && rm -f /tmp/galeb-health-${version}.el7.noarch.rpm"
  '''
           }
         }
@@ -67,10 +62,10 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
     }
   }
   environment {
-    GALEB_API = '0'
-    GALEB_HEALTH = '0'
-    GALEB_ROUTER = '0'
-    GALEB_LEGBA = '0'
-    GALEB_KRATOS = '0'
+    GALEB_API = '10.224.158.131'
+    GALEB_HEALTH = '10.224.158.149'
+    GALEB_ROUTER = '10.224.158.156'
+    GALEB_LEGBA = '10.224.158.137'
+    GALEB_KRATOS = '10.224.158.143'
   }
 }

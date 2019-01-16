@@ -2,6 +2,11 @@ pipeline {
   agent any
   stages {
     stage('get last packages') {
+      environment {
+        http_proxy = 'http://proxy.globoi.com:3128'
+        https_proxy = 'http://proxy.globoi.com:3128'
+        no_proxy = 'localhost,127.0.0.1,globoi.com'
+      }
       steps {
         sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -14,6 +19,9 @@ done'''
     stage('update API') {
       parallel {
         stage('update API') {
+          environment {
+            GALEB_API = '10.224.158.131'
+          }
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -23,6 +31,9 @@ sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChec
           }
         }
         stage('update LEGBA') {
+          environment {
+            GALEB_LEGBA = '10.224.158.137'
+          }
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -32,6 +43,9 @@ sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChec
           }
         }
         stage('update KRATOS') {
+          environment {
+            GALEB_KRATOS = '10.224.158.143'
+          }
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -41,6 +55,9 @@ sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChec
           }
         }
         stage('update ROUTER') {
+          environment {
+            GALEB_ROUTER = '10.224.158.156'
+          }
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -50,6 +67,9 @@ sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChec
           }
         }
         stage('update HEALTH') {
+          environment {
+            GALEB_HEALTH = '10.224.158.149'
+          }
           steps {
             sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -60,12 +80,5 @@ sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChec
         }
       }
     }
-  }
-  environment {
-    GALEB_API = '10.224.158.131'
-    GALEB_HEALTH = '10.224.158.149'
-    GALEB_ROUTER = '10.224.158.156'
-    GALEB_LEGBA = '10.224.158.137'
-    GALEB_KRATOS = '10.224.158.143'
   }
 }

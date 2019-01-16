@@ -25,60 +25,70 @@ fi'''
         stage('update API') {
           environment {
             GALEB_API = '10.224.158.131'
+            http_proxy = 'http://proxy.globoi.com:3128'
+            https_proxy = 'http://proxy.globoi.com:3128'
           }
           steps {
             sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-${version}.el7.noarch.rpm root@${GALEB_API}:/tmp
-sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-${version}.el7.noarch.rpm && rm -f /tmp/galeb-api-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-*.el7.noarch.rpm root@${GALEB_API}:/tmp
+rm -f /tmp/galeb-api-*.el7.noarch.rpm || true
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-*.el7.noarch.rpm && rm -f /tmp/galeb-api-*.el7.noarch.rpm"
  '''
           }
         }
         stage('update LEGBA') {
           environment {
             GALEB_LEGBA = '10.224.158.137'
+            http_proxy = 'http://proxy.globoi.com:3128'
+            https_proxy = 'http://proxy.globoi.com:3128'
           }
           steps {
             sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-${version}.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
-sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-${version}.el7.noarch.rpm && rm -f /tmp/galeb-legba-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-*.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
+rm -f /tmp/galeb-legba-*.el7.noarch.rpm || true
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-*.el7.noarch.rpm && rm -f /tmp/galeb-legba-*.el7.noarch.rpm"
  '''
           }
         }
         stage('update KRATOS') {
           environment {
             GALEB_KRATOS = '10.224.158.143'
+            http_proxy = 'http://proxy.globoi.com:3128'
+            https_proxy = 'http://proxy.globoi.com:3128'
           }
           steps {
             sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-${version}.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
-sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-${version}.el7.noarch.rpm && rm -f /tmp/galeb-kratos-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-*.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
+rm -f /tmp/galeb-kratos-*.el7.noarch.rpm || true
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-*.el7.noarch.rpm && rm -f /tmp/galeb-kratos-*.el7.noarch.rpm"
  '''
           }
         }
         stage('update ROUTER') {
           environment {
             GALEB_ROUTER = '10.224.158.156'
+            http_proxy = 'http://proxy.globoi.com:3128'
+            https_proxy = 'http://proxy.globoi.com:3128'
           }
           steps {
             sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-${version}.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
-sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-${version}.el7.noarch.rpm && rm -f /tmp/galeb-router-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-*.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
+rm -f /tmp/galeb-router-*.el7.noarch.rpm || true
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-*.el7.noarch.rpm && rm -f /tmp/galeb-router-*.el7.noarch.rpm"
  '''
           }
         }
         stage('update HEALTH') {
           environment {
             GALEB_HEALTH = '10.224.158.149'
+            http_proxy = 'http://proxy.globoi.com:3128'
+            https_proxy = 'http://proxy.globoi.com:3128'
           }
           steps {
             sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-${version}.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
-sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-${version}.el7.noarch.rpm && rm -f /tmp/galeb-health-${version}.el7.noarch.rpm"
+sshpass -p \'ChangeMe\' scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-*.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
+rm -f /tmp/galeb-health-*.el7.noarch.rpm || true
+sshpass -p \'ChangeMe\' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-*.el7.noarch.rpm && rm -f /tmp/galeb-health-*.el7.noarch.rpm"
  '''
           }
         }

@@ -15,6 +15,7 @@ pipeline {
                 returnStdout: true,
                 script: 'echo "$NOPROXY"'
             ).trim()}"""
+      }
       steps {
         sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"

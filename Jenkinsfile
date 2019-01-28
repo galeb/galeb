@@ -2,20 +2,6 @@ pipeline {
   agent any
   stages {
     stage('get last packages') {
-      environment {
-        http_proxy = """${sh(
-                returnStdout: true,
-                script: 'echo "$http_proxy"'
-            ).trim()}""" 
-        https_proxy = """${sh(
-                returnStdout: true,
-                script: 'echo "$https_proxy"'
-            ).trim()}"""
-        no_proxy = """${sh(
-                returnStdout: true,
-                script: 'echo "$no_proxy"'
-            ).trim()}"""
-      }
       steps {
         sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
@@ -32,11 +18,6 @@ fi'''
     stage('update API') {
       parallel {
         stage('update API') {
-          environment {
-            GALEB_API = '10.224.158.131'
-            http_proxy = 'http://proxy.globoi.com:3128'
-            https_proxy = 'http://proxy.globoi.com:3128'
-          }
           steps {
             sh '''#!/bin/bash
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-*.el7.noarch.rpm root@${GALEB_API}:/tmp
@@ -46,11 +27,6 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API
           }
         }
         stage('update LEGBA') {
-          environment {
-            GALEB_LEGBA = '10.224.158.137'
-            http_proxy = 'http://proxy.globoi.com:3128'
-            https_proxy = 'http://proxy.globoi.com:3128'
-          }
           steps {
             sh '''#!/bin/bash
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-*.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
@@ -60,11 +36,6 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEG
           }
         }
         stage('update KRATOS') {
-          environment {
-            GALEB_KRATOS = '10.224.158.143'
-            http_proxy = 'http://proxy.globoi.com:3128'
-            https_proxy = 'http://proxy.globoi.com:3128'
-          }
           steps {
             sh '''#!/bin/bash
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-*.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
@@ -74,11 +45,6 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRA
           }
         }
         stage('update ROUTER') {
-          environment {
-            GALEB_ROUTER = '10.224.158.156'
-            http_proxy = 'http://proxy.globoi.com:3128'
-            https_proxy = 'http://proxy.globoi.com:3128'
-          }
           steps {
             sh '''#!/bin/bash
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-*.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
@@ -88,11 +54,6 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROU
           }
         }
         stage('update HEALTH') {
-          environment {
-            GALEB_HEALTH = '10.224.158.149'
-            http_proxy = 'http://proxy.globoi.com:3128'
-            https_proxy = 'http://proxy.globoi.com:3128'
-          }
           steps {
             sh '''#!/bin/bash
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-*.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp

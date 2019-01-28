@@ -3,9 +3,9 @@ pipeline {
   stages {
     stage('get last packages') {
       environment {
-        http_proxy = '${env.HTTP_PROXY}'
-        https_proxy = '${env.HTTPS_PROXY}'
-        no_proxy = '${env.NOPROXY}'
+        http_proxy = ${env.HTTP_PROXY}
+        https_proxy = ${env.HTTPS_PROXY}
+        no_proxy = ${env.NOPROXY}
       }
       steps {
         sh '''#!/bin/bash

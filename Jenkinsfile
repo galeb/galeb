@@ -5,15 +5,15 @@ pipeline {
       environment {
         http_proxy = """${sh(
                 returnStdout: true,
-                script: 'echo "$HTTP_PROXY"'
+                script: 'echo "$http_proxy"'
             ).trim()}""" 
         https_proxy = """${sh(
                 returnStdout: true,
-                script: 'echo "$HTTPS_PROXY"'
+                script: 'echo "$https_proxy"'
             ).trim()}"""
         no_proxy = """${sh(
                 returnStdout: true,
-                script: 'echo "$NOPROXY"'
+                script: 'echo "$no_proxy"'
             ).trim()}"""
       }
       steps {

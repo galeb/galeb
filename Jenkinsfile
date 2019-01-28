@@ -3,10 +3,18 @@ pipeline {
   stages {
     stage('get last packages') {
       environment {
-        http_proxy = ${env.HTTP_PROXY}
-        https_proxy = ${env.HTTPS_PROXY}
-        no_proxy = ${env.NOPROXY}
-      }
+        http_proxy = """${sh(
+                returnStdout: true,
+                script: 'echo "$HTTP_PROXY"'
+            ).trim()}""" 
+        https_proxy = """${sh(
+                returnStdout: true,
+                script: 'echo "$HTTPS_PROXY"'
+            ).trim()}"""
+        no_proxy = """${sh(
+                returnStdout: true,
+                script: 'echo "$NOPROXY"'
+            ).trim()}"""
       steps {
         sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"

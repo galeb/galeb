@@ -15,7 +15,7 @@ exit 1
 fi'''
       }
     }
-    stage('update API') {
+    stage('update rpm') {
       parallel {
         stage('update API') {
           steps {
@@ -64,7 +64,7 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
         }
       }
     }
-    stage('update apikeys API') {
+    stage('update apikeys') {
       parallel {
         stage('update apikeys API') {
           steps {

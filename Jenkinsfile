@@ -64,5 +64,44 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
         }
       }
     }
+    stage('update apikeys API') {
+      parallel {
+        stage('update apikeys API') {
+          steps {
+            sh '''#!/bin/bash
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "cd /root && /root/makeenvs.sh api.galeb.qa02.globoi.com lab api"'''
+          }
+        }
+        stage('update apikeys LEGBA') {
+          steps {
+            sh '''#!/bin/bash
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "cd /root && /root/makeenvs.sh legba.galeb.qa02.globoi.com lab legba"'''
+          }
+        }
+        stage('update apikeys KRATOS') {
+          steps {
+            sh '''#!/bin/bash
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "cd /root && /root/makeenvs.sh kratos.galeb.qa02.globoi.com lab kratos"'''
+          }
+        }
+        stage('update apikeys ROUTER') {
+          steps {
+            sh '''#!/bin/bash
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "cd /root && /root/makeenvs.sh be-qa2.router.cmal08.galeb.qa02.globoi.com lab router"'''
+          }
+        }
+        stage('update apikeys HEALTH') {
+          steps {
+            sh '''#!/bin/bash
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "cd /root && /root/makeenvs.sh be-qa2.health.cmal08.galeb.qa02.globoi.com lab health"'''
+          }
+        }
+      }
+    }
   }
 }

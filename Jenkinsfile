@@ -4,7 +4,8 @@ pipeline {
     stage('get last packages') {
       steps {
         sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
+version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | tee /tmp/releases.json | jq -r .tag_name | sed \'s/^v//\')"
+cat /tmp/releases.json
 if [ "x${version}" != "x" -a "x${version}" != "xnull" ]; then
 rm -f /tmp/*.rpm
 for service in api legba kratos router health; do

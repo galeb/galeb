@@ -188,7 +188,7 @@ flyway:migrate -Dflyway.user=$GALEB_DB_USER -Dflyway.password=$GALEB_DB_PASS -Df
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API}"
-$myssh "/etc/init.d/galeb start"'''
+$myssh "/etc/init.d/galeb restart"'''
           }
         }
         stage('Start LEGBA') {
@@ -196,7 +196,7 @@ $myssh "/etc/init.d/galeb start"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA}"
-$myssh "/etc/init.d/galeb start"'''
+$myssh "/etc/init.d/galeb restart"'''
           }
         }
         stage('Start ROUTER') {
@@ -204,7 +204,7 @@ $myssh "/etc/init.d/galeb start"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
-$myssh "/etc/init.d/galeb start"'''
+$myssh "/etc/init.d/galeb restart"'''
           }
         }
       }

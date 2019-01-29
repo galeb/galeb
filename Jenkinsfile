@@ -23,7 +23,6 @@ fi'''
             sh '''#!/bin/bash
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-*.el7.noarch.rpm root@${GALEB_API}:/tmp
-rm -f /tmp/galeb-api-*.el7.noarch.rpm || true
 $myssh "/bin/yum clean all; /bin/yum install jdk1.8.0_144 -y; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-*.el7.noarch.rpm && rm -f /tmp/galeb-api-*.el7.noarch.rpm"
 $myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
 $myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
@@ -45,7 +44,6 @@ $myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
             sh '''#!/bin/bash
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-*.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
-rm -f /tmp/galeb-legba-*.el7.noarch.rpm || true
 $myssh "/bin/yum clean all; /bin/yum install jdk1.8.0_144 -y; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-*.el7.noarch.rpm && rm -f /tmp/galeb-legba-*.el7.noarch.rpm"
 $myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
 $myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
@@ -67,7 +65,6 @@ $myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
             sh '''#!/bin/bash
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-*.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
-rm -f /tmp/galeb-kratos-*.el7.noarch.rpm || true
 $myssh "/bin/yum clean all; /bin/yum install jdk1.8.0_144 -y; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-*.el7.noarch.rpm && rm -f /tmp/galeb-kratos-*.el7.noarch.rpm"
 $myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
 $myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
@@ -89,7 +86,6 @@ $myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
             sh '''#!/bin/bash
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-*.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
-rm -f /tmp/galeb-router-*.el7.noarch.rpm || true
 $myssh "/bin/yum clean all; /bin/yum install jdk1.8.0_144 -y; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-*.el7.noarch.rpm && rm -f /tmp/galeb-router-*.el7.noarch.rpm"
 $myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
 $myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
@@ -111,7 +107,6 @@ $myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
             sh '''#!/bin/bash
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-*.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
-rm -f /tmp/galeb-health-*.el7.noarch.rpm || true
 $myssh "/bin/yum clean all; /bin/yum install jdk1.8.0_144 -y; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-*.el7.noarch.rpm && rm -f /tmp/galeb-health-*.el7.noarch.rpm"
 $myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
 $myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
@@ -205,6 +200,35 @@ $myssh "/etc/init.d/galeb restart"'''
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
 $myssh "/etc/init.d/galeb restart"'''
+          }
+        }
+      }
+    }
+    stage('Artifactory Upload') {
+      steps {
+        sh '''#!/bin/bash
+
+for package in /tmp/galeb-*rpm; do
+echo $package
+#curl -H \'X-JFrog-Art-Api:\'${APITOKEN} -XPUT \\
+#https://artifactory.globoi.com/artifactory/galeb-rpm-local/7/x86_64/${package} -T ${package}
+done'''
+      }
+    }
+    stage('Tests') {
+      parallel {
+        stage('Test API') {
+          steps {
+            sh '''#!/bin/bash
+
+true'''
+          }
+        }
+        stage('Test LEGBA') {
+          steps {
+            sh '''#!/bin/bash
+
+true'''
           }
         }
       }

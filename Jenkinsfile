@@ -5,7 +5,7 @@ pipeline {
       steps {
         sh '''#!/bin/bash
 version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | jq -r .tag_name | sed \'s/^v//\')"
-if [ "x${version}" != "x" ]; then
+if [ "x${version}" != "x" && "x${version}" != "xnull" ]; then
 rm -f /tmp/*.rpm
 for service in api legba kratos router health; do
 curl -s -v -k -L https://github.com/galeb/galeb/releases/download/v${version}/galeb-${service}-${version}.el7.noarch.rpm -o /tmp/galeb-${service}-${version}.el7.noarch.rpm || true

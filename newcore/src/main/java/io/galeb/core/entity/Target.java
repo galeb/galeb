@@ -16,10 +16,17 @@
 
 package io.galeb.core.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.springframework.hateoas.Resources;
+import org.springframework.hateoas.core.EmbeddedWrapper;
+import org.springframework.hateoas.core.EmbeddedWrappers;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @NamedQueries({
         @NamedQuery(
@@ -49,6 +56,16 @@ public class Target extends AbstractEntity implements WithStatus {
 
     @Transient
     private Map<Long, Status> status = new HashMap<>();
+
+    @JsonUnwrapped
+    public Resources simpleHealthStatusEmbedded() {
+        Set<EmbeddedWrapper> embeddeds = new HashSet<>();
+        final Map<String, HealthStatus.Status> healthStatusSimple = healthStatus.stream()
+                .map(h -> new AbstractMap.SimpleEntry<>(h.getSource(), h.getStatus()))
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+        embeddeds.add(new EmbeddedWrappers(false).wrap(healthStatusSimple, "health"));
+        return new Resources<>(embeddeds);
+    }
 
     public Pool getPool() {
         return pool;

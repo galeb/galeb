@@ -181,7 +181,7 @@ cd ../api && \\
 flyway:migrate -Dflyway.user=$GALEB_DB_USER -Dflyway.password=$GALEB_DB_PASS -Dflyway.url=$GALEB_DB_URL'''
       }
     }
-    stage('Start services') {
+    stage('Restart services') {
       parallel {
         stage('Start API') {
           steps {

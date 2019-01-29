@@ -20,116 +20,111 @@ fi'''
         stage('update API') {
           steps {
             sh '''#!/bin/bash
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-api-*.el7.noarch.rpm root@${GALEB_API}:/tmp
 rm -f /tmp/galeb-api-*.el7.noarch.rpm || true
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-*.el7.noarch.rpm && rm -f /tmp/galeb-api-*.el7.noarch.rpm"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API} "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
-mkdir -p /opt/logs/galeb || true
-chmod 777 -R /opt/logs/galeb || true
-/usr/bin/systemctl enable galeb || true
-/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5
-/sbin/sysctl -w net.core.somaxconn=40000
-/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000
-/sbin/sysctl -w net.core.netdev_max_backlog=10000
-/sbin/sysctl -w net.ipv4.tcp_syncookies=1
-/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512
-/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
-/sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
-/sbin/sysctl -w fs.file-max=100000
-swapoff -a
-sed -i -e \'/.*swap.*/d\' /etc/fstab'''
+$myssh "/bin/yum clean all; /bin/yum remove -y galeb-api && /bin/yum install -y /tmp/galeb-api-*.el7.noarch.rpm && rm -f /tmp/galeb-api-*.el7.noarch.rpm"
+$myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
+$myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
+$myssh "/usr/bin/systemctl enable galeb || true"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5"
+$myssh "/sbin/sysctl -w net.core.somaxconn=40000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000"
+$myssh "/sbin/sysctl -w net.core.netdev_max_backlog=10000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_syncookies=1"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1"
+$myssh "/sbin/sysctl -w net.ipv4.ip_local_port_range=\'15000 65000\'"
+$myssh "/sbin/sysctl -w fs.file-max=100000"
+$myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
           }
         }
         stage('update LEGBA') {
           steps {
             sh '''#!/bin/bash
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-legba-*.el7.noarch.rpm root@${GALEB_LEGBA}:/tmp
 rm -f /tmp/galeb-legba-*.el7.noarch.rpm || true
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-*.el7.noarch.rpm && rm -f /tmp/galeb-legba-*.el7.noarch.rpm"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA} "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
-mkdir -p /opt/logs/galeb || true
-chmod 777 -R /opt/logs/galeb || true
-/usr/bin/systemctl enable galeb || true
-/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5
-/sbin/sysctl -w net.core.somaxconn=40000
-/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000
-/sbin/sysctl -w net.core.netdev_max_backlog=10000
-/sbin/sysctl -w net.ipv4.tcp_syncookies=1
-/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512
-/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
-/sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
-/sbin/sysctl -w fs.file-max=100000
-swapoff -a
-sed -i -e \'/.*swap.*/d\' /etc/fstab'''
+$myssh "/bin/yum clean all; /bin/yum remove -y galeb-legba && /bin/yum install -y /tmp/galeb-legba-*.el7.noarch.rpm && rm -f /tmp/galeb-legba-*.el7.noarch.rpm"
+$myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
+$myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
+$myssh "/usr/bin/systemctl enable galeb || true"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5"
+$myssh "/sbin/sysctl -w net.core.somaxconn=40000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000"
+$myssh "/sbin/sysctl -w net.core.netdev_max_backlog=10000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_syncookies=1"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1"
+$myssh "/sbin/sysctl -w net.ipv4.ip_local_port_range=\'15000 65000\'"
+$myssh "/sbin/sysctl -w fs.file-max=100000"
+$myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
           }
         }
         stage('update KRATOS') {
           steps {
             sh '''#!/bin/bash
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-kratos-*.el7.noarch.rpm root@${GALEB_KRATOS}:/tmp
 rm -f /tmp/galeb-kratos-*.el7.noarch.rpm || true
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-*.el7.noarch.rpm && rm -f /tmp/galeb-kratos-*.el7.noarch.rpm"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS} "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
-mkdir -p /opt/logs/galeb || true
-chmod 777 -R /opt/logs/galeb || true
-/usr/bin/systemctl enable galeb || true
-/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5
-/sbin/sysctl -w net.core.somaxconn=40000
-/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000
-/sbin/sysctl -w net.core.netdev_max_backlog=10000
-/sbin/sysctl -w net.ipv4.tcp_syncookies=1
-/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512
-/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
-/sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
-/sbin/sysctl -w fs.file-max=100000
-swapoff -a
-sed -i -e \'/.*swap.*/d\' /etc/fstab'''
+$myssh "/bin/yum clean all; /bin/yum remove -y galeb-kratos && /bin/yum install -y /tmp/galeb-kratos-*.el7.noarch.rpm && rm -f /tmp/galeb-kratos-*.el7.noarch.rpm"
+$myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
+$myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
+$myssh "/usr/bin/systemctl enable galeb || true"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5"
+$myssh "/sbin/sysctl -w net.core.somaxconn=40000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000"
+$myssh "/sbin/sysctl -w net.core.netdev_max_backlog=10000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_syncookies=1"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1"
+$myssh "/sbin/sysctl -w net.ipv4.ip_local_port_range=\'15000 65000\'"
+$myssh "/sbin/sysctl -w fs.file-max=100000"
+$myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
           }
         }
         stage('update ROUTER') {
           steps {
             sh '''#!/bin/bash
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-router-*.el7.noarch.rpm root@${GALEB_ROUTER}:/tmp
 rm -f /tmp/galeb-router-*.el7.noarch.rpm || true
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-*.el7.noarch.rpm && rm -f /tmp/galeb-router-*.el7.noarch.rpm"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER} "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
-mkdir -p /opt/logs/galeb || true
-chmod 777 -R /opt/logs/galeb || true
-/usr/bin/systemctl enable galeb || true
-/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5
-/sbin/sysctl -w net.core.somaxconn=40000
-/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000
-/sbin/sysctl -w net.core.netdev_max_backlog=10000
-/sbin/sysctl -w net.ipv4.tcp_syncookies=1
-/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512
-/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
-/sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
-/sbin/sysctl -w fs.file-max=100000
-swapoff -a
-sed -i -e \'/.*swap.*/d\' /etc/fstab'''
+$myssh "/bin/yum clean all; /bin/yum remove -y galeb-router && /bin/yum install -y /tmp/galeb-router-*.el7.noarch.rpm && rm -f /tmp/galeb-router-*.el7.noarch.rpm"
+$myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
+$myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
+$myssh "/usr/bin/systemctl enable galeb || true"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5"
+$myssh "/sbin/sysctl -w net.core.somaxconn=40000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000"
+$myssh "/sbin/sysctl -w net.core.netdev_max_backlog=10000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_syncookies=1"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1"
+$myssh "/sbin/sysctl -w net.ipv4.ip_local_port_range=\'15000 65000\'"
+$myssh "/sbin/sysctl -w fs.file-max=100000"
+$myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
           }
         }
         stage('update HEALTH') {
           steps {
             sh '''#!/bin/bash
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH}"
 scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /tmp/galeb-health-*.el7.noarch.rpm root@${GALEB_HEALTH}:/tmp
 rm -f /tmp/galeb-health-*.el7.noarch.rpm || true
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-*.el7.noarch.rpm && rm -f /tmp/galeb-health-*.el7.noarch.rpm"
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH} "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
-mkdir -p /opt/logs/galeb || true
-chmod 777 -R /opt/logs/galeb || true
-/usr/bin/systemctl enable galeb || true
-/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5
-/sbin/sysctl -w net.core.somaxconn=40000
-/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000
-/sbin/sysctl -w net.core.netdev_max_backlog=10000
-/sbin/sysctl -w net.ipv4.tcp_syncookies=1
-/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512
-/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
-/sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
-/sbin/sysctl -w fs.file-max=100000
-swapoff -a
-sed -i -e \'/.*swap.*/d\' /etc/fstab'''
+$myssh "/bin/yum clean all; /bin/yum remove -y galeb-health && /bin/yum install -y /tmp/galeb-health-*.el7.noarch.rpm && rm -f /tmp/galeb-health-*.el7.noarch.rpm"
+$myssh "id galeb > /dev/null 2>&1 || (groupadd galeb && useradd -g galeb -d /opt/galeb galeb)"
+$myssh "mkdir -p /opt/logs/galeb && chmod 777 -R /opt/logs/galeb || true"
+$myssh "/usr/bin/systemctl enable galeb || true"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_fin_timeout=5"
+$myssh "/sbin/sysctl -w net.core.somaxconn=40000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_syn_backlog=20000"
+$myssh "/sbin/sysctl -w net.core.netdev_max_backlog=10000"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_syncookies=1"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_max_tw_buckets=512"
+$myssh "/sbin/sysctl -w net.ipv4.tcp_tw_reuse=1"
+$myssh "/sbin/sysctl -w net.ipv4.ip_local_port_range=\'15000 65000\'"
+$myssh "/sbin/sysctl -w fs.file-max=100000"
+$myssh "/sbin/swapoff -a; /bin/sed -i -e \'/.*swap.*/d\' /etc/fstab"'''
           }
         }
       }

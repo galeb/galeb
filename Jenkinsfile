@@ -215,7 +215,7 @@ echo $package
 done'''
       }
     }
-    stage('Tests') {
+    stage('Performance Tests') {
       parallel {
         stage('Test API') {
           steps {

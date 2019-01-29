@@ -210,8 +210,7 @@ $myssh "/etc/init.d/galeb restart"'''
 
 for package in /tmp/galeb-*rpm; do
 echo $package
-#curl -H \'X-JFrog-Art-Api:\'${APITOKEN} -XPUT \\
-#https://artifactory.globoi.com/artifactory/galeb-rpm-local/7/x86_64/${package} -T ${package}
+#curl -H \'X-JFrog-Art-Api:\'${ARTIFACTORY_TOKEN} -XPUT ${ARTIFACTORY_REPO}/${package} -T ${package}
 done'''
       }
     }

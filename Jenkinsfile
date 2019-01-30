@@ -9,7 +9,12 @@ cat /tmp/releases.json
 if [ "x${version}" != "x" -a "x${version}" != "xnull" ]; then
 rm -f /tmp/*.rpm
 for service in api legba kratos router health; do
+curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/galeb-${service}-${version}.el7.noarch.rpm -o /dev/null | grep \'^200$\' > /dev/null
+if [ $? -ne 0 ]; then
 curl -s -v -k -L https://github.com/galeb/galeb/releases/download/v${version}/galeb-${service}-${version}.el7.noarch.rpm -o /tmp/galeb-${service}-${version}.el7.noarch.rpm || true
+else
+curl -s -v -k -L ${ARTIFACTORY_REPO}/galeb-${service}-${version}.el7.noarch.rpm -o /tmp/galeb-${service}-${version}.el7.noarch.rpm || true
+fi
 done
 else
 exit 1
@@ -194,12 +199,30 @@ myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GA
 $myssh "/etc/init.d/galeb restart"'''
           }
         }
+        stage('Start KRATOS') {
+          steps {
+            sh '''#!/bin/bash
+
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
+# AGUARDANDO BARRAMENTO
+# $myssh "/etc/init.d/galeb restart"'''
+          }
+        }
         stage('Start ROUTER') {
           steps {
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
 $myssh "/etc/init.d/galeb restart"'''
+          }
+        }
+        stage('Start HEALTH') {
+          steps {
+            sh '''#!/bin/bash
+
+myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH}"
+# AGUARDANDO BARRAMENTO
+# $myssh "/etc/init.d/galeb restart"'''
           }
         }
       }
@@ -210,7 +233,11 @@ $myssh "/etc/init.d/galeb restart"'''
 
 for package in /tmp/galeb-*rpm; do
 echo $package
+curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/${package} -o /dev/null | grep \'^200$\' > /dev/null
+if [ $? -ne 0 ]; then
 #curl -H \'X-JFrog-Art-Api:\'${ARTIFACTORY_TOKEN} -XPUT ${ARTIFACTORY_REPO}/${package} -T ${package}
+true
+fi
 done'''
       }
     }
@@ -224,6 +251,27 @@ true'''
           }
         }
         stage('Test LEGBA') {
+          steps {
+            sh '''#!/bin/bash
+
+true'''
+          }
+        }
+        stage('Test KRATOS') {
+          steps {
+            sh '''#!/bin/bash
+
+true'''
+          }
+        }
+        stage('Test ROUTER') {
+          steps {
+            sh '''#!/bin/bash
+
+true'''
+          }
+        }
+        stage('Test HEALTH') {
           steps {
             sh '''#!/bin/bash
 

@@ -4,7 +4,7 @@ pipeline {
     stage('get last packages') {
       steps {
         sh '''#!/bin/bash
-version="$(curl -s -L https://api.github.com/repos/galeb/galeb/releases/latest | tee /tmp/releases.json | jq -r .tag_name | sed \'s/^v//\')"
+version="$(curl -s -L -H \'Authorization: token \'${GITHUB_TOKEN} https://api.github.com/repos/galeb/galeb/releases/latest | tee /tmp/releases.json | jq -r .tag_name | sed \'s/^v//\')"
 cat /tmp/releases.json
 if [ "x${version}" != "x" -a "x${version}" != "xnull" ]; then
 rm -f /tmp/*.rpm
@@ -12,10 +12,10 @@ for service in api legba kratos router health; do
 package=galeb-${service}-${version}.el7.noarch.rpm
 curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/${package} -o /dev/null | grep \'^200$\' > /dev/null
 if [ $? -ne 0 ]; then
-echo "ARTIFACTORY: Package not found. Get from github"
-curl -s -v -k -L https://github.com/galeb/galeb/releases/download/v${version}/${package} -o /tmp/${package} || true
+echo "ARTIFACTORY: Package ${package} not found. Getting from github"
+curl -s -v -k -L -H \'Authorization: token \'${GITHUB_TOKEN} https://github.com/galeb/galeb/releases/download/v${version}/${package} -o /tmp/${package} || true
 else
-echo "ARTIFACTORY: Package found. Get from local repo"
+echo "ARTIFACTORY: Package ${package} found. Getting from local repo"
 curl -s -v -k -L ${ARTIFACTORY_REPO}/${package} -o /tmp/${package} || true
 fi
 done
@@ -207,8 +207,7 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
-# AGUARDANDO BARRAMENTO
-# $myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"'''
           }
         }
         stage('Start ROUTER') {
@@ -224,8 +223,7 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEALTH}"
-# AGUARDANDO BARRAMENTO
-# $myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"'''
           }
         }
       }

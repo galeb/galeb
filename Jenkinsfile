@@ -9,11 +9,14 @@ cat /tmp/releases.json
 if [ "x${version}" != "x" -a "x${version}" != "xnull" ]; then
 rm -f /tmp/*.rpm
 for service in api legba kratos router health; do
-curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/galeb-${service}-${version}.el7.noarch.rpm -o /dev/null | grep \'^200$\' > /dev/null
+package=galeb-${service}-${version}.el7.noarch.rpm
+curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/${package} -o /dev/null | grep \'^200$\' > /dev/null
 if [ $? -ne 0 ]; then
-curl -s -v -k -L https://github.com/galeb/galeb/releases/download/v${version}/galeb-${service}-${version}.el7.noarch.rpm -o /tmp/galeb-${service}-${version}.el7.noarch.rpm || true
+echo "ARTIFACTORY: Package not found. Get from github"
+curl -s -v -k -L https://github.com/galeb/galeb/releases/download/v${version}/${package} -o /tmp/${package} || true
 else
-curl -s -v -k -L ${ARTIFACTORY_REPO}/galeb-${service}-${version}.el7.noarch.rpm -o /tmp/galeb-${service}-${version}.el7.noarch.rpm || true
+echo "ARTIFACTORY: Package found. Get from local repo"
+curl -s -v -k -L ${ARTIFACTORY_REPO}/${package} -o /tmp/${package} || true
 fi
 done
 else

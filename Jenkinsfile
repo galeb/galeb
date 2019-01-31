@@ -260,7 +260,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "\'${GALEB_API}\'"
+        "uri": "http://\'${GALEB_API}\':8000/info"
 
       }
     ],
@@ -289,7 +289,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "\'${GALEB_LEGBA}\'"
+        "uri": "http://\'${GALEB_LEGBA}\':8000/info"
 
       }
     ],
@@ -320,7 +320,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "\'${GALEB_KRATOS}\'"
+        "uri": "http://\'${GALEB_KRATOS}\'/info"
 
       }
     ],
@@ -351,7 +351,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "\'${GALEB_ROUTER}\'"
+        "uri": "http://\'${GALEB_ROUTER}\':8000/info"
 
       }
     ],
@@ -382,7 +382,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "\'${GALEB_HEALTH}\'"
+        "uri": "http://\'${GALEB_HEALTH}\':8000/info"
 
       }
     ],

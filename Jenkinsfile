@@ -245,24 +245,22 @@ done'''
       parallel {
         stage('Test API') {
           steps {
-            sh '''#!/bin/bash
+            sh '''TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-echo ${ENDPOINT_GALEB_API}
-echo ${GROU_USER}
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} "${ENDPOINT_GROU}"/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-curl -v -H\'content-type:application/json\' -H"x-auth-token:${TOKEN}" -d\'
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 
 {
-  "name": "GALEB_JENKINS_$RANDOM",
+  "name":"GALEB_JENKINS_\'${RANDOM}\'",
   "durationTimeMillis":10000,
-  "project":${GROU_PROJECT},
+  "project":"\'${GROU_PROJECT}\'",
   "tags":["galebapi"],
-  "notify":[${GROU_NOTIFY}],
+  "notify":["\'${GROU_NOTIFY}\'"],
   "properties": {
     "requests": [
       {
         "order": 1,
-        "uri": "${ENDPOINT_GALEB_API}/info"
+        "uri": "\'${ENDPOINT_GALEB_API}\'"
 
       }
     ],
@@ -284,8 +282,6 @@ true'''
         stage('Test KRATOS') {
           steps {
             sh '''#!/bin/bash
-
-#!/bin/bash
 
 echo ${ENDPOINT_GALEB_API}
 echo ${GROU_USER}

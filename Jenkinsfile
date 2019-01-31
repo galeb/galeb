@@ -274,31 +274,53 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
         }
         stage('Test LEGBA') {
           steps {
-            sh '''#!/bin/bash
+            sh '''TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-true'''
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
+
+{
+  "name":"GALEB_JENKINS_\'${RANDOM}\'",
+  "durationTimeMillis":10000,
+  "project":"\'${GROU_PROJECT}\'",
+  "tags":["galebapi"],
+  "notify":["\'${GROU_NOTIFY}\'"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "\'${ENDPOINT_GALEB_LEGBA}\'"
+
+      }
+    ],
+    "numConn": 1,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
+}\' ${ENDPOINT_GROU}/tests'''
           }
         }
         stage('Test KRATOS') {
           steps {
             sh '''#!/bin/bash
 
-echo ${ENDPOINT_GALEB_API}
-echo ${GROU_USER}
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} "${ENDPOINT_GROU}"/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-curl -v -H\'content-type:application/json\' -H"x-auth-token:${TOKEN}" -d\'
+TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 
 {
-  "name": "GALEB_JENKINS_$RANDOM",
+  "name":"GALEB_JENKINS_\'${RANDOM}\'",
   "durationTimeMillis":10000,
-  "project":${GROU_PROJECT},
+  "project":"\'${GROU_PROJECT}\'",
   "tags":["galebapi"],
-  "notify":[${GROU_NOTIFY}],
+  "notify":["\'${GROU_NOTIFY}\'"],
   "properties": {
     "requests": [
       {
         "order": 1,
-        "uri": "${ENDPOINT_GALEB_KRATOS}/info"
+        "uri": "\'${ENDPOINT_GALEB_KRATOS}\'"
 
       }
     ],
@@ -314,14 +336,62 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:${TOKEN}" -d\'
           steps {
             sh '''#!/bin/bash
 
-true'''
+TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
+
+{
+  "name":"GALEB_JENKINS_\'${RANDOM}\'",
+  "durationTimeMillis":10000,
+  "project":"\'${GROU_PROJECT}\'",
+  "tags":["galebapi"],
+  "notify":["\'${GROU_NOTIFY}\'"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "\'${ENDPOINT_GALEB_ROUTER}\'"
+
+      }
+    ],
+    "numConn": 1,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
+}\' ${ENDPOINT_GROU}/tests'''
           }
         }
         stage('Test HEALTH') {
           steps {
             sh '''#!/bin/bash
 
-true'''
+TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
+
+{
+  "name":"GALEB_JENKINS_\'${RANDOM}\'",
+  "durationTimeMillis":10000,
+  "project":"\'${GROU_PROJECT}\'",
+  "tags":["galebapi"],
+  "notify":["\'${GROU_NOTIFY}\'"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "\'${ENDPOINT_GALEB_HEALTH}\'"
+
+      }
+    ],
+    "numConn": 1,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
+}\' ${ENDPOINT_GROU}/tests'''
           }
         }
       }

@@ -247,20 +247,20 @@ done'''
           steps {
             sh '''#!/bin/bash
 
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+TOKEN="$(curl --silent -I -XGET -u \'${GROU_USER}\':\'${GROU_PASSWORD}\' \'${ENDPOINT_GROU}\'/token/\'${GROU_PROJECT}\' | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 curl -v -H\'content-type:application/json\' -H"x-auth-token:${TOKEN}" -d\'
 
 {
   "name":GALEB_JENKINS_"\'$RANDOM\'",
   "durationTimeMillis":10000,
-  "project":${GROU_PROJECT},
+  "project":\'${GROU_PROJECT}\',
   "tags":["galebapi"],
   "notify":["\'${GROU_NOTIFY}\'"],
   "properties": {
     "requests": [
       {
         "order": 1,
-        "uri": "${ENDPOINT_GALEB_API}/info"
+        "uri": "\'${ENDPOINT_GALEB_API}\'/info"
 
       }
     ],
@@ -269,7 +269,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:${TOKEN}" -d\'
     "followRedirect": true,
     "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
   }
-}\' ${ENDPOINT_GROU}/tests'''
+}\' \'${ENDPOINT_GROU}\'/tests'''
           }
         }
         stage('Test LEGBA') {

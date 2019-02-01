@@ -251,20 +251,7 @@ done'''
 
 TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-echo $WORKSPACE
-
-cat ${WORKSPACE}/galeb_api.json
-
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"${WORKSPACE}/galeb_api.json" ${ENDPOINT_GROU}/tests'''
-          }
-        }
-        stage('Test LEGBA') {
-          steps {
-            sh '''TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-
 curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
-
 {
   "name":"GALEB_JENKINS_\'${RANDOM}\'",
   "durationTimeMillis":10000,
@@ -275,7 +262,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "requests": [
       {
         "order": 1,
-        "uri": "http://\'${GALEB_LEGBA}\':8000/info"
+        "uri": "http://\'${GALEB_API}\':8000/info"
 
       }
     ],
@@ -285,6 +272,17 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
   }
 }\' ${ENDPOINT_GROU}/tests'''
+          }
+        }
+        stage('Test LEGBA') {
+          steps {
+            sh '''#!/bin/bash
+
+TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+
+cat $WORKSPACE/galeb_legba.json
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"jenkins/galeb_legba.json" ${ENDPOINT_GROU}/tests'''
           }
         }
         stage('Test KRATOS') {

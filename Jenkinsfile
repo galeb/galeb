@@ -286,7 +286,11 @@ echo "$JSON"
 
 curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
 
-RESULT_LEGBA=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)'''
+RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
+
+RESULT_STATUS=$($RESULT_GROU | jq .)
+
+echo $RESULT_STATUS'''
           }
         }
         stage('Test KRATOS') {
@@ -384,13 +388,5 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
         }
       }
     }
-    stage('Report Test') {
-      steps {
-        sh 'printenv'
-      }
-    }
-  }
-  environment {
-    RESULT_LEGBA = ''
   }
 }

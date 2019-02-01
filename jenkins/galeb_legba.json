@@ -1,14 +1,14 @@
 {
-  "name":"GALEB_JENKINS_'${RANDOM}'",
+  "name":"GALEB_JENKINS_LEGBA_RANDOM",
   "durationTimeMillis":10000,
-  "project":"'${GROU_PROJECT}'",
-  "tags":["galebapi"],
-  "notify":["'${GROU_NOTIFY}'"],
+  "project":"GROU_PROJECT",
+  "tags":["galeblegba"],
+  "notify":["GROU_NOTIFY"],
   "properties": {
     "requests": [
       {
         "order": 1,
-        "uri": "http://'${GALEB_LEGBA}':8000/info"
+        "uri": "http://GALEB_LEGBA:8000/info"
 
       }
     ],

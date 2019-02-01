@@ -253,6 +253,8 @@ TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU
 
 echo $WORKSPACE
 
+cat ${WORKSPACE}/galeb_api.json
+
 curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"${WORKSPACE}/galeb_api.json" ${ENDPOINT_GROU}/tests'''
           }
         }

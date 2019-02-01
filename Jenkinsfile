@@ -237,6 +237,8 @@ echo $package
 curl -s -k -I -w "%{http_code}" ${ARTIFACTORY_REPO}/${package##*/} -o /dev/null | grep \'^200$\' > /dev/null
 if [ $? -ne 0 ]; then
 curl -H \'X-JFrog-Art-Api:\'${ARTIFACTORY_TOKEN} -XPUT ${ARTIFACTORY_REPO}/${package##*/} -T ${package}
+else	
+echo "Package already exists: ${package##*/}. Ignoring upload."
 fi
 done'''
       }
@@ -245,31 +247,15 @@ done'''
       parallel {
         stage('Test API') {
           steps {
-            sh '''TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+            sh '''#!/bin/bash
 
+TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
+echo $WORKSPACE
 
-{
-  "name":"GALEB_JENKINS_\'${RANDOM}\'",
-  "durationTimeMillis":10000,
-  "project":"\'${GROU_PROJECT}\'",
-  "tags":["galebapi"],
-  "notify":["\'${GROU_NOTIFY}\'"],
-  "properties": {
-    "requests": [
-      {
-        "order": 1,
-        "uri": "http://\'${GALEB_API}\':8000/info"
+cat ${WORKSPACE}/galeb_api.json
 
-      }
-    ],
-    "numConn": 1,
-    "parallelLoaders": 1,
-    "followRedirect": true,
-    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-  }
-}\' ${ENDPOINT_GROU}/tests'''
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"${WORKSPACE}/galeb_api.json" ${ENDPOINT_GROU}/tests'''
           }
         }
         stage('Test LEGBA') {
@@ -394,6 +380,11 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 }\' ${ENDPOINT_GROU}/tests'''
           }
         }
+      }
+    }
+    stage('Deploy Lab') {
+      steps {
+        input(message: 'Would you like to deploy in environment Lab?', ok: 'Yes', submitter: 'No')
       }
     }
   }

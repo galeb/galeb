@@ -280,9 +280,11 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 
 TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-cat $WORKSPACE/galeb_legba.json
+JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g")
 
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"jenkins/galeb_legba.json" ${ENDPOINT_GROU}/tests'''
+echo "$JSON"
+
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests'''
           }
         }
         stage('Test KRATOS') {
@@ -378,11 +380,6 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 }\' ${ENDPOINT_GROU}/tests'''
           }
         }
-      }
-    }
-    stage('Deploy Lab') {
-      steps {
-        input(message: 'Would you like to deploy in environment Lab?', ok: 'Yes', submitter: 'No')
       }
     }
   }

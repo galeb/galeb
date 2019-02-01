@@ -398,5 +398,10 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
         }
       }
     }
+    stage('') {
+      steps {
+        input(message: 'Testando', submitter: 'echo "teste"')
+      }
+    }
   }
 }

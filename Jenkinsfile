@@ -286,7 +286,7 @@ echo "$JSON"
 
 curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
 
-RESULT_LEGBA=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)'''
+$RESULT_LEGBA=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)'''
           }
         }
         stage('Test KRATOS') {

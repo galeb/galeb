@@ -386,7 +386,7 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
     }
     stage('Report Test') {
       steps {
-        sh 'echo $RESULT_LEGBA | jq .'
+        sh 'printenv'
       }
     }
   }

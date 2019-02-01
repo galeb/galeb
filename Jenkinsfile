@@ -284,7 +284,9 @@ JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "
 
 echo "$JSON"
 
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests'''
+curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
+
+RESULT_LEGBA=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)'''
           }
         }
         stage('Test KRATOS') {
@@ -380,6 +382,11 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
 }\' ${ENDPOINT_GROU}/tests'''
           }
         }
+      }
+    }
+    stage('Report Test') {
+      steps {
+        sh 'echo $RESULT_LEGBA | jq .'
       }
     }
   }

@@ -1,0 +1,1 @@
+{"name":"pool-xpto","project":"https://api.galeb.dev.globoi.com/project/1","environment":"https://api.galeb.dev.globoi.com/environment/1","balancepolicy":    "https://api.galeb.dev.globoi.com/balancepolicy/1","hc_tcp_only":true,"description":"teste","allow":"127.0.0.1"}

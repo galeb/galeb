@@ -398,9 +398,9 @@ curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
         }
       }
     }
-    stage('error') {
+    stage('Deploy Lab') {
       steps {
-        input(message: 'Testando', ok: 'echo "teste"')
+        input(message: 'Would you like to deploy in environment Lab?', ok: 'Yes', submitter: 'No')
       }
     }
   }

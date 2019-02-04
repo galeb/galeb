@@ -1,5 +1,5 @@
 {
-    "name":"GALEB_JENKINS_API_TEAM_POST_RANDOM",
+    "name":"GALEB_JENKINS_API_TARGET_POST_RANDOM",
     "durationTimeMillis":10000,
     "project":"GROU_PROJECT",
     "tags":["galebapi"],
@@ -8,16 +8,15 @@
       "requests": [
         {
             "order": 1,
-            "uri": "http://GALEB_API:8000/team",
+            "uri": "http://GALEB_API:8000/target",
             "method":"POST",
-            "headers":{
+            "headers": {
                 "content-type":"application/json",
-                "X-Auth-Token":"TOKEN"
+                "X-Auth-Token":"TOKEN_API"
             },
             "body": {
-                "name":"xpto-team",
-                "accounts":["https://api.galeb.dev.globoi.com/account/1"],
-                "description":"test-team"
+                "name":"http://127.0.0.1:8080",
+                "pool":"http://GALEB_API:8000/pool/1"
             }
         }
       ],

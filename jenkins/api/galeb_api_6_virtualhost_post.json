@@ -10,16 +10,15 @@
             "order": 1,
             "uri": "http://GALEB_API:8000/virtualhost",
             "method":"POST",
-            "headers":{
+            "headers": {
                 "content-type":"application/json",
-                "X-Auth-Token":"TOKEN"
+                "X-Auth-Token":"TOKEN_API"
             },
             "body": {
-                "name":"virtualhost-test",
-                "project":"https://api.galeb.dev.globoi.com/project/6",
-                "environments":["https://api.galeb.dev.globoi.com/environment/1"],
-                "virtualhostgroup":"https://api.galeb.dev.globoi.com/virtualhostgroup/93",
-                "description":"description-test"}
+                "name":"virtualhost-test-RANDOM",
+                "project":"http://GALEB_API:8000/project/6",
+                "environments":["http://GALEB_API:8000/environment/1"],
+            }
         }
       ],
       "numConn": 1,

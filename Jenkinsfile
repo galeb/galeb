@@ -253,22 +253,21 @@ TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU
 TOKEN_API="$(curl --silent -I -XGET -u admin:admin ${GALEB_API}:8000/token | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
 for file in $(ls $WORKSPACE/jenkins/api/*json); do
-  echo $file
-  JSON_TEST=$(cat $WORKSPACE/jenkins/$file | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g")
-  echo "$JSON_TEST"
-done
+  JSON=$(cat $file | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g")
+  echo "$JSON"
 
-JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g")
+  RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
 
-echo "$JSON"
+  TEST_STATUS=$($RESULT_GROU | jq .status)
+  TEST_URL=$($RESULT_GROU | jq ._links.self.href)
 
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
-
-RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
-
-RESULT_STATUS=$($RESULT_GROU | jq .)
-
-echo $RESULT_STATUS'''
+  while [ "$TEST_STATUS" = "OK" ]
+  do
+    TEST_STATUS=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
+    sleep 5
+  done
+  
+done'''
           }
         }
         stage('Test LEGBA') {

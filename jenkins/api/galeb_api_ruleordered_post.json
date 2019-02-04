@@ -1,1 +1,36 @@
-{"rule":"https://api.galeb.dev.globoi.com/rule/987","ruleInfo":{"id":987,"na    me":"teste dia 27/09/2018","matching":"/"},"environment":"https://api.galeb.    dev.globoi.com/environment/1","environment_name":"be-dev","order":3,"virtual    hostgroup":"https://api.galeb.dev.globoi.com/virtualhostgroup/93"}
+{
+    "name":"GALEB_JENKINS_API_RULEORDERED_POST_RANDOM",
+    "durationTimeMillis":10000,
+    "project":"GROU_PROJECT",
+    "tags":["galebapi"],
+    "notify":["GROU_NOTIFY"],
+    "properties": {
+      "requests": [
+        {
+            "order": 1,
+            "uri": "http://GALEB_API:8000/ruleordered",
+            "method":"POST",
+            "headers":{
+                "content-type":"application/json",
+                "X-Auth-Token":"TOKEN"
+            },
+            "body": {
+                "rule":"https://api.galeb.dev.globoi.com/rule/987",
+                "ruleInfo":{
+                    "id":987,
+                    "name":"ruleordered-test",
+                    "matching":"/"
+                    },
+                "environment":"https://api.galeb.dev.globoi.com/environment/1",
+                "environment_name":"be-dev",
+                "order":3,
+                "virtualhostgroup":"https://api.galeb.dev.globoi.com/virtualhostgroup/93"
+            }
+        }
+      ],
+      "numConn": 1,
+      "parallelLoaders": 1,
+      "followRedirect": true,
+      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    }
+}

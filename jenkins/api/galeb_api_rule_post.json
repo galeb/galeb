@@ -1,1 +1,31 @@
-  {"name":"teste dia 27/09/2018","project":"https://api.galeb.dev.globoi.com/project/7","pools":["https://api.galeb.dev.globoi.com/pool/985"],"matching":"/","description":"teste    "}
+{
+    "name":"GALEB_JENKINS_API_RULE_POST_RANDOM",
+    "durationTimeMillis":10000,
+    "project":"GROU_PROJECT",
+    "tags":["galebapi"],
+    "notify":["GROU_NOTIFY"],
+    "properties": {
+      "requests": [
+        {
+            "order": 1,
+            "uri": "http://GALEB_API:8000/rule",
+            "method":"POST",
+            "headers":{
+                "content-type":"application/json",
+                "X-Auth-Token":"TOKEN"
+            },
+            "body": {
+              "name":"rule-test",
+              "project":"https://api.galeb.dev.globoi.com/project/7",
+              "pools":["https://api.galeb.dev.globoi.com/pool/985"],
+              "matching":"/",
+              "description":"test"
+            }
+        }
+      ],
+      "numConn": 1,
+      "parallelLoaders": 1,
+      "followRedirect": true,
+      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    }
+}

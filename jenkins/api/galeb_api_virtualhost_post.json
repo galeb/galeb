@@ -1,1 +1,30 @@
-{"name":"Teste virtualhost 29/09/2018","project":"https://api.galeb.dev.globoi.com/project/6","environments":["https://api.galeb.dev.globoi.com/environment/1"],"virtualhostgroup":"https://api.galeb.dev.globoi.com/virtualhostgroup/93","description":"teste description"}
+{
+    "name":"GALEB_JENKINS_API_VIRTUALHOST_POST_RANDOM",
+    "durationTimeMillis":10000,
+    "project":"GROU_PROJECT",
+    "tags":["galebapi"],
+    "notify":["GROU_NOTIFY"],
+    "properties": {
+      "requests": [
+        {
+            "order": 1,
+            "uri": "http://GALEB_API:8000/virtualhost",
+            "method":"POST",
+            "headers":{
+                "content-type":"application/json",
+                "X-Auth-Token":"TOKEN"
+            },
+            "body": {
+                "name":"virtualhost-test",
+                "project":"https://api.galeb.dev.globoi.com/project/6",
+                "environments":["https://api.galeb.dev.globoi.com/environment/1"],
+                "virtualhostgroup":"https://api.galeb.dev.globoi.com/virtualhostgroup/93",
+                "description":"description-test"}
+        }
+      ],
+      "numConn": 1,
+      "parallelLoaders": 1,
+      "followRedirect": true,
+      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    }
+}

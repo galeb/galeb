@@ -1,1 +1,29 @@
-{"name":"xpto-team","accounts":["https://api.galeb.dev.globoi.com/account/1"],"description":"time de teste"}
+{
+    "name":"GALEB_JENKINS_API_TEAM_POST_RANDOM",
+    "durationTimeMillis":10000,
+    "project":"GROU_PROJECT",
+    "tags":["galebapi"],
+    "notify":["GROU_NOTIFY"],
+    "properties": {
+      "requests": [
+        {
+            "order": 1,
+            "uri": "http://GALEB_API:8000/team",
+            "method":"POST",
+            "headers":{
+                "content-type":"application/json",
+                "X-Auth-Token":"TOKEN"
+            },
+            "body": {
+                "name":"xpto-team",
+                "accounts":["https://api.galeb.dev.globoi.com/account/1"],
+                "description":"test-team"
+            }
+        }
+      ],
+      "numConn": 1,
+      "parallelLoaders": 1,
+      "followRedirect": true,
+      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    }
+}

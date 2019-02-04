@@ -1,1 +1,29 @@
-{"name":"http://10.231.192.69:82","pool":"https://api.galeb.dev.globoi.com/pool/1","description":"teste"}
+{
+    "name":"GALEB_JENKINS_API_TARGET_POST_RANDOM",
+    "durationTimeMillis":10000,
+    "project":"GROU_PROJECT",
+    "tags":["galebapi"],
+    "notify":["GROU_NOTIFY"],
+    "properties": {
+      "requests": [
+        {
+            "order": 1,
+            "uri": "http://GALEB_API:8000/target",
+            "method":"POST",
+            "headers":{
+                "content-type":"application/json",
+                "X-Auth-Token":"TOKEN"
+            },
+            "body":{
+                "name":"http://10.231.192.69:82",
+                "pool":"https://api.galeb.dev.globoi.com/pool/1",
+                "description":"test"
+            }
+        }
+      ],
+      "numConn": 1,
+      "parallelLoaders": 1,
+      "followRedirect": true,
+      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    }
+}

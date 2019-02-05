@@ -253,20 +253,20 @@ TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU
 TOKEN_API="$(curl --silent -I -XGET -u admin:admin ${GALEB_API}:8000/token | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
 for file in $(ls $WORKSPACE/jenkins/api/*json); do
-  JSON=$(cat $file | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g")
+  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g")
   echo "$JSON"
 
   RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
 
   echo $RESULT_GROU
-  # TEST_STATUS=$($RESULT_GROU | jq .status)
-  # TEST_URL=$($RESULT_GROU | jq ._links.self.href)
-  # 
-  # while [ "$TEST_STATUS" = "OK" ]
-  # do
-  #   TEST_STATUS=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
-  #   sleep 5
-  # done
+  TEST_STATUS=$($RESULT_GROU | jq .status)
+  TEST_URL=$($RESULT_GROU | jq ._links.self.href)
+  
+  while [ "$TEST_STATUS" = "OK" ]
+  do
+    TEST_STATUS=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
+    sleep 5
+  done
   
 done'''
           }

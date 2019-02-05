@@ -14,13 +14,13 @@
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
             },
-            "body": {
-                "name":"test-pool-RANDOM",
-                "project":"http://GALEB_API:8000/project/1",
-                "environment":"http://GALEB_API:8000/environment/1",
-                "balancepolicy":"http://GALEB_API:8000/balancepolicy/1",
-                "hc_tcp_only":true
-            }
+            "body": "{
+                \"name\":\"test-pool-RANDOM\",
+                \"project\":\"http://GALEB_API:8000/project/1\",
+                \"environment\":\"http://GALEB_API:8000/environment/1\",
+                \"balancepolicy\":\"http://GALEB_API:8000/balancepolicy/1\",
+                \"hc_tcp_only\":true
+            }"
         }
       ],
       "numConn": 1,

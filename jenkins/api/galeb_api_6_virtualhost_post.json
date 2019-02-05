@@ -14,11 +14,11 @@
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
             },
-            "body": {
-                "name":"virtualhost-test-RANDOM",
-                "project":"http://GALEB_API:8000/project/6",
-                "environments":["http://GALEB_API:8000/environment/1"],
-            }
+            "body": "{
+                \"name\":\"virtualhost-test-RANDOM\",
+                \"project\":\"http://GALEB_API:8000/project/6\",
+                \"environments\":[\"http://GALEB_API:8000/environment/1\"],
+            }"
         }
       ],
       "numConn": 1,

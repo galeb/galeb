@@ -14,12 +14,12 @@
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
             },
-            "body": {
-                "name":"rule-test-RANDOM",
-                "project":"http://GALEB_API:8000/project/1",
-                "pools":["http://GALEB_API:8000/pool/1"],
-                "matching":"/"
-            }
+            "body": "{
+                \"name\":\"rule-test-RANDOM\",
+                \"project\":\"http://GALEB_API:8000/project/1\",
+                \"pools\":[\"http://GALEB_API:8000/pool/1\"],
+                \"matching\":\"/\"
+            }"
         }
       ],
       "numConn": 1,

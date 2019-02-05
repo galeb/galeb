@@ -14,10 +14,10 @@
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
             },
-            "body": {
-                "name":"test-project-RANDOM",
-                "teams":["http://GALEB_API:8000/team/1"]
-            }
+            "body": "{
+                \"name\":\"test-project-RANDOM\",
+                \"teams\":[\"http://GALEB_API:8000/team/1\"]
+            }"
         }
       ],
       "numConn": 1,

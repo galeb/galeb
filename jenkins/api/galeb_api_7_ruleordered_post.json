@@ -14,12 +14,12 @@
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
             },
-            "body": {
-                "rule":"http://GALEB_API:8000/rule/1",
-                "environment":"http://GALEB_API:8000/environment/1",
-                "virtualhostgroup":"http://GALEB_API:8000/virtualhostgroup/1",
-                "order":3
-            }
+            "body": "{
+                \"rule\":\"http://GALEB_API:8000/rule/1\",
+                \"environment\":\"http://GALEB_API:8000/environment/1\",
+                \"virtualhostgroup\":\"http://GALEB_API:8000/virtualhostgroup/1\",
+                \"order\":3
+            }"
         }
       ],
       "numConn": 1,

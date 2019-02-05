@@ -258,14 +258,15 @@ for file in $(ls $WORKSPACE/jenkins/api/*json); do
 
   RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
 
-  TEST_STATUS=$($RESULT_GROU | jq .status)
-  TEST_URL=$($RESULT_GROU | jq ._links.self.href)
-
-  while [ "$TEST_STATUS" = "OK" ]
-  do
-    TEST_STATUS=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
-    sleep 5
-  done
+  echo $RESULT_GROU
+  # TEST_STATUS=$($RESULT_GROU | jq .status)
+  # TEST_URL=$($RESULT_GROU | jq ._links.self.href)
+  # 
+  # while [ "$TEST_STATUS" = "OK" ]
+  # do
+  #   TEST_STATUS=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
+  #   sleep 5
+  # done
   
 done'''
           }

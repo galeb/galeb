@@ -262,9 +262,6 @@ for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
   #echo $RESULT_GROU
   TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
   TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
-
-  echo $TEST_URL
-  echo $TEST_STATUS
   
   while [ "${TEST_STATUS}" != "OK" ]
   do
@@ -279,7 +276,7 @@ done
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 
 GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
-
+echo $TOKEN_API
 JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
 #echo "$JSON"
 

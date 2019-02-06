@@ -248,8 +248,7 @@ done'''
         stage('Test API') {
           steps {
             sh '''#!/bin/bash
-telnet ${GALEB_API} 8000
-curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .
+echo ${GALEB_API}
 '''
           }
         }

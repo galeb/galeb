@@ -279,10 +279,14 @@ done
 
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 
-  GALEB_GET_ID = "$(curl --noproxy \'*\' --silent -I -XPOST -d \'{"name" : "http://127.0.0.1:8080"}\' -u admin:admin ${GALEB_API}:8000/target | jq -r . )"
- echo "ID" 
- echo $GALEB_GET_ID
- echo "ID"
+GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d \'{"name" : "team2"}\' -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
+
+curl --noproxy \'*\' -H\'content-type:application/json\' -X GET - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+
+curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+
+
+
   
 done'''
           }

@@ -254,14 +254,15 @@ TOKEN_API="$(curl --noproxy \'*\' --silent -I -XGET -u admin:admin ${GALEB_API}:
 
 for file in $(ls $WORKSPACE/jenkins/api/*json); do
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
-  echo "$JSON"
+  #echo "$JSON"
 
   RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
 
-  echo $RESULT_GROU
+  #echo $RESULT_GROU
   TEST_STATUS=$(echo $RESULT_GROU | jq .status)
   TEST_URL=$(echo $RESULT_GROU | jq ._links.self.href)
 
+  echo $TEST_URL
   echo $TEST_STATUS
   
   while [ "${TEST_STATUS}" != "OK" ]

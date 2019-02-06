@@ -276,6 +276,7 @@ for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
 done
 
 # GET METHOD
+TOKEN_API="$(curl --noproxy \'*\' --silent -I -XGET -u admin:admin ${GALEB_API}:8000/token | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 

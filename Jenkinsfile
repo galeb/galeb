@@ -250,8 +250,8 @@ done'''
             sh '''#!/bin/bash
 
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .token)"
-
+TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .)"
+echo $TOKEN_API
 # POST METHOD
 # for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
 #   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")

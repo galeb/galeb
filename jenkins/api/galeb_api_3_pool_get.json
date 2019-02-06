@@ -8,16 +8,12 @@
       "requests": [
         {
             "order": 1,
-            "uri": "http://GALEB_API:8000/team",
-            "method":"POST",
+            "uri": "http://GALEB_API:8000/pool/GALEB_TARGET_ID",
+            "method":"GET",
             "headers": {
                 "content-type":"application/json",
                 "X-Auth-Token":"TOKEN_API"
-            },
-            "body": "{
-                \"name\":\"test-team-RANDOM\",
-                \"accounts\":[\"http://GALEB_API:8000/account/1\"]
-            }"
+            }
         }
       ],
       "numConn": 1,

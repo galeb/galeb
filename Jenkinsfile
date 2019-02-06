@@ -262,9 +262,10 @@ for file in $(ls $WORKSPACE/jenkins/api/*json); do
   TEST_STATUS=$(echo $RESULT_GROU | jq .status)
   TEST_URL=$(echo $RESULT_GROU | jq ._links.self.href)
   
-  while [ "$TEST_STATUS" = "OK" ]
+  while [ "${TEST_STATUS}" = "ENQUEUED" ]
   do
     TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
+    echo $TEST_STATUS
     sleep 5
   done
   

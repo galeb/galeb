@@ -278,24 +278,11 @@ done
 # GET METHOD
 
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
-  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
-  #echo "$JSON"
 
-  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-
-  #echo $RESULT_GROU
-  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
-  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
-
-  echo $TEST_URL
-  echo $TEST_STATUS
-  
-  while [ "${TEST_STATUS}" != "OK" ]
-  do
-    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
-    echo $TEST_STATUS
-    sleep 5
-  done
+  GALEB_GET_ID = "$(curl --noproxy \'*\' --silent -I -XPOST -d \'{"name" : "http://127.0.0.1:8080"}\' -u admin:admin ${GALEB_API}:8000/target | jq -r . )"
+ echo "ID" 
+ echo $GALEB_GET_ID
+ echo "ID"
   
 done'''
           }

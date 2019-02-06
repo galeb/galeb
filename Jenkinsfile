@@ -267,7 +267,7 @@ for file in $(ls $WORKSPACE/jenkins/api/*json); do
   
   while [ "${TEST_STATUS}" != "OK" ]
   do
-    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" ${TEST_URL} | jq .status)
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' ${TEST_URL} | jq .status)
     echo $TEST_STATUS
     sleep 5
   done

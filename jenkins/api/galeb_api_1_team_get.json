@@ -12,7 +12,7 @@
             "method":"GET",
             "headers": {
                 "content-type":"application/json",
-                "X-Auth-Token":"TOKEN_API"
+                "Authorization":"Basic TOKEN_API"
             }
         }
       ],

@@ -278,7 +278,7 @@ done
 # GET METHOD
 TOKEN_API="$(curl --noproxy \'*\' --silent -I -XGET -u admin:admin ${GALEB_API}:8000/token | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+for file in $(ls $WORKSPACE/jenkins/api/galeb_api_1_team_get.json); do
 
 GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
 

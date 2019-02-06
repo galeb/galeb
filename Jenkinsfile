@@ -259,8 +259,8 @@ for file in $(ls $WORKSPACE/jenkins/api/*json); do
   RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
 
   #echo $RESULT_GROU
-  TEST_STATUS=$(echo $RESULT_GROU | jq .status)
-  TEST_URL=$(echo $RESULT_GROU | jq ._links.self.href)
+  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
 
   echo $TEST_URL
   echo $TEST_STATUS

@@ -250,8 +250,7 @@ done'''
             sh '''#!/bin/bash
 
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .)"
-echo $TOKEN_API
+curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .)
 '''
           }
         }

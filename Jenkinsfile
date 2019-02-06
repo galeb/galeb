@@ -248,7 +248,7 @@ done'''
         stage('Test API') {
           steps {
             sh '''#!/bin/bash
-echo ${GALEB_API}
+curl ${GALEB_API}:8000/token -u admin:admin
 '''
           }
         }

@@ -272,46 +272,51 @@ TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token |
   
 # done
 
+#BP and Environment created default ID: 1
+# GALEB_BP_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"bp-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
+# GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"environment-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
 
-#GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
-#GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-#GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-#GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+
+GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
+echo $GALEB_TEAM_ID
+
+#PROJECT OK
+GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\",\\"teams\\" : [\\"http://${GALEB_API}/team/${GALEB_TEAM_ID}\\"]}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+echo $GALEB_PROJECT_ID
+
+#POOL OK
+GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"environment\\" : \\"http://${GALEB_API}/environment/1\\",\\"balancepolicy\\" : \\"http://${GALEB_API}/balancepolicy/1\\",\\"hc_tcp_only\\" : \\"true\\"}" -u admin:admin ${GALEB_API}:8000/pool | jq -r .id)
+echo $GALEB_POOL_ID
+
+#TARGET OK
+GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"target-$RANDOM\\",\\"pool\\" : \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target | jq -r .id)
+echo $GALEB_TARGET_ID
+
+#VIRTUALHOST OK
+GALEB_VIRTUALHOST_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"virtualhost-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"environments\\" : [\\"http://${GALEB_API}/environment/1\\"]}" -u admin:admin ${GALEB_API}:8000/virtualhost | jq -r .id)
+echo $GALEB_VIRTUALHOST_ID
+
+#RULE OK
+GALEB_RULE_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"rule-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"pools\\" : [\\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"],\\"matching\\" : \\"/\\" }" -u admin:admin ${GALEB_API}:8000/rule | jq -r .id)
+echo $GALEB_RULE_ID
 
 
 # GET METHOD
-for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+# for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json); do
 
-file_cut=$(echo $file | rev | cut -d\'/\' -f 1 | rev)
+JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID,")
+echo "$JSON"
 
-if [ "$file_cut" = "galeb_api_1_pool_get.json" ]; then 
-    echo $file_cut
-    echo "WORKS"
-elif [ "$file_cut" = "galeb_api_2_target_get.json" ]; then  
-    echo $file_cut
-    echo "WORKS"
-elif [ "$file_cut" = "galeb_api_3_rule_get.json" ]; then  
-    echo $file_cut
-    echo "WORKS"
-elif [ "$file_cut" = "galeb_api_4_virtualhost_get.json" ]; then  
-    echo $file_cut
-    echo "WORKS"
-elif [ "$file_cut" = "galeb_api_5_ruleordered_get.json" ]; then 
-    echo $file_cut
-    echo "WORKS"
-fi
+RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+echo $RESULT_GROU
 
-#JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
-#echo "$JSON"
-
-#RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-#echo $RESULT_GROU
-
-#curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+# curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
 #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
-done'''
+done
+'''
           }
         }
         stage('Test LEGBA') {

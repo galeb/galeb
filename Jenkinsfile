@@ -281,7 +281,25 @@ TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token |
 
 # GET METHOD
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
-echo $file
+
+file_cut=$(echo $file | rev | cut -d\'/\' -f 1 | rev)
+
+if [ "$file_cut" = "galeb_api_1_pool_get.json" ]; then 
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_2_target_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_3_rule_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_4_virtualhost_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_5_ruleordered_get.json" ]; then 
+    echo $file_cut
+    echo "WORKS"
+fi
 
 #JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
 #echo "$JSON"

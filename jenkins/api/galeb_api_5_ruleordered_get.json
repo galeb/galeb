@@ -1,6 +1,6 @@
 {
     "name":"GALEB_JENKINS_API_RULEORDERED_GET_RANDOM",
-    "durationTimeMillis":10000,
+    "durationTimeMillis":30000,
     "project":"GROU_PROJECT",
     "tags":["galebapi"],
     "notify":["GROU_NOTIFY"],
@@ -8,7 +8,7 @@
       "requests": [
         {
             "order": 1,
-            "uri": "http://GALEB_API:8000/ruleordered/GALEB_TARGET_ID",
+            "uri": "http://GALEB_API:8000/ruleordered/GALEB_RULEORDERED_ID",
             "method":"GET",
             "headers": {
                 "content-type":"application/json",

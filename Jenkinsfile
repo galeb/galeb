@@ -273,23 +273,23 @@ TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token |
 # done
 
 
-GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
-GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
+#GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
 
 
 # GET METHOD
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+echo $file
 
-
-JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
+#JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
 #echo "$JSON"
 
-RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-echo $RESULT_GROU
+#RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+#echo $RESULT_GROU
 
-curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+#curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
 #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 

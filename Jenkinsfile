@@ -273,23 +273,41 @@ TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token |
 # done
 
 
-GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
-GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
+#GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
+#GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
 
 
 # GET METHOD
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 
+file_cut=$(echo $file | rev | cut -d\'/\' -f 1 | rev)
 
-JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
+if [ "$file_cut" = "galeb_api_1_pool_get.json" ]; then 
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_2_target_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_3_rule_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_4_virtualhost_get.json" ]; then  
+    echo $file_cut
+    echo "WORKS"
+elif [ "$file_cut" = "galeb_api_5_ruleordered_get.json" ]; then 
+    echo $file_cut
+    echo "WORKS"
+fi
+
+#JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID,")
 #echo "$JSON"
 
-RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-echo $RESULT_GROU
+#RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+#echo $RESULT_GROU
 
-curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+#curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
 #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
@@ -300,112 +318,34 @@ done'''
           steps {
             sh '''#!/bin/bash
 
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+#TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 
-JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g")
+#JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g")
 
-echo "$JSON"
+#echo "$JSON"
 
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
+#curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
 
-RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
+#RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
 
-RESULT_STATUS=$($RESULT_GROU | jq .)
+#RESULT_STATUS=$($RESULT_GROU | jq .)
 
-echo $RESULT_STATUS'''
+#echo $RESULT_STATUS'''
           }
         }
         stage('Test KRATOS') {
           steps {
-            sh '''#!/bin/bash
-
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
-
-{
-  "name":"GALEB_JENKINS_\'${RANDOM}\'",
-  "durationTimeMillis":10000,
-  "project":"\'${GROU_PROJECT}\'",
-  "tags":["galebapi"],
-  "notify":["\'${GROU_NOTIFY}\'"],
-  "properties": {
-    "requests": [
-      {
-        "order": 1,
-        "uri": "http://\'${GALEB_KRATOS}\'/info"
-
-      }
-    ],
-    "numConn": 1,
-    "parallelLoaders": 1,
-    "followRedirect": true,
-    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-  }
-}\' ${ENDPOINT_GROU}/tests'''
+            sh '#'
           }
         }
         stage('Test ROUTER') {
           steps {
-            sh '''#!/bin/bash
-
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
-
-{
-  "name":"GALEB_JENKINS_\'${RANDOM}\'",
-  "durationTimeMillis":10000,
-  "project":"\'${GROU_PROJECT}\'",
-  "tags":["galebapi"],
-  "notify":["\'${GROU_NOTIFY}\'"],
-  "properties": {
-    "requests": [
-      {
-        "order": 1,
-        "uri": "http://\'${GALEB_ROUTER}\':8000/info"
-
-      }
-    ],
-    "numConn": 1,
-    "parallelLoaders": 1,
-    "followRedirect": true,
-    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-  }
-}\' ${ENDPOINT_GROU}/tests'''
+            sh '#'
           }
         }
         stage('Test HEALTH') {
           steps {
-            sh '''#!/bin/bash
-
-TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-
-curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d\'
-
-{
-  "name":"GALEB_JENKINS_\'${RANDOM}\'",
-  "durationTimeMillis":10000,
-  "project":"\'${GROU_PROJECT}\'",
-  "tags":["galebapi"],
-  "notify":["\'${GROU_NOTIFY}\'"],
-  "properties": {
-    "requests": [
-      {
-        "order": 1,
-        "uri": "http://\'${GALEB_HEALTH}\':8000/info"
-
-      }
-    ],
-    "numConn": 1,
-    "parallelLoaders": 1,
-    "followRedirect": true,
-    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-  }
-}\' ${ENDPOINT_GROU}/tests'''
+            sh '#'
           }
         }
       }

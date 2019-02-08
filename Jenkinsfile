@@ -247,7 +247,18 @@ done'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8080 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ] && [ "${TEST_STATUS}" != "EMPTY" ] && [ "${TEST_STATUS}" != "OUTDATED" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __ping__" $GALEB_ROUTER:8080/info 2>1)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start HEALTH') {

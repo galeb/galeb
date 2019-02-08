@@ -191,7 +191,18 @@ flyway:migrate -Dflyway.user=$GALEB_DB_USER -Dflyway.password=$GALEB_DB_PASS -Df
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_API:8000/info 2>1 | jq -r .healthy)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start LEGBA') {
@@ -199,7 +210,17 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_LEGBA:8000/info 2>1 | jq -r .healthy)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start KRATOS') {
@@ -207,7 +228,18 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_KRATOS:8000/info 2>1 | jq -r .health)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start ROUTER') {
@@ -215,7 +247,18 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_ROUTER}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8080 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ] && [ "${TEST_STATUS}" != "EMPTY" ] && [ "${TEST_STATUS}" != "OUTDATED" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __ping__" $GALEB_ROUTER:8080/info 2>1)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start HEALTH') {
@@ -243,11 +286,9 @@ fi
 done'''
       }
     }
-    stage('Performance Tests') {
-      parallel {
-        stage('Test API') {
-          steps {
-            sh '''#!/bin/bash
+    stage('Test API') {
+      steps {
+        sh '''#!/bin/bash
 
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .token)"
@@ -301,59 +342,53 @@ GALEB_RULE_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X P
 echo $GALEB_RULE_ID
 
 
+GALEB_VIRTUALHOST_GROUP_URL=$(curl --noproxy \'*\' http://${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} -u admin:admin | jq -r ._links.virtualhostgroup.href)
+echo $GALEB_VIRTUALHOST_GROUP_URL
+GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u admin:admin | jq -r ._links.self.href)
+
+echo $GALEB_VIRTUALHOST_GROUP
+#RULE ORDERED 
+GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+" -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
+echo $GALEB_RULEORDERED_ID
+
 # GET METHOD
-# for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
-for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json); do
+ for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+#for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json); do
 
-JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID,")
-echo "$JSON"
+    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULE_ORDERED_ID,$GALEB_RULE_ORDERED_ID,")
+    echo "$JSON"
+    
+    RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+    echo $RESULT_GROU
+    
+    TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+    TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+    echo $TEST_STATUS
+    echo $TEST_URL
+    
+    while [ "${TEST_STATUS}" != "OK" ]
+    do
+      TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
+      echo $TEST_STATUS
+      sleep 5
+    done
+    
+    # curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
+    
+    #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
-RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-echo $RESULT_GROU
-sleep 60
-
-# curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
-
-#curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
-
-done
-'''
-          }
-        }
-        stage('Test LEGBA') {
-          steps {
-            sh '''#!/bin/bash
-
-#TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-#JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g")
-
-#echo "$JSON"
-
-#curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
-
-#RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
-
-#RESULT_STATUS=$($RESULT_GROU | jq .)
-
-#echo $RESULT_STATUS'''
-          }
-        }
-        stage('Test KRATOS') {
-          steps {
-            sh '#'
-          }
-        }
-        stage('Test ROUTER') {
-          steps {
-            sh '#'
-          }
-        }
-        stage('Test HEALTH') {
-          steps {
-            sh '#'
-          }
-        }
+done'''
+      }
+    }
+    stage('Test Legba') {
+      steps {
+        sh '#bash'
+      }
+    }
+    stage('Test Router') {
+      steps {
+        sh '#shell'
       }
     }
   }

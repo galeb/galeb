@@ -6,21 +6,7 @@
     "notify":["GROU_NOTIFY"],
     "properties": {
       "requests": [
-        {
-            "order": 1,
-            "uri": "http://GALEB_API:8000/ruleordered",
-            "method":"POST",
-            "headers": {
-                "content-type":"application/json",
-                "authorization":"Basic TOKEN_API"
-            },
-            "body": "{
-                \"rule\":\"http://GALEB_API:8000/rule/1\",
-                \"environment\":\"http://GALEB_API:8000/environment/1\",
-                \"virtualhostgroup\":\"http://GALEB_API:8000/virtualhostgroup/1\",
-                \"order\":3
-            }"
-        }
+        REQUEST
       ],
       "numConn": 1,
       "parallelLoaders": 1,

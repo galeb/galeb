@@ -6,22 +6,7 @@
     "notify":["GROU_NOTIFY"],
     "properties": {
       "requests": [
-        {
-            "order": 1,
-            "uri": "http://GALEB_API:8000/pool",
-            "method":"POST",
-            "headers": {
-                "content-type":"application/json",
-                "authorization":"Basic TOKEN_API"
-            },
-            "body": "{
-                \"name\":\"test-pool-RANDOM\",
-                \"project\":\"http://GALEB_API:8000/project/1\",
-                \"environment\":\"http://GALEB_API:8000/environment/1\",
-                \"balancepolicy\":\"http://GALEB_API:8000/balancepolicy/1\",
-                \"hc_tcp_only\":true
-            }"
-        }
+        REQUEST
       ],
       "numConn": 1,
       "parallelLoaders": 1,

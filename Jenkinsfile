@@ -348,9 +348,9 @@ GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u
 
 echo $GALEB_VIRTUALHOST_GROUP
 #RULE ORDERED 
-GALEB_RULE_ORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
 " -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
-echo $GALEB_RULE_ORDERED_ID
+echo $GALEB_RULEORDERED_ID
 
 # GET METHOD
  for file in $(ls $WORKSPACE/jenkins/api/*get.json); do

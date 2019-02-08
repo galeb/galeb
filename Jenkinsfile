@@ -191,7 +191,18 @@ flyway:migrate -Dflyway.user=$GALEB_DB_USER -Dflyway.password=$GALEB_DB_PASS -Df
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_API}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_API:8000/info 2>1 | jq -r .healthy)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start LEGBA') {
@@ -199,7 +210,17 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_LEGBA}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_LEGBA:8000/info 2>1 | jq -r .healthy)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start KRATOS') {
@@ -207,7 +228,18 @@ $myssh "/etc/init.d/galeb restart"'''
             sh '''#!/bin/bash
 
 myssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_KRATOS}"
-$myssh "/etc/init.d/galeb restart"'''
+$myssh "/etc/init.d/galeb restart"
+
+# Verifing if port 8000 is open
+TEST_STATUS="PENDING"
+echo $TEST_STATUS
+
+while [ "${TEST_STATUS}" != "WORKING" ]
+do
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_KRATOS:8000/info 2>1 | jq -r .healthy)
+    echo $TEST_STATUS
+    sleep 5
+done'''
           }
         }
         stage('Start ROUTER') {

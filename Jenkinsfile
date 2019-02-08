@@ -290,104 +290,122 @@ done'''
       steps {
         sh '''#!/bin/bash
 
+# GET TOKEN GROU
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+echo "Token GROU: ${TOKEN}"
+
+# GET TOKEN GALEB API
 TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .token)"
+echo "Token Galeb API: ${TOKEN_API}"
 
-#BP and Environment created default ID: 1
+# CREATE BALANCEPOLICY
 GALEB_BP_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"RoundRobin\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
-echo $GALEB_BP_ID
+echo "BalancePolicy ID: ${GALEB_BP_ID}"
 
+# CREATE ENVIRONMENT
 GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"BE-HOMOLOG\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
-echo $GALEB_ENVIRONMENT_ID
+echo "Environment ID: ${GALEB_ENVIRONMENT_ID}"
 
+# CREATE TEAM
 GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
-echo $GALEB_TEAM_ID
+echo "Team ID: ${GALEB_TEAM_ID}"
 
-#PROJECT OK
+# CREATE PROJECT
 GALEB_PROJECT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"project-$RANDOM\\",\\"teams\\" : [\\"http://${GALEB_API}/team/${GALEB_TEAM_ID}\\"]}" -u admin:admin ${GALEB_API}:8000/project | jq -r .id)
-echo $GALEB_PROJECT_ID
+echo "Project ID: ${GALEB_PROJECT_ID}"
 
-#POOL OK
+# CREATE POOL
 GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"pool-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"environment\\" : \\"http://${GALEB_API}/environment/1\\",\\"balancepolicy\\" : \\"http://${GALEB_API}/balancepolicy/1\\",\\"hc_tcp_only\\" : \\"true\\"}" -u admin:admin ${GALEB_API}:8000/pool | jq -r .id)
-echo $GALEB_POOL_ID
+echo "Pool ID: ${GALEB_POOL_ID}"
 
-#TARGET OK
+# CREATE TARGET
 GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"target-$RANDOM\\",\\"pool\\" : \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target | jq -r .id)
-echo $GALEB_TARGET_ID
+echo "Target ID: ${GALEB_TARGET_ID}"
 
-#VIRTUALHOST OK
+# CREATE VIRTUALHOST
 GALEB_VIRTUALHOST_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"virtualhost-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"environments\\" : [\\"http://${GALEB_API}/environment/1\\"]}" -u admin:admin ${GALEB_API}:8000/virtualhost | jq -r .id)
-echo $GALEB_VIRTUALHOST_ID
+echo "VirtualHost ID: ${GALEB_VIRTUALHOST_ID}"
 
-#RULE OK
+# CREATE RULE
 GALEB_RULE_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"rule-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"pools\\" : [\\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"],\\"matching\\" : \\"/\\" }" -u admin:admin ${GALEB_API}:8000/rule | jq -r .id)
-echo $GALEB_RULE_ID
+echo "Rule ID: ${GALEB_RULE_ID}"
 
-
+# GET VIRTUALHOST GROUP URL
 GALEB_VIRTUALHOST_GROUP_URL=$(curl --noproxy \'*\' http://${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} -u admin:admin | jq -r ._links.virtualhostgroup.href)
-echo $GALEB_VIRTUALHOST_GROUP_URL
-GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u admin:admin | jq -r ._links.self.href)
 
-echo $GALEB_VIRTUALHOST_GROUP
-#RULE ORDERED 
+# GET VIRTUALHOST GROUP URL
+GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u admin:admin | jq -r ._links.self.href)
+echo "VirtualHost Group URL: ${GALEB_VIRTUALHOST_GROUP}"
+
+# CREATE RULE ORDERED 
 GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
 " -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
-echo $GALEB_RULEORDERED_ID
+echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
+
+echo 
+echo "========================================="
+echo "               POST METHOD"
+echo
 
 # POST METHOD
 for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
   FILE_REQUEST=$(echo $file | sed "s,\\.json,\\_custom\\_request\\.json,")
   REQUEST=""
-  for ((i=1;i<=10000;i++)); 
+  for ((i=1;i<=100;i++)); 
   do 
      NEW_REQUEST=$(cat $FILE_REQUEST | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
      REQUEST="${REQUEST},${NEW_REQUEST}"
   done
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | "s,REQUEST,$REQUEST,")
-  echo "$JSON"
 
   RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+
+  echo "Result GROU:"
+  echo $RESULT_GROU | jq -r .
   
-  echo $RESULT_GROU
   TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
   TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
   
-  echo $TEST_URL
-  echo $TEST_STATUS
+  echo "Grou Test URL: ${TEST_URL}"
+  echo "Grou Test STATUS: ${TEST_STATUS}"
   
   while [ "${TEST_STATUS}" != "OK" ]
   do
     TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
-    echo $TEST_STATUS
+    echo "Grou Test STATUS: ${TEST_STATUS}"
     sleep 5
   done
 done
+
+echo 
+echo "========================================="
+echo "               GET METHOD"
+echo
 
 # GET METHOD
 for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 
     JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULEORDERED_ID,$GALEB_RULEORDERED_ID,")
-    echo "$JSON"
+    echo "Grou JSON:"
+    echo $JSON | jq -r .
     
     RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-    echo $RESULT_GROU
+
+    echo "Result GROU:"
+    echo $RESULT_GROU | jq -r .
     
     TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
     TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
-    echo $TEST_STATUS
-    echo $TEST_URL
+
+    echo "Grou Test URL: ${TEST_URL}"
+    echo "Grou Test STATUS: ${TEST_STATUS}"
     
     while [ "${TEST_STATUS}" != "OK" ]
     do
       TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
-      echo $TEST_STATUS
+      echo "Grou Test STATUS: ${TEST_STATUS}"
       sleep 5
     done
-    
-    # curl --noproxy \'*\' -H\'content-type:application/json\' -X GET -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
-    
-    #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
-
 done'''
       }
     }

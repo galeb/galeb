@@ -243,11 +243,9 @@ fi
 done'''
       }
     }
-    stage('Performance Tests') {
-      parallel {
-        stage('Test API') {
-          steps {
-            sh '''#!/bin/bash
+    stage('Test API') {
+      steps {
+        sh '''#!/bin/bash
 
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .token)"
@@ -328,42 +326,16 @@ for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json
     #curl --noproxy \'*\' -H\'content-type:application/json\' -X DELETE - -u admin:admin ${GALEB_API}:8000/team/${GALEB_TEAM_ID} | jq -r .
 
 done'''
-          }
-        }
-        stage('Test LEGBA') {
-          steps {
-            sh '''#!/bin/bash
-
-#TOKEN="$(curl --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
-
-#JSON=$(cat $WORKSPACE/jenkins/galeb_legba.json | sed "s,RANDOM,$RANDOM," | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g")
-
-#echo "$JSON"
-
-#curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests
-
-#RESULT_GROU=$(curl -v -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -d"$JSON" ${ENDPOINT_GROU}/tests)
-
-#RESULT_STATUS=$($RESULT_GROU | jq .)
-
-#echo $RESULT_STATUS'''
-          }
-        }
-        stage('Test KRATOS') {
-          steps {
-            sh '#'
-          }
-        }
-        stage('Test ROUTER') {
-          steps {
-            sh '#'
-          }
-        }
-        stage('Test HEALTH') {
-          steps {
-            sh '#'
-          }
-        }
+      }
+    }
+    stage('Test Legba') {
+      steps {
+        sh '#bash'
+      }
+    }
+    stage('Test Router') {
+      steps {
+        sh '#shell'
       }
     }
   }

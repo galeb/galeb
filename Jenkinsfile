@@ -299,11 +299,11 @@ TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token |
 echo "Token Galeb API: ${TOKEN_API}"
 
 # CREATE BALANCEPOLICY
-GALEB_BP_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"RoundRobin\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
+GALEB_BP_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"RoundRobin\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
 echo "BalancePolicy ID: ${GALEB_BP_ID}"
 
 # CREATE ENVIRONMENT
-GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"BE-HOMOLOG\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
+GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"BE-HOMOLOG\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
 echo "Environment ID: ${GALEB_ENVIRONMENT_ID}"
 
 # CREATE TEAM
@@ -327,7 +327,7 @@ GALEB_VIRTUALHOST_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' 
 echo "VirtualHost ID: ${GALEB_VIRTUALHOST_ID}"
 
 # CREATE RULE
-GALEB_RULE_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"rule-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"pools\\" : [\\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"],\\"matching\\" : \\"/\\" }" -u admin:admin ${GALEB_API}:8000/rule | jq -r .id)
+GALEB_RULE_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"rule-$RANDOM\\",\\"project\\" : \\"http://${GALEB_API}/project/${GALEB_PROJECT_ID}\\",\\"pools\\" : [\\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"],\\"matching\\" : \\"/\\" }" -u admin:admin ${GALEB_API}:8000/rule | jq -r .id)
 echo "Rule ID: ${GALEB_RULE_ID}"
 
 # GET VIRTUALHOST GROUP URL
@@ -338,7 +338,7 @@ GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u
 echo "VirtualHost Group URL: ${GALEB_VIRTUALHOST_GROUP}"
 
 # CREATE RULE ORDERED 
-GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
 " -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
 echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
 
@@ -351,7 +351,7 @@ echo
 for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
   FILE_REQUEST=$(echo $file | sed "s,\\.json,\\_custom\\_request\\.json,")
   REQUEST=""
-  for ((i=1;i<=100;i++)); 
+  for ((i=1;i<=10;i++)); 
   do 
      NEW_REQUEST=$(cat $FILE_REQUEST | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
      REQUEST="${REQUEST},${NEW_REQUEST}"

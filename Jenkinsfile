@@ -236,7 +236,7 @@ echo $TEST_STATUS
 
 while [ "${TEST_STATUS}" != "WORKING" ]
 do
-    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_KRATOS:8000/info 2>1 | jq -r .healthy)
+    TEST_STATUS=$(curl --noproxy \'*\' -H"Host: __info__" $GALEB_KRATOS:8000/info 2>1 | jq -r .health)
     echo $TEST_STATUS
     sleep 5
 done'''

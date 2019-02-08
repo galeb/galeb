@@ -293,30 +293,12 @@ done'''
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 TOKEN_API="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token | jq -r .token)"
 
-# POST METHOD
-# for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
-#   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
-#   #echo "$JSON"
-
-#   RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-
-#   #echo $RESULT_GROU
-#   TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
-#   TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
-  
-#   while [ "${TEST_STATUS}" != "OK" ]
-#   do
-#     TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
-#     echo $TEST_STATUS
-#     sleep 5
-#   done
-  
-# done
-
 #BP and Environment created default ID: 1
-# GALEB_BP_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"bp-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
-# GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"environment-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
+GALEB_BP_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"RoundRobin\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy | jq -r .id)
+echo $GALEB_BP_ID
 
+GALEB_ENVIRONMENT_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"BE-HOMOLOG\\"}" -u admin:admin ${GALEB_API}:8000/environment | jq -r .id)
+echo $GALEB_ENVIRONMENT_ID
 
 GALEB_TEAM_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"team-$RANDOM\\"}" -u admin:admin ${GALEB_API}:8000/team | jq -r .id)
 echo $GALEB_TEAM_ID
@@ -352,11 +334,39 @@ GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json
 " -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
 echo $GALEB_RULEORDERED_ID
 
-# GET METHOD
- for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
-#for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json); do
+# POST METHOD
+for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
+  FILE_REQUEST=$(echo $file | sed "s,\\.json,\\_custom\\_request\\.json,")
+  REQUEST=""
+  for ((i=1;i<=10000;i++)); 
+  do 
+     NEW_REQUEST=$(cat test-post.json | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
+     REQUEST="${REQUEST},${NEW_REQUEST}"
+  done
+  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | "s,REQUEST,$REQUEST,")
+  echo "$JSON"
 
-    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULE_ORDERED_ID,$GALEB_RULE_ORDERED_ID,")
+  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+  
+  echo $RESULT_GROU
+  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+  
+  echo $TEST_URL
+  echo $TEST_STATUS
+  
+  while [ "${TEST_STATUS}" != "OK" ]
+  do
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
+    echo $TEST_STATUS
+    sleep 5
+  done
+done
+
+# GET METHOD
+for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
+
+    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULEORDERED_ID,$GALEB_RULEORDERED_ID,")
     echo "$JSON"
     
     RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)

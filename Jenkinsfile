@@ -340,7 +340,7 @@ for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
   REQUEST=""
   for ((i=1;i<=10000;i++)); 
   do 
-     NEW_REQUEST=$(cat test-post.json | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
+     NEW_REQUEST=$(cat $FILE_REQUEST | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
      REQUEST="${REQUEST},${NEW_REQUEST}"
   done
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | "s,REQUEST,$REQUEST,")

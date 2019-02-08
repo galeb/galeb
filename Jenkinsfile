@@ -342,11 +342,21 @@ GALEB_RULE_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X P
 echo $GALEB_RULE_ID
 
 
+
+
+GALEB_VIRTUALHOST_GROUP=$(curl http://${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} -u admin:admin | jq -r ._links.virtualhostgroup.href)
+echo $GALEB_VIRTUALHOST_GROUP
+#RULE ORDERED 
+GALEB_RULE_ORDERED_ID=$(curl --noproxy \'*\' -v -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+" -u admin:admin ${GALEB_API}:8000/ruleordered | jq -r .id)
+echo $GALEB_RULE_ORDERED_ID
+
+
 # GET METHOD
 # for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
 for file in $(ls /var/jenkins_home/workspace/galeb_jenkins/jenkins/api/*get.json); do
 
-    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID,")
+    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,YWRtaW46YWRtaW4=,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID, | sed "s,GALEB_RULE_ORDERED_ID,$GALEB_RULE_ORDERED_ID,")
     echo "$JSON"
     
     RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)

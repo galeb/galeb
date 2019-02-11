@@ -366,9 +366,11 @@ for file in $(ls $WORKSPACE/jenkins/api/*post.json); do
   fi
 
   echo "Grou JSON:"
-  echo $JSON | jq -r .
+  echo "large file"
 
-  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+  echo $JSON | jq -c . > /tmp/JENKINS_TMP_FILE.json
+
+  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d@/tmp/JENKINS_TMP_FILE.json ${ENDPOINT_GROU}/tests)
 
   echo "Result GROU:"
   echo $RESULT_GROU | jq -r .

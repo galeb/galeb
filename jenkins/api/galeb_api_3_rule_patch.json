@@ -1,5 +1,5 @@
 {
-    "name":"GALEB_JENKINS_API_RULE_POST_RANDOM",
+    "name":"GALEB_JENKINS_API_RULE_PATCH_RANDOM",
     "durationTimeMillis":60000,
     "project":"GROU_PROJECT",
     "tags":["galebapi"],
@@ -8,17 +8,14 @@
       "requests": [
         {
           "order": 1,
-          "uri": "http://GALEB_API:8000/rule",
+          "uri": "http://GALEB_API:8000/rule/GALEB_RULE_ID",
           "method":"PATCH",
           "headers": {
               "content-type":"application/json",
               "authorization":"Basic TOKEN_API"
           },
           "body": "{
-              \"name\":\"test-post-rule-RANDOM\",
-              \"project\":\"http://GALEB_API:8000/project/1\",
-              \"pools\":[\"http://GALEB_API:8000/pool/1\"],
-              \"matching\":\"/\"
+              \"name\":\"test-post-rule-RANDOM\"
           }"
       }
       ],

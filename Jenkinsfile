@@ -301,7 +301,7 @@ TOKEN_GALEB="$(curl --noproxy \'*\' -XGET -u admin:admin ${GALEB_API}:8000/token
 echo "Token Galeb API: ${TOKEN_GALEB}"
 
 # CREATE BASE64 CREDENTIALS TO GALEB API
-TOKEN_API="$(echo -n admin:${TOKEN_GALEB} | base64)"
+TOKEN_API="$(echo -n admin:${TOKEN_GALEB} | base64 -w 0)"
 echo "Base64 GALEB API: ${TOKEN_API}"
 
 # CREATE BALANCEPOLICY

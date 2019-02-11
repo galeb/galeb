@@ -408,7 +408,42 @@ for file in $(ls $WORKSPACE/jenkins/api/*get.json); do
       echo "Grou Test STATUS: ${TEST_STATUS}"
       sleep 5
     done
-done'''
+done
+
+echo 
+echo "========================================="
+echo "               POST METHOD"
+echo
+
+# PATCH METHOD
+#for file in $(ls $WORKSPACE/jenkins/api/*patch.json); do
+#  FILE_REQUEST=$(echo $file | sed "s,\\.json,\\_custom\\_request\\.json,")
+#  REQUEST=""
+#  for ((i=1;i<=10;i++)); 
+#  do 
+#     NEW_REQUEST=$(cat $FILE_REQUEST | tr -d \'\\n\' | sed "s,RANDOM,$i,g" | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,")
+#     REQUEST="${REQUEST},${NEW_REQUEST}"
+#  done
+#  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | "s,REQUEST,$REQUEST,")
+#
+#  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+
+#  echo "Result GROU:"
+#  echo $RESULT_GROU | jq -r .
+  
+#  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+#  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+  
+# echo "Grou Test URL: ${TEST_URL}"
+# echo "Grou Test STATUS: ${TEST_STATUS}"
+  
+# while [ "${TEST_STATUS}" != "OK" ]
+#  do
+#    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
+#    echo "Grou Test STATUS: ${TEST_STATUS}"
+#    sleep 5
+#  done
+#done'''
       }
     }
     stage('Test Legba') {

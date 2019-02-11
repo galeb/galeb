@@ -292,35 +292,6 @@ done'''
       steps {
         sh '''#!/bin/bash
 
-sendtest() {
-  METHOD=$1
-
-  for file in $(ls $WORKSPACE/jenkins/api/*$METHOD.json); do
-    
-    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULEORDERED_ID,$GALEB_RULEORDERED_ID,")
-    echo "Grou JSON:"
-    echo $JSON | jq -r .
-    
-    RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
-    
-    echo "Result GROU:"
-    echo $RESULT_GROU | jq -r .
-    
-    TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
-    TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
-    
-    echo "Grou Test URL: ${TEST_URL}"
-    echo "Grou Test STATUS: ${TEST_STATUS}"
-    
-    while [ "${TEST_STATUS}" != "OK" ]
-    do
-      TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
-      echo "Grou Test STATUS: ${TEST_STATUS}"
-      sleep 5
-    done
-  done
-}
-
 # GET TOKEN GROU
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 echo "Token GROU: ${TOKEN}"
@@ -331,7 +302,7 @@ echo "Token Galeb API: ${TOKEN_GALEB}"
 
 # CREATE BASE64 CREDENTIALS TO GALEB API
 TOKEN_API="$(echo -n admin:${TOKEN_GALEB} | base64)"
-echo "Base64 GALEB API: ${GALEB_API}"
+echo "Base64 GALEB API: ${TOKEN_API}"
 
 # CREATE BALANCEPOLICY
 GALEB_BP_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\" : \\"RoundRobin\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy 2>1 | jq -r .id)
@@ -372,12 +343,50 @@ GALEB_VIRTUALHOST_GROUP_URL=$(curl --noproxy \'*\' http://${GALEB_API}:8000/virt
 GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u admin:admin 2>1 | jq -r ._links.self.href)
 echo "VirtualHost Group URL: ${GALEB_VIRTUALHOST_GROUP}"
 
-# CREATE RULE ORDERED 
+# CREATE RULE ORDERED
 GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"rule\\":\\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\",\\"environment\\":\\"http://GALEB_API:8000/environment/1\\",\\"virtualhostgroup\\":\\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
 " -u admin:admin ${GALEB_API}:8000/ruleordered 2>1 | jq -r .id)
 echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
 
-echo 
+
+sendtest() {
+  METHOD=$1
+
+  for file in $(ls $WORKSPACE/jenkins/api/*$METHOD.json); do
+
+    JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_API,$GALEB_API,g" | sed "s,TOKEN_API,$TOKEN_API,g" | sed "s,GALEB_TEAM_ID,$GALEB_TEAM_ID," | sed "s,GALEB_PROJECT_ID,$GALEB_PROJECT_ID,"| sed "s,GALEB_POOL_ID,$GALEB_POOL_ID," | sed "s,GALEB_VIRTUALHOST_ID,$GALEB_VIRTUALHOST_ID,"| sed "s,GALEB_RULE_ID,$GALEB_RULE_ID," | sed "s,GALEB_TARGET_ID,$GALEB_TARGET_ID," | sed "s,GALEB_RULEORDERED_ID,$GALEB_RULEORDERED_ID,")
+
+    if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
+      echo "Parsed JSON successfully!"
+    else
+      echo "Failed to parse JSON! Stop "
+      break
+    fi
+
+    echo "Grou JSON:"
+    echo $JSON | jq -r .
+
+    RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d"$JSON" ${ENDPOINT_GROU}/tests)
+
+    echo "Result GROU:"
+    echo $RESULT_GROU | jq -r .
+
+    TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+    TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+
+    echo "Grou Test URL: ${TEST_URL}"
+    echo "Grou Test STATUS: ${TEST_STATUS}"
+
+    while [ "${TEST_STATUS}" != "OK" ]
+    do
+      TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL | jq -r .status)
+      echo "Grou Test STATUS: ${TEST_STATUS}"
+      sleep 5
+    done
+  done
+}
+
+echo
 echo "========================================="
 echo "               POST METHOD"
 echo
@@ -385,7 +394,7 @@ echo
 # POST METHOD
 sendtest post
 
-echo 
+echo
 echo "========================================="
 echo "               GET METHOD"
 echo
@@ -393,7 +402,7 @@ echo
 # GET METHOD
 sendtest get
 
-echo 
+echo
 echo "========================================="
 echo "               PATCH METHOD"
 echo
@@ -401,13 +410,15 @@ echo
 # PATCH METHOD
 sendtest patch
 
-echo 
+echo
 echo "========================================="
 echo "               PUT METHOD"
 echo
 
 # PUT METHOD
-sendtest put'''
+sendtest put
+
+#EOF'''
       }
     }
     stage('Test Legba') {

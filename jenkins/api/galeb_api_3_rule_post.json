@@ -1,6 +1,6 @@
 {
     "name":"GALEB_JENKINS_API_RULE_POST_RANDOM",
-    "durationTimeMillis":60000,
+    "durationTimeMillis":30000,
     "project":"GROU_PROJECT",
     "tags":["galebapi"],
     "notify":["GROU_NOTIFY"],

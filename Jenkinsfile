@@ -302,6 +302,7 @@ sendtest () {
 
     if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
       echo
+      echo
       echo "Parsed JSON (${file}) successfully!"
       echo
     else
@@ -365,7 +366,7 @@ GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST
 echo "Pool ID: ${GALEB_POOL_ID}"
 
 # CREATE TARGET
-GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TARGET}:$RANDOM\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+GALEB_TARGET_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:$RANDOM\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
 echo "Target ID: ${GALEB_TARGET_ID}"
 
 # CREATE VIRTUALHOST
@@ -454,15 +455,15 @@ GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST
 echo "Pool ID: ${GALEB_POOL_ID}"
 
 # CREATE TARGET 1
-GALEB_TARGET1_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TARGET}:8080\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+GALEB_TARGET1_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8080\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
 echo "Target 1 ID: ${GALEB_TARGET1_ID}"
 
 # CREATE TARGET 2
-GALEB_TARGET2_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TARGET}:8081\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+GALEB_TARGET2_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8081\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
 echo "Target 2 ID: ${GALEB_TARGET2_ID}"
 
 # CREATE TARGET 3
-GALEB_TARGET3_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TARGET}:8082\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+GALEB_TARGET3_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8082\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
 echo "Target 3 ID: ${GALEB_TARGET3_ID}"
 
 # CREATE VIRTUALHOST

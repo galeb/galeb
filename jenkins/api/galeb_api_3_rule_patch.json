@@ -15,7 +15,7 @@
               "authorization":"Basic TOKEN_API"
           },
           "body": "{
-              \"name\":\"test-post-rule-RANDOM\"
+              \"name\":\"test-patch-rule-RANDOM\"
           }"
       }
       ],

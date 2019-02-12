@@ -15,9 +15,9 @@
               "authorization":"Basic TOKEN_API"
           },
           "body": "{
-              \"name\":\"test-post-virtualhost-RANDOM\",
+              \"name\":\"test-put-virtualhost-RANDOM\",
               \"project\":\"http://GALEB_API:8000/project/6\",
-              \"environments\":[\"http://GALEB_API:8000/environment/1\"],
+              \"environments\":[\"http://GALEB_API:8000/environment/1\"]
           }"
       }
       ],

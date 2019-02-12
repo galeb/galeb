@@ -15,7 +15,7 @@
               "authorization":"Basic TOKEN_API"
           },
           "body": "{
-              \"name\":\"test-post-virtualhost-RANDOM\"
+              \"name\":\"test-patch-virtualhost-RANDOM\"
           }"
       }
       ],

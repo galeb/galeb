@@ -15,7 +15,7 @@
               "authorization":"Basic TOKEN_API"
           },
           "body": "{
-              \"name\":\"test-post-rule-RANDOM\",
+              \"name\":\"test-put-rule-RANDOM\",
               \"project\":\"http://GALEB_API:8000/project/1\",
               \"pools\":[\"http://GALEB_API:8000/pool/1\"],
               \"matching\":\"/\"

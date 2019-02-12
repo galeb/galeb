@@ -1,24 +1,24 @@
 {
-    "name":"GALEB_JENKINS_API_POOL_GET_RANDOM",
-    "durationTimeMillis":30000,
-    "project":"GROU_PROJECT",
-    "tags":["galebapi"],
-    "notify":["GROU_NOTIFY"],
-    "properties": {
-      "requests": [
-        {
-            "order": 1,
-            "uri": "http://GALEB_API:8000/pool/GALEB_POOL_ID",
-            "method":"GET",
-            "headers": {
-                "content-type":"application/json",
-                "authorization":"Basic TOKEN_API"
-            }
+  "name":"GALEB_JENKINS_API_POOL_GET_RANDOM",
+  "durationTimeMillis":30000,
+  "project":"GROU_PROJECT",
+  "tags":["galeb","api","pool","get"],
+  "notify":["GROU_NOTIFY"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "http://GALEB_API:8000/pool/GALEB_POOL_ID",
+        "method":"GET",
+        "headers": {
+          "content-type":"application/json",
+          "authorization":"Basic TOKEN_API"
         }
-      ],
-      "numConn": 30,
-      "parallelLoaders": 1,
-      "followRedirect": true,
-      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-    }
+      }
+    ],
+    "numConn": 30,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
 }

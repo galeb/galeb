@@ -1,30 +1,30 @@
 {
-    "name":"GALEB_JENKINS_API_RULEORDERED_PUT_RANDOM",
-    "durationTimeMillis":60000,
-    "project":"GROU_PROJECT",
-    "tags":["galebapi"],
-    "notify":["GROU_NOTIFY"],
-    "properties": {
-      "requests": [
-        {
-          "order": 1,
-          "uri": "http://GALEB_API:8000/ruleordered/GALEB_RULEORDERED_ID",
-          "method":"PUT",
-          "headers": {
-              "content-type":"application/json",
-              "authorization":"Basic TOKEN_API"
-          },
-          "body": "{
-              \"rule\":\"http://GALEB_API:8000/rule/1\",
-              \"environment\":\"http://GALEB_API:8000/environment/1\",
-              \"virtualhostgroup\":\"http://GALEB_API:8000/virtualhostgroup/1\",
-              \"order\":3
-          }"
+  "name":"GALEB_JENKINS_API_RULEORDERED_PUT_RANDOM",
+  "durationTimeMillis":30000,
+  "project":"GROU_PROJECT",
+  "tags":["galeb","api","ruleordered","put"],
+  "notify":["GROU_NOTIFY"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "http://GALEB_API:8000/ruleordered/GALEB_RULEORDERED_ID",
+        "method":"PUT",
+        "headers": {
+          "content-type":"application/json",
+          "authorization":"Basic TOKEN_API"
+        },
+        "body": "{
+        \"rule\":\"http://GALEB_API:8000/rule/1\",
+        \"environment\":\"http://GALEB_API:8000/environment/1\",
+        \"virtualhostgroup\":\"http://GALEB_API:8000/virtualhostgroup/1\",
+        \"order\":3
+      }"
       }
-      ],
-      "numConn": 1,
-      "parallelLoaders": 1,
-      "followRedirect": true,
-      "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
-    }
+    ],
+    "numConn": 30,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
 }

@@ -305,6 +305,7 @@ sendtest () {
       echo "Parsed JSON (${file}) successfully!"
       echo
     else
+      echo
       echo "Failed to parse JSON! Stopping.."
       break
     fi
@@ -387,26 +388,34 @@ echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
 
 # POST METHOD
 echo
+echo
 echo "========================================="
 echo "               POST METHOD"
+echo
 sendtest post
 
 # GET METHOD
 echo
+echo
 echo "========================================="
 echo "               GET METHOD"
+echo
 sendtest get
 
 # PATCH METHOD
 echo
+echo
 echo "========================================="
 echo "              PATCH METHOD"
+echo
 sendtest patch
 
 # PUT METHOD
 echo
+echo
 echo "========================================="
 echo "               PUT METHOD"
+echo
 sendtest put
 
 #EOF

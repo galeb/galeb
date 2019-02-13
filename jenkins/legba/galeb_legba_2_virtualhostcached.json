@@ -21,6 +21,6 @@
     "numConn": 30,
     "parallelLoaders": 1,
     "followRedirect": true,
-    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+    "monitTargets": "prometheus://GALEB_LEGBA:9100/metrics?key=GALEB_LEGBA"
   }
 }

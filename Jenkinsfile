@@ -427,7 +427,55 @@ sendtest put
     }
     stage('Test Legba') {
       steps {
-        sh '#bash'
+        sh '''#!/bin/bash
+
+# GET TOKEN GROU
+TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
+echo "Token GROU: ${TOKEN}"
+
+# SEND LEGBA TEST
+echo
+echo
+echo "=========================================="
+echo "              SEND LEGBA TEST"
+echo
+
+for file in $(ls $WORKSPACE/jenkins/legba/*.json); do
+
+  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_LEGBA,$GALEB_LEGBA,g" | sed "s,GALEB_ZONE,$GALEB_ZONE,g")
+
+  if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
+    echo
+    echo
+    echo "Parsed JSON (${file}) successfully!"
+    echo
+  else
+    echo
+    echo "Failed to parse JSON (${file})! Stopping.."
+    break
+  fi
+
+  echo $JSON | jq -c . > /tmp/JENKINS_LEGBA_TMP_FILE.json
+
+  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d@/tmp/JENKINS_LEGBA_TMP_FILE.json ${ENDPOINT_GROU}/tests 2>1)
+
+  rm -f /tmp/JENKINS_LEGBA_TMP_FILE.json
+
+  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+
+  echo "Grou Test URL: ${TEST_URL}"
+  echo "Grou Test STATUS: ${TEST_STATUS}"
+
+  while [ "${TEST_STATUS}" != "OK" ]
+  do
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL 2>1| jq -r .status)
+    echo "Grou Test STATUS: ${TEST_STATUS}"
+    sleep 5
+  done
+done
+
+#EOF'''
       }
     }
     stage('Test Router') {

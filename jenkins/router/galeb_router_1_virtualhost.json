@@ -2,13 +2,13 @@
   "name":"GALEB_JENKINS_ROUTER_VIRTUALHOST_RANDOM",
   "durationTimeMillis":30000,
   "project":"GROU_PROJECT",
-  "tags":["galebrouter"],
+  "tags":["galeb","router"],
   "notify":["GROU_NOTIFY"],
   "properties": {
     "requests": [
       {
         "order": 1,
-        "uri": "http://GALEB_ROUTER:8000/",
+        "uri": "http://GALEB_ROUTER:8080/",
         "method":"GET",
         "headers": {
           "Host":"virtualhost-test-jenkins"

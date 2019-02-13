@@ -1,0 +1,20 @@
+{
+  "name":"GALEB_JENKINS_LEGBA_ROUTERS_RANDOM",
+  "durationTimeMillis":30000,
+  "project":"GROU_PROJECT",
+  "tags":["galeb","legba","routers"],
+  "notify":["GROU_NOTIFY"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "http://GALEB_LEGBA:8000/routers"
+
+      }
+    ],
+    "numConn": 30,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets" : "zero://1.1.1.1:9100?key=1.1.1.1:8000"
+  }
+}

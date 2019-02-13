@@ -508,6 +508,7 @@ echo "=========================================="
 echo "              CHECKING SYNC"
 echo
 
+# CHECK SYNC TARGET
 for ((i=1;i<=3;i++))
 do
   TARGETIDNAME=\\$GALEB_TARGET${i}_ID
@@ -527,6 +528,66 @@ do
   done
   echo
 done
+
+# CHECK SYNC POOL
+echo "Pool ID: ${GALEB_POOL_ID}"
+
+POOL_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1 | jq -r .status[])
+
+echo "Pool Sync STATUS: ${POOL_STATUS}"
+
+while [ "${POOL_STATUS}" != "OK" ]
+do
+  POOL_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1 | jq -r .status[])
+  echo "Pool Sync STATUS: ${POOL_STATUS}"
+  sleep 5
+done
+echo
+
+# CHECK SYNC RULE
+echo "Rule ID: ${GALEB_RULE_ID}"
+
+RULE_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/rule/${GALEB_RULE_ID} 2>1 | jq -r .status[])
+
+echo "Rule Sync STATUS: ${RULE_STATUS}"
+
+while [ "${RULE_STATUS}" != "OK" ]
+do
+  RULE_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/rule/${GALEB_RULE_ID} 2>1 | jq -r .status[])
+  echo "Rule Sync STATUS: ${RULE_STATUS}"
+  sleep 5
+done
+echo
+
+# CHECK SYNC RULEORDERED
+echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
+
+RULEORDERED_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/ruleordered/${GALEB_RULEORDERED_ID} 2>1 | jq -r .status[])
+
+echo "RuleOrdered Sync STATUS: ${RULEORDERED_STATUS}"
+
+while [ "${RULEORDERED_STATUS}" != "OK" ]
+do
+  RULEORDERED_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/ruleordered/${GALEB_RULEORDERED_ID} 2>1 | jq -r .status[])
+  echo "RuleOrdered Sync STATUS: ${RULEORDERED_STATUS}"
+  sleep 5
+done
+echo
+
+# CHECK SYNC VIRTUALHOST
+echo "VirtualHost ID: ${GALEB_VIRTUALHOST_ID}"
+
+VIRUTLAHOST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} 2>1 | jq -r .status[])
+
+echo "VirtualHost Sync STATUS: ${VIRUTLAHOST_STATUS}"
+
+while [ "${VIRUTLAHOST_STATUS}" != "OK" ]
+do
+  VIRUTLAHOST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} 2>1 | jq -r .status[])
+  echo "VirtualHost Sync STATUS: ${VIRUTLAHOST_STATUS}"
+  sleep 5
+done
+echo
 
 # SEND ROUTER TEST
 echo
@@ -563,14 +624,13 @@ for file in $(ls $WORKSPACE/jenkins/router/*.json); do
 
   while [ "${TEST_STATUS}" != "OK" ]
   do
-    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL 2>1| jq -r .status)
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL 2>1 | jq -r .status)
     echo "Grou Test STATUS: ${TEST_STATUS}"
     sleep 5
   done
 done
 
-#EOF
-'''
+#EOF'''
       }
     }
   }

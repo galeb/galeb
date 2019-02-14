@@ -20,6 +20,6 @@
     "numConn": 30,
     "parallelLoaders": 1,
     "followRedirect": true,
-    "monitTargets": "prometheus://GALEB_API:9100/metrics?key=GALEB_API"
+    "monitTargets": "prometheus://GALEB_API:9100/metrics?key=GALEB_API,prometheus://GALEB_KRATOS:9100/metrics?key=KRATOS,prometheus://GALEB_HEALTH:9100/metrics?key=HEALTH"
   }
 }

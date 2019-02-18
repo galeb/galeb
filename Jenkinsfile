@@ -486,6 +486,22 @@ done
 TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD} ${ENDPOINT_GROU}/token/${GROU_PROJECT} | grep \'^x-auth-token:\' | awk \'{ print $2 }\')"
 echo "Token GROU: ${TOKEN}"
 
+# CREATE BALANCEPOLICY RANDOM
+GALEB_BP1_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"Random\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy 2>1 | jq -r .id)
+echo "BalancePolicy RANDOM ID: ${GALEB_BP1_ID}"
+
+# CREATE BALANCEPOLICY LEASTCONN
+GALEB_BP2_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"LeastConn\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy 2>1 | jq -r .id)
+echo "BalancePolicy LEASTCONN ID: ${GALEB_BP2_ID}"
+
+# CREATE BALANCEPOLICY HASHSOURCEIP
+GALEB_BP3_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"HashSourceIp\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy 2>1 | jq -r .id)
+echo "BalancePolicy HASHSOURCEIP ID: ${GALEB_BP3_ID}"
+
+# CREATE BALANCEPOLICY HASHURIPATH
+GALEB_BP4_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"HashUriPath\\"}" -u admin:admin ${GALEB_API}:8000/balancepolicy 2>1 | jq -r .id)
+echo "BalancePolicy HASHURIPATH ID: ${GALEB_BP4_ID}"
+
 # CREATE POOL
 GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"pool-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"environment\\": \\"http://${GALEB_API}/environment/1\\", \\"balancepolicy\\": \\"http://${GALEB_API}/balancepolicy/1\\", \\"hc_tcp_only\\": \\"false\\", \\"hc_http_method\\": \\"GET\\", \\"hc_http_status_code\\": \\"200\\", \\"hc_body\\": \\"WORKING\\"}" -u admin:admin ${GALEB_API}:8000/pool 2>1 | jq -r .id)
 echo "Pool ID: ${GALEB_POOL_ID}"
@@ -713,6 +729,67 @@ echo
 for file in $(ls $WORKSPACE/jenkins/router/*.json); do
 
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
+
+  if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
+    echo
+    echo "Parsed JSON (${file}) successfully!"
+    echo
+  else
+    echo
+    echo "Failed to parse JSON (${file})! Stopping.."
+    break
+  fi
+
+  echo $JSON | jq -c . > /tmp/JENKINS_ROUTER_TMP_FILE.json
+
+  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d@/tmp/JENKINS_ROUTER_TMP_FILE.json ${ENDPOINT_GROU}/tests 2>1)
+
+  rm -f /tmp/JENKINS_ROUTER_TMP_FILE.json
+
+  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+
+  echo "Grou Test URL: ${TEST_URL}"
+  echo "Grou Test STATUS: ${TEST_STATUS}"
+
+  while [ "${TEST_STATUS}" != "OK" ]
+  do
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL 2>1 | jq -r .status)
+    echo "Grou Test STATUS: ${TEST_STATUS}"
+    sleep 5
+  done
+done
+
+# SEND ROUTER TEST BALANCY POLICY
+echo
+echo
+echo "=========================================="
+echo "     SEND ROUTER TEST BALANCY POLICY"
+echo
+
+for ((i=2;i<=5;i++)); do
+
+  BP_URL="http://${GALEB_API}/balancepolicy/${i}"
+  curl --noproxy \'*\' -H\'content-type:application/json\' -X PUT -d "{\\"balancepolicy\\": \\"${BP_URL}\\"}" -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1
+
+  # CHECK SYNC POOL
+  echo
+  echo "BalancePolicy URL: ${BP_URL}"
+  echo
+
+  POOL_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1 | jq -r .status[])
+
+  echo "Pool Sync STATUS: ${POOL_STATUS}"
+
+  while [ "${POOL_STATUS}" != "OK" ]
+  do
+    sleep 5
+    POOL_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1 | jq -r .status[])
+    echo "Pool Sync STATUS: ${POOL_STATUS}"
+  done
+  echo
+
+  JSON=$(cat $WORKSPACE/jenkins/router/galeb_router_1_virtualhost.json | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
 
   if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
     echo

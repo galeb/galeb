@@ -487,8 +487,12 @@ TOKEN="$(curl --noproxy \'*\' --silent -I -XGET -u ${GROU_USER}:${GROU_PASSWORD}
 echo "Token GROU: ${TOKEN}"
 
 # CREATE POOL
-GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"pool-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"environment\\": \\"http://${GALEB_API}/environment/1\\", \\"balancepolicy\\": \\"http://${GALEB_API}/balancepolicy/1\\", \\"hc_tcp_only\\": \\"true\\"}" -u admin:admin ${GALEB_API}:8000/pool 2>1 | jq -r .id)
+GALEB_POOL_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"pool-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"environment\\": \\"http://${GALEB_API}/environment/1\\", \\"balancepolicy\\": \\"http://${GALEB_API}/balancepolicy/1\\", \\"hc_tcp_only\\": \\"false\\", \\"hc_http_method\\": \\"GET\\", \\"hc_http_status_code\\": \\"200\\", \\"hc_body\\": \\"WORKING\\"}" -u admin:admin ${GALEB_API}:8000/pool 2>1 | jq -r .id)
 echo "Pool ID: ${GALEB_POOL_ID}"
+
+# CREATE POOL L7
+GALEB_POOL_L7_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"pool-l7-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"environment\\": \\"http://${GALEB_API}/environment/1\\", \\"balancepolicy\\": \\"http://${GALEB_API}/balancepolicy/1\\", \\"hc_tcp_only\\": \\"true\\"}" -u admin:admin ${GALEB_API}:8000/pool 2>1 | jq -r .id)
+echo "Pool L7 ID: ${GALEB_POOL_L7_ID}"
 
 # CREATE TARGET 1
 GALEB_TARGET1_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8080\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
@@ -502,6 +506,14 @@ echo "Target 2 ID: ${GALEB_TARGET2_ID}"
 GALEB_TARGET3_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8082\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
 echo "Target 3 ID: ${GALEB_TARGET3_ID}"
 
+# CREATE TARGET L7 4
+GALEB_TARGET4_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8083\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_L7_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+echo "Target L7 4 ID: ${GALEB_TARGET4_ID}"
+
+# CREATE TARGET L7 5
+GALEB_TARGET5_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"http://${GALEB_TEST_TARGET}:8084\\", \\"pool\\": \\"http://${GALEB_API}/pool/${GALEB_POOL_L7_ID}\\"}" -u admin:admin ${GALEB_API}:8000/target 2>1 | jq -r .id)
+echo "Target L7 5 ID: ${GALEB_TARGET5_ID}"
+
 # CREATE VIRTUALHOST
 GALEB_VIRTUALHOST_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"virtualhost-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"environments\\": [\\"http://${GALEB_API}/environment/1\\"]}" -u admin:admin ${GALEB_API}:8000/virtualhost 2>1 | jq -r .id)
 echo "VirtualHost ID: ${GALEB_VIRTUALHOST_ID}"
@@ -509,6 +521,10 @@ echo "VirtualHost ID: ${GALEB_VIRTUALHOST_ID}"
 # CREATE RULE
 GALEB_RULE_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"rule-test-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"pools\\": [\\"http://${GALEB_API}/pool/${GALEB_POOL_ID}\\"], \\"matching\\": \\"/\\" }" -u admin:admin ${GALEB_API}:8000/rule 2>1 | jq -r .id)
 echo "Rule ID: ${GALEB_RULE_ID}"
+
+# CREATE RULE L7
+GALEB_RULE_L7_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"name\\": \\"rule-test-l7-jenkins\\", \\"project\\": \\"http://${GALEB_API}/project/1\\", \\"pools\\": [\\"http://${GALEB_API}/pool/${GALEB_POOL_L7_ID}\\"], \\"matching\\": \\"/*l7.html\\" }" -u admin:admin ${GALEB_API}:8000/rule 2>1 | jq -r .id)
+echo "Rule L7 ID: ${GALEB_RULE_L7_ID}"
 
 # GET VIRTUALHOST GROUP URL
 GALEB_VIRTUALHOST_GROUP_URL=$(curl --noproxy \'*\' http://${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} -u admin:admin 2>1 | jq -r ._links.virtualhostgroup.href)
@@ -518,9 +534,14 @@ GALEB_VIRTUALHOST_GROUP=$(curl --noproxy \'*\' ${GALEB_VIRTUALHOST_GROUP_URL} -u
 echo "VirtualHost Group URL: ${GALEB_VIRTUALHOST_GROUP}"
 
 # CREATE RULE ORDERED
-GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"rule\\": \\"http://GALEB_API:8000/rule/${GALEB_RULE_ID}\\", \\"environment\\": \\"http://GALEB_API:8000/environment/1\\", \\"virtualhostgroup\\": \\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+GALEB_RULEORDERED_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"rule\\": \\"http://${GALEB_API}:8000/rule/${GALEB_RULE_ID}\\", \\"environment\\": \\"http://${GALEB_API}:8000/environment/1\\", \\"virtualhostgroup\\": \\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":2}
 " -u admin:admin ${GALEB_API}:8000/ruleordered 2>1 | jq -r .id)
 echo "RuleOrdered ID: ${GALEB_RULEORDERED_ID}"
+
+# CREATE RULE ORDERED L7
+GALEB_RULEORDERED_L7_ID=$(curl --noproxy \'*\' -H\'content-type:application/json\' -X POST -d "{\\"rule\\": \\"http://${GALEB_API}:8000/rule/${GALEB_RULE_L7_ID}\\", \\"environment\\": \\"http://${GALEB_API}:8000/environment/1\\", \\"virtualhostgroup\\": \\"${GALEB_VIRTUALHOST_GROUP}\\",\\"order\\":1}
+" -u admin:admin ${GALEB_API}:8000/ruleordered 2>1 | jq -r .id)
+echo "RuleOrdered L7 ID: ${GALEB_RULEORDERED_L7_ID}"
 
 # CHECKING HEALTHY
 echo
@@ -529,7 +550,7 @@ echo "=========================================="
 echo "            CHECKING HEALTHY"
 echo
 
-for ((i=1;i<=3;i++))
+for ((i=1;i<=5;i++))
 do
   TARGETIDNAME=\\$GALEB_TARGET${i}_ID
   TARGET_ID=`eval echo $TARGETIDNAME`
@@ -542,9 +563,9 @@ do
 
   while [ "${TARGET_STATUS}" != "HEALTHY" ]
   do
+    sleep 5
     TARGET_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/target/${TARGET_ID}/healthStatus 2>1 | jq -r ._embedded.healthstatus[].status)
     echo "Target Healthy STATUS: ${TARGET_STATUS}"
-    sleep 5
   done
   echo
 done
@@ -557,7 +578,7 @@ echo "              CHECKING SYNC"
 echo
 
 # CHECK SYNC TARGET
-for ((i=1;i<=3;i++))
+for ((i=1;i<=5;i++))
 do
   TARGETIDNAME=\\$GALEB_TARGET${i}_ID
   TARGET_ID=`eval echo $TARGETIDNAME`
@@ -570,9 +591,9 @@ do
 
   while [ "${TARGET_STATUS}" != "OK" ]
   do
+    sleep 5
     TARGET_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/target/${TARGET_ID} 2>1 | jq -r .status[])
     echo "Target Sync STATUS: ${TARGET_STATUS}"
-    sleep 5
   done
   echo
 done
@@ -586,9 +607,24 @@ echo "Pool Sync STATUS: ${POOL_STATUS}"
 
 while [ "${POOL_STATUS}" != "OK" ]
 do
+  sleep 5
   POOL_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1 | jq -r .status[])
   echo "Pool Sync STATUS: ${POOL_STATUS}"
+done
+echo
+
+# CHECK SYNC POOL L7
+echo "Pool L7 ID: ${GALEB_POOL_L7_ID}"
+
+POOL_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_L7_ID} 2>1 | jq -r .status[])
+
+echo "Pool L7 Sync STATUS: ${POOL_L7_STATUS}"
+
+while [ "${POOL_L7_STATUS}" != "OK" ]
+do
   sleep 5
+  POOL_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_L7_ID} 2>1 | jq -r .status[])
+  echo "Pool L7 Sync STATUS: ${POOL_L7_STATUS}"
 done
 echo
 
@@ -601,9 +637,24 @@ echo "Rule Sync STATUS: ${RULE_STATUS}"
 
 while [ "${RULE_STATUS}" != "OK" ]
 do
+  sleep 5
   RULE_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/rule/${GALEB_RULE_ID} 2>1 | jq -r .status[])
   echo "Rule Sync STATUS: ${RULE_STATUS}"
+done
+echo
+
+# CHECK SYNC RULE
+echo "Rule L7 ID: ${GALEB_RULE_L7_ID}"
+
+RULE_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/rule/${GALEB_RULE_L7_ID} 2>1 | jq -r .status[])
+
+echo "Rule L7 Sync STATUS: ${RULE_L7_STATUS}"
+
+while [ "${RULE_L7_STATUS}" != "OK" ]
+do
   sleep 5
+  RULE_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/rule/${GALEB_RULE_L7_ID} 2>1 | jq -r .status[])
+  echo "Rule L7 Sync STATUS: ${RULE_L7_STATUS}"
 done
 echo
 
@@ -616,9 +667,24 @@ echo "RuleOrdered Sync STATUS: ${RULEORDERED_STATUS}"
 
 while [ "${RULEORDERED_STATUS}" != "OK" ]
 do
+  sleep 5
   RULEORDERED_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/ruleordered/${GALEB_RULEORDERED_ID} 2>1 | jq -r .status[])
   echo "RuleOrdered Sync STATUS: ${RULEORDERED_STATUS}"
+done
+echo
+
+# CHECK SYNC L7 RULEORDERED
+echo "RuleOrdered L7 ID: ${GALEB_RULEORDERED_L7_ID}"
+
+RULEORDERED_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/ruleordered/${GALEB_RULEORDERED_L7_ID} 2>1 | jq -r .status[])
+
+echo "RuleOrdered L7 Sync STATUS: ${RULEORDERED_L7_STATUS}"
+
+while [ "${RULEORDERED_L7_STATUS}" != "OK" ]
+do
   sleep 5
+  RULEORDERED_L7_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/ruleordered/${GALEB_RULEORDERED_L7_ID} 2>1 | jq -r .status[])
+  echo "RuleOrdered L7 Sync STATUS: ${RULEORDERED_L7_STATUS}"
 done
 echo
 
@@ -631,9 +697,9 @@ echo "VirtualHost Sync STATUS: ${VIRUTLAHOST_STATUS}"
 
 while [ "${VIRUTLAHOST_STATUS}" != "OK" ]
 do
+  sleep 5
   VIRUTLAHOST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' -u admin:admin ${GALEB_API}:8000/virtualhost/${GALEB_VIRTUALHOST_ID} 2>1 | jq -r .status[])
   echo "VirtualHost Sync STATUS: ${VIRUTLAHOST_STATUS}"
-  sleep 5
 done
 echo
 
@@ -678,7 +744,8 @@ for file in $(ls $WORKSPACE/jenkins/router/*.json); do
   done
 done
 
-#EOF'''
+#EOF
+'''
       }
     }
   }

@@ -8,7 +8,7 @@
     "requests": [
       {
         "order": 1,
-        "uri": "http://GALEB_ROUTER:8080/1b",
+        "uri": "http://GALEB_ROUTER:8080/1b.html",
         "method":"GET",
         "headers": {
           "Host":"virtualhost-test-jenkins"

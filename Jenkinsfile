@@ -770,7 +770,7 @@ echo
 for ((i=2;i<=5;i++)); do
 
   BP_URL="http://${GALEB_API}/balancepolicy/${i}"
-  curl --noproxy \'*\' -H\'content-type:application/json\' -X PUT -d "{\\"balancepolicy\\": \\"${BP_URL}\\"}" -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1
+  curl --noproxy \'*\' -H\'content-type:application/json\' -X PATCH -d "{\\"balancepolicy\\": \\"${BP_URL}\\"}" -u admin:admin ${GALEB_API}:8000/pool/${GALEB_POOL_ID} 2>1
 
   # CHECK SYNC POOL
   echo

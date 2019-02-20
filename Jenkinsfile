@@ -855,7 +855,8 @@ for file in $(ls $WORKSPACE/jenkins/router/*_post.json); do
     sleep 5
   done
 done
-#EOF'''
+#EOF
+'''
       }
     }
   }

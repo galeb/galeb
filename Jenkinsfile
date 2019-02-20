@@ -821,8 +821,42 @@ for ((i=2;i<=5;i++)); do
   done
 done
 
-##
+##POST
 for file in $(ls $WORKSPACE/jenkins/router/*_post.json); do
+
+  JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
+
+  if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
+    echo
+    echo "Parsed JSON (${file}) successfully!"
+    echo
+  else
+    echo
+    echo "Failed to parse JSON (${file})! Stopping.."
+    break
+  fi
+
+  echo $JSON | jq -c . > /tmp/JENKINS_ROUTER_TMP_FILE.json
+
+  RESULT_GROU=$(curl --noproxy \'*\' -H\'content-type:application/json\' -H"x-auth-token:$TOKEN" -XPOST -d@/tmp/JENKINS_ROUTER_TMP_FILE.json ${ENDPOINT_GROU}/tests 2>1)
+
+  rm -f /tmp/JENKINS_ROUTER_TMP_FILE.json
+
+  TEST_STATUS=$(echo $RESULT_GROU | jq -r .status)
+  TEST_URL=$(echo $RESULT_GROU | jq -r ._links.self.href)
+
+  echo "Grou Test URL: ${TEST_URL}"
+  echo "Grou Test STATUS: ${TEST_STATUS}"
+
+  while [ "${TEST_STATUS}" != "OK" ]
+  do
+    TEST_STATUS=$(curl --noproxy \'*\' -H\'content-type:application/json\' $TEST_URL 2>1 | jq -r .status)
+    echo "Grou Test STATUS: ${TEST_STATUS}"
+    sleep 5
+  done
+done
+##PATCH
+for file in $(ls $WORKSPACE/jenkins/router/*_patch.json); do
 
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
 

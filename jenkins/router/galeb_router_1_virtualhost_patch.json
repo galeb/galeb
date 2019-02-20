@@ -1,5 +1,5 @@
 {
-  "name":"GALEB_JENKINS_ROUTER_VIRTUALHOST_POST_RANDOM",
+  "name":"GALEB_JENKINS_ROUTER_VIRTUALHOST_PATCH_RANDOM",
   "durationTimeMillis":30000,
   "project":"GROU_PROJECT",
   "tags":["galeb","router"],
@@ -12,7 +12,8 @@
         "method":"PATCH",
         "headers": {
           "Host":"virtualhost-test-jenkins"
-        }
+        },
+        "body" : "name=teste"
       }
     ],
     "numConn": 30,

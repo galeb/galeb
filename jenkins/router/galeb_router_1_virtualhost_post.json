@@ -12,7 +12,8 @@
         "method":"POST",
         "headers": {
           "Host":"virtualhost-test-jenkins"
-        }
+        },
+        "body" : "name=teste"
       }
     ],
     "numConn": 30,

@@ -726,7 +726,7 @@ echo "=========================================="
 echo "             SEND ROUTER TEST"
 echo
 
-for file in $(ls $WORKSPACE/jenkins/router/*.json); do
+for file in $(ls $WORKSPACE/jenkins/router/*_get.json); do
 
   JSON=$(cat $file | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
 
@@ -789,7 +789,7 @@ for ((i=2;i<=5;i++)); do
   done
   echo
 
-  JSON=$(cat $WORKSPACE/jenkins/router/galeb_router_1_virtualhost.json | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
+  JSON=$(cat $WORKSPACE/jenkins/router/galeb_router_1_virtualhost_get.json | tr -d \'\\n\' | sed "s,RANDOM,$RANDOM,g" | sed "s,GROU_PROJECT,$GROU_PROJECT," | sed "s,GROU_NOTIFY,$GROU_NOTIFY," | sed "s,GALEB_ROUTER,$GALEB_ROUTER,g")
 
   if jq -e . >/dev/null 2>&1 <<<"$JSON"; then
     echo

@@ -1,5 +1,5 @@
 {
-  "name":"GALEB_JENKINS_ROUTER_VIRTUALHOST_RANDOM",
+  "name":"GALEB_JENKINS_ROUTER_VIRTUALHOST_POST_RANDOM",
   "durationTimeMillis":30000,
   "project":"GROU_PROJECT",
   "tags":["galeb","router"],
@@ -8,8 +8,8 @@
     "requests": [
       {
         "order": 1,
-        "uri": "http://GALEB_ROUTER:8080/",
-        "method":"GET",
+        "uri": "http://GALEB_ROUTER:8085/backend",
+        "method":"PATCH",
         "headers": {
           "Host":"virtualhost-test-jenkins"
         }

@@ -889,8 +889,7 @@ for file in $(ls $WORKSPACE/jenkins/router/*_patch.json); do
     sleep 5
   done
 done
-#EOF
-'''
+#EOF'''
       }
     }
   }

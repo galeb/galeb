@@ -176,7 +176,6 @@ public class RoutersService {
         boolean lock = false;
         try {
             if (lock = lockerService.notLocked(zoneId)) {
-                lockerService.setExpireLock(zoneId);
 
                 JsonEventToLogger event = new JsonEventToLogger(this.getClass());
                 event.put("correlation", routerMeta.correlation);

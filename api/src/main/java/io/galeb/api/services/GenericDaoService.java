@@ -222,16 +222,16 @@ public class GenericDaoService {
     }
 
     private Query getQuery(String entityName, Long id) {
-        final String sqlselect = "SELECT r.global FROM " + nativeTable(entityName) + " e ";
-        final String sqlwhere = "WHERE e.id = :id";
-        final String fullquery;
+        final StringBuilder fullquery = new StringBuilder();
         if (RuleOrdered.class.getSimpleName().equals(entityName)) {
-            String joinRule = "INNER JOIN rule r ON e.rule_ruleordered_id = r.id ";
-            fullquery = sqlselect + joinRule + sqlwhere;
+            fullquery.append("SELECT r.global FROM ruleordered ro ")
+                     .append("INNER JOIN rule r ON ro.rule_ruleordered_id = r.id ")
+                     .append("WHERE ro.id = :id");
         } else {
-            fullquery = sqlselect + sqlwhere;
+            fullquery.append("SELECT e.global FROM ").append(nativeTable(entityName)).append(" e ")
+                     .append("WHERE e.id = :id");
         }
-        return em.createNativeQuery(fullquery).setParameter("id", id);
+        return em.createNativeQuery(fullquery.toString()).setParameter("id", id);
     }
 
     private String nativeTable(String entityName) {

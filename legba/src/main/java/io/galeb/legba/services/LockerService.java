@@ -37,12 +37,13 @@ public class LockerService {
         this.redisTemplate = redisTemplate;
     }
 
-    public void setExpireLock(String zoneId) {
-        redisTemplate.expire(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
-    }
-
     public synchronized boolean notLocked(String zoneId) {
-        return redisTemplate.opsForValue().setIfAbsent(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, "" + System.currentTimeMillis());
+        if (redisTemplate.hasKey(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId)) {
+            return false;
+        } else {
+            redisTemplate.opsForValue().set(ROUTER_MAP_CACHE_REBUILD_LOCK + "-" + zoneId, "" + System.currentTimeMillis(), ROUTER_CONCURRENT_LOCK_TTL, TimeUnit.MILLISECONDS);
+            return true;
+        }
     }
 
     public void release(String zoneId, String correlation) {

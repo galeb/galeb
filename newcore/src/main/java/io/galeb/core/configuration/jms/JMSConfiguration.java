@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 Globo.com - ATeam
+ * Copyright (c) 2014-2019 Globo.com - ATeam
  * All rights reserved.
  *
  * This source is subject to the Apache License, Version 2.0.
@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package io.galeb.kratos.configurations;
-
-import static org.springframework.jms.support.destination.JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT;
+package io.galeb.core.configuration.jms;
 
 import io.galeb.core.enums.SystemEnv;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
@@ -38,6 +28,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.springframework.jms.support.destination.JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT;
 
 @SuppressWarnings("Duplicates")
 @Configuration

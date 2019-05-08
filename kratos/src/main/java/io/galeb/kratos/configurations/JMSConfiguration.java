@@ -36,13 +36,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
 
 @SuppressWarnings("Duplicates")
 @Configuration
-@EnableJms
 public class JMSConfiguration {
 
     private static final Logger LOGGER = LogManager.getLogger(JMSConfiguration.class);

@@ -23,14 +23,12 @@ import io.galeb.health.services.HealthCheckerService;
 import javax.jms.JMSException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.annotation.JmsListenerConfigurer;
 import org.springframework.jms.config.JmsListenerEndpointRegistrar;
 import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 
 @SuppressWarnings("Duplicates")
 @Configuration
-@EnableJms
 public class CustomJmsListenerConfiguration implements JmsListenerConfigurer {
 
     // @formatter:off

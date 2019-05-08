@@ -16,17 +16,17 @@
 
 package io.galeb.kratos;
 
+import io.galeb.core.annotation.ImportAllGalebCore;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jms.annotation.EnableJms;
 
 @EnableJms
 @SpringBootApplication
 @EntityScan(basePackages = {"io.galeb.core.entity"})
-@ComponentScan(basePackages = {"io.galeb.core.configuration", "io.galeb.core.services", "io.galeb.kratos"})
+@ImportAllGalebCore
 @EnableJpaRepositories(basePackages = "io.galeb.kratos.repository")
 public class Application {
 

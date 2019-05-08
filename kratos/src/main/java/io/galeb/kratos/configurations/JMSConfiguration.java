@@ -28,7 +28,6 @@ import java.util.Map;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
-import org.apache.activemq.artemis.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
@@ -89,9 +88,7 @@ public class JMSConfiguration {
         connectionFactory.setPassword(BROKER_PASS);
         connectionFactory.setBlockOnDurableSend(BROKER_BLOCKDURABLESEND);
         connectionFactory.setConsumerWindowSize(BROKER_CONSUMERWINDOWSIZE);
-        if (BROKER_HA) {
-            connectionFactory.setConnectionLoadBalancingPolicyClassName(RoundRobinConnectionLoadBalancingPolicy.class.getName());
-        }
+
         cachingConnectionFactory.setTargetConnectionFactory(connectionFactory);
         cachingConnectionFactory.setSessionCacheSize(100);
         cachingConnectionFactory.setCacheConsumers(true);

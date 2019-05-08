@@ -16,11 +16,13 @@
 
 package io.galeb.health;
 
+import io.galeb.core.annotation.ImportGalebCoreJms;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jms.annotation.EnableJms;
 
 @EnableJms
+@ImportGalebCoreJms
 @SpringBootApplication
 public class Application {
 

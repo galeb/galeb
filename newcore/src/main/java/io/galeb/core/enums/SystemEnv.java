@@ -384,7 +384,7 @@ public enum SystemEnv {
     /**
      * TODO
      */
-    DB_LEAK_DETECTION_THRESHOULD("DB_LEAK_DETECTION_THRESHOULD",      null),
+    DB_LEAK_DETECTION_THRESHOULD("DB_LEAK_DETECTION_THRESHOULD",      0),
 
     /**
      * TODO

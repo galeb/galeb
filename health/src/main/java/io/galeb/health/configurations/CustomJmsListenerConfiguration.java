@@ -31,7 +31,7 @@ import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 @SuppressWarnings("Duplicates")
 @Configuration
 @EnableJms
-public class JMSConfiguration implements JmsListenerConfigurer {
+public class CustomJmsListenerConfiguration implements JmsListenerConfigurer {
 
     // @formatter:off
     private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue()     + SystemEnv.QUEUE_NAME_SEPARATOR.getValue() +
@@ -42,7 +42,7 @@ public class JMSConfiguration implements JmsListenerConfigurer {
     private final HealthCheckerService healthCheckerService;
 
     @Autowired
-    public JMSConfiguration(HealthCheckerService healthCheckerService) {
+    public CustomJmsListenerConfiguration(HealthCheckerService healthCheckerService) {
         this.healthCheckerService = healthCheckerService;
     }
 

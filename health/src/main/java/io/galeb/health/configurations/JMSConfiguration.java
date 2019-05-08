@@ -26,9 +26,9 @@ import static org.springframework.jms.support.destination.JmsDestinationAccessor
 
 @SuppressWarnings("Duplicates")
 @Configuration
-public class TemplateConfiguration {
+public class JMSConfiguration {
 
-    private static final Logger LOGGER = LogManager.getLogger(TemplateConfiguration.class);
+    private static final Logger LOGGER = LogManager.getLogger(JMSConfiguration.class);
 
     private static final long   JMS_TIMEOUT = Long.parseLong(SystemEnv.JMS_TIMEOUT.getValue());
     private static final String BROKER_CONN = SystemEnv.BROKER_CONN.getValue();

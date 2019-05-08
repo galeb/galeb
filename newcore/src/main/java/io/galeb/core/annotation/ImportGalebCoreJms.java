@@ -16,13 +16,7 @@
 
 package io.galeb.core.annotation;
 
-import io.galeb.core.configuration.JpaAuditorAwareConfiguration;
-import io.galeb.core.configuration.db.DatabaseConfiguration;
 import io.galeb.core.configuration.jms.JMSConfiguration;
-import io.galeb.core.configuration.redis.RedisConfiguration;
-import io.galeb.core.security.SpringSecurityAuditorAware;
-import io.galeb.core.services.ChangesService;
-import io.galeb.core.services.VersionService;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -34,14 +28,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
-@Import({
-        DatabaseConfiguration.class,
-        JpaAuditorAwareConfiguration.class,
-        SpringSecurityAuditorAware.class,
-        RedisConfiguration.class,
-        ChangesService.class,
-        VersionService.class,
-        JMSConfiguration.class
-})
-public @interface ImportAllGalebCore {
+@Import(JMSConfiguration.class)
+public @interface ImportGalebCoreJms {
 }

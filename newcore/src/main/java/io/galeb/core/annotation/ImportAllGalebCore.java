@@ -19,6 +19,7 @@ package io.galeb.core.annotation;
 import io.galeb.core.configuration.JpaConfig;
 import io.galeb.core.configuration.db.DatabaseConfiguration;
 import io.galeb.core.configuration.redis.RedisConfiguration;
+import io.galeb.core.security.SpringSecurityAuditorAware;
 import io.galeb.core.services.ChangesService;
 import io.galeb.core.services.VersionService;
 import org.springframework.context.annotation.Import;
@@ -35,6 +36,7 @@ import java.lang.annotation.Target;
 @Import({
         DatabaseConfiguration.class,
         JpaConfig.class,
+        SpringSecurityAuditorAware.class,
         RedisConfiguration.class,
         ChangesService.class,
         VersionService.class

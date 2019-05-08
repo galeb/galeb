@@ -48,6 +48,9 @@ public class DatabaseConfiguration {
     private static final Boolean DB_CACHE_SERVER_CONFIGURATION = Boolean.valueOf(SystemEnv.DB_CACHE_SERVER_CONFIGURATION.getValue());
     private static final Boolean DB_ELIDE_SET_AUTO_COMMITS     = Boolean.valueOf(SystemEnv.DB_ELIDE_SET_AUTO_COMMITS.getValue());
     private static final Boolean DB_MAINTAIN_TIME_STATS        = Boolean.valueOf(SystemEnv.DB_MAINTAIN_TIME_STATS.getValue());
+    private static final Long    DB_LEAK_DETECTION_THRESHOULD  = Long.valueOf(SystemEnv.DB_LEAK_DETECTION_THRESHOULD.getValue());
+    private static final Long    DB_IDLE_TIMEOUT               = Long.valueOf(SystemEnv.DB_IDLE_TIMEOUT.getValue());
+    private static final Integer DB_MIN_IDLE                   = Integer.valueOf(SystemEnv.DB_MIN_IDLE.getValue());
     // @formatter:on
 
     @Bean
@@ -63,6 +66,8 @@ public class DatabaseConfiguration {
         hikariDataSource.setMaximumPoolSize(DB_MAX_POOL_SIZE);
         hikariDataSource.setMaxLifetime(DB_MAX_LIFE_TIME);
         hikariDataSource.setAutoCommit(DB_AUTOCOMMIT);
+        hikariDataSource.setIdleTimeout(DB_IDLE_TIMEOUT);
+        hikariDataSource.setMinimumIdle(DB_MIN_IDLE);
         hikariDataSource.setConnectionTestQuery("SELECT 1");
         hikariDataSource.addDataSourceProperty("cachePrepStmts", DB_CACHE_PREP_STMTS);
         hikariDataSource.addDataSourceProperty("prepStmtCacheSize", DB_PREP_STMT_CACHE_SIZE);
@@ -74,6 +79,7 @@ public class DatabaseConfiguration {
         hikariDataSource.addDataSourceProperty("cacheServerConfiguration", DB_CACHE_SERVER_CONFIGURATION);
         hikariDataSource.addDataSourceProperty("elideSetAutoCommits", DB_ELIDE_SET_AUTO_COMMITS);
         hikariDataSource.addDataSourceProperty("maintainTimeStats", DB_MAINTAIN_TIME_STATS);
+        hikariDataSource.setLeakDetectionThreshold(DB_LEAK_DETECTION_THRESHOULD);
 
         return hikariDataSource;
     }

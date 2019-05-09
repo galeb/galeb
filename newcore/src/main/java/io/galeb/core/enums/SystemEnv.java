@@ -19,6 +19,7 @@ package io.galeb.core.enums;
 import io.galeb.core.so.Info;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The enum System environments.
@@ -379,6 +380,21 @@ public enum SystemEnv {
      * Setting this property to false removes at least two calls to System.getCurrentTimeMillis() per query.
      */
     DB_MAINTAIN_TIME_STATS        ("DB_MAINTAIN_TIME_STATS",        Boolean.FALSE),
+
+    /**
+     * TODO
+     */
+    DB_LEAK_DETECTION_THRESHOULD("DB_LEAK_DETECTION_THRESHOULD",      0),
+
+    /**
+     * TODO
+     */
+    DB_IDLE_TIMEOUT("DB_IDLE_TIMEOUT",                                TimeUnit.MINUTES.toMillis(10L)),
+
+    /**
+     * TODO
+     */
+    DB_MIN_IDLE("DB_MIN_IDLE",                                        DB_MAX_POOL_SIZE.getValue()),
 
     // MANAGER/LEGBA
 

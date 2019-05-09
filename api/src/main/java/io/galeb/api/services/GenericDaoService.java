@@ -200,8 +200,10 @@ public class GenericDaoService {
         try {
             final Query query = em.createNativeQuery("SELECT e.id FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);
             return query.getSingleResult() != null;
-        } catch (NoResultException ignore) {
-            // NOT_FOUND
+        } catch (NoResultException noResultException) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(noResultException.getMessage(), noResultException);
+            }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

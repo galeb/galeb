@@ -16,12 +16,15 @@
 
 package io.galeb.api.handler;
 
+import io.galeb.api.repository.VirtualHostRepository;
 import io.galeb.api.repository.VirtualhostGroupRepository;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
 import io.galeb.core.exceptions.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -32,6 +35,9 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
 
     @Autowired
     VirtualhostGroupRepository virtualhostGroupRepository;
+
+    @Autowired
+    VirtualHostRepository virtualHostRepository;
 
     @Override
     protected void onBeforeCreate(VirtualHost virtualHost) {
@@ -54,11 +60,20 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
     }
 
     private void checkVirtualHostGroup(VirtualHost virtualHost) {
-        if (virtualHost.getVirtualhostgroup() == null) {
+        Page<VirtualHost> virtualhostNameFromDBPage = virtualHostRepository.findByName(virtualHost.getName(), new PageRequest(0, 20));
+        if ((virtualhostNameFromDBPage == null || virtualhostNameFromDBPage.getTotalElements() == 0) && (virtualHost.getVirtualhostgroup() == null)) {
             VirtualhostGroup virtualhostGroup = new VirtualhostGroup();
             virtualhostGroupRepository.save(virtualhostGroup);
             virtualHost.setVirtualhostgroup(virtualhostGroup);
         }
     }
 
+    @Override
+    protected void onAfterDelete(VirtualHost entity) {
+        super.onAfterDelete(entity);
+        VirtualhostGroup virtualhostgroup = entity.getVirtualhostgroup();
+        if (virtualhostgroup.getVirtualhosts().size() <= 1) {
+            virtualhostGroupRepository.delete(virtualhostgroup.getId());
+        }
+    }
 }

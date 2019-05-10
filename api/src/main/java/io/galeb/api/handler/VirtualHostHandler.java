@@ -16,12 +16,17 @@
 
 package io.galeb.api.handler;
 
+import io.galeb.api.repository.RuleOrderedRepository;
 import io.galeb.api.repository.VirtualHostRepository;
 import io.galeb.api.repository.VirtualhostGroupRepository;
 import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.entity.VirtualhostGroup;
 import io.galeb.core.exceptions.BadRequestException;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +43,9 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
 
     @Autowired
     VirtualHostRepository virtualHostRepository;
+
+    @Autowired
+    RuleOrderedRepository ruleOrderedRepository;
 
     @Override
     protected void onBeforeCreate(VirtualHost virtualHost) {
@@ -72,7 +80,11 @@ public class VirtualHostHandler extends AbstractHandler<VirtualHost> {
     protected void onAfterDelete(VirtualHost entity) {
         super.onAfterDelete(entity);
         VirtualhostGroup virtualhostgroup = entity.getVirtualhostgroup();
-        if (virtualhostgroup.getVirtualhosts().size() <= 1) {
+        Set<VirtualHost> virtualhosts = Optional.ofNullable(virtualhostgroup.getVirtualhosts()).orElse(Collections.emptySet());
+        Set<VirtualHost> virtualHostsWithoutMe = virtualhosts.stream().filter(v -> v.getId() != entity.getId()).collect(Collectors.toSet());
+        Set<RuleOrdered> ruleOrdereds = Optional.ofNullable(virtualhostgroup.getRulesordered()).orElse(Collections.emptySet());
+
+        if (virtualHostsWithoutMe.isEmpty() && ruleOrdereds.isEmpty()) {
             virtualhostGroupRepository.delete(virtualhostgroup.getId());
         }
     }

@@ -50,7 +50,7 @@ public class VirtualhostGroupRepositoryImpl extends AbstractRepositoryImplementa
 
     @Override
     protected Set<Environment> getAllEnvironments(AbstractEntity entity) {
-        return new HashSet<>(environmentRepository.findAllByVirtualhostgroupId(entity.getId()));
+        return environmentRepository.findAllByVirtualhostgroupId(entity.getId());
     }
 
     @Override

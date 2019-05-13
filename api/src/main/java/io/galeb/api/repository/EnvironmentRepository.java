@@ -68,7 +68,7 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join v.virtualhostgroup as vp " +
             "WHERE vp.id = :vhgid")
     @PreAuthorize("@perm.allowView(null , #this)")
-    List<Environment> findAllByVirtualhostgroupId(@Param("vhgid") long vhgid);
+    Set<Environment> findAllByVirtualhostgroupId(@Param("vhgid") long vhgid);
 
     @RestResource(exported = false)
     @Query(value = "SELECT DISTINCT e FROM Environment as e " +

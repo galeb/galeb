@@ -32,6 +32,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
+import io.galeb.core.entity.VirtualHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.cache.annotation.Cacheable;
@@ -219,6 +221,35 @@ public class GenericDaoService {
             LOGGER.error(e.getMessage(), e);
         }
         return false;
+    }
+
+    public boolean vhgIsOrphan(Long virtualhostGroupId, Long virtualhostId) {
+        int countVirtualhosts = 0;
+        int countRuleOrdered = 0;
+        final String countVirtualhostQueryStr = "SELECT COUNT(v.id) FROM virtualhost v WHERE v.virtualhostgroup_id = :vgid AND v.id != :vid";
+        final String countRuleOrderedQueryStr = "SELECT COUNT(ro.id) FROM ruleordered ro WHERE ro.virtualhostgroup_ruleordered_id = :id";
+
+        try {
+            final Query countVirtualhostsQuery = em.createNativeQuery(countVirtualhostQueryStr, Number.class)
+                    .setParameter("vgid", virtualhostGroupId)
+                    .setParameter("vid", virtualhostId);
+            final Object countVirtualhostsQueryResult = countVirtualhostsQuery.getSingleResult();
+            if (countVirtualhostsQueryResult instanceof Number) {
+                countVirtualhosts = ((Number) countVirtualhostsQueryResult).intValue();
+            }
+            final Query countRuleOrderedQuery = em.createNativeQuery(countRuleOrderedQueryStr, Number.class)
+                    .setParameter("id", virtualhostGroupId);
+            final Object countRuleOrderedQueryResult = countRuleOrderedQuery.getSingleResult();
+            if (countRuleOrderedQueryResult instanceof Number) {
+                countRuleOrdered = ((Number) countRuleOrderedQueryResult).intValue();
+            }
+
+        } catch (NoResultException ignore) {
+            // ignored
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return countVirtualhosts != 0 && countRuleOrdered != 0;
     }
 
     private Query getQuery(String entityName, Long id) {

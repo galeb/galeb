@@ -49,6 +49,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     Long NOT_FOUND = -404L;
 
     private SimpleJpaRepository<T, Long> simpleJpaRepository;
+    private SimpleJpaRepository<VirtualhostGroup, Long> virtualhostGroupSimpleJpaRepository = null;
     private StatusService statusService;
     @SuppressWarnings("UnstableApiUsage")
     private TypeToken<T> typeToken = new TypeToken<T>(getClass()) {};
@@ -62,6 +63,9 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public void setSimpleJpaRepository(Class<T> klazz, GenericDaoService genericDaoService) {
         if (this.simpleJpaRepository != null) return;
         this.simpleJpaRepository = new SimpleJpaRepository<>(klazz, genericDaoService.entityManager());
+        if (VirtualHost.class.equals(klazz)) {
+            virtualhostGroupSimpleJpaRepository = new SimpleJpaRepository<>(VirtualhostGroup.class, genericDaoService.entityManager());
+        }
         this.genericDaoService = genericDaoService;
     }
 
@@ -143,8 +147,22 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
         if (entity instanceof WithStatus) {
             entity.quarantine(true);
             simpleJpaRepository.saveAndFlush(entity);
+            if (entity instanceof VirtualHost) {
+                quarantineOrphanVirtualhostGroup((VirtualHost) entity);
+            }
         } else {
             simpleJpaRepository.delete(entity);
+        }
+    }
+
+    private void quarantineOrphanVirtualhostGroup(VirtualHost entity) {
+        final VirtualHost virtualhost = entity;
+        VirtualhostGroup virtualhostGroup = virtualhost.getVirtualhostgroup();
+        final boolean vhgIsOrphan = genericDaoService.vhgIsOrphan(virtualhostGroup.getId(), virtualhost.getId());
+        if (vhgIsOrphan) {
+            virtualhostGroup.quarantine(true);
+            virtualhostGroupSimpleJpaRepository.saveAndFlush(virtualhostGroup);
+            // TODO: AbstractHandler.registerChanges(virtualhostGroup)
         }
     }
 

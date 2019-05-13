@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,7 +43,7 @@ public class CustomSearchController {
     @SuppressWarnings("unchecked")
     @GetMapping(value = "/environment/findAllByVirtualhostgroupId", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PagedResources<Resource<Environment>>> findAllByVirtualhostgroupId(@RequestParam("vhgid") Long vhgid) {
-        List<Environment> environments = environmentRepository.findAllByVirtualhostgroupId(vhgid);
+        Set<Environment> environments = environmentRepository.findAllByVirtualhostgroupId(vhgid);
         List<Resource<Environment>> resources = environments.stream().map(Resource::new).collect(Collectors.toList());
         PagedResources.PageMetadata meta = new PagedResources.PageMetadata(environments.size(), 0, environments.size());
         return ResponseEntity.ok(new PagedResources<>(resources, meta, Collections.emptyList()));

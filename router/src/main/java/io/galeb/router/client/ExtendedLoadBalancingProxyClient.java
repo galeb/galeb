@@ -279,13 +279,11 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
             if (holder != null || (exclusivityChecker != null && exclusivityChecker.isExclusivityRequired(exchange))) {
                 // If we have a holder, even if the connection was closed we now exclusivity was already requested so our client
                 // may be assuming it still exists.
-                host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
-                        .setHolder(holder).setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host).setExclusive(),
-                        timeout, timeUnit, true);
+                host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallbackExclusive()
+                        .setHolder(holder).setCallback(callback).setHost(host), timeout, timeUnit, true);
             } else {
                 host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
-                        .setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host), timeout,
-                        timeUnit, false);
+                        .setCallback(callback).setHost(host), timeout, timeUnit, false);
             }
         }
     }
@@ -432,23 +430,17 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
 
     }
 
-    private class ProxyConnectionProxyCallback implements ProxyCallback<ProxyConnection> {
+    private class ProxyConnectionProxyCallbackExclusive extends ProxyConnectionProxyCallback {
 
         private ExclusiveConnectionHolder holder = null;
-        private ProxyCallback<ProxyConnection> callback;
-        private ProxyTarget target;
-        private long timeout;
-        private TimeUnit timeUnit;
-        private Host host;
-        private boolean exclusive = false;
 
         @Override
-        public void completed(HttpServerExchange exchange, ProxyConnection result) {
+        public void completed(HttpServerExchange exchange, ProxyConnection proxyConnection) {
             if (holder != null) {
-                holder.connection = result;
+                holder.connection = proxyConnection;
             } else {
                 final ExclusiveConnectionHolder newHolder = new ExclusiveConnectionHolder();
-                newHolder.connection = result;
+                newHolder.connection = proxyConnection;
                 ServerConnection connection = exchange.getConnection();
                 connection.putAttachment(exclusiveConnectionKey, newHolder);
                 connection.addCloseListener(closeListener -> {
@@ -458,14 +450,30 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
                     }
                 });
             }
-            callback.completed(exchange, result);
+            callback.completed(exchange, proxyConnection);
         }
+
+        public ProxyConnectionProxyCallbackExclusive setHolder(final ExclusiveConnectionHolder holder) {
+            this.holder = holder;
+            return this;
+        }
+    }
+
+    private class ProxyConnectionProxyCallback implements ProxyCallback<ProxyConnection> {
+
+        protected ProxyCallback<ProxyConnection> callback;
+        protected Host host;
 
         @Override
         public void queuedRequestFailed(HttpServerExchange exchange) {
             exchange.removeAttachment(HostSelector.REAL_DEST);
             exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.QUEUED_REQUEST_FAILED.getMessage());
             callback.queuedRequestFailed(exchange);
+        }
+
+        @Override
+        public void completed(HttpServerExchange exchange, ProxyConnection proxyConnection) {
+            callback.completed(exchange, proxyConnection);
         }
 
         @Override
@@ -481,39 +489,14 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
             exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.COULD_NOT_RESOLVE_BACKEND.getMessage());
             callback.couldNotResolveBackend(exchange);
         }
-        
-        public ProxyConnectionProxyCallback setHolder(final ExclusiveConnectionHolder holder) {
-            this.holder = holder;
-            return this;
-        }
 
         public ProxyConnectionProxyCallback setCallback(final ProxyCallback<ProxyConnection> callback) {
             this.callback = callback;
             return this;
         }
 
-        public ProxyConnectionProxyCallback setTarget(final ProxyTarget target) {
-            this.target = target;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setTimeout(final long timeout) {
-            this.timeout = timeout;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setTimeUnit(final TimeUnit timeUnit) {
-            this.timeUnit = timeUnit;
-            return this;
-        }
-
         public ProxyConnectionProxyCallback setHost(final Host host) {
             this.host = host;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setExclusive() {
-            this.exclusive = true;
             return this;
         }
 

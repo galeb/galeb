@@ -179,6 +179,11 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
         }
 
       }
+      environment {
+        http_proxy = '${http_proxy}'
+        https_proxy = '${https_proxy}'
+        no_proxy = '${no_proxy}'
+      }
       steps {
         sh '''#!/bin/bash
 

@@ -1,5 +1,5 @@
 pipeline {
-  agent any
+  agent none
   stages {
     stage('get last packages') {
       steps {
@@ -173,17 +173,7 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
       }
     }
     stage('Update DB Schema') {
-      agent {
-        docker {
-          image 'docker.artifactory.globoi.com/ateam/rhcircleci:11'
-        }
-
-      }
-      environment {
-        http_proxy = '${http_proxy}'
-        https_proxy = '${https_proxy}'
-        no_proxy = '${no_proxy}'
-      }
+      agent any
       steps {
         sh '''#!/bin/bash
 

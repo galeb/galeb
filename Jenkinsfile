@@ -173,7 +173,6 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${GALEB_HEA
       }
     }
     stage('Update DB Schema') {
-      agent any
       steps {
         sh '''#!/bin/bash
 

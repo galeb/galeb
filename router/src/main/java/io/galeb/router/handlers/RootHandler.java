@@ -35,7 +35,7 @@ public class RootHandler implements HttpHandler {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
-    private final AtomicBoolean rootHandlerFailed = new AtomicBoolean(true);
+    private final AtomicBoolean rootHandlerFailed = new AtomicBoolean(false);
 
     private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
     private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());

@@ -45,12 +45,15 @@ public class PingHandler implements HttpHandler {
     private final AtomicLong lastPing = new AtomicLong(0L);
     private final ManagerClientCache cache;
     private final UpdaterService updaterService;
+    private final RootHandler rootHandler;
 
     @Autowired
     public PingHandler(final ManagerClientCache cache,
-                       @Lazy UpdaterService updaterService) {
+                       @Lazy UpdaterService updaterService,
+                       @Lazy RootHandler rootHandler) {
         this.cache = cache;
         this.updaterService = updaterService;
+        this.rootHandler = rootHandler;
     }
 
     @Override
@@ -68,7 +71,9 @@ public class PingHandler implements HttpHandler {
     }
 
     private String getStatusBody(boolean hasNoUpdate) {
-        return isOutdated(hasNoUpdate) ? OUTDATED.name() : (isEmpty() ? EMPTY.name() : WORKING.name());
+        return isFailed() ? FAIL.name() :
+            (isOutdated(hasNoUpdate) ? OUTDATED.name() :
+            (isEmpty() ? EMPTY.name() : WORKING.name()));
     }
 
     private boolean isEmpty() {
@@ -78,6 +83,11 @@ public class PingHandler implements HttpHandler {
     private boolean isOutdated(boolean hasNoUpdate) {
         long currentObsoleteTime = System.currentTimeMillis() - OBSOLETE_TIME;
         return hasNoUpdate ? lastPing.get() < currentObsoleteTime : lastPing.getAndSet(System.currentTimeMillis()) < currentObsoleteTime;
+    }
+
+    private boolean isFailed() {
+        // TODO: Check all system
+        return rootHandler.isFailed();
     }
 
 }

@@ -275,8 +275,13 @@ public enum SystemEnv {
     /**
      * Statsd target tag.
      */
-    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "_TARGET_.");
-
+    STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "_TARGET_."),
+    
+    /**
+     * PREFIX_UNDERTOW_CLIENT
+     */
+    PREFIX_UNDERTOW_CLIENT_OPTION ("PREFIX_UNDERTOW_CLIENT_OPTION", "UNDERTOW_CLIENT_OPTION");
+    
     /**
      * Gets SystemEnv value.
      *

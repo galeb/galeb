@@ -1,0 +1,26 @@
+{
+  "name":"GALEB_JENKINS_LEGBA_VIRTUALHOSTSCACHED_RANDOM",
+  "durationTimeMillis":30000,
+  "project":"GROU_PROJECT",
+  "tags":["galeb","legba","virtualhostscached"],
+  "notify":["GROU_NOTIFY"],
+  "properties": {
+    "requests": [
+      {
+        "order": 1,
+        "uri": "http://GALEB_LEGBA:8000/virtualhostscached/1",
+        "method":"GET",
+        "headers": {
+          "X-Galeb-GroupID":"UNDEF",
+          "If-None-Match":"0",
+          "X-Galeb-ZoneID":"GALEB_ZONE"
+        }
+
+      }
+    ],
+    "numConn": 30,
+    "parallelLoaders": 1,
+    "followRedirect": true,
+    "monitTargets": "prometheus://GALEB_LEGBA:9100/metrics?key=GALEB_LEGBA"
+  }
+}

@@ -4,7 +4,7 @@ jobs:
         working_directory: ~/circleci-java-spring
 
         docker:
-            - image: tuxmonteiro/rhcircleci
+            - image: galeb/rhcircleci:11
 
         steps:
             - checkout
@@ -37,7 +37,7 @@ jobs:
             - deploy:
                 name: Push release
                 command: |
-                    if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "develop" ]; then
+                    if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" ]; then
                       sudo yum update -y || true
                       sudo yum install -y ruby-devel gcc make rpm-build rubygems
                       sudo gem install --no-ri --no-rdoc fpm

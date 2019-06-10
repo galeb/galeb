@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-import sun.management.ConnectorAddressLink;
 
 import javax.annotation.PostConstruct;
 import javax.management.AttributeNotFoundException;
@@ -46,7 +45,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class JmxClientService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final Info info = new Info();
     private final AtomicBoolean enabled = new AtomicBoolean(false);
 
     private MBeanServerConnection client;
@@ -54,13 +52,10 @@ public class JmxClientService {
     @PostConstruct
     public void start() {
         try {
-            String jmxUrl = ConnectorAddressLink.importFrom(Info.getPid());
-            if (jmxUrl != null) {
-                final JMXServiceURL url = new JMXServiceURL(jmxUrl);
-                final JMXConnector jmxConn = JMXConnectorFactory.connect(url);
-                client = jmxConn.getMBeanServerConnection();
-                enabled.set(true);
-            }
+            final JMXServiceURL url = new JMXServiceURL("service:jmx:attach://" + Info.getPid());
+            final JMXConnector jmxConn = JMXConnectorFactory.connect(url);
+            client = jmxConn.getMBeanServerConnection();
+            enabled.set(true);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(ExceptionUtils.getStackTrace(e));

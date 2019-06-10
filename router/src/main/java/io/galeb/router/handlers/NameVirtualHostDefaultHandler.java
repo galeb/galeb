@@ -67,7 +67,7 @@ public class NameVirtualHostDefaultHandler implements HttpHandler {
     }
 
     private HttpHandler defineNextHandler(final VirtualHost virtualHost) {
-        final RuleTargetHandler ruleTargetHandler =  new RuleTargetHandler(virtualHost);
+        final RuleTargetHandler ruleTargetHandler =  new RuleTargetHandler(virtualHost, context);
         if (virtualHost.getProperties().containsKey(IPACL_ALLOW)) {
             final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler().setNext(ruleTargetHandler);
             Arrays.asList(virtualHost.getProperties().get(IPACL_ALLOW).split(","))

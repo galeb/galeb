@@ -16,15 +16,24 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.enums.SystemEnv;
+import java.net.URI;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
-import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
-import io.undertow.attribute.ExchangeAttribute;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -33,10 +42,6 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 public class PoolHandler implements HttpHandler {
 
@@ -148,9 +153,34 @@ public class PoolHandler implements HttpHandler {
         pool.getTargets().forEach(target -> {
             String value = target.getName();
             URI uri = URI.create(target.getName());
-            proxyClient.addHost(uri);
+            proxyClient.addHost(uri, getUndertowOptionMap(System.getenv(), SystemEnv.PREFIX_UNDERTOW_CLIENT_OPTION.getValue()));
             logger.info("[pool:" + pool.getName() + "] added Target " + value);
         });
+    }
+
+    public OptionMap getUndertowOptionMap(Map<String,String> env, String prefix) {
+        Properties properties = new Properties();
+        
+        if (!prefix.endsWith("_")) {
+            prefix = prefix + "_";
+        }
+        
+        String prefixWithoutUnderscoreAtEnd = prefix.substring(0, prefix.length() - 1);
+        
+        for (Entry<String, String> entry : env.entrySet()) {
+            String key = entry.getKey();
+            
+            if (key.startsWith(prefix)) {
+                String keyWithoutPrefix = key.substring(prefix.length());
+                String fieldValue = entry.getValue();
+            
+                String className = Options.class.getName();
+                String propertyKey = prefixWithoutUnderscoreAtEnd + "." + className + "." + keyWithoutPrefix;
+                properties.put(propertyKey, fieldValue);
+            }
+        }
+
+        return OptionMap.builder().parseAll(properties, prefixWithoutUnderscoreAtEnd).getMap();
     }
 
     private HttpHandler healthcheckPoolHandler() {

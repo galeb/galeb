@@ -163,7 +163,10 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host) {
         return addHost(host, null, null);
     }
-
+    
+    public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host, OptionMap options) {
+        return addHost(null, host, null, null, options);
+    }
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host, XnioSsl ssl) {
         return addHost(host, null, ssl);
     }
@@ -190,8 +193,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host, String jvmRoute, XnioSsl ssl, OptionMap options) {
         return addHost(null, host, jvmRoute, ssl, options);
     }
-
-
+    
     public synchronized ExtendedLoadBalancingProxyClient addHost(final InetSocketAddress bindAddress, final URI host, String jvmRoute, XnioSsl ssl, OptionMap options) {
         Host h = new Host(jvmRoute, bindAddress, host, ssl, options);
         Host[] existing = hosts;

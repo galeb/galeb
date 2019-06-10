@@ -17,14 +17,11 @@
 package io.galeb.router.handlers;
 
 import java.net.URI;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
@@ -65,8 +62,10 @@ public class PoolHandler implements HttpHandler {
     private ExtendedLoadBalancingProxyClient proxyClient;
 
     private final Pool pool;
+    private final OptionMap undertowOptionMap;
 
-    public PoolHandler(final Pool pool) {
+    public PoolHandler(final Pool pool, final ApplicationContext context) {
+        this.undertowOptionMap = context.getBean("undertowOptionMap", OptionMap.class);
         this.pool = pool;
         this.defaultHandler = buildPoolHandler();
     }
@@ -153,34 +152,9 @@ public class PoolHandler implements HttpHandler {
         pool.getTargets().forEach(target -> {
             String value = target.getName();
             URI uri = URI.create(target.getName());
-            proxyClient.addHost(uri, getUndertowOptionMap(System.getenv(), SystemEnv.PREFIX_UNDERTOW_CLIENT_OPTION.getValue()));
+            proxyClient.addHost(uri, undertowOptionMap);
             logger.info("[pool:" + pool.getName() + "] added Target " + value);
         });
-    }
-
-    public OptionMap getUndertowOptionMap(Map<String,String> env, String prefix) {
-        Properties properties = new Properties();
-        
-        if (!prefix.endsWith("_")) {
-            prefix = prefix + "_";
-        }
-        
-        String prefixWithoutUnderscoreAtEnd = prefix.substring(0, prefix.length() - 1);
-        
-        for (Entry<String, String> entry : env.entrySet()) {
-            String key = entry.getKey();
-            
-            if (key.startsWith(prefix)) {
-                String keyWithoutPrefix = key.substring(prefix.length());
-                String fieldValue = entry.getValue();
-            
-                String className = Options.class.getName();
-                String propertyKey = prefixWithoutUnderscoreAtEnd + "." + className + "." + keyWithoutPrefix;
-                properties.put(propertyKey, fieldValue);
-            }
-        }
-
-        return OptionMap.builder().parseAll(properties, prefixWithoutUnderscoreAtEnd).getMap();
     }
 
     private HttpHandler healthcheckPoolHandler() {

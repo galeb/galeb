@@ -33,6 +33,8 @@ import io.undertow.server.handlers.proxy.ProxyCallback;
 import io.undertow.server.handlers.proxy.ProxyClient;
 import io.undertow.server.handlers.proxy.ProxyConnection;
 import io.undertow.server.handlers.proxy.ProxyConnectionPool;
+import io.undertow.server.handlers.proxy.RouteIteratorFactory;
+import io.undertow.server.handlers.proxy.RouteIteratorFactory.ParsingCompatibility;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.AttachmentList;
 import io.undertow.util.CopyOnWriteMap;
@@ -44,6 +46,7 @@ import org.xnio.ssl.XnioSsl;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -60,26 +63,40 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
+    /**
+     * The attachment key that is used to attach the proxy connection to the exchange.
+     * <p>
+     * This cannot be static as otherwise a connection from a different client could be re-used.
+     */
     private final AttachmentKey<ExclusiveConnectionHolder> exclusiveConnectionKey = AttachmentKey.create(ExclusiveConnectionHolder.class);
 
     private static final AttachmentKey<AttachmentList<Host>> ATTEMPTED_HOSTS = AttachmentKey.createList(Host.class);
 
-    // If a host fails we retry periodically every X seconds
+    /**
+     * Time in seconds between retries for problem servers
+     */
     private volatile int problemServerRetry = 10; // seconds
 
     private final Set<String> sessionCookieNames = new CopyOnWriteArraySet<>();
 
+    /**
+     * The number of connections to create per thread
+     */
     private volatile int connectionsPerThread = 10;
     private volatile int maxQueueSize = 0;
     private volatile int softMaxConnectionsPerThread = 5;
     private volatile int ttl = -1;
 
+    /**
+     * The hosts list.
+     */
     private volatile Host[] hosts = {};
 
     private final HostSelector hostSelector;
     private final UndertowClient client;
 
     private final Map<String, Host> routes = new CopyOnWriteMap<>();
+    private RouteIteratorFactory routeIteratorFactory = new RouteIteratorFactory(ParsingCompatibility.MOD_JK, null);
 
     private final ExclusivityChecker exclusivityChecker;
 
@@ -159,6 +176,12 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         this.softMaxConnectionsPerThread = softMaxConnectionsPerThread;
         return this;
     }
+
+    public ExtendedLoadBalancingProxyClient setRankedRoutingDelimiter(String rankedRoutingDelimiter) {
+        this.routeIteratorFactory = new RouteIteratorFactory(ParsingCompatibility.MOD_JK, rankedRoutingDelimiter);
+        return this;
+    }
+
 
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host) {
         return addHost(host, null, null);
@@ -258,13 +281,11 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
             if (holder != null || (exclusivityChecker != null && exclusivityChecker.isExclusivityRequired(exchange))) {
                 // If we have a holder, even if the connection was closed we now exclusivity was already requested so our client
                 // may be assuming it still exists.
-                host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
-                        .setHolder(holder).setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host).setExclusive(),
-                        timeout, timeUnit, true);
+                host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallbackExclusive()
+                        .setHolder(holder).setCallback(callback).setHost(host), timeout, timeUnit, true);
             } else {
                 host.connectionPool.connect(target, exchange, new ProxyConnectionProxyCallback()
-                        .setCallback(callback).setTarget(target).setTimeout(timeout).setTimeUnit(timeUnit).setHost(host), timeout,
-                        timeUnit, false);
+                        .setCallback(callback).setHost(host), timeout, timeUnit, false);
             }
         }
     }
@@ -275,13 +296,20 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         if (hosts.length == 0) {
             return null;
         }
-        Host sticky = findStickyHost(exchange);
-        if (sticky != null) {
-            if(attempted == null || !attempted.contains(sticky)) {
-                return sticky;
+
+        Iterator<CharSequence> parsedRoutes = parseRoutes(exchange);
+        while (parsedRoutes.hasNext()) {
+            // Attempt to find the first existing host which was not yet attempted
+            Host host = this.routes.get(parsedRoutes.next().toString());
+            if (host != null) {
+                if (attempted == null || !attempted.contains(host)) {
+                    return host;
+                }
             }
         }
+
         int host = hostSelector.selectHost(hosts, exchange);
+
         final int startHost = host; //if the all hosts have problems we come back to this one
         Host full = null;
         Host problem = null;
@@ -312,25 +340,15 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         return null;
     }
 
-    protected Host findStickyHost(HttpServerExchange exchange) {
+    protected Iterator<CharSequence> parseRoutes(HttpServerExchange exchange) {
         Map<String, Cookie> cookies = exchange.getRequestCookies();
         for (String cookieName : sessionCookieNames) {
-            Cookie sk = cookies.get(cookieName);
-            if (sk != null) {
-                int index = sk.getValue().indexOf('.');
-
-                if (index == -1) {
-                    continue;
-                }
-                String route = sk.getValue().substring(index + 1);
-                index = route.indexOf('.');
-                if (index != -1) {
-                    route = route.substring(0, index);
-                }
-                return routes.get(route);
+            Cookie sessionCookie = cookies.get(cookieName);
+            if (sessionCookie != null) {
+                return routeIteratorFactory.iterator(sessionCookie.getValue());
             }
         }
-        return null;
+        return routeIteratorFactory.iterator(null);
     }
 
     private void sortHosts(final Host[] newHosts) {
@@ -353,7 +371,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         final URI uri;
         final XnioSsl ssl;
 
-        public Host(String jvmRoute, InetSocketAddress bindAddress, URI uri, XnioSsl ssl, OptionMap options) {
+        private Host(String jvmRoute, InetSocketAddress bindAddress, URI uri, XnioSsl ssl, OptionMap options) {
             this.connectionPool = new ProxyConnectionPool(this, bindAddress, uri, ssl, client, options);
             this.jvmRoute = jvmRoute;
             this.uri = uri;
@@ -414,42 +432,50 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
 
     }
 
-    private class ProxyConnectionProxyCallback implements ProxyCallback<ProxyConnection> {
+    private class ProxyConnectionProxyCallbackExclusive extends ProxyConnectionProxyCallback {
 
         private ExclusiveConnectionHolder holder = null;
-        private ProxyCallback<ProxyConnection> callback;
-        private ProxyTarget target;
-        private long timeout;
-        private TimeUnit timeUnit;
-        private Host host;
-        private boolean exclusive = false;
 
         @Override
-        public void completed(HttpServerExchange exchange, ProxyConnection result) {
-            if (exclusive) {
-                if (holder != null) {
-                    holder.connection = result;
-                } else {
-                    final ExclusiveConnectionHolder newHolder = new ExclusiveConnectionHolder();
-                    newHolder.connection = result;
-                    ServerConnection connection = exchange.getConnection();
-                    connection.putAttachment(exclusiveConnectionKey, newHolder);
-                    connection.addCloseListener(closeListener -> {
-                        ClientConnection clientConnection = newHolder.connection.getConnection();
-                        if (clientConnection.isOpen()) {
-                            safeClose(clientConnection);
-                        }
-                    });
-                }
+        public void completed(HttpServerExchange exchange, ProxyConnection proxyConnection) {
+            if (holder != null) {
+                holder.connection = proxyConnection;
+            } else {
+                final ExclusiveConnectionHolder newHolder = new ExclusiveConnectionHolder();
+                newHolder.connection = proxyConnection;
+                ServerConnection connection = exchange.getConnection();
+                connection.putAttachment(exclusiveConnectionKey, newHolder);
+                connection.addCloseListener(closeListener -> {
+                    ClientConnection clientConnection = newHolder.connection.getConnection();
+                    if (clientConnection.isOpen()) {
+                        safeClose(clientConnection);
+                    }
+                });
             }
-            callback.completed(exchange, result);
+            callback.completed(exchange, proxyConnection);
         }
+
+        public ProxyConnectionProxyCallbackExclusive setHolder(final ExclusiveConnectionHolder holder) {
+            this.holder = holder;
+            return this;
+        }
+    }
+
+    private class ProxyConnectionProxyCallback implements ProxyCallback<ProxyConnection> {
+
+        protected ProxyCallback<ProxyConnection> callback;
+        protected Host host;
 
         @Override
         public void queuedRequestFailed(HttpServerExchange exchange) {
             exchange.removeAttachment(HostSelector.REAL_DEST);
             exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.QUEUED_REQUEST_FAILED.getMessage());
             callback.queuedRequestFailed(exchange);
+        }
+
+        @Override
+        public void completed(HttpServerExchange exchange, ProxyConnection proxyConnection) {
+            callback.completed(exchange, proxyConnection);
         }
 
         @Override
@@ -465,39 +491,14 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
             exchange.getResponseHeaders().add(ResponseCodeOnError.Header.X_GALEB_ERROR, ResponseCodeOnError.COULD_NOT_RESOLVE_BACKEND.getMessage());
             callback.couldNotResolveBackend(exchange);
         }
-        
-        public ProxyConnectionProxyCallback setHolder(final ExclusiveConnectionHolder holder) {
-            this.holder = holder;
-            return this;
-        }
 
         public ProxyConnectionProxyCallback setCallback(final ProxyCallback<ProxyConnection> callback) {
             this.callback = callback;
             return this;
         }
 
-        public ProxyConnectionProxyCallback setTarget(final ProxyTarget target) {
-            this.target = target;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setTimeout(final long timeout) {
-            this.timeout = timeout;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setTimeUnit(final TimeUnit timeUnit) {
-            this.timeUnit = timeUnit;
-            return this;
-        }
-
         public ProxyConnectionProxyCallback setHost(final Host host) {
             this.host = host;
-            return this;
-        }
-
-        public ProxyConnectionProxyCallback setExclusive() {
-            this.exclusive = true;
             return this;
         }
 

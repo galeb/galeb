@@ -1,7 +1,7 @@
 # GALEB ENVOY AGENT
 
 ## Requisite
-* >= Ruby 2.3.0
+* Ruby (>= 2.3.0)
 * Docker (using envoyproxy/envoy-dev image)
 
 ## Setup

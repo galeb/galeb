@@ -1,7 +1,7 @@
 # GALEB NGINX AGENT
 
 ## Requisite
-* >= Ruby 2.3.0
+* Ruby (>=2.3.0)
 
 ## Setup
 ```

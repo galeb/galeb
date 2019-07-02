@@ -16,15 +16,21 @@
 
 package io.galeb.router.handlers;
 
-import io.galeb.core.enums.SystemEnv;
+import java.net.URI;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.xnio.OptionMap;
+
 import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
-import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
-import io.undertow.attribute.ExchangeAttribute;
 import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -33,10 +39,6 @@ import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 public class PoolHandler implements HttpHandler {
 
@@ -60,8 +62,10 @@ public class PoolHandler implements HttpHandler {
     private ExtendedLoadBalancingProxyClient proxyClient;
 
     private final Pool pool;
+    private final OptionMap undertowOptionMap;
 
-    public PoolHandler(final Pool pool) {
+    public PoolHandler(final Pool pool, final ApplicationContext context) {
+        this.undertowOptionMap = context.getBean("undertowOptionMap", OptionMap.class);
         this.pool = pool;
         this.defaultHandler = buildPoolHandler();
     }
@@ -148,7 +152,7 @@ public class PoolHandler implements HttpHandler {
         pool.getTargets().forEach(target -> {
             String value = target.getName();
             URI uri = URI.create(target.getName());
-            proxyClient.addHost(uri);
+            proxyClient.addHost(uri, undertowOptionMap);
             logger.info("[pool:" + pool.getName() + "] added Target " + value);
         });
     }

@@ -66,7 +66,7 @@ public class HttpClientConfigurationMock {
                     Project project = new Project("projectX");
                     VirtualHost virtuahost = new VirtualHost("test.com", environment, project);
                     Map<String, String> virtualhostProperties = new HashMap<>();
-                    virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*,172.*.*.*");
+                    virtualhostProperties.put(IPACL_ALLOW, "127.0.0.0/8,0:0:0:0:0:0:0:1/128,10.*.*.*,172.*.*.*,192.168.*.*");
                     virtualhostProperties.put(FULLHASH_PROP, "xxxxxxxxxx");
                     virtuahost.setProperties(virtualhostProperties);
                     RuleType ruleType = new RuleType(EnumRuleType.PATH.toString());

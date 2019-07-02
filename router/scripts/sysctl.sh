@@ -9,3 +9,5 @@
 /sbin/sysctl -w net.ipv4.tcp_tw_reuse=1
 /sbin/sysctl -w net.ipv4.ip_local_port_range="15000 65000"
 /sbin/sysctl -w fs.file-max=100000
+/sbin/sysctl -w net.ipv4.tcp_keepalive_intvl=30
+/sbin/sysctl -w net.ipv4.tcp_keepalive_time=120

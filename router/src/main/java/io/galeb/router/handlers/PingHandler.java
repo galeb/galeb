@@ -16,15 +16,20 @@
 
 package io.galeb.router.handlers;
 
+import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.services.UpdaterService;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.StatusCodes;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -41,6 +46,7 @@ public class PingHandler implements HttpHandler {
     }
 
     private static final long OBSOLETE_TIME = 10000;
+    private final Log logger = LogFactory.getLog(this.getClass());
 
     private final AtomicLong lastPing = new AtomicLong(0L);
     private final ManagerClientCache cache;
@@ -87,7 +93,17 @@ public class PingHandler implements HttpHandler {
 
     private boolean isFailed() {
         // TODO: Check all system
-        return rootHandler.isFailed();
+        try {
+            Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
+            Integer.parseInt(SystemEnv.ROUTER_PORT.getValue());
+            Integer.parseInt(SystemEnv.STATSD_PORT.getValue());
+            Integer.parseInt(SystemEnv.SYSLOG_PORT.getValue());
+            Assert.hasText(SystemEnv.STATSD_HOST.getValue(), "STATSD_HOST NULL");
+            Assert.hasText(SystemEnv.SYSLOG_HOST.getValue(), "SYSLOG_HOST NULL");
+            return rootHandler.isFailed();
+        } catch(Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
+            return true;
+        }
     }
-
 }

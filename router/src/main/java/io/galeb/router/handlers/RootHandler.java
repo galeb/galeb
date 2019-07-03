@@ -54,7 +54,6 @@ public class RootHandler implements HttpHandler {
         if (enableStatsd) exchange.addExchangeCompleteListener(statsdCompletionListener);
         try {
             nameVirtualHostHandler.handleRequest(exchange);
-            rootHandlerFailed.compareAndSet(true, false);
         } catch (Exception e) {
             rootHandlerFailed.compareAndSet(false, true);
             logger.error(ExceptionUtils.getStackTrace(e));

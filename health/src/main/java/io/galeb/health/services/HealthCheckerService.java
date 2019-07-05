@@ -29,13 +29,18 @@ import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.health.util.CallBackQueue;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.cookie.Cookie;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
+import org.asynchttpclient.cookie.CookieStore;
+import org.asynchttpclient.uri.Uri;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +49,31 @@ import org.springframework.stereotype.Service;
 public class HealthCheckerService {
 
     private static final Class ROOT_CLASS = HealthCheckerService.class;
+
+    private static final CookieStore NULL_COOKIE_STORE = new CookieStore() {
+        @Override
+        public void add(Uri uri, Cookie cookie) { }
+
+        @Override
+        public List<Cookie> get(Uri uri) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<Cookie> getAll() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean remove(Predicate<Cookie> predicate) {
+            return true;
+        }
+
+        @Override
+        public boolean clear() {
+            return true;
+        }
+    };
 
     // @formatter:off
     private final boolean keepAlive                   = Boolean.parseBoolean(SystemEnv.TEST_KEEPALIVE.getValue());
@@ -64,6 +94,7 @@ public class HealthCheckerService {
         this.asyncHttpClient = asyncHttpClient(config()
                 .setFollowRedirect(false)
                 .setSoReuseAddress(true)
+                .setCookieStore(NULL_COOKIE_STORE)
                 .setKeepAlive(keepAlive)
                 .setConnectTimeout(connectionTimeout)
                 .setPooledConnectionIdleTimeout(pooledConnectionIdleTimeout)

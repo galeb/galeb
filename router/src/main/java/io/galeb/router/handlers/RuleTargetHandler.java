@@ -25,6 +25,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 import java.util.Optional;
@@ -40,12 +41,15 @@ public class RuleTargetHandler implements HttpHandler {
     private final AtomicBoolean firstLoad = new AtomicBoolean(true);
     private final VirtualHost virtualHost;
     private final PathGlobHandler pathGlobHandler;
+    private final ApplicationContext context;
     private PoolHandler poolHandler = null;
+    
 
-    public RuleTargetHandler(final VirtualHost virtualHost) {
-        this.virtualHost = virtualHost;
+    public RuleTargetHandler(final VirtualHost virtualHost, final ApplicationContext context) {
+        this.context = context;
         Assert.notNull(virtualHost, "[ Virtualhost NOT FOUND ]");
         this.pathGlobHandler = new PathGlobHandler().setDefaultHandler(loadRulesHandler());
+        this.virtualHost = virtualHost;
     }
 
     @Override
@@ -94,13 +98,13 @@ public class RuleTargetHandler implements HttpHandler {
                         (ruleSlashOnly = virtualHost.getRules().stream().findAny().orElse(null)) != null &&
                         EnumRuleType.PATH.toString().equals(ruleSlashOnly.getRuleType().getName()) &&
                         ruleSlashOnly.getProperties().get(RULE_MATCH).equals("/")) {
-                    poolHandler = new PoolHandler(ruleSlashOnly.getPool());
+                    poolHandler = new PoolHandler(ruleSlashOnly.getPool(), context);
                     return;
                 }
 
                 final Rule ruleDefault = virtualHost.getRuleDefault();
                 if (ruleDefault != null) {
-                    pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool()));
+                    pathGlobHandler.setDefaultHandler(new PoolHandler(ruleDefault.getPool(), context));
                 }
 
                 virtualHost.getRules().forEach(rule -> {
@@ -112,7 +116,7 @@ public class RuleTargetHandler implements HttpHandler {
                         logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [order:" + order + ", type:" + type + "]");
 
                         if (EnumRuleType.PATH.toString().equals(type)) {
-                            final PoolHandler poolHandler = new PoolHandler(pool);
+                            final PoolHandler poolHandler = new PoolHandler(pool, context);
                             pathGlobHandler.addPath(path, Integer.parseInt(order), poolHandler);
                         }
                     } else {

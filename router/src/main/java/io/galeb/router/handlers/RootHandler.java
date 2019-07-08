@@ -23,6 +23,7 @@ import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,7 @@ public class RootHandler implements HttpHandler {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
+    private final AtomicBoolean rootHandlerFailed = new AtomicBoolean(false);
 
     private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
     private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
@@ -53,11 +55,13 @@ public class RootHandler implements HttpHandler {
         try {
             nameVirtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {
+            rootHandlerFailed.compareAndSet(false, true);
             logger.error(ExceptionUtils.getStackTrace(e));
             ResponseCodeOnError.ROOT_HANDLER_FAILED.getHandler().handleRequest(exchange);
         }
     }
 
-
-
+    public boolean isFailed() {
+        return rootHandlerFailed.get();
+    }
 }

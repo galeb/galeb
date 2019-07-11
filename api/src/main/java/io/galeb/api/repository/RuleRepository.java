@@ -16,9 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.RuleRepositoryCustom;
-import io.galeb.core.entity.Rule;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,18 +23,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.galeb.api.repository.custom.RuleRepositoryCustom;
+import io.galeb.core.entity.Rule;
+
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "rule", collectionResourceRel = "rule", itemResourceRel = "rule")
 public interface RuleRepository extends JpaRepository<Rule, Long>, RuleRepositoryCustom {
 
     @Override
     @PreAuthorize("@perm.allowSave(#rule, #this)")
-    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
     Rule save(@Param("rule") Rule rule);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true)
     void delete(@Param("id") Long id);
 
     @Override

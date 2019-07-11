@@ -16,10 +16,9 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
-import io.galeb.core.entity.Environment;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,8 +28,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import java.util.List;
-import java.util.Set;
+import io.galeb.api.repository.custom.EnvironmentRepositoryCustom;
+import io.galeb.core.entity.Environment;
 
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "environment", collectionResourceRel = "environment", itemResourceRel = "environment")
@@ -38,12 +37,10 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
 
     @Override
     @PreAuthorize("@perm.allowSave(#environment, #this)")
-    @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     Environment save(@Param("environment") Environment environment);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @CacheEvict(value = "cache_findAllByTargetId", allEntries = true)
     void delete(@Param("id") Long id);
 
     @RestResource(exported = false)
@@ -51,7 +48,6 @@ public interface EnvironmentRepository extends JpaRepository<Environment, Long>,
             "inner join e.pools as p " +
             "inner join p.targets as t " +
             "WHERE t.id = :targetId")
-    @Cacheable(value = "cache_findAllByTargetId", unless = "#result == null or #result?.empty", key = "{ 'findAllByTargetId', #p0 }")
     Set<Environment> findAllByTargetId(@Param("targetId") long targetId);
 
     @RestResource(exported = false)

@@ -16,18 +16,26 @@
 
 package io.galeb.api.repository.custom;
 
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.support.JpaEntityInformation;
+import org.springframework.data.jpa.repository.support.JpaEntityInformationSupport;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.google.common.collect.Sets;
-import io.galeb.api.services.GenericDaoService;
+
 import io.galeb.api.repository.EnvironmentRepository;
+import io.galeb.api.services.GenericDaoService;
 import io.galeb.api.services.StatusService;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Project;
 import io.galeb.core.entity.VirtualHost;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.PostConstruct;
-import java.util.Set;
+import io.galeb.core.entity.VirtualhostGroup;
 
 @SuppressWarnings({"unused", "SpringJavaAutowiredMembersInspection"})
 public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<VirtualHost> implements VirtualHostRepositoryCustom, WithRoles {
@@ -76,5 +84,33 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
             }
         } catch (Exception ignored) {}
         return -1L;
+    }
+    
+    @Transactional
+    public VirtualHost save(VirtualHost virtualHost) {
+        EntityManager entityManager = genericDaoService.entityManager();
+
+        if (virtualHost.getVirtualhostgroup() == null) {
+            VirtualhostGroup virtualhostGroup = new VirtualhostGroup();
+            entityManager.persist(virtualhostGroup);
+            virtualHost.setVirtualhostgroup(virtualhostGroup);
+        }
+
+        if (entityIsNew(virtualHost)) {
+            entityManager.persist(virtualHost);
+        } else {
+            entityManager.merge(virtualHost);
+        }
+
+        entityManager.flush();
+
+        return virtualHost;
+    }
+
+    private boolean entityIsNew(VirtualHost virtualHost) {
+        JpaEntityInformation<VirtualHost, ?> entityInformation = JpaEntityInformationSupport
+                .getEntityInformation(VirtualHost.class, genericDaoService.entityManager());
+
+        return entityInformation.isNew(virtualHost);
     }
 }

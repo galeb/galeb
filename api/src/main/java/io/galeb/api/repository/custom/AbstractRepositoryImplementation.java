@@ -104,7 +104,7 @@ public abstract class AbstractRepositoryImplementation<T extends AbstractEntity>
     public T saveByPass(T entity) {
         return simpleJpaRepository.saveAndFlush(entity);
     }
-
+    
     @SuppressWarnings("unchecked")
     public Page<T> findAll(Pageable pageable) {
         Account account = (Account)SecurityContextHolder.getContext().getAuthentication().getPrincipal();

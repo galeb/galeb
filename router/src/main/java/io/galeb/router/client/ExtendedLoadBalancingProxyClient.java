@@ -35,6 +35,7 @@ import io.undertow.server.handlers.proxy.ProxyConnection;
 import io.undertow.server.handlers.proxy.ProxyConnectionPool;
 import io.undertow.server.handlers.proxy.RouteIteratorFactory;
 import io.undertow.server.handlers.proxy.RouteIteratorFactory.ParsingCompatibility;
+import io.undertow.server.handlers.proxy.RouteParsingStrategy;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.AttachmentList;
 import io.undertow.util.CopyOnWriteMap;
@@ -96,7 +97,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     private final UndertowClient client;
 
     private final Map<String, Host> routes = new CopyOnWriteMap<>();
-    private RouteIteratorFactory routeIteratorFactory = new RouteIteratorFactory(ParsingCompatibility.MOD_JK, null);
+    private RouteIteratorFactory routeIteratorFactory = new RouteIteratorFactory(RouteParsingStrategy.SINGLE, ParsingCompatibility.MOD_JK);
 
     private final ExclusivityChecker exclusivityChecker;
 
@@ -178,7 +179,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     }
 
     public ExtendedLoadBalancingProxyClient setRankedRoutingDelimiter(String rankedRoutingDelimiter) {
-        this.routeIteratorFactory = new RouteIteratorFactory(ParsingCompatibility.MOD_JK, rankedRoutingDelimiter);
+        this.routeIteratorFactory = new RouteIteratorFactory(RouteParsingStrategy.RANKED, ParsingCompatibility.MOD_JK, rankedRoutingDelimiter);
         return this;
     }
 

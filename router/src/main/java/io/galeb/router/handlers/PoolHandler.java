@@ -98,7 +98,13 @@ public class PoolHandler implements HttpHandler {
                 logger.info("creating pool " + pool.getName());
                 proxyClient = getProxyClient();
                 addTargets(proxyClient);
-                proxyHandler = new ProxyHandler(proxyClient, maxRequestTime, badGatewayHandler(), rewriteHostHeader, reuseXForwarded);
+                proxyHandler = ProxyHandler.builder()
+                        .setProxyClient(proxyClient)
+                        .setMaxRequestTime(maxRequestTime)
+                        .setNext(badGatewayHandler())
+                        .setRewriteHostHeader(rewriteHostHeader)
+                        .setReuseXForwarded(reuseXForwarded)
+                        .build();
                 proxyHandler.handleRequest(exchange);
                 return;
             }

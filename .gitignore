@@ -85,6 +85,14 @@ hs_err_pid*
 .idea_modules/
 *.iml
 
+# Eclipse IDE
+.project
+.settings/
+*/.project
+*/.settings/
+*/.classpath
+*/.factorypath
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 

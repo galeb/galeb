@@ -16,6 +16,24 @@
 
 package io.galeb.api.services;
 
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.HealthStatus;
@@ -23,22 +41,6 @@ import io.galeb.core.entity.Project;
 import io.galeb.core.entity.RoleGroup;
 import io.galeb.core.entity.RuleOrdered;
 import io.galeb.core.entity.Team;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GenericDaoService {
@@ -97,7 +99,6 @@ public class GenericDaoService {
         return query.getResultList();
     }
 
-    @Cacheable(value = "cache_mergeAllRolesOfDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     public Set<String> mergeAllRolesOf(Long accountId) {
         //TODO: INNER JOIN roleGroupsFromTeams, roleGroupsFromAccount & roleGroupsFromProjectByAccountId ?
 
@@ -132,22 +133,18 @@ public class GenericDaoService {
             .getResultList();
     }
 
-    @Cacheable(value = "cache_projectFromHealthStatusDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     public List<Project> projectFromHealthStatus(Long id) {
         return projectsNamedQuery("projectFromHealthStatus", id);
     }
 
-    @Cacheable(value = "cache_projectFromRuleOrderedDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     public List<Project> projectFromRuleOrdered(Long id) {
         return projectsNamedQuery("projectFromRuleOrdered", id);
     }
 
-    @Cacheable(value = "cache_projectFromTargetDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     public List<Project> projectFromTarget(Long id) {
         return projectsNamedQuery("projectFromTarget", id);
     }
 
-    @Cacheable(value = "cache_projectFromVirtualhostGroupDao", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0 }")
     public List<Project> projectFromVirtualhostGroup(Long id) {
         return projectsNamedQuery("projectFromVirtualhostGroup", id);
     }
@@ -159,7 +156,6 @@ public class GenericDaoService {
             .getResultList();
     }
 
-    @Cacheable(value = "cache_projectLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Project> projectLinkedToAccount(Long accountId, Long projectId) {
         return em.createNamedQuery("projectLinkedToAccount", Project.class)
@@ -167,7 +163,6 @@ public class GenericDaoService {
             .setParameter("project_id", projectId).getResultList();
     }
 
-    @Cacheable(value = "cache_roleGroupsFromProject", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<RoleGroup> roleGroupsFromProject(Long accountId, Long projectId) {
         return em.createNamedQuery("roleGroupsFromProject", RoleGroup.class)
@@ -176,7 +171,6 @@ public class GenericDaoService {
             .getResultList();
     }
 
-    @Cacheable(value = "cache_teamLinkedToAccount", unless = "#result == null or #result?.empty", key = "{ #root.methodName, #p0, #p1 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Team> teamLinkedToAccount(Long accountId, Long teamId) {
         return em.createNamedQuery("teamLinkedToAccount", Team.class)
@@ -184,7 +178,6 @@ public class GenericDaoService {
             .setParameter("team_id", teamId).getResultList();
     }
 
-    @Cacheable(value = "cache_userDetailsDao", unless = "#result == null", key = "{ #root.methodName, #p0 }")
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Account findAccount(String username) {
         Account accountPersisted = null;
@@ -195,7 +188,6 @@ public class GenericDaoService {
         return accountPersisted;
     }
 
-    @Cacheable(value = "cache_entityExist", key = "{ 'exist', #p0, #p1 }")
     public boolean exist(String entityName, Long id) {
         try {
             final Query query = em.createNativeQuery("SELECT e.id FROM " + nativeTable(entityName) + " e WHERE e.id = :id").setParameter("id", id);

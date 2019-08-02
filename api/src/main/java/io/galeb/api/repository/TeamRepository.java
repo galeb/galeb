@@ -16,16 +16,15 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.TeamRepositoryCustom;
-import io.galeb.core.entity.Team;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import io.galeb.api.repository.custom.TeamRepositoryCustom;
+import io.galeb.core.entity.Team;
 
 
 @SuppressWarnings({"unused", "unchecked"})
@@ -34,22 +33,10 @@ public interface TeamRepository extends JpaRepository<Team, Long>, TeamRepositor
 
     @Override
     @PreAuthorize("@perm.allowSave(#team, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true)
-    })
     Team save(@Param("team") Team team);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true)
-    })
     void delete(@Param("id") Long id);
 
     @Override

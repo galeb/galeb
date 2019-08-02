@@ -16,10 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.ProjectRepositoryCustom;
-import io.galeb.core.entity.Project;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,38 +23,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.galeb.api.repository.custom.ProjectRepositoryCustom;
+import io.galeb.core.entity.Project;
+
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "project", collectionResourceRel = "project", itemResourceRel = "project")
 public interface ProjectRepository extends JpaRepository<Project, Long>, ProjectRepositoryCustom {
 
     @Override
     @PreAuthorize("@perm.allowSave(#project, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Project', #p0.getId() }")
-    })
     Project save(@Param("project") Project project);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromRuleOrderedDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true),
-        @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Project', #p0 }")
-    })
     void delete(@Param("id") Long id);
 
     @Override

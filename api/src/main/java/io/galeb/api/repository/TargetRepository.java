@@ -16,10 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.TargetRepositoryCustom;
-import io.galeb.core.entity.Target;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,28 +23,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.galeb.api.repository.custom.TargetRepositoryCustom;
+import io.galeb.core.entity.Target;
+
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "target", collectionResourceRel = "target", itemResourceRel = "target")
 public interface TargetRepository extends JpaRepository<Target, Long>, TargetRepositoryCustom {
 
     @Override
     @PreAuthorize("@perm.allowSave(#target, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true, beforeInvocation = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true, beforeInvocation = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }", beforeInvocation = true),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0.getId() }", beforeInvocation = true)
-    })
     Target save(@Param("target") Target target);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_projectFromHealthStatusDao", allEntries = true, beforeInvocation = true),
-        @CacheEvict(value = "cache_projectFromTargetDao", allEntries = true, beforeInvocation = true),
-        @CacheEvict(value = "cache_findAllByTargetId", key = "{ 'findAllByTargetId', #p0 }", beforeInvocation = true),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'Target', #p0 }", beforeInvocation = true)
-    })
     void delete(@Param("id") Long id);
 
     @Override

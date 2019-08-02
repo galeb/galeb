@@ -16,11 +16,8 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.VirtualhostGroupRepositoryCustom;
-import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.entity.VirtualhostGroup;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
+import java.util.Collection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,7 +26,9 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import java.util.Collection;
+import io.galeb.api.repository.custom.VirtualhostGroupRepositoryCustom;
+import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.entity.VirtualhostGroup;
 
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "virtualhostgroup", collectionResourceRel = "virtualhostgroup", itemResourceRel = "virtualhostgroup")
@@ -38,18 +37,10 @@ public interface VirtualhostGroupRepository extends JpaRepository<VirtualhostGro
     @Override
     @RestResource(exported = false)
     @PreAuthorize("@perm.allowSave(#virtualhostgroup, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
-        @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'VirtualhostGroup', #p0.getId() }")
-    })
     VirtualhostGroup save(@Param("virtualhostgroup") VirtualhostGroup virtualhostgroup);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @Caching(evict = {
-            @CacheEvict(value = "cache_projectFromVirtualhostGroupDao", allEntries = true),
-            @CacheEvict(value = "cache_entityExist", key = "{ 'exist', 'VirtualhostGroup', #p0 }")
-    })
     void delete(@Param("id") Long id);
 
     @Override

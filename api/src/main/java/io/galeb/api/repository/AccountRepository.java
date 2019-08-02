@@ -16,10 +16,6 @@
 
 package io.galeb.api.repository;
 
-import io.galeb.api.repository.custom.AccountRepositoryCustom;
-import io.galeb.core.entity.Account;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,41 +24,23 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.galeb.api.repository.custom.AccountRepositoryCustom;
+import io.galeb.core.entity.Account;
+
 @SuppressWarnings({"unused", "unchecked"})
 @RepositoryRestResource(path = "account", collectionResourceRel = "account", itemResourceRel = "account")
 public interface AccountRepository extends JpaRepository<Account, Long>, AccountRepositoryCustom {
 
     @Override
     @PreAuthorize("@perm.allowSave(#account, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_userDetailsDao", key = "#p0.username")
-    })
     Account save(@Param("account") Account account);
 
     @Override
     @RestResource(exported = false)
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_userDetailsDao", key = "#p0.username")
-    })
     Account saveByPass(@Param("account") Account account);
 
     @Override
     @PreAuthorize("@perm.allowDelete(#id, #this)")
-    @Caching(evict = {
-        @CacheEvict(value = "cache_mergeAllRolesOf", allEntries = true),
-        @CacheEvict(value = "cache_projectLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_roleGroupsFromProject", allEntries = true),
-        @CacheEvict(value = "cache_teamLinkedToAccount", allEntries = true),
-        @CacheEvict(value = "cache_userDetailsDao", allEntries = true)
-    })
     void delete(@Param("id") Long id);
 
     @Override

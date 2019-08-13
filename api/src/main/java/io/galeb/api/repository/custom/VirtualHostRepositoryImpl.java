@@ -87,6 +87,7 @@ public class VirtualHostRepositoryImpl extends AbstractRepositoryImplementation<
     }
     
     @Transactional
+    @Override
     public VirtualHost save(VirtualHost virtualHost) {
         EntityManager entityManager = genericDaoService.entityManager();
 

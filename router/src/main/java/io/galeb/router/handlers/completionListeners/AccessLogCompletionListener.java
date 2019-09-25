@@ -34,7 +34,6 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
 
     private static final int MAX_REQUEST_TIME = Integer.MAX_VALUE - 1;
     private static final String REQUESTID_HEADER = SystemEnv.REQUESTID_HEADER.getValue();
-    private static final String TAGS = "GALEB," + SystemEnv.GROUP_ID.getValue() + "," + SystemEnv.ENVIRONMENT_NAME.getValue() + ",ROUTER,ACCESS";
     private static final String TAB = "\t";
 
     private final Log logger = LogFactory.getLog(this.getClass());
@@ -72,8 +71,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
                     TAB + statusCode + TAB + "-" + TAB + bytesSentOrDash +
                     TAB + "-" + TAB + "-" + TAB + "Agent:" + TAB + (userAgent != null ? userAgent : "-") +
                     (requestId != null ? TAB + requestId : "") +
-                    TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-") +
-                    TAB + "tags: " + TAGS;
+                    TAB + "Fwd:" + TAB + (xForwardedFor != null ? xForwardedFor : "-");
 
             logger.info(message);
 

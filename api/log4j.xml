@@ -9,7 +9,7 @@
 </Properties>
 <Appenders>
   <Socket name="SyslogApp" host="${syslog_host}" port="${syslog_port}" protocol="UDP">
-    <PatternLayout pattern="&lt;14&gt;%d{MMM dd HH:mm:ss} ${hostname} api: [%p] %t %m %exception\ttags: ${tags}%n"/>
+    <PatternLayout pattern="%m %exception%n"/>
   </Socket>
 
   <Async name="AsyncSyslogApp">

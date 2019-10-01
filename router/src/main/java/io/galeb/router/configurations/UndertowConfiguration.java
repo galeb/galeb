@@ -51,6 +51,7 @@ public class UndertowConfiguration {
                 .setSocketOption(Options.TCP_NODELAY, true)
                 .setServerOption(UndertowOptions.RECORD_REQUEST_START_TIME, true)
                 .setServerOption(UndertowOptions.ENABLE_STATISTICS, true)
+                .setServerOption(UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL, true)
                 .build();
     }
 }

@@ -93,8 +93,8 @@ public class StepDefs {
 
     private void executeRequest() throws InterruptedException, java.util.concurrent.ExecutionException {
         long start = System.currentTimeMillis();
-        this.response = client.execute(new RequestBuilder()
-                .setHeaders(headers).setAddress(address).setMethod(method).setUri(uri));
+        this.response = client.execute(new RequestBuilder(method,true)
+                .setHeaders(headers).setAddress(address).setUri(uri));
         this.requestTime = System.currentTimeMillis() - start;
         logger.info("request time (ms): " + requestTime);
     }

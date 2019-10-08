@@ -72,8 +72,8 @@ public class SimulatedBackendService {
         this.behavior = behavior;
         int backendPort = 8080;
         this.undertow = Undertow.builder()
-        						.setServerOption(UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL, true)
-        						.addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
+                                .setServerOption(UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL, true)
+                                .addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
         return this;
     }
 

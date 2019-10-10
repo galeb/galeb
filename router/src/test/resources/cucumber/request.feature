@@ -17,3 +17,8 @@ Feature: Request Support
     Given a valid host request to BROKEN backend
     When Do GET /
     Then the response status is 503
+    
+  Scenario: Sending GET to /search?query=query{%22key%22:%22value%22} with valid host header
+    Given a valid host request to FASTTER backend
+    When Do GET /search?query=query{"key":"value"}
+    Then the response status is 200

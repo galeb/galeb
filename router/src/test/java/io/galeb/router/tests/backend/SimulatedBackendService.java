@@ -18,6 +18,7 @@ package io.galeb.router.tests.backend;
 
 import io.galeb.router.tests.client.HttpClient;
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import org.apache.commons.logging.Log;
@@ -70,7 +71,9 @@ public class SimulatedBackendService {
     public SimulatedBackendService setResponseBehavior(ResponseBehavior behavior) {
         this.behavior = behavior;
         int backendPort = 8080;
-        this.undertow = Undertow.builder().addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
+        this.undertow = Undertow.builder()
+                                .setServerOption(UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL, true)
+                                .addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
         return this;
     }
 

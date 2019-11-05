@@ -43,6 +43,7 @@ public class QueryResultLine implements Serializable {
     private final String hsStatus;
     private final Long rId;
     private final Long tId;
+    private final Long roId;
 
     public QueryResultLine(Object[] objects) {
         this.vId = objects[0] instanceof BigInteger ? ((BigInteger) objects[0]).longValue() : (Long) objects[0];
@@ -64,6 +65,7 @@ public class QueryResultLine implements Serializable {
         this.hsStatus = (String) objects[16];
         this.rId = objects[17] instanceof BigInteger ? ((BigInteger) objects[17]).longValue() : (Long) objects[17];
         this.tId = objects[18] instanceof BigInteger ? ((BigInteger) objects[18]).longValue() : (Long) objects[18];
+        this.roId = objects[19] instanceof BigInteger ? ((BigInteger) objects[19]).longValue() : (Long) objects[19];
     }
 
     public Long getVirtualhostId() {
@@ -140,5 +142,9 @@ public class QueryResultLine implements Serializable {
 
     public Long getTargetId() {
         return tId;
+    }
+
+    public Long getRuleOrderedId() {
+        return roId;
     }
 }

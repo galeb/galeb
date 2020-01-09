@@ -55,7 +55,8 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
             + "GROUP_CONCAT(IFNULL(hs.last_modified_at, 'NULL')) as hs_last_modified_at, " //15
             + "GROUP_CONCAT(IFNULL(hs.status, 'UNKNOWN')) as hs_status, " //16
             + "r.id as r_id, " // 17
-            + "t.id as t_id "  // 18
+            + "t.id as t_id, "  // 18
+            + "ro.id as ro_id "  // 19
             + "FROM virtualhost v "
             + "INNER JOIN virtualhost_environments v_e on v.id=v_e.virtualhost_id "
             + "INNER JOIN virtualhostgroup vhg on v.virtualhostgroup_id=vhg.id "
@@ -75,10 +76,10 @@ public interface VirtualHostRepository extends JpaRepository<VirtualHost, Long> 
     @Query(value = FIND_ALL_BY_ENV_ID_SQL)
     List<VirtualHost> findAllByEnvironmentId(@Param("envId") Long envId);
 
-    @Query(value = FULL_ENTITIES_SQL + "AND (hs.source IS NULL || hs.source = :zoneid) GROUP BY v.id, r.id, p.id, t.id ORDER BY v.id, ro.id, r.id, p.id, t.id", nativeQuery = true)
+    @Query(value = FULL_ENTITIES_SQL + "AND (hs.source IS NULL || hs.source = :zoneid) GROUP BY v.id, ro.id, r.id, p.id, t.id ORDER BY v.id, ro.id, r.id, p.id, t.id", nativeQuery = true)
     List<Object[]> fullEntity(@Param("envid") Long envid, @Param("zoneid") String zoneid);
 
-    @Query(value = FULL_ENTITIES_SQL + "GROUP BY v.id, r.id, p.id, t.id ORDER BY v.id, ro.id, r.id, p.id, t.id", nativeQuery = true)
+    @Query(value = FULL_ENTITIES_SQL + "GROUP BY v.id, ro.id, r.id, p.id, t.id ORDER BY v.id, ro.id, r.id, p.id, t.id", nativeQuery = true)
     List<Object[]> fullEntityZoneIdNull(@Param("envid") Long envid);
 
 }

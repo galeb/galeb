@@ -73,7 +73,7 @@
         <info-cukes.version>1.2.4</info-cukes.version>
         <mockito.version>1.10.19</mockito.version>
         <commons-math3.version>3.6.1</commons-math3.version>
-        <org.jacoco.agent.version>0.7.9</org.jacoco.agent.version>
+        <org.jacoco.agent.version>0.8.3</org.jacoco.agent.version>
         <simplejmx.version>1.15</simplejmx.version>
         <system-rules.version>1.16.0</system-rules.version>
     </properties>

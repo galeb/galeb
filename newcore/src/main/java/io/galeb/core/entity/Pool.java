@@ -120,10 +120,10 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
             this.targets.clear();
             this.targets.addAll(targets);
         }
-    }
+    } 
 
     public Project getProject() {
-        return project;
+    	return project;
     }
 
     public void setProject(Project project) {
@@ -185,7 +185,12 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcHost(String hcHost) {
-        this.hcHost = hcHost;
+    	if (hcHost.isBlank() == true) {
+            this.hcHost = null;
+        }
+    	else {
+    		 this.hcHost = hcHost;
+    	}
     }
 
     public Boolean getHcTcpOnly() {
@@ -213,7 +218,12 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcBody(String hcBody) {
-        this.hcBody = hcBody;
+    	if (hcBody.isBlank() == true) {
+            this.hcBody = null;
+        }
+    	else {
+    		this.hcBody = hcBody;
+    	}
     }
 
     public Map<String, String> getHcHeaders() {

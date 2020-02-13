@@ -57,7 +57,7 @@ public class TargetDTO implements Serializable {
         properties.put(HC_HOST, Optional.ofNullable(pool.getHcHost()).orElse(hcHostDefault));
         properties.put(HC_TCP_ONLY, pool.getHcTcpOnly());
         properties.put(HC_HTTP_METHOD, pool.getHcHttpMethod().toString());
-        properties.put(HC_BODY, Optional.ofNullable(pool.getHcBody()).orElse(""));
+        properties.put(HC_BODY, Optional.ofNullable(pool.getHcBody()).orElse(null));
         properties.put(HC_HEADERS, pool.getHcHeaders());
         properties.put(HEALTH_STATUS, target.getHealthStatus());
         this.correlation = UUID.randomUUID().toString();

@@ -16,50 +16,38 @@
 
 package io.galeb.core.entity;
 
-
-
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.util.*;
 
-@NamedQueries({
-        @NamedQuery(
-                name = "PoolDefault",
-                query = "SELECT DISTINCT entity From Pool entity WHERE entity.id IN " +
-                    "(SELECT entity.id FROM Pool entity INNER JOIN entity.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN entity.rules r " +
-                        "WHERE a.username = :username AND (r.global = false OR entity.global = false)) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Pool entity INNER JOIN entity.rules r WHERE r.global = true) " +
-                "OR entity.id IN " +
-                    "(SELECT entity.id FROM Pool entity WHERE entity.global = true)")
-})
+@NamedQueries({ @NamedQuery(name = "PoolDefault", query = "SELECT DISTINCT entity From Pool entity WHERE entity.id IN "
+        + "(SELECT entity.id FROM Pool entity INNER JOIN entity.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN entity.rules r "
+        + "WHERE a.username = :username AND (r.global = false OR entity.global = false)) " + "OR entity.id IN "
+        + "(SELECT entity.id FROM Pool entity INNER JOIN entity.rules r WHERE r.global = true) " + "OR entity.id IN "
+        + "(SELECT entity.id FROM Pool entity WHERE entity.global = true)") })
 
 @Entity
-@Table(uniqueConstraints = { @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
 public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
 
-
     @ManyToMany(mappedBy = "pools")
-    private Set<Rule> rules= new HashSet<>();
-
+    private Set<Rule> rules = new HashSet<>();
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_environment"))
+    @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name = "FK_pool_environment"))
     private Environment environment;
-
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "pool", cascade = CascadeType.REMOVE)
     private Set<Target> targets = new HashSet<>();
 
-
     @ManyToOne(optional = false)
-    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_project"))
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_pool_project"))
     private Project project;
 
-
     @ManyToOne
-    @JoinColumn(name = "balancepolicy_id", nullable = false, foreignKey = @ForeignKey(name="FK_pool_balancepolicy"))
+    @JoinColumn(name = "balancepolicy_id", nullable = false, foreignKey = @ForeignKey(name = "FK_pool_balancepolicy"))
     private BalancePolicy balancepolicy;
 
     @Column(nullable = false)
@@ -160,9 +148,13 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
         }
     }
 
-    public String getAllow() { return allow; }
+    public String getAllow() {
+        return allow;
+    }
 
-    public void setAllow(String allow) { this.allow = allow; }
+    public void setAllow(String allow) {
+        this.allow = allow;
+    }
 
     public String getHcPath() {
         return hcPath;
@@ -185,7 +177,11 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcHost(String hcHost) {
-        this.hcHost = hcHost;
+        if (hcHost.isBlank() == true) {
+            this.hcHost = null;
+        } else {
+            this.hcHost = hcHost;
+        }
     }
 
     public Boolean getHcTcpOnly() {
@@ -213,7 +209,11 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcBody(String hcBody) {
-        this.hcBody = hcBody;
+        if (hcBody.isBlank() == true) {
+            this.hcBody = null;
+        } else {
+            this.hcBody = hcBody;
+        }
     }
 
     public Map<String, String> getHcHeaders() {
@@ -247,11 +247,12 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Pool pool = (Pool) o;
-        return Objects.equals(getProject(), pool.getProject()) &&
-                Objects.equals(getName(), pool.getName());
+        return Objects.equals(getProject(), pool.getProject()) && Objects.equals(getName(), pool.getName());
     }
 
     @Override

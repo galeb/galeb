@@ -72,7 +72,7 @@ public class StatusService {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
         if (entity instanceof Target && targetHasEnvUnregistered((Target) entity, allEnvironments)) {
-            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
+            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.OK));
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
         Set<Long> allEnvironmentIdsEntity = allEnvironments.stream().map(Environment::getId).collect(Collectors.toSet());

@@ -16,6 +16,7 @@
 
 package io.galeb.api.services;
 
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Rule;
@@ -25,6 +26,7 @@ import io.galeb.core.services.ChangesService;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -51,8 +53,23 @@ public class StatusService {
 
     private int envWithStatusCount(Long envId) {
         String id = String.valueOf(envId);
+        final Set<String> envs = new HashSet<String>();
         Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
-        return keys == null ? 0 : keys.size();
+        keys.forEach(key -> {
+        	try {
+	        	MessageFormat ms = new MessageFormat(FORMAT_KEY_HEALTH);
+	            Object[] positions = ms.parse(key);
+	            String envIds = (String) positions[0];
+	            String healthGroup = (String) positions[1];
+	            String localIps = (String) positions[2];
+	            envs.add(healthGroup);
+        		} catch (Exception e) {
+		            JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+		            errorEvent.put("short_message", "Error processing healths - env: " + id);
+		            errorEvent.sendError(e);
+        		}
+           });
+        return envs == null ? 0 : envs.size();
     }
 
     public Map<Long, Status> status(AbstractEntity entity) {
@@ -72,7 +89,7 @@ public class StatusService {
             return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.DELETED));
         }
         if (entity instanceof Target && targetHasEnvUnregistered((Target) entity, allEnvironments)) {
-            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.OK));
+            return allEnvironments.stream().collect(Collectors.toMap(Environment::getId, e -> Status.PENDING));
         }
         Set<Long> allEnvironmentsWithChanges = changesService.listEnvironmentIds(entity);
         Set<Long> allEnvironmentIdsEntity = allEnvironments.stream().map(Environment::getId).collect(Collectors.toSet());

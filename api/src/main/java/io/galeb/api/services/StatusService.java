@@ -59,9 +59,7 @@ public class StatusService {
     		try {
     			MessageFormat ms = new MessageFormat(FORMAT_KEY_HEALTH);
     			Object[] positions = ms.parse(key);
-    			String envIds = (String) positions[0];
     			String healthGroup = (String) positions[1];
-    			String localIps = (String) positions[2];
     			envs.add(healthGroup);
     		} catch (Exception e) {
     			JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());

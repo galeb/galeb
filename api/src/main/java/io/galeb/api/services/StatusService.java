@@ -16,6 +16,7 @@
 
 package io.galeb.api.services;
 
+import io.galeb.core.log.JsonEventToLogger;
 import io.galeb.core.entity.AbstractEntity;
 import io.galeb.core.entity.Environment;
 import io.galeb.core.entity.Rule;
@@ -25,6 +26,7 @@ import io.galeb.core.services.ChangesService;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,22 +52,35 @@ public class StatusService {
     ChangesService changesService;
 
     private int envWithStatusCount(Long envId) {
-        String id = String.valueOf(envId);
-        Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
-        return keys == null ? 0 : keys.size();
+    	String id = String.valueOf(envId);
+    	final Set<String> envs = new HashSet<String>();
+    	Set<String> keys = redisTemplate.keys(MessageFormat.format(FORMAT_KEY_HEALTH, id, "*", "*"));
+    	keys.forEach(key -> {
+    		try {
+    			MessageFormat ms = new MessageFormat(FORMAT_KEY_HEALTH);
+    			Object[] positions = ms.parse(key);
+    			String healthGroup = (String) positions[1];
+    			envs.add(healthGroup);
+    		} catch (Exception e) {
+    			JsonEventToLogger errorEvent = new JsonEventToLogger(this.getClass());
+    			errorEvent.put("short_message", "Error processing healths - env: " + id);
+    			errorEvent.sendError(e);
+    		}
+    	});
+    	return envs == null ? 0 : envs.size();
     }
 
     public Map<Long, Status> status(AbstractEntity entity) {
-        if (entity instanceof Environment) {
-            boolean exists = changesService.hasByEnvironmentId(entity.getId());
-            return Collections.singletonMap(entity.getId(), exists ? Status.PENDING : Status.OK);
-        }
-        final Set<Environment> allEnvironments = entity.getAllEnvironments();
-        if (allEnvironments == null || allEnvironments.isEmpty()) {
-            if (!(entity instanceof Rule)) {
-                LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
-            }
-            return Collections.emptyMap();
+    	if (entity instanceof Environment) {
+    		boolean exists = changesService.hasByEnvironmentId(entity.getId());
+    		return Collections.singletonMap(entity.getId(), exists ? Status.PENDING : Status.OK);
+    	}
+    	final Set<Environment> allEnvironments = entity.getAllEnvironments();
+    	if (allEnvironments == null || allEnvironments.isEmpty()) {
+    		if (!(entity instanceof Rule)) {
+    			LOGGER.error(entity.getClass().getSimpleName() + " ID " + entity.getId() + " is INCONSISTENT. allEnvironments is NULL or Empty");
+    		}
+    		return Collections.emptyMap();
         }
         final Boolean isQuarantine;
         if ((isQuarantine = entity.isQuarantine()) != null && isQuarantine) {

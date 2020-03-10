@@ -177,7 +177,7 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcHost(String hcHost) {
-        if (hcHost.isBlank() == true) {
+        if (hcHost != null && hcHost.isBlank() == true) {
             this.hcHost = null;
         } else {
             this.hcHost = hcHost;
@@ -209,7 +209,7 @@ public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
     }
 
     public void setHcBody(String hcBody) {
-        if (hcBody.isBlank() == true) {
+        if (hcBody != null && hcBody.isBlank() == true) {
             this.hcBody = null;
         } else {
             this.hcBody = hcBody;

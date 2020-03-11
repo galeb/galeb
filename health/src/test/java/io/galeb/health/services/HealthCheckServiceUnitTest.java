@@ -150,6 +150,58 @@ public class HealthCheckServiceUnitTest {
     }
 
     @Test
+    public void testCheckTCPOnlyDNS() throws Exception {
+        Pool pool = new Pool();
+        pool.setName("pool");
+        pool.setId(1L);
+        pool.setHcTcpOnly(true);
+        Target target = new Target();
+        target.setName("https://localhost");
+        target.setId(1L);
+        target.setLastModifiedAt(new Date());
+        target.setPool(pool);
+
+        TargetDTO targetDTO = new TargetDTO(target);
+
+        CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
+        Mockito.doNothing().when(callBackQueue).update(targetDTO);
+        HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
+
+        mockTCPOnlyServer();
+        healthCheckerService.check(targetDTO);
+
+        Assert.assertEquals(HealthStatus.Status.FAIL, targetDTO.getHealthStatus("zone1").get().getStatus());
+        Assert.assertEquals("Fail to estabilished tcp connection", targetDTO.getHealthStatus("zone1").get().getStatusDetailed());
+        Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
+    }
+
+    @Test
+    public void testCheckTCPOnlyDNSMalformedURL() throws Exception {
+        Pool pool = new Pool();
+        pool.setName("pool");
+        pool.setId(1L);
+        pool.setHcTcpOnly(true);
+        Target target = new Target();
+        target.setName("httpsw://localhost");
+        target.setId(1L);
+        target.setLastModifiedAt(new Date());
+        target.setPool(pool);
+
+        TargetDTO targetDTO = new TargetDTO(target);
+
+        CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
+        Mockito.doNothing().when(callBackQueue).update(targetDTO);
+        HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
+
+        mockTCPOnlyServer();
+        healthCheckerService.check(targetDTO);
+
+        Assert.assertEquals(HealthStatus.Status.FAIL, targetDTO.getHealthStatus("zone1").get().getStatus());
+        Assert.assertEquals("Malformed url: httpsw://localhost", targetDTO.getHealthStatus("zone1").get().getStatusDetailed());
+        Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
+    }
+
+    @Test
     public void testCheckTCPOnlyFailStatus() throws Exception {
         Pool pool = new Pool();
         pool.setName("pool");

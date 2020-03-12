@@ -16,28 +16,6 @@
 
 package io.galeb.health.services;
 
-import static org.asynchttpclient.Dsl.asyncHttpClient;
-import static org.asynchttpclient.Dsl.config;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import org.asynchttpclient.AsyncCompletionHandler;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.RequestBuilder;
-import org.asynchttpclient.Response;
-import org.asynchttpclient.cookie.CookieStore;
-import org.asynchttpclient.uri.Uri;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.galeb.core.entity.HealthCheck;
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.HealthStatus.Status;
@@ -49,6 +27,25 @@ import io.galeb.health.util.CallBackQueue;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.cookie.CookieStore;
+import org.asynchttpclient.uri.Uri;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.net.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
 
 @SuppressWarnings("FieldCanBeLocal")
 @Service
@@ -126,20 +123,28 @@ public class HealthCheckerService {
     }
 
     private void checkTcp(TargetDTO targetDTO) {
-        String[] addressAndPort = targetDTO.getTarget().getName().substring("http://".length()).split(":");
-        String address = addressAndPort[0];
-        int port = Integer.parseInt(addressAndPort[1]);
-        
+
         long startTime = System.currentTimeMillis();
 
         String reason;
         Status status;
         Socket socket = new Socket();
         try {
+            URL url = new URL(targetDTO.getTarget().getName());
+            String address = url.getHost();
+
+            int port = url.getPort();
+            if (port == -1) {
+                port = url.getProtocol().equals("http") ? 80 : 443;
+            }
+
             socket.setSoTimeout(connectionTimeout);
             socket.connect(new InetSocketAddress(address, port), connectionTimeout);
             status = Status.HEALTHY;
             reason = status.toString();
+        } catch (MalformedURLException e) {
+            status = Status.FAIL;
+            reason = "Malformed url: " + targetDTO.getTarget().getName();
         } catch (SocketTimeoutException e) {
             status = Status.FAIL;
             reason = "Fail tcp connection timeout";

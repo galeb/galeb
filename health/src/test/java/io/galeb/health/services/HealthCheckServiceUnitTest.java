@@ -37,6 +37,8 @@ public class HealthCheckServiceUnitTest {
     
     private static ClientAndServer mockServer;
     private static ServerSocket serverSocket;
+    private static Thread serverTCP;
+    
 
     @ClassRule
     public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
@@ -58,6 +60,8 @@ public class HealthCheckServiceUnitTest {
                   .respond(HttpResponse.response()
                         .withCookie(new Cookie("session", "test-cookie"))
                         .withStatusCode(HttpStatus.OK.value()));
+        
+        mockTCPOnlyServer();
     }
     
     @AfterClass
@@ -142,7 +146,6 @@ public class HealthCheckServiceUnitTest {
         Mockito.doNothing().when(callBackQueue).update(targetDTO);
         HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
 
-        mockTCPOnlyServer();
         healthCheckerService.check(targetDTO);
         
         Assert.assertEquals(HealthStatus.Status.HEALTHY, targetDTO.getHealthStatus("zone1").get().getStatus());
@@ -167,7 +170,6 @@ public class HealthCheckServiceUnitTest {
         Mockito.doNothing().when(callBackQueue).update(targetDTO);
         HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
 
-        mockTCPOnlyServer();
         healthCheckerService.check(targetDTO);
 
         Assert.assertEquals(HealthStatus.Status.FAIL, targetDTO.getHealthStatus("zone1").get().getStatus());
@@ -193,7 +195,6 @@ public class HealthCheckServiceUnitTest {
         Mockito.doNothing().when(callBackQueue).update(targetDTO);
         HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
 
-        mockTCPOnlyServer();
         healthCheckerService.check(targetDTO);
 
         Assert.assertEquals(HealthStatus.Status.FAIL, targetDTO.getHealthStatus("zone1").get().getStatus());
@@ -201,6 +202,41 @@ public class HealthCheckServiceUnitTest {
         Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
     }
 
+    @Test
+    public void testCheckTCPOnlyNuloExecuteCheckHTTP() throws Exception {
+        Pool pool = new Pool();
+        pool.setName("pool");
+        pool.setId(1L);
+        pool.setHcPath("/");
+        pool.setHcHttpStatusCode("200");
+        pool.setHcTcpOnly(null);
+        
+        pool = Mockito.spy(pool);
+        Mockito.when(pool.getHcTcpOnly()).thenReturn(null);
+        
+        Target target = new Target();
+        target.setName("http://127.0.0.1:" + BACKEND_PORT.toString());
+        target.setId(1L);
+        target.setLastModifiedAt(new Date());
+        target.setPool(pool);
+
+        TargetDTO targetDTO = new TargetDTO(target);
+
+        CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
+        Mockito.doNothing().when(callBackQueue).update(targetDTO);
+        HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
+
+        healthCheckerService.check(targetDTO);
+        
+        mockServer.verify(HttpRequest.request()
+                .withMethod("GET")
+                .withPath("/")
+                .withHeader("user-agent", "Galeb_HealthChecker/1.0")); 
+        
+        Assert.assertEquals(HealthStatus.Status.HEALTHY, targetDTO.getHealthStatus("zone1").get().getStatus());
+        Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
+    }
+    
     @Test
     public void testCheckTCPOnlyFailStatus() throws Exception {
         Pool pool = new Pool();
@@ -219,15 +255,14 @@ public class HealthCheckServiceUnitTest {
         Mockito.doNothing().when(callBackQueue).update(targetDTO);
         HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
 
-        mockTCPOnlyServer();
         healthCheckerService.check(targetDTO);
         
         Assert.assertEquals(HealthStatus.Status.FAIL, targetDTO.getHealthStatus("zone1").get().getStatus());
         Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
     }
     
-    private void mockTCPOnlyServer() {
-        new Thread() {
+    private static void mockTCPOnlyServer() {
+    	serverTCP = new Thread() {
             @Override
             public void run() {
                 try {
@@ -239,7 +274,9 @@ public class HealthCheckServiceUnitTest {
                     e.printStackTrace();
                 }
             }
-        }.start();
+        };
+        
+        serverTCP.start();
     }
     
 }

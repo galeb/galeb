@@ -109,9 +109,9 @@ public class HealthCheckerService {
         try {
             final Boolean hcTcpOnly = (Boolean) targetDTO.getProperties().get(TargetDTO.HC_TCP_ONLY);
             
-            if (hcTcpOnly) {
+            if (hcTcpOnly != null && hcTcpOnly) {
                 checkTcp(targetDTO);
-            } else {                
+            } else {
                 checkHttp(targetDTO);
             }
         } catch (Exception e) {

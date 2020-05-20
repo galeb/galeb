@@ -17,19 +17,18 @@
 package io.galeb.api.controllers;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.galeb.api.repository.AccountRepository;
 import io.galeb.core.entity.Account;
 import io.galeb.core.entity.RoleGroup;
+import java.util.Set;
+import java.util.SortedSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 @RestController
@@ -48,16 +47,16 @@ public class TokenController {
         private String username ;
         private String email;
         private String token;
-        private SortedSet<String> roles;
+        private Set<String> roles;
+
+        @Autowired
+        private AccountRepository accountRepository;
 
         public TokenInfo(Account account) {
             this.username = account.getUsername();
             this.email = account.getEmail();
             this.token = account.getApitoken();
-            this.roles = account.getRolegroups().stream()
-                    .flatMap(r -> r.getRoles().stream())
-                    .map(Enum::name)
-                    .collect(Collectors.toCollection(TreeSet::new));
+            this.roles = accountRepository.mergeAllRolesOf(account);
         }
 
         public String getUsername() {

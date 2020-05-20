@@ -17,9 +17,11 @@
 package io.galeb.health.services;
 
 import io.galeb.core.enums.SystemEnv;
+import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.util.Headers;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.xnio.Options;
 
@@ -29,6 +31,15 @@ import javax.annotation.PostConstruct;
 public class SimpleWebServerService {
 
     private final int port = Integer.parseInt(SystemEnv.HEALTH_PORT.getValue());
+
+    @Value("${build.project}")
+    private String buildProject;
+
+    @Value("${build.version}")
+    private String buildVersion;
+
+    @Value("${build.timestamp}")
+    private String buildTimestamp;
 
     @PostConstruct
     public void init() {
@@ -40,11 +51,21 @@ public class SimpleWebServerService {
     }
 
     private HttpHandler pingHandler() {
-        return exchange -> {
+
+        String body = String.format("{\"name\":\"%s\", \"version\":\"%s\", \"build\":\"%s\", \"healthy\":\"WORKING\"}", buildProject, buildVersion, buildTimestamp);
+
+        HttpHandler pingHandler = Handlers.path().addExactPath("/info", exchange -> {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
+            exchange.getResponseSender().send(body);
+            exchange.endExchange();
+        }).addPrefixPath("/", exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
             exchange.getResponseSender().send("WORKING");
             exchange.endExchange();
-        };
+        });
+
+        return pingHandler;
     }
 }

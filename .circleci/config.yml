@@ -39,8 +39,9 @@ jobs:
                 command: |
                     if [ "x${FORCE_DEPLOY}" == "xtrue" -o "${CIRCLE_BRANCH}" == "master" ]; then
                       sudo yum update -y || true
-                      sudo yum install -y ruby-devel gcc make rpm-build rubygems
-                      sudo gem install --no-ri --no-rdoc fpm
+                      source /opt/rh/rh-ruby27/enable
+                      export PATH="$PATH:/home/circleci/bin"
+                      gem install fpm
                       export GALEB_VERSION=$(cat /tmp/galeb_version)
                       echo $GALEB_VERSION
                       make galeb dist

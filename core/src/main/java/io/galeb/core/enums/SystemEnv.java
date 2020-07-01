@@ -280,8 +280,18 @@ public enum SystemEnv {
     /**
      * PREFIX_UNDERTOW_CLIENT
      */
-    PREFIX_UNDERTOW_CLIENT_OPTION ("PREFIX_UNDERTOW_CLIENT_OPTION", "UNDERTOW_CLIENT_OPTION");
-    
+    PREFIX_UNDERTOW_CLIENT_OPTION ("PREFIX_UNDERTOW_CLIENT_OPTION", "UNDERTOW_CLIENT_OPTION"),
+
+    /**
+     * HOSTNAME
+     */
+    HOSTNAME ("HOSTNAME", "HOSTNAME_NAO_DEFINIDO"),
+
+    /**
+     * HOSTNAME
+     */
+    LOGGING_TAGS ("LOGGING_TAGS", "GALEB");
+
     /**
      * Gets SystemEnv value.
      *

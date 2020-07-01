@@ -79,7 +79,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
         final int statusCode = fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
 
         JsonObject json = new JsonObject();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmXXX"); // ISO-8601
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"); // ISO-8601
         json.addProperty("@timestamp", dateFormat.format(new Date()));
         json.addProperty("@version", "1");
         json.addProperty("host", SystemEnv.HOSTNAME.getValue());

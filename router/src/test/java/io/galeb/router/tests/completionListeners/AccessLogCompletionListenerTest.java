@@ -7,6 +7,8 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.ServerConnection;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HttpString;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +23,7 @@ public class AccessLogCompletionListenerTest {
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @Test
-    public void getJsonObjectTest() {
+    public void getJsonObjectTest() throws JSONException {
         environmentVariables.set("HOSTNAME", "hostname.localenv");
         environmentVariables.set("LOGGING_TAGS", "GALEB,OTHER");
 
@@ -35,28 +37,28 @@ public class AccessLogCompletionListenerTest {
         httpServerExchange.setStatusCode(200);
         Connectors.setRequestStartTime(httpServerExchange);
 
-        JsonObject jsonObject = accessLogCompletionListener.getJsonObject(httpServerExchange);
+        JSONObject jsonObject = new JSONObject(accessLogCompletionListener.getJsonObject(httpServerExchange));
 
-        Assert.assertEquals("1", jsonObject.getAsJsonPrimitive("@version").getAsString());
-        Assert.assertEquals("hostname.localenv", jsonObject.getAsJsonPrimitive("host").getAsString());
-        Assert.assertEquals(AccessLogCompletionListener.SHORT_MESSAGE, jsonObject.getAsJsonPrimitive("short_message").getAsString());
-        Assert.assertEquals("vhost.host.virtual", jsonObject.getAsJsonPrimitive("vhost").getAsString());
-        Assert.assertEquals("GALEB,OTHER,ACCESS", jsonObject.getAsJsonPrimitive("_tags").getAsString());
-        Assert.assertEquals("1.2.3.4", jsonObject.getAsJsonPrimitive("remote_addr").getAsString());
-        Assert.assertEquals("GET", jsonObject.getAsJsonPrimitive("request_method").getAsString());
-        Assert.assertEquals("/test", jsonObject.getAsJsonPrimitive("request_uri").getAsString());
-        Assert.assertEquals("HTTP", jsonObject.getAsJsonPrimitive("server_protocol").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("http_referer").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("http_x_mobile_group").getAsString());
-        Assert.assertEquals("600", jsonObject.getAsJsonPrimitive("status").getAsString());
-        Assert.assertNotNull(jsonObject.getAsJsonPrimitive("body_bytes_sent").getAsString());
-        Assert.assertNotNull(jsonObject.getAsJsonPrimitive("request_time").getAsString());
-        Assert.assertEquals("UNKNOWN_TARGET", jsonObject.getAsJsonPrimitive("upstream_addr").getAsString());
-        Assert.assertEquals("200", jsonObject.getAsJsonPrimitive("upstream_status").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("upstream_response_length").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("http_user_agent").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("request_id_final").getAsString());
-        Assert.assertEquals("-", jsonObject.getAsJsonPrimitive("http_x_forwarded_for").getAsString());
+        Assert.assertEquals("1", jsonObject.getString("@version"));
+        Assert.assertEquals("hostname.localenv", jsonObject.getString("host"));
+        Assert.assertEquals(AccessLogCompletionListener.SHORT_MESSAGE, jsonObject.getString("short_message"));
+        Assert.assertEquals("vhost.host.virtual", jsonObject.getString("vhost"));
+        Assert.assertEquals("GALEB,OTHER,ACCESS", jsonObject.getString("_tags"));
+        Assert.assertEquals("1.2.3.4", jsonObject.getString("remote_addr"));
+        Assert.assertEquals("GET", jsonObject.getString("request_method"));
+        Assert.assertEquals("/test", jsonObject.getString("request_uri"));
+        Assert.assertEquals("HTTP", jsonObject.getString("server_protocol"));
+        Assert.assertEquals("-", jsonObject.getString("http_referer"));
+        Assert.assertEquals("-", jsonObject.getString("http_x_mobile_group"));
+        Assert.assertEquals("600", jsonObject.getString("status"));
+        Assert.assertNotNull(jsonObject.getString("body_bytes_sent"));
+        Assert.assertNotNull(jsonObject.getString("request_time"));
+        Assert.assertEquals("UNKNOWN_TARGET", jsonObject.getString("upstream_addr"));
+        Assert.assertEquals("200", jsonObject.getString("upstream_status"));
+        Assert.assertEquals("-", jsonObject.getString("upstream_response_length"));
+        Assert.assertEquals("-", jsonObject.getString("http_user_agent"));
+        Assert.assertEquals("-", jsonObject.getString("request_id_final"));
+        Assert.assertEquals("-", jsonObject.getString("http_x_forwarded_for"));
     }
 
     private HeaderMap getRequestHeaders() {

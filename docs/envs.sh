@@ -2,7 +2,7 @@
 export LOCAL_TOKEN=pass
 
 ## DB ##
-export GALEB_DB_URL='jdbc:mysql://127.0.0.1:3306/galeb_api?autoReconnect=true&createDatabaseIfNotExist=true'
+export GALEB_DB_URL='jdbc:mysql://127.0.0.1:3306/galeb_api?autoReconnect=true&verifyServerCertificate=false&useSSL=false'
 export GALEB_DB_USER=root
 export GALEB_DB_PASS=password
 export GALEB_DB_DRIVER=com.mysql.cj.jdbc.Driver

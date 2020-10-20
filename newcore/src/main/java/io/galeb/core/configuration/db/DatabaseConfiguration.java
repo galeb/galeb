@@ -74,7 +74,6 @@ public class DatabaseConfiguration {
         hikariDataSource.addDataSourceProperty("cacheServerConfiguration", DB_CACHE_SERVER_CONFIGURATION);
         hikariDataSource.addDataSourceProperty("elideSetAutoCommits", DB_ELIDE_SET_AUTO_COMMITS);
         hikariDataSource.addDataSourceProperty("maintainTimeStats", DB_MAINTAIN_TIME_STATS);
-        hikariDataSource.addDataSourceProperty("useSSL", "false");
 
         return hikariDataSource;
     }

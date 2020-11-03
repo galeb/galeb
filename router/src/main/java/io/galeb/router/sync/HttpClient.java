@@ -16,26 +16,26 @@
 
 package io.galeb.router.sync;
 
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_ENVIRONMENT;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_GROUP_ID;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_LOCAL_IP;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_ZONE_ID;
+import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.core.so.LocalIP;
 import io.netty.handler.codec.http.HttpMethod;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.asynchttpclient.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
-import static io.galeb.router.sync.GalebHttpHeaders.*;
-import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
-import static org.asynchttpclient.Dsl.asyncHttpClient;
-import static org.asynchttpclient.Dsl.config;
 
 public class HttpClient {
 
@@ -50,7 +50,8 @@ public class HttpClient {
     private final AsyncHttpClient asyncHttpClient;
 
     public HttpClient() {
-        asyncHttpClient = asyncHttpClient(config()
+         asyncHttpClient = asyncHttpClient(config()
+        		.setSslContext(null)
                 .setFollowRedirect(false)
                 .setCompressionEnforced(true)
                 .setKeepAlive(true)

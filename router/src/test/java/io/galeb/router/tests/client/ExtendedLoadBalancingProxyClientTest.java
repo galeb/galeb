@@ -16,14 +16,14 @@
 
 package io.galeb.router.tests.client;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
+import static org.junit.Assert.assertThat;
+
+import java.net.URI;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import java.net.URI;
-
-import static org.junit.Assert.assertThat;
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
 
 public class ExtendedLoadBalancingProxyClientTest {
 
@@ -42,7 +42,5 @@ public class ExtendedLoadBalancingProxyClientTest {
 
         proxyClient.removeHost(URI.create("http://127.0.0.1:8080"));
         assertThat(proxyClient.isHostsEmpty(), Matchers.equalTo(true));
-    }
-
-
+    }  
 }

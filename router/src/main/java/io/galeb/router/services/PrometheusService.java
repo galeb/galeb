@@ -19,21 +19,26 @@ package io.galeb.router.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import io.prometheus.client.exporter.HTTPServer;
+import io.prometheus.client.hotspot.DefaultExports;
 
 @Service
+@Order(11)
 public class PrometheusService {
 
     protected static HTTPServer server;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     public PrometheusService() {
+        DefaultExports.initialize();
         try {
             server = new HTTPServer(9091, true);
         } catch (Exception e) {
-            //TODO: handle exception
+            logger.error(e.getMessage());
         }
     }
 }

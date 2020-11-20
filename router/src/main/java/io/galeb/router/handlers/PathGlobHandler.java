@@ -32,12 +32,15 @@ import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;
 import jodd.util.Wildcard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PathGlobHandler implements HttpHandler {
+
+    public static final AttachmentKey<String> RULE_NAME = AttachmentKey.create(String.class);
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -57,6 +60,7 @@ public class PathGlobHandler implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         final String path = exchange.getRelativePath();
         if ("/__galeb_rule_path_check__".equals(path)) {
+            exchange.putAttachment(RULE_NAME, "__galeb_rule_path_check__");
             pathGlobHandlerCheck().handleRequest(exchange);
             return;
         }
@@ -67,6 +71,7 @@ public class PathGlobHandler implements HttpHandler {
                 hit.set(Wildcard.match(path, pathKey));
                 if (hit.get()) {
                     try {
+                        exchange.putAttachment(RULE_NAME, pathKey);
                         if (handler != null) {
                             handler.handleRequest(exchange);
                         } else {
@@ -79,6 +84,7 @@ public class PathGlobHandler implements HttpHandler {
             }
         });
         if (!hit.get()) {
+            exchange.putAttachment(RULE_NAME, "defaultHandler");
             defaultHandler.handleRequest(exchange);
         }
     }

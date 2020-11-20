@@ -64,6 +64,9 @@ public class PingHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
+        exchange.putAttachment(PoolHandler.POOL_NAME, "__ping__");
+        exchange.putAttachment(PathGlobHandler.RULE_NAME, "__ping__");
+
         boolean hasNoUpdate = exchange.getQueryParameters().containsKey("noupdate");
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");

@@ -63,9 +63,6 @@ public class PrometheusCompletionListener extends ProcessorLocalStatusCode imple
             final String pool = isEmpty(exchange.getAttachment(PoolHandler.POOL_NAME));
             final String rule = isEmpty(exchange.getAttachment(PathGlobHandler.RULE_NAME));
 
-            String targetUri = exchange.getAttachment(HostSelector.REAL_DEST);
-            targetUri = targetUri != null ? targetUri : extractXGalebErrorHeader(exchange.getResponseHeaders());
-
             final int originalStatusCode = Integer.parseInt(responseCode().readAttribute(exchange));
             final String realDestAttached = exchange.getAttachment(HostSelector.REAL_DEST);
             final long responseBytesSent = exchange.getResponseBytesSent();
@@ -73,8 +70,6 @@ public class PrometheusCompletionListener extends ProcessorLocalStatusCode imple
             final Integer roundTime = Math.round(responseTime);
             final int fakeStatusCode = getFakeStatusCode(realDestAttached, originalStatusCode, responseBytesSent,
                     roundTime, MAX_REQUEST_TIME);
-            logger.info("Got virtualHost: " + virtualHost + " pool: " + pool + " rule: " + rule + " status:"
-                    + reportStatus(originalStatusCode) + " targetURI:" + targetUri);
 
             requestCounter.labels(virtualHost, pool, rule, reportStatus(originalStatusCode)).inc();
             latencyHistogram.labels(virtualHost, pool, rule, reportStatus(originalStatusCode)).observe(responseTime);
@@ -106,53 +101,5 @@ public class PrometheusCompletionListener extends ProcessorLocalStatusCode imple
             return "4xx";
         }
         return "5xx";
-    }
-
-    public String getJsonObject(HttpServerExchange exchange) {
-        final String remoteAddr = remoteIp().readAttribute(exchange);
-
-        final String requestElements[] = requestList().readAttribute(exchange).split(" ");
-        final String method = exchange.getRequestMethod().toString();
-        final String requestUri = exchange.getRequestURI();
-        final String proto = exchange.getProtocol().toString();
-        final String httpReferer = requestElements.length > 3 ? requestElements[3] : null;
-        final String xMobileGroup = requestElements.length > 4 ? requestElements[4] : null;
-        final int originalStatusCode = Integer.parseInt(responseCode().readAttribute(exchange));
-        final long responseBytesSent = exchange.getResponseBytesSent();
-        final String bytesSent = Long.toString(responseBytesSent);
-        final String bytesSentOrDash = responseBytesSent == 0L ? "-" : bytesSent;
-        final Integer responseTime = Math.round(Float.parseFloat(responseTimeAttribute.readAttribute(exchange)));
-        final String realDestAttached = exchange.getAttachment(HostSelector.REAL_DEST);
-        final String realDest = realDestAttached != null ? realDestAttached
-                : extractXGalebErrorHeader(exchange.getResponseHeaders());
-        final String userAgent = requestHeader(Headers.USER_AGENT).readAttribute(exchange);
-        // final String requestId = !"".equals(REQUESTID_HEADER) ?
-        // requestHeader(RequestIDHandler.requestIdHeader()).readAttribute(exchange) :
-        // null;
-        final String xForwardedFor = requestHeader(Headers.X_FORWARDED_FOR).readAttribute(exchange);
-
-        // final int fakeStatusCode = getFakeStatusCode(realDestAttached,
-        // originalStatusCode, responseBytesSent, responseTime, MAX_REQUEST_TIME);
-        // final int statusCode = fakeStatusCode !=
-        // ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
-
-        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"); // ISO-8601
-        final String json = "{" + "\"@timestamp\":\"" + dateFormat.format(new Date()) + "\"," + "\"@version\":\"" + "1"
-                + "\"," + "\"host\":\"" + SystemEnv.HOSTNAME.getValue() + "\","
-                + "\"_tags\":\"" + SystemEnv.LOGGING_TAGS.getValue() + ",ACCESS" + "\","
-                + "\"remote_addr\":\"" + remoteAddr + "\"," + "\"request_method\":\"" + method + "\","
-                + "\"request_uri\":\"" + requestUri + "\"," + "\"server_protocol\":\"" + proto + "\","
-                + "\"http_referer\":\"" + (httpReferer != null ? httpReferer : "-") + "\","
-                + "\"http_x_mobile_group\":\"" + (xMobileGroup != null ? xMobileGroup : "-") + "\"," +
-                // "\"status\":\"" + statusCode + "\"," +
-                "\"body_bytes_sent\":\"" + bytesSent + "\"," + "\"request_time\":\"" + responseTime + "\","
-                + "\"upstream_addr\":\"" + realDest + "\"," + "\"upstream_status\":\"" + originalStatusCode + "\","
-                + "\"upstream_addr\":\"" + realDest + "\"," + "\"upstream_status\":\"" + originalStatusCode + "\","
-                + "\"upstream_response_length\":\"" + bytesSentOrDash + "\"," + "\"http_user_agent\":\""
-                + (userAgent != null ? userAgent : "-") + "\"," +
-                // "\"request_id_final\":\"" + (requestId != null ? requestId : "-") + "\"," +
-                "\"http_x_forwarded_for\":\"" + (xForwardedFor != null ? xForwardedFor : "-") + "\"" + "}";
-
-        return json;
     }
 }

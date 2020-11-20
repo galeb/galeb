@@ -41,8 +41,8 @@ public class PrometheusCompletionListener extends ProcessorLocalStatusCode imple
     static final Counter errorCounter = Counter.build().name("galeb_errors_total")
             .labelNames("virtualhost", "pool", "rule", "error").help("Total errors.").register();
 
-    static final Histogram latencyHistogram = Histogram.build().name("galeb_http_requests")
-            .labelNames("virtualhost", "pool", "rule", "status").help("Galeb backend latency")
+    static final Histogram requestDuration = Histogram.build().name("galeb_http_request_duration_seconds")
+            .labelNames("virtualhost", "pool", "rule").help("Galeb backend latency")
             .exponentialBuckets(0.05, 4, 6).register();
 
     private final Log logger = LogFactory.getLog(this.getClass());
@@ -65,7 +65,7 @@ public class PrometheusCompletionListener extends ProcessorLocalStatusCode imple
                     roundTime, MAX_REQUEST_TIME);
 
             requestCounter.labels(virtualHost, pool, rule, reportStatus(originalStatusCode)).inc();
-            latencyHistogram.labels(virtualHost, pool, rule, reportStatus(originalStatusCode)).observe(responseTime);
+            requestDuration.labels(virtualHost, pool, rule).observe(responseTime);
 
             if (fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED) {
                 errorCounter.labels(virtualHost, pool, rule, extractXGalebErrorHeader(exchange.getResponseHeaders()))

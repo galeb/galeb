@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import io.galeb.core.enums.SystemEnv;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.client.hotspot.DefaultExports;
 
@@ -36,7 +37,7 @@ public class PrometheusService {
     public PrometheusService() {
         DefaultExports.initialize();
         try {
-            server = new HTTPServer(9091, true);
+            server = new HTTPServer(Integer.parseInt(SystemEnv.PROMETHEUS_PORT.getValue()), true);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

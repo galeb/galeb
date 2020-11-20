@@ -218,6 +218,11 @@ public enum SystemEnv {
     ENABLE_PROMETHEUS     ("ENABLE_PROMETHEUS",     Boolean.TRUE),
 
     /**
+     * Prometheus port.
+     */
+    PROMETHEUS_PORT       ("PROMETHEUS_PORT",       9091),
+
+    /**
      * Get and send to statsd the Target(Backend) openConnections counter.
      */
     SEND_OPENCONN_COUNTER ("SEND_OPENCONN_COUNTER", Boolean.TRUE),

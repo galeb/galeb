@@ -16,28 +16,21 @@
 
 package io.galeb.router.handlers.completionListeners;
 
-import com.google.gson.JsonObject;
-import io.galeb.core.enums.SystemEnv;
-import io.galeb.router.client.hostselectors.HostSelector;
-import io.galeb.router.handlers.NameVirtualHostDefaultHandler;
-import io.galeb.router.handlers.PathGlobHandler;
-import io.galeb.router.handlers.PoolHandler;
-import io.galeb.router.handlers.RequestIDHandler;
-import io.undertow.server.ExchangeCompletionListener;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
+import static io.undertow.attribute.ExchangeAttributes.localServerName;
+import static io.undertow.attribute.ExchangeAttributes.responseCode;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
+
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.handlers.PathGlobHandler;
+import io.galeb.router.handlers.PoolHandler;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static io.undertow.attribute.ExchangeAttributes.*;
+import io.undertow.server.ExchangeCompletionListener;
+import io.undertow.server.HttpServerExchange;
 
 @Component
 public class PrometheusCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {

@@ -18,19 +18,13 @@ package io.galeb.router.services;
 
 import static io.galeb.router.configurations.ManagerClientCacheConfiguration.FULLHASH_PROP;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +52,6 @@ public class UpdaterService {
     public static final long WAIT_TIMEOUT = Long
             .parseLong(Optional.ofNullable(System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms
 
-    // @formatter:off
-    private final Gson gson = new GsonBuilder().serializeNulls()
-                                               .setLenient()
-                                               .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                                               .create();
-    // @formatter:on
     private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
     private final AtomicBoolean executeSync = new AtomicBoolean(false);
     private final ManagerClient managerClient;
@@ -133,7 +121,7 @@ public class UpdaterService {
         };
 
         String etag = cache.etag();
-        //List<VirtualHost> lastCache = new ArrayList<>(cache.values());
+        // List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
     }

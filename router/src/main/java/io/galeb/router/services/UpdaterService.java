@@ -119,10 +119,12 @@ public class UpdaterService {
                 return;
             }
 
-            final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
+            final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts).map(v -> {
+                return v;
+            }).collect(Collectors.toList());
             logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
 
-            HandlerBuilder.build(virtualhosts, applicationContext, nameVirtualHostHandler, cache);
+            new HandlerBuilder().build(virtualhosts, applicationContext, nameVirtualHostHandler, cache);
             updateEtagIfNecessary(virtualhosts);
 
             logger.info("Processed " + count + " virtualhost(s): Done");
@@ -134,31 +136,6 @@ public class UpdaterService {
         //List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
-
-        // force wait
-        // long currentWaitTimeOut = System.currentTimeMillis();
-        // boolean failed = false;
-        // while (wait.get()) {
-        // if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) {
-        // failed = true;
-        // break;
-        // }
-        // try {
-        // Thread.sleep(100);
-        // } catch (InterruptedException e) {
-        // failed = true;
-        // ErrorLogger.logError(e, this.getClass());
-        // }
-        // }
-        // if (failed) {
-        //     rollback(lastCache);
-        // }
-    }
-
-    private void rollback(List<VirtualHost> lastCache) {
-        // cleanup(lastCache);
-        HandlerBuilder.build(lastCache, applicationContext, nameVirtualHostHandler);
-        updateEtagIfNecessary(lastCache);
     }
 
     private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {
@@ -170,20 +147,4 @@ public class UpdaterService {
         }
         cache.updateEtag(etag);
     }
-
-    private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
-        final Set<VirtualHost> aliases = new HashSet<>();
-        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts).map(v -> {
-            v.getAliases().forEach(aliasName -> {
-                VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
-                virtualHostAlias.setName(aliasName);
-                virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
-                aliases.add(virtualHostAlias);
-            });
-            return v;
-        }).collect(Collectors.toList());
-        virtualhosts.addAll(aliases);
-        return virtualhosts;
-    }
-
 }

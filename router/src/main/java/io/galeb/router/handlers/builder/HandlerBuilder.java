@@ -1,6 +1,7 @@
 package io.galeb.router.handlers.builder;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,13 @@ public class HandlerBuilder {
     public static final String RULE_MATCH = "match";
     public static final String IPACL_ALLOW = "allow";
 
-    public static void build(List<VirtualHost> vhs, final ApplicationContext context, final NameVirtualHostHandler vhHandler, final ManagerClientCache cache) {
+    private final ProxyBuilder proxyBuilder = new ProxyBuilder();
+
+    public HandlerBuilder() {
+
+    }
+
+    public void build(List<VirtualHost> vhs, final ApplicationContext context, final NameVirtualHostHandler vhHandler, final ManagerClientCache cache) {
         OptionMap options = context.getBean("undertowOptionMap", OptionMap.class);
 
         vhs.forEach(vh -> {
@@ -43,18 +50,16 @@ public class HandlerBuilder {
             HttpHandler handler = buildVirtualHost(vh, options);
             vhHandler.addHost(vh.getName(), handler);
             cache.put(vh.getName(), vh);
+
+            vh.getAliases().forEach(aliasName -> {
+                logger.info("adding alias: " + aliasName);
+                vhHandler.addHost(aliasName, handler);
+                cache.put(aliasName, vh);
+            });
         });
     }
 
-    // public static HttpHandler buildVirtualHost(VirtualHost vh, OptionMap options) {
-    //     String hostname = vh.getName();
-    //     logger.info("adding " + hostname);
-    //     final VirtualHost virtualHost = cache.get(hostname);
-    //     nameVirtualHostHandler.addHost(hostname, buildRuleTarget(vh, options));
-
-    // }
-
-    public static HttpHandler buildVirtualHost(VirtualHost vh, final OptionMap options) {
+    public HttpHandler buildVirtualHost(VirtualHost vh, final OptionMap options) {
         if (vh.getRules().size() == 1) {
             PoolHandler ph = buildPoolHandler(vh, options);
             if (ph != null) {
@@ -75,23 +80,23 @@ public class HandlerBuilder {
         return pgh;
     }
 
-    public static PoolHandler buildPoolHandler(VirtualHost vh, final OptionMap options) {
+    public PoolHandler buildPoolHandler(VirtualHost vh, final OptionMap options) {
         final Rule ruleSlashOnly = vh.getRules().stream().findAny().orElse(null);
         if (ruleSlashOnly != null && EnumRuleType.PATH.toString().equals(ruleSlashOnly.getRuleType().getName())
                 && ruleSlashOnly.getProperties().get(RULE_MATCH).equals("/")) {
             Pool p = ruleSlashOnly.getPool();
-            ProxyHandler proxy = ProxyBuilder.buildProxy(p, options);
+            ProxyHandler proxy = proxyBuilder.buildProxy(p, options);
             return new PoolHandler(ruleSlashOnly.getPool(), proxy);
         }
         return null;
     }
 
-    public static HttpHandler buildPathGlobHandler(final VirtualHost virtualHost, final OptionMap options) {
+    public HttpHandler buildPathGlobHandler(final VirtualHost virtualHost, final OptionMap options) {
         HttpHandler defaultHandler = null;
         final Rule ruleDefault = virtualHost.getRuleDefault();
         if (ruleDefault != null) {
             Pool p = ruleDefault.getPool();
-            ProxyHandler proxy = ProxyBuilder.buildProxy(p, options);
+            ProxyHandler proxy = proxyBuilder.buildProxy(p, options);
             defaultHandler = new PoolHandler(ruleDefault.getPool(), proxy);
         }
 
@@ -115,7 +120,7 @@ public class HandlerBuilder {
             logger.info("[" + virtualHost.getName() + "] adding Rule " + rule.getName() + " [path: " +  path + " order:" + orderStr
                     + ", type:" + type + "]");
 
-            final ProxyHandler proxy = ProxyBuilder.buildProxy(pool, options);
+            final ProxyHandler proxy = proxyBuilder.buildProxy(pool, options);
             final PoolHandler poolHandler = new PoolHandler(pool, proxy);
             int order = Integer.parseInt(orderStr);
             PathOrdered p;

@@ -1,6 +1,8 @@
 package io.galeb.router.handlers.builder;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +32,14 @@ public class ProxyBuilder {
     private static final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
     private static final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
 
+    private final Map<Pool, ProxyHandler> proxyCache = new HashMap<Pool, ProxyHandler>();
+
     //context.getBean("undertowOptionMap", OptionMap.class);
-    public static ProxyHandler buildProxy(Pool pool, OptionMap options) {
+    public ProxyHandler buildProxy(Pool pool, OptionMap options) {
+        if (proxyCache.containsKey(pool)) {
+            return proxyCache.get(pool);
+        }
+
         logger.info("creating pool " + pool.getName());
         ExtendedLoadBalancingProxyClient proxyClient = getProxyClient(pool);
 
@@ -50,6 +58,7 @@ public class ProxyBuilder {
             .setReuseXForwarded(reuseXForwarded)
             .build();
 
+        proxyCache.put(pool, proxyHandler);
         return proxyHandler;
     }
 

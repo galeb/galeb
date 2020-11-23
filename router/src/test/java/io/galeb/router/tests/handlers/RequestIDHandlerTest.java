@@ -33,7 +33,7 @@ public class RequestIDHandlerTest {
     public void checkHeaderDefined() {
         System.setProperty("REQUESTID_HEADER", "X-RID");
 
-        RequestIDHandler requestIDHandler = new RequestIDHandler();
+        RequestIDHandler requestIDHandler = new RequestIDHandler(exchange -> { });
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {
             HttpServerExchange exchange = new HttpServerExchange(serverConnection);
@@ -50,7 +50,7 @@ public class RequestIDHandlerTest {
     public void checkHeaderUndefined() {
         System.setProperty("REQUESTID_HEADER", "");
 
-        RequestIDHandler requestIDHandler = new RequestIDHandler();
+        RequestIDHandler requestIDHandler = new RequestIDHandler(exchange -> { });
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {
             HttpServerExchange exchange = new HttpServerExchange(serverConnection);
@@ -67,7 +67,7 @@ public class RequestIDHandlerTest {
     public void checkHeaderIgnoreCase() {
         System.setProperty("REQUESTID_HEADER", "X-RID");
 
-        RequestIDHandler requestIDHandler = new RequestIDHandler();
+        RequestIDHandler requestIDHandler = new RequestIDHandler(exchange -> { });
         ServerConnection serverConnection = mock(ServerConnection.class);
         try {
             HttpServerExchange exchange = new HttpServerExchange(serverConnection);

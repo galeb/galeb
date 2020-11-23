@@ -16,19 +16,22 @@
 
 package io.galeb.router.handlers;
 
+import java.util.UUID;
+
 import io.galeb.core.enums.SystemEnv;
-import io.galeb.router.ResponseCodeOnError;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
-
-import java.util.UUID;
 
 public class RequestIDHandler implements HttpHandler {
 
     private final HttpString requestIdHeader = requestIdHeader();
 
-    private HttpHandler next = null;
+    private final HttpHandler next;
+
+    public RequestIDHandler(HttpHandler next) {
+        this.next = next;
+    }
 
     public static HttpString requestIdHeader() {
         return HttpString.tryFromString(System.getProperty("REQUESTID_HEADER", SystemEnv.REQUESTID_HEADER.getValue()));
@@ -39,15 +42,7 @@ public class RequestIDHandler implements HttpHandler {
         if (!"".equals(requestIdHeader.toString()) && !exchange.getRequestHeaders().contains(requestIdHeader)) {
             exchange.getRequestHeaders().add(requestIdHeader, UUID.randomUUID().toString());
         }
-        if (next != null) {
-            next.handleRequest(exchange);
-        } else {
-            if (exchange.getRequestURI() != null) ResponseCodeOnError.PROXY_HANDLER_NULL.getHandler().handleRequest(exchange);
-        }
-    }
 
-    public RequestIDHandler setNext(HttpHandler next) {
-        this.next = next;
-        return this;
+        next.handleRequest(exchange);
     }
 }

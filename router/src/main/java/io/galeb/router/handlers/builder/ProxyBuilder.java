@@ -1,4 +1,4 @@
-package io.galeb.router.handlers;
+package io.galeb.router.handlers.builder;
 
 import java.net.URI;
 

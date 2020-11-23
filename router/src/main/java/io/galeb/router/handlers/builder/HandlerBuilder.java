@@ -1,4 +1,4 @@
-package io.galeb.router.handlers;
+package io.galeb.router.handlers.builder;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,7 +17,11 @@ import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Rule;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.EnumRuleType;
+import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
+import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PathGlobHandler.PathOrdered;
+import io.galeb.router.handlers.PoolHandler;
+import io.galeb.router.handlers.RequestIDHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -31,13 +35,14 @@ public class HandlerBuilder {
     public static final String RULE_MATCH = "match";
     public static final String IPACL_ALLOW = "allow";
 
-    public static void build(List<VirtualHost> vhs, final ApplicationContext context, final NameVirtualHostHandler vhHandler) {
+    public static void build(List<VirtualHost> vhs, final ApplicationContext context, final NameVirtualHostHandler vhHandler, final ManagerClientCache cache) {
         OptionMap options = context.getBean("undertowOptionMap", OptionMap.class);
 
         vhs.forEach(vh -> {
             logger.info("adding " + vh.getName());
             HttpHandler handler = buildVirtualHost(vh, options);
             vhHandler.addHost(vh.getName(), handler);
+            cache.put(vh.getName(), vh);
         });
     }
 
@@ -53,11 +58,11 @@ public class HandlerBuilder {
         if (vh.getRules().size() == 1) {
             PoolHandler ph = buildPoolHandler(vh, options);
             if (ph != null) {
-                return ph;
+                return new RequestIDHandler(ph);
             }
         }
 
-        PathGlobHandler pgh = buildPathGlobHandler(vh, options);
+        HttpHandler pgh = buildPathGlobHandler(vh, options);
 
         if (vh.getProperties().containsKey(IPACL_ALLOW)) {
             final IPAddressAccessControlHandler ipAddressAccessControlHandler = new IPAddressAccessControlHandler()
@@ -81,7 +86,7 @@ public class HandlerBuilder {
         return null;
     }
 
-    public static PathGlobHandler buildPathGlobHandler(final VirtualHost virtualHost, final OptionMap options) {
+    public static HttpHandler buildPathGlobHandler(final VirtualHost virtualHost, final OptionMap options) {
         HttpHandler defaultHandler = null;
         final Rule ruleDefault = virtualHost.getRuleDefault();
         if (ruleDefault != null) {
@@ -130,6 +135,6 @@ public class HandlerBuilder {
             pathGlobHandler.setDefaultHandler(defaultHandler);
         }
 
-        return pathGlobHandler;
+        return new RequestIDHandler(pathGlobHandler);
     }
 }

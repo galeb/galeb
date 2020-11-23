@@ -47,7 +47,7 @@ import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.EnumRuleType;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelectorLookup;
-import io.galeb.router.handlers.HandlerBuilder;
+import io.galeb.router.handlers.builder.HandlerBuilder;
 import io.galeb.router.sync.HttpClient;
 import io.galeb.router.sync.ManagerClient;
 

@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -34,20 +36,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.SystemEnv;
-import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
-import io.galeb.router.handlers.HandlerBuilder;
+import io.galeb.router.handlers.builder.HandlerBuilder;
 import io.galeb.router.sync.HttpClient;
 import io.galeb.router.sync.ManagerClient;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 
-@SuppressWarnings("Duplicates")
 @Service
+@Order(4)
 public class UpdaterService {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdaterService.class);
@@ -81,6 +83,11 @@ public class UpdaterService {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
     }
 
+    @PostConstruct
+    public void postConstruct() {
+        sync();
+    }
+
     @Scheduled(fixedDelay = 5000)
     public void execute() {
         if (executeSync.getAndSet(false)) {
@@ -102,7 +109,9 @@ public class UpdaterService {
                 return;
             }
 
-            ManagerClient.Virtualhosts virtualhostsFromManager = result instanceof ManagerClient.Virtualhosts ? (ManagerClient.Virtualhosts) result : null;
+            ManagerClient.Virtualhosts virtualhostsFromManager = result instanceof ManagerClient.Virtualhosts
+                    ? (ManagerClient.Virtualhosts) result
+                    : null;
             if (virtualhostsFromManager == null) {
                 logger.error("Virtualhosts Empty. Request problem?");
                 count = 0;
@@ -112,9 +121,8 @@ public class UpdaterService {
 
             final List<VirtualHost> virtualhosts = processVirtualhostsAndAliases(virtualhostsFromManager);
             logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
-            //cleanup(virtualhosts);
-            HandlerBuilder.build(virtualhosts, applicationContext, nameVirtualHostHandler);
-            //virtualhosts.forEach(this::updateCache);
+
+            HandlerBuilder.build(virtualhosts, applicationContext, nameVirtualHostHandler, cache);
             updateEtagIfNecessary(virtualhosts);
 
             logger.info("Processed " + count + " virtualhost(s): Done");
@@ -123,32 +131,32 @@ public class UpdaterService {
         };
 
         String etag = cache.etag();
-        List<VirtualHost> lastCache = new ArrayList<>(cache.values());
+        //List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
 
         // force wait
-        long currentWaitTimeOut = System.currentTimeMillis();
-        boolean failed = false;
-        while (wait.get()) {
-            if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) {
-                failed = true;
-                break;
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                failed = true;
-                ErrorLogger.logError(e, this.getClass());
-            }
-        }
-        if (failed) {
-            rollback(lastCache);
-        }
+        // long currentWaitTimeOut = System.currentTimeMillis();
+        // boolean failed = false;
+        // while (wait.get()) {
+        // if (currentWaitTimeOut < System.currentTimeMillis() - WAIT_TIMEOUT) {
+        // failed = true;
+        // break;
+        // }
+        // try {
+        // Thread.sleep(100);
+        // } catch (InterruptedException e) {
+        // failed = true;
+        // ErrorLogger.logError(e, this.getClass());
+        // }
+        // }
+        // if (failed) {
+        //     rollback(lastCache);
+        // }
     }
 
     private void rollback(List<VirtualHost> lastCache) {
-        //cleanup(lastCache);
+        // cleanup(lastCache);
         HandlerBuilder.build(lastCache, applicationContext, nameVirtualHostHandler);
         updateEtagIfNecessary(lastCache);
     }
@@ -165,62 +173,17 @@ public class UpdaterService {
 
     private List<VirtualHost> processVirtualhostsAndAliases(final ManagerClient.Virtualhosts virtualhostsFromManager) {
         final Set<VirtualHost> aliases = new HashSet<>();
-        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts)
-            .map(v -> {
-                v.getAliases().forEach(aliasName -> {
-                    VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
-                    virtualHostAlias.setName(aliasName);
-                    virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
-                    aliases.add(virtualHostAlias);
-                });
-                return v;
-            })
-            .collect(Collectors.toList());
+        final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts).map(v -> {
+            v.getAliases().forEach(aliasName -> {
+                VirtualHost virtualHostAlias = gson.fromJson(gson.toJson(v), VirtualHost.class);
+                virtualHostAlias.setName(aliasName);
+                virtualHostAlias.getProperties().put(ALIAS_OF, v.getName());
+                aliases.add(virtualHostAlias);
+            });
+            return v;
+        }).collect(Collectors.toList());
         virtualhosts.addAll(aliases);
         return virtualhosts;
     }
-
-    // private void cleanup(final List<VirtualHost> virtualhosts) {
-    //     final Set<String> virtualhostSet = virtualhosts.stream().map(AbstractEntity::getName).collect(Collectors.toSet());
-    //     synchronized (cache) {
-    //         Set<String> diff = Sets.difference(cache.getAll(), virtualhostSet);
-    //         diff.forEach(virtualhostName -> {
-    //             expireHandlers(virtualhostName);
-    //             cache.remove(virtualhostName);
-    //             logger.warn("Virtualhost " + virtualhostName + " not exist. Removed.");
-    //         });
-    //     }
-    //     Set<String> diff = Sets.difference(nameVirtualHostHandler.getHosts().keySet(), virtualhostSet);
-    //     diff.forEach(this::expireHandlers);
-    // }
-
-    // private void updateCache(VirtualHost virtualHost) {
-    //     String virtualhostName = virtualHost.getName();
-    //     VirtualHost oldVirtualHost = cache.get(virtualhostName);
-    //     if (oldVirtualHost != null) {
-    //         String newFullHash = virtualHost.getProperties().get(FULLHASH_PROP);
-    //         String currentFullhash = oldVirtualHost.getProperties().get(FULLHASH_PROP);
-    //         if (currentFullhash != null && currentFullhash.equals(newFullHash)) {
-    //             if (logger.isDebugEnabled()) {
-    //                 logger.debug("Virtualhost " + virtualhostName + " not changed.");
-    //             }
-    //             count++;
-    //             return;
-    //         } else {
-    //             logger.warn("Virtualhost " + virtualhostName + " changed. Updating cache.");
-    //         }
-    //     }
-    //     cache.put(virtualhostName, virtualHost);
-    //     //expireHandlers(virtualhostName);
-    //     count++;
-    // }
-
-    // private void expireHandlers(String virtualhostName) {
-    //     if (Arrays.stream(VirtualHostsNotExpired.values()).anyMatch(s -> s.getHost().equals(virtualhostName))) return;
-    //     if (nameVirtualHostHandler.getHosts().containsKey(virtualhostName)) {
-    //         logger.warn("Virtualhost " + virtualhostName + ": Rebuilding handlers.");
-    //         nameVirtualHostHandler.removeHost(virtualhostName);
-    //     }
-    // }
 
 }

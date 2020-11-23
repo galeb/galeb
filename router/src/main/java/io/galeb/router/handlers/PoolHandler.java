@@ -51,9 +51,6 @@ public class PoolHandler implements HttpHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-
-    private final RequestIDHandler requestIDHandler = new RequestIDHandler();
-
     private final ProxyHandler proxyHandler;
     private final boolean hostsEmpty;
     private final Pool pool;
@@ -76,26 +73,12 @@ public class PoolHandler implements HttpHandler {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
-        requestIDHandler.setNext(proxyHandler).handleRequest(exchange);
+        new RequestIDHandler(proxyHandler).handleRequest(exchange);
     }
 
     public Pool getPool() {
         return pool;
     }
-
-    // public ProxyHandler getProxyHandler() {
-    //     return proxyHandler;
-    // }
-
-    // private synchronized HttpHandler buildPoolHandler() {
-    //     return exchange -> {
-    //         if (pool != null) {
-
-    //             return;
-    //         }
-    //         ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
-    //     };
-    // }
 
     private HttpHandler healthcheckPoolHandler() {
         return exchange -> {

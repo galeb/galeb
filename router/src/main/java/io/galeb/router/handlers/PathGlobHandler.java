@@ -95,22 +95,6 @@ public class PathGlobHandler implements HttpHandler {
         };
     }
 
-    // public synchronized boolean contains(final String path) {
-    //     return paths.entrySet().stream().anyMatch(e -> e.getKey().getPath().equals(path));
-    // }
-
-    // public synchronized boolean addPath(final String path, int order, final HttpHandler handler) {
-    //     return paths.put(new PathOrdered(path.endsWith("/") && !path.contains("*") ? path + "*" : path, order),
-    //             handler) == null;
-    // }
-
-    // public synchronized boolean removePath(final String path) {
-    //     final List<PathOrdered> listOfpaths = paths.entrySet().stream().map(Map.Entry::getKey)
-    //             .filter(p -> p.getPath().equals(path)).collect(Collectors.toList());
-    //     listOfpaths.forEach(paths::remove);
-    //     return !listOfpaths.isEmpty();
-    // }
-
     public PathGlobHandler setDefaultHandler(HttpHandler defaultHandler) {
         this.defaultHandler = defaultHandler;
         return this;
@@ -119,10 +103,6 @@ public class PathGlobHandler implements HttpHandler {
     public HttpHandler getDefaultHandler() {
         return this.defaultHandler;
     }
-
-    // public synchronized void clear() {
-    //     paths.clear();
-    // }
 
     public static class PathOrdered implements Comparable<PathOrdered> {
         private final String path;

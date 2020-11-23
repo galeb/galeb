@@ -47,27 +47,22 @@ public class PoolHandler implements HttpHandler {
     private static final String CHECK_RULE_HEADER  = "X-Check-Pool";
     private static final String X_POOL_NAME_HEADER = "X-Pool-Name";
 
-    public static final String PROP_CONN_PER_THREAD         = "connPerThread";
-    public static final String PROP_DISCOVERED_MEMBERS_SIZE = "discoveredMembersSize";
+
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final int maxRequestTime = Integer.parseInt(SystemEnv.POOL_MAX_REQUEST_TIME.getValue());
-    private final boolean reuseXForwarded = Boolean.parseBoolean(SystemEnv.REUSE_XFORWARDED.getValue());
-    private final boolean rewriteHostHeader = Boolean.parseBoolean(SystemEnv.REWRITE_HOST_HEADER.getValue());
+
     private final RequestIDHandler requestIDHandler = new RequestIDHandler();
-    private final HttpHandler defaultHandler;
 
-    private ProxyHandler proxyHandler = null;
-    private ExtendedLoadBalancingProxyClient proxyClient;
-
+    private final ProxyHandler proxyHandler;
+    private final boolean hostsEmpty;
     private final Pool pool;
-    private final OptionMap undertowOptionMap;
 
-    public PoolHandler(final Pool pool, final ApplicationContext context) {
-        this.undertowOptionMap = context.getBean("undertowOptionMap", OptionMap.class);
+
+    public PoolHandler(final Pool pool, ProxyHandler proxyHandler) {
         this.pool = pool;
-        this.defaultHandler = buildPoolHandler();
+        this.proxyHandler = proxyHandler;
+        this.hostsEmpty = ((ExtendedLoadBalancingProxyClient) proxyHandler.getProxyClient()).isHostsEmpty();
     }
 
     @Override
@@ -77,91 +72,30 @@ public class PoolHandler implements HttpHandler {
             healthcheckPoolHandler().handleRequest(exchange);
             return;
         }
-        if (proxyClient != null && proxyClient.isHostsEmpty()) {
+        if (hostsEmpty) {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
-        requestIDHandler.setNext(proxyHandler != null ? proxyHandler : defaultHandler).handleRequest(exchange);
+        requestIDHandler.setNext(proxyHandler).handleRequest(exchange);
     }
 
     public Pool getPool() {
         return pool;
     }
 
-    public ProxyHandler getProxyHandler() {
-        return proxyHandler;
-    }
+    // public ProxyHandler getProxyHandler() {
+    //     return proxyHandler;
+    // }
 
-    private synchronized HttpHandler buildPoolHandler() {
-        return exchange -> {
-            if (pool != null) {
-                logger.info("creating pool " + pool.getName());
-                proxyClient = getProxyClient();
-                addTargets(proxyClient);
-                proxyHandler = ProxyHandler.builder()
-                        .setProxyClient(proxyClient)
-                        .setMaxRequestTime(maxRequestTime)
-                        .setNext(badGatewayHandler())
-                        .setRewriteHostHeader(rewriteHostHeader)
-                        .setReuseXForwarded(reuseXForwarded)
-                        .build();
-                proxyHandler.handleRequest(exchange);
-                return;
-            }
-            ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
-        };
-    }
+    // private synchronized HttpHandler buildPoolHandler() {
+    //     return exchange -> {
+    //         if (pool != null) {
 
-    private ExtendedLoadBalancingProxyClient getProxyClient() {
-        final HostSelector hostSelector = defineHostSelector();
-        logger.info("[Pool " + pool.getName() + "] HostSelector: " + hostSelector.getClass().getSimpleName());
-
-        final ExclusivityChecker exclusivityChecker = exclusivityCheckerExchange -> exclusivityCheckerExchange.getRequestHeaders().contains(Headers.UPGRADE);
-        return new ExtendedLoadBalancingProxyClient(UndertowClient.getInstance(), exclusivityChecker, hostSelector)
-                        .setTtl(Integer.parseInt(SystemEnv.POOL_CONN_TTL.getValue()))
-                        .setConnectionsPerThread(getConnPerThread())
-                        .setSoftMaxConnectionsPerThread(Integer.parseInt(SystemEnv.POOL_SOFTMAXCONN.getValue()));
-    }
-
-    private int getConnPerThread() {
-        int poolMaxConn = Integer.parseInt(SystemEnv.POOL_MAXCONN.getValue());
-        int connPerThread = poolMaxConn / Integer.parseInt(SystemEnv.IO_THREADS.getValue());
-        String propConnPerThread = pool.getProperties().get(PROP_CONN_PER_THREAD);
-        if (propConnPerThread != null) {
-            try {
-                connPerThread = Integer.parseInt(propConnPerThread);
-            } catch (NumberFormatException ignore) {}
-        }
-        String discoveredMembersStr = pool.getProperties().get(PROP_DISCOVERED_MEMBERS_SIZE);
-        float discoveredMembers = 1.0f;
-        if (discoveredMembersStr != null && !"".equals(discoveredMembersStr)) {
-            discoveredMembers = Float.parseFloat(discoveredMembersStr);
-        }
-        float discoveryMembersSize = Math.max(discoveredMembers, 1.0f);
-        connPerThread = Math.round((float) connPerThread / discoveryMembersSize);
-        return connPerThread;
-    }
-
-    private HttpHandler badGatewayHandler() {
-        return exchange -> exchange.setStatusCode(502);
-    }
-
-    private HostSelector defineHostSelector() {
-        BalancePolicy hostSelectorName = pool.getBalancePolicy();
-        if (hostSelectorName != null) {
-            return HostSelectorLookup.getHostSelector(hostSelectorName.getName());
-        }
-        return new RoundRobinHostSelector();
-    }
-
-    private void addTargets(final ExtendedLoadBalancingProxyClient proxyClient) {
-        pool.getTargets().forEach(target -> {
-            String value = target.getName();
-            URI uri = URI.create(target.getName());
-            proxyClient.addHost(uri, undertowOptionMap);
-            logger.info("[pool:" + pool.getName() + "] added Target " + value);
-        });
-    }
+    //             return;
+    //         }
+    //         ResponseCodeOnError.POOL_NOT_DEFINED.getHandler().handleRequest(exchange);
+    //     };
+    // }
 
     private HttpHandler healthcheckPoolHandler() {
         return exchange -> {

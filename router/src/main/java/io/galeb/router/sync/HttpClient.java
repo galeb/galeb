@@ -24,6 +24,8 @@ import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 import static org.asynchttpclient.Dsl.config;
 
+import java.util.concurrent.Future;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
@@ -103,20 +105,14 @@ public class HttpClient {
                 .setHeader(X_GALEB_LOCAL_IP, LocalIP.encode())
                 .setHeader(X_GALEB_ZONE_ID, ZONE_ID)
                 .setBody("{\"router\":{\"group_id\":\"" + GROUP_ID + "\",\"env\":\"" + ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
-        asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<String>() {
-            @Override
-            public String onCompleted(Response response) throws Exception {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("post onCompleted done");
-                }
-                return "";
-            }
-
-            @Override
-            public void onThrowable(Throwable t) {
-                LOGGER.error(ExceptionUtils.getStackTrace(t));
-            }
-        });
+        try {
+            // Block waiting for response
+            Future<Response> whenResponse = asyncHttpClient.executeRequest(requestBuilder.build());
+            Response response = whenResponse.get();
+            LOGGER.info("Register got: "+ response.getStatusText() + " body:<" + response.getResponseBody() + ">");
+        } catch (Exception e) {
+            ErrorLogger.logError(e, this.getClass());
+        }
     }
 
     public interface OnCompletedCallBack {

@@ -17,6 +17,9 @@
 
 package io.galeb.router.tests.suites;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import io.galeb.router.tests.cache.ManagerClientCacheTest;
 import io.galeb.router.tests.client.ExtendedLoadBalancingProxyClientTest;
 import io.galeb.router.tests.completionListeners.StatsdCompletionListenerTest;
@@ -29,8 +32,7 @@ import io.galeb.router.tests.hostselectors.HashUriPathHostSelectorTest;
 import io.galeb.router.tests.hostselectors.LeastConnHostSelectorTest;
 import io.galeb.router.tests.hostselectors.LeastConnWithRRHostSelectorTest;
 import io.galeb.router.tests.hostselectors.RoundRobinHostSelectorTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import io.galeb.router.tests.services.UpdaterServiceTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -45,6 +47,7 @@ import org.junit.runners.Suite;
         RequestIDHandlerTest.class,
         ManagerClientCacheTest.class,
         StatsdCompletionListenerTest.class,
+        UpdaterServiceTest.class,
         CucumberTest.class
 })
 public class ManagerTestSuite {

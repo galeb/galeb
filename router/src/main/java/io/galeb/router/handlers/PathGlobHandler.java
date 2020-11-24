@@ -20,16 +20,9 @@
  */
 package io.galeb.router.handlers;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSortedMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.galeb.core.logutils.ErrorLogger;
 import io.galeb.router.ResponseCodeOnError;
@@ -43,14 +36,11 @@ public class PathGlobHandler implements HttpHandler {
 
     public static final AttachmentKey<String> RULE_NAME = AttachmentKey.create(String.class);
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private final ImmutableSortedMap<PathOrdered, HttpHandler> paths;
 
     private HttpHandler defaultHandler = ResponseCodeOnError.RULE_PATH_NOT_FOUND.getHandler();
 
     public PathGlobHandler(ImmutableSortedMap<PathOrdered, HttpHandler> paths) {
-        logger.info("Size is: " + paths.size() + " => " + paths);
         this.paths = paths;
     }
 

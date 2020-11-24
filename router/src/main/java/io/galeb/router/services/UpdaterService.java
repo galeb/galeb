@@ -45,7 +45,6 @@ import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.galeb.router.handlers.builder.HandlerBuilder;
-import io.galeb.router.sync.HttpClient;
 import io.galeb.router.sync.ManagerClient;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 
@@ -93,29 +92,30 @@ public class UpdaterService {
     }
 
     public void sync() {
-        final ManagerClient.ResultCallBack resultCallBack = result -> {
-            if (result instanceof String && HttpClient.NOT_MODIFIED.equals(result)) {
-                logger.info("Environment " + envName + ": " + result);
+        final ManagerClient.ResultCallBack resultCallBack = (status, vhsFromManager) -> {
+            if (status == 304 || status != 200) {
+                logger.info("Environment " + envName + " status: " + status);
                 return;
             }
 
-            ManagerClient.Virtualhosts virtualhostsFromManager = result instanceof ManagerClient.Virtualhosts
-                    ? (ManagerClient.Virtualhosts) result
-                    : null;
-            if (virtualhostsFromManager == null) {
+            if (vhsFromManager == null) {
                 logger.error("Virtualhosts Empty. Request problem?");
                 return;
             }
 
-            final List<VirtualHost> managerVirtualHosts = Lists.newArrayList(virtualhostsFromManager.virtualhosts);
+            final List<VirtualHost> managerVirtualHosts = Lists.newArrayList(vhsFromManager.virtualhosts);
             logger.info("Processing " + managerVirtualHosts.size() + " virtualhost(s): Check update initialized");
 
-            MapDifference<String, VirtualHost> diff = cache.diff(Maps.uniqueIndex(managerVirtualHosts, VirtualHost::getName));
+            MapDifference<String, VirtualHost> diff = cache
+                    .diff(Maps.uniqueIndex(managerVirtualHosts, VirtualHost::getName));
             List<VirtualHost> toRemove = new ArrayList<VirtualHost>(diff.entriesOnlyOnLeft().values());
             List<VirtualHost> virtualHosts = new ArrayList<VirtualHost>(diff.entriesOnlyOnRight().values());
-            virtualHosts.addAll(diff.entriesDiffering().values().stream().map(v -> {return v.rightValue();}).collect(Collectors.toList()));
+            virtualHosts.addAll(diff.entriesDiffering().values().stream().map(v -> {
+                return v.rightValue();
+            }).collect(Collectors.toList()));
 
-            logger.info("Not processing: " + diff.entriesInCommon().values().size() + " virtualhost(s) already configured.");
+            logger.info("Not processing: " + diff.entriesInCommon().values().size()
+                    + " virtualhost(s) already configured.");
             logger.info("Processing " + toRemove.size() + " virtualhost(s) to remove");
             logger.info("Processing " + virtualHosts.size() + " virtualhost(s) to add/update");
 

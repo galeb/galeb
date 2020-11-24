@@ -16,67 +16,119 @@
 
 package io.galeb.router.sync;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import io.galeb.core.entity.VirtualHost;
-import io.galeb.core.enums.SystemEnv;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import static io.galeb.core.logutils.ErrorLogger.logError;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_ENVIRONMENT;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_GROUP_ID;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_LOCAL_IP;
+import static io.galeb.router.sync.GalebHttpHeaders.X_GALEB_ZONE_ID;
+import static io.undertow.util.Headers.IF_NONE_MATCH_STRING;
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+import static org.asynchttpclient.Dsl.config;
 
 import java.io.Serializable;
+import java.util.concurrent.Future;
 
-import static io.galeb.core.logutils.ErrorLogger.logError;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import io.galeb.core.entity.VirtualHost;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.core.logutils.ErrorLogger;
+import io.galeb.core.so.LocalIP;
+import io.netty.handler.codec.http.HttpMethod;
 
 @Component
 public class ManagerClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Gson gson = new GsonBuilder()
-            .setLenient()
-            .serializeNulls()
+    private final Gson gson = new GsonBuilder().setLenient().serializeNulls()
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
 
     private final String managerUrl = SystemEnv.MANAGER_URL.getValue();
-    private final HttpClient httpClient;
 
-    @Autowired
-    public ManagerClient(final HttpClient httpClient) {
-        this.httpClient = httpClient;
+    static final String ZONE_ID = SystemEnv.ZONE_ID.getValue();
+    static final String GROUP_ID = SystemEnv.GROUP_ID.getValue();
+    static final String ENVIRONMENT_NAME = SystemEnv.ENVIRONMENT_NAME.getValue();
+
+    public static final String NOT_MODIFIED = "NOT_MODIFIED";
+
+    private final AsyncHttpClient asyncHttpClient;
+
+    public ManagerClient() {
+        asyncHttpClient = asyncHttpClient(config().setFollowRedirect(false).setCompressionEnforced(true)
+                .setKeepAlive(true).setConnectTimeout(10000).setPooledConnectionIdleTimeout(10).setSoReuseAddress(true)
+                .setMaxConnectionsPerHost(100).build());
     }
 
     public void getVirtualhosts(String envname, String etag, ResultCallBack resultCallBack) {
-        HttpClient.OnCompletedCallBack callback = body -> {
-            if (body != null) {
-                if (HttpClient.NOT_MODIFIED.equals(body)) {
-                    resultCallBack.onResult(HttpClient.NOT_MODIFIED);
-                } else {
+        try {
+            RequestBuilder requestBuilder = new RequestBuilder()
+                    .setUrl(managerUrl + SystemEnv.MANAGER_MAP_PATH.getValue() + envname)
+                    .setHeader(X_GALEB_GROUP_ID, ManagerClient.GROUP_ID)
+                    .setHeader(X_GALEB_ZONE_ID, ManagerClient.ZONE_ID).setHeader(IF_NONE_MATCH_STRING, etag);
+            asyncHttpClient.executeRequest(requestBuilder.build(), new AsyncCompletionHandler<Response>() {
+                @Override
+                public Response onCompleted(Response response) throws Exception {
+                    if (response.getStatusCode() == 304) {
+                        resultCallBack.onResult(304, null);
+                        return response;
+                    }
+
                     try {
-                        Virtualhosts virtualhosts = gson.fromJson(body, Virtualhosts.class);
-                        resultCallBack.onResult(virtualhosts);
+                        Virtualhosts virtualhosts = gson.fromJson(response.getResponseBody(), Virtualhosts.class);
+                        resultCallBack.onResult(200, virtualhosts);
                     } catch (Exception e) {
                         logError(e, this.getClass());
-                        resultCallBack.onResult(null);
+                        resultCallBack.onResult(500, null);
                     }
+                    return response;
                 }
-            } else {
-                resultCallBack.onResult(null);
-            }
-        };
-        httpClient.getResponseBody(managerUrl + SystemEnv.MANAGER_MAP_PATH.getValue() + envname, etag, callback);
+
+                @Override
+                public void onThrowable(Throwable t) {
+                    resultCallBack.onResult(500, null);
+                    super.onThrowable(t);
+                }
+            });
+        } catch (NullPointerException e) {
+            logger.error("Token is NULL (auth problem?)");
+        } catch (Exception e) {
+            ErrorLogger.logError(e, this.getClass());
+        }
     }
 
     public void register(String etag) {
-        httpClient.post(managerUrl + SystemEnv.MANAGER_ROUTERS_PATH.getValue(), etag);
+        RequestBuilder requestBuilder = new RequestBuilder()
+                .setUrl(managerUrl + SystemEnv.MANAGER_ROUTERS_PATH.getValue()).setMethod(HttpMethod.POST.name())
+                .setHeader(IF_NONE_MATCH_STRING, etag).setHeader(X_GALEB_GROUP_ID, ManagerClient.GROUP_ID)
+                .setHeader(X_GALEB_ENVIRONMENT, ManagerClient.ENVIRONMENT_NAME)
+                .setHeader(X_GALEB_LOCAL_IP, LocalIP.encode()).setHeader(X_GALEB_ZONE_ID, ManagerClient.ZONE_ID)
+                .setBody("{\"router\":{\"group_id\":\"" + ManagerClient.GROUP_ID + "\",\"env\":\""
+                        + ManagerClient.ENVIRONMENT_NAME + "\",\"etag\":\"" + etag + "\"}}");
+        try {
+            // Block waiting for response
+            Future<Response> whenResponse = asyncHttpClient.executeRequest(requestBuilder.build());
+            Response response = whenResponse.get();
+            logger.info("Register got: " + response.getStatusCode());
+        } catch (Exception e) {
+            ErrorLogger.logError(e, this.getClass());
+        }
+
     }
 
     public interface ResultCallBack {
-        void onResult(Object result);
+        void onResult(int status, Virtualhosts result);
     }
 
-    @SuppressWarnings("unused")
     public static class Virtualhosts implements Serializable {
         private static final long serialVersionUID = 1L;
         public VirtualHost[] virtualhosts;

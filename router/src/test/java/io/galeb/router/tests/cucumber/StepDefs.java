@@ -17,12 +17,6 @@
 
 package io.galeb.router.tests.cucumber;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -35,7 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
-
 import org.asynchttpclient.uri.Uri;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -51,6 +44,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.Application;
+import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
 import io.galeb.router.tests.client.JmxClientService;
@@ -78,10 +72,10 @@ public class StepDefs {
     private final List<Cookie> cookies = new ArrayList<Cookie>();
 
     @Autowired
-    private HttpClient httpClient;
+    private SimulatedBackendService backendService;
 
     @Autowired
-    private SimulatedBackendService backendService;
+    private ManagerClient managerClient;
 
     @Autowired
     private HttpClient client;
@@ -101,7 +95,7 @@ public class StepDefs {
 
     @PostConstruct
     void init() {
-        logger.info("Using " + httpClient.getClass().getName());
+        logger.info("Using " + managerClient.getClass().getName());
     }
 
     private void executeRequest() throws InterruptedException, java.util.concurrent.ExecutionException {
@@ -128,7 +122,7 @@ public class StepDefs {
             this.headers.add(header.getKey(), header.getValue());
         }
     }
-    
+
     @Do("^with cookies:$")
     public void withCookies(final Map<String, String> cookies) throws Throwable {
         for (Map.Entry<String, String> cookie: cookies.entrySet()) {

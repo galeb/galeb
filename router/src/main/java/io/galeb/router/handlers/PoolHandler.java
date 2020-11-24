@@ -44,17 +44,14 @@ public class PoolHandler implements HttpHandler {
 
     public static final AttachmentKey<String> POOL_NAME = AttachmentKey.create(String.class);
 
-    private static final String CHECK_RULE_HEADER  = "X-Check-Pool";
+    private static final String CHECK_RULE_HEADER = "X-Check-Pool";
     private static final String X_POOL_NAME_HEADER = "X-Pool-Name";
-
-
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ProxyHandler proxyHandler;
     private final boolean hostsEmpty;
     private final Pool pool;
-
 
     public PoolHandler(final Pool pool, ProxyHandler proxyHandler) {
         this.pool = pool;
@@ -73,7 +70,7 @@ public class PoolHandler implements HttpHandler {
             ResponseCodeOnError.HOSTS_EMPTY.getHandler().handleRequest(exchange);
             return;
         }
-        new RequestIDHandler(proxyHandler).handleRequest(exchange);
+        proxyHandler.handleRequest(exchange);
     }
 
     public Pool getPool() {

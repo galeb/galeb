@@ -54,7 +54,6 @@ public class HandlerBuilder {
             vh.getAliases().forEach(aliasName -> {
                 logger.info("adding alias: " + aliasName);
                 vhHandler.addHost(aliasName, handler);
-                cache.put(aliasName, vh);
             });
         });
     }

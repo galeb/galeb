@@ -18,6 +18,7 @@ package io.galeb.router.services;
 
 import static io.galeb.router.configurations.ManagerClientCacheConfiguration.FULLHASH_PROP;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+import com.google.common.collect.MapDifference.ValueDifference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,8 +68,6 @@ public class UpdaterService {
     @Autowired
     private ApplicationContext applicationContext;
 
-    private int count = 0;
-
     @Autowired
     public UpdaterService(final ManagerClient managerClient, final ManagerClientCache cache,
             final NameVirtualHostHandler nameVirtualHostHandler) {
@@ -88,12 +93,9 @@ public class UpdaterService {
     }
 
     public void sync() {
-        AtomicBoolean wait = new AtomicBoolean(true);
         final ManagerClient.ResultCallBack resultCallBack = result -> {
             if (result instanceof String && HttpClient.NOT_MODIFIED.equals(result)) {
                 logger.info("Environment " + envName + ": " + result);
-                count = 0;
-                wait.set(false);
                 return;
             }
 
@@ -102,22 +104,35 @@ public class UpdaterService {
                     : null;
             if (virtualhostsFromManager == null) {
                 logger.error("Virtualhosts Empty. Request problem?");
-                count = 0;
-                wait.set(false);
                 return;
             }
 
-            final List<VirtualHost> virtualhosts = Arrays.stream(virtualhostsFromManager.virtualhosts).map(v -> {
-                return v;
-            }).collect(Collectors.toList());
-            logger.info("Processing " + virtualhosts.size() + " virtualhost(s): Check update initialized");
+            final List<VirtualHost> managerVirtualHosts = Lists.newArrayList(virtualhostsFromManager.virtualhosts);
+            logger.info("Processing " + managerVirtualHosts.size() + " virtualhost(s): Check update initialized");
 
-            new HandlerBuilder().build(virtualhosts, applicationContext, nameVirtualHostHandler, cache);
-            updateEtagIfNecessary(virtualhosts);
+            MapDifference<String, VirtualHost> diff = cache.diff(Maps.uniqueIndex(managerVirtualHosts, VirtualHost::getName));
+            List<VirtualHost> toRemove = new ArrayList<VirtualHost>(diff.entriesOnlyOnLeft().values());
+            List<VirtualHost> virtualHosts = new ArrayList<VirtualHost>(diff.entriesOnlyOnRight().values());
+            virtualHosts.addAll(diff.entriesDiffering().values().stream().map(v -> {return v.rightValue();}).collect(Collectors.toList()));
 
-            logger.info("Processed " + count + " virtualhost(s): Done");
-            count = 0;
-            wait.set(false);
+            logger.info("Not processing: " + diff.entriesInCommon().values().size() + " virtualhost(s) already configured.");
+            logger.info("Processing " + toRemove.size() + " virtualhost(s) to remove");
+            logger.info("Processing " + virtualHosts.size() + " virtualhost(s) to add/update");
+
+            // Update handlers
+            new HandlerBuilder().build(virtualHosts, applicationContext, nameVirtualHostHandler, cache);
+
+            // Remove unused handlers
+            toRemove.forEach(vh -> {
+                nameVirtualHostHandler.removeHost(vh.getName());
+                vh.getAliases().forEach(alias -> {
+                    nameVirtualHostHandler.removeHost(alias);
+                });
+            });
+
+            updateEtagIfNecessary(virtualHosts);
+
+            logger.info("Processed " + virtualHosts.size() + " virtualhost(s): Done");
         };
 
         String etag = cache.etag();

@@ -23,8 +23,12 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
 
 @Configuration
 public class ManagerClientCacheConfiguration {
@@ -67,6 +71,10 @@ public class ManagerClientCacheConfiguration {
 
         public Set<String> getAll() {
             return virtualHosts.keySet();
+        }
+
+        public MapDifference<String, VirtualHost> diff(Map<String, VirtualHost> newMap) {
+            return Maps.difference(virtualHosts, newMap);
         }
 
         public synchronized String etag() {

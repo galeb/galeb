@@ -16,9 +16,8 @@
 
 package io.galeb.core.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.util.Assert;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
@@ -29,22 +28,27 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.util.HashSet;
-import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.springframework.util.Assert;
 
 @MappedSuperclass
-@Table(name = "virtualhost", uniqueConstraints = { @UniqueConstraint(name = "UK_name_virtualhost", columnNames = { "name" }) })
-public class VirtualHost extends AbstractEntity<VirtualHost> implements WithFarmID<VirtualHost>, WithAliases<VirtualHost> {
+@Table(name = "virtualhost", uniqueConstraints = {
+        @UniqueConstraint(name = "UK_name_virtualhost", columnNames = { "name" }) })
+public class VirtualHost extends AbstractEntity<VirtualHost>
+        implements WithFarmID<VirtualHost>, WithAliases<VirtualHost> {
 
     private static final long serialVersionUID = 5596582746795373014L;
 
     @ManyToOne
-    @JoinColumn(name = "environment_id",  nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_environment"))
+    @JoinColumn(name = "environment_id", nullable = false, foreignKey = @ForeignKey(name = "FK_virtualhost_environment"))
     @JsonProperty(required = true)
     private Environment environment;
 
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name="FK_virtualhost_project"))
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_virtualhost_project"))
     @JsonProperty(required = true)
     private Project project;
 
@@ -58,7 +62,7 @@ public class VirtualHost extends AbstractEntity<VirtualHost> implements WithFarm
     private final Set<RuleOrder> rulesOrdered = new HashSet<>();
 
     @ManyToOne
-    @JoinColumn(name = "rule_default_id", foreignKey = @ForeignKey(name="FK_virtualhost_rule_default_id"))
+    @JoinColumn(name = "rule_default_id", foreignKey = @ForeignKey(name = "FK_virtualhost_rule_default_id"))
     private Rule ruleDefault;
 
     @ManyToMany(mappedBy = "parents")
@@ -174,6 +178,14 @@ public class VirtualHost extends AbstractEntity<VirtualHost> implements WithFarm
     @JsonIgnore
     public Farm getFarm() {
         return getFakeFarm();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        VirtualHost other = (VirtualHost) obj;
+        return other.getName() != null && other.getName().equals(getName()) && other.getHash() == getHash();
     }
 
 }

@@ -19,7 +19,6 @@ package io.galeb.router.handlers;
 import org.springframework.context.ApplicationContext;
 
 import io.galeb.router.ResponseCodeOnError;
-import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.NameVirtualHostHandler;
@@ -27,11 +26,9 @@ import io.undertow.server.handlers.NameVirtualHostHandler;
 public class NameVirtualHostDefaultHandler implements HttpHandler {
 
     private final ApplicationContext context;
-    private final ManagerClientCache cache;
 
-    public NameVirtualHostDefaultHandler(final ApplicationContext context, final ManagerClientCache cache) {
+    public NameVirtualHostDefaultHandler(final ApplicationContext context) {
         this.context = context;
-        this.cache = cache;
     }
 
     @Override

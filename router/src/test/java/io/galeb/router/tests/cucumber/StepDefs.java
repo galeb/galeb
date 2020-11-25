@@ -17,6 +17,8 @@
 
 package io.galeb.router.tests.cucumber;
 
+import static org.junit.Assert.assertThat;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -37,7 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootContextLoader;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
@@ -48,6 +52,7 @@ import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
 import io.galeb.router.tests.client.JmxClientService;
+import io.galeb.router.tests.mocks.ManagerClientConfigurationMock;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -59,6 +64,7 @@ import io.netty.handler.codec.http.cookie.DefaultCookie;
         loader = SpringBootContextLoader.class
 )
 @ActiveProfiles({ "test" })
+@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, CucumberFeatureDirty.class})
 @Ignore
 public class StepDefs {
 
@@ -76,6 +82,9 @@ public class StepDefs {
 
     @Autowired
     private ManagerClient managerClient;
+
+    @Autowired
+    private ManagerClientConfigurationMock managerConfigMock;
 
     @Autowired
     private HttpClient client;
@@ -113,6 +122,25 @@ public class StepDefs {
         backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
         this.headers.remove("host");
         this.headers.add("host", ("valid".equals(expression) ? "test.com" : expression));
+    }
+
+    @Given("^a vhost (.+) request to (.+) backend with (.+)$")
+    public void withVHostRequesterAndConfig(String expression, String backendBehavior, String config) throws Throwable {
+        response = null;
+        backendService.stop();
+        backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
+        managerConfigMock.setResponse(ManagerClientConfigurationMock.ManagerResponse.valueOf(config));
+        this.headers.remove("host");
+        this.headers.add("host", expression);
+    }
+
+    @Given("^a vhost (.+) request to (.+) backend$")
+    public void withVHostRequester(String expression, String backendBehavior) throws Throwable {
+        response = null;
+        backendService.stop();
+        backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
+        this.headers.remove("host");
+        this.headers.add("host", expression);
     }
 
     @Do("^with headers:$")

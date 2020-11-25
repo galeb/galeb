@@ -16,25 +16,14 @@
 
 package io.galeb.router.handlers;
 
-import java.net.URI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.xnio.OptionMap;
 
-import io.galeb.core.entity.BalancePolicy;
 import io.galeb.core.entity.Pool;
-import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.ExtendedLoadBalancingProxyClient;
-import io.galeb.router.client.hostselectors.HostSelector;
-import io.galeb.router.client.hostselectors.HostSelectorLookup;
-import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
-import io.undertow.client.UndertowClient;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.proxy.ExclusivityChecker;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.Headers;

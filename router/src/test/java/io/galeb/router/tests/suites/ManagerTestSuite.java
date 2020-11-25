@@ -24,6 +24,7 @@ import io.galeb.router.tests.cache.ManagerClientCacheTest;
 import io.galeb.router.tests.client.ExtendedLoadBalancingProxyClientTest;
 import io.galeb.router.tests.completionListeners.StatsdCompletionListenerTest;
 import io.galeb.router.tests.cucumber.CucumberTest;
+import io.galeb.router.tests.handlers.InfoHandlerTest;
 import io.galeb.router.tests.handlers.PathGlobHandlerTest;
 import io.galeb.router.tests.handlers.RequestIDHandlerTest;
 import io.galeb.router.tests.hostselectors.GuavaConsistentHashTest;
@@ -43,6 +44,7 @@ import io.galeb.router.tests.services.UpdaterServiceTest;
         HashSourceIpHostSelectorTest.class,
         ExtendedLoadBalancingProxyClientTest.class,
         GuavaConsistentHashTest.class,
+        InfoHandlerTest.class,
         PathGlobHandlerTest.class,
         RequestIDHandlerTest.class,
         ManagerClientCacheTest.class,

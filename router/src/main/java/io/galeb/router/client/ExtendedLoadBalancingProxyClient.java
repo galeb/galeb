@@ -16,6 +16,26 @@
 
 package io.galeb.router.client;
 
+import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.AVAILABLE;
+import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL;
+import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL_QUEUE;
+import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.PROBLEM;
+import static org.xnio.IoUtils.safeClose;
+
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.xnio.OptionMap;
+import org.xnio.ssl.XnioSsl;
+
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.client.hostselectors.RoundRobinHostSelector;
@@ -39,28 +59,8 @@ import io.undertow.server.handlers.proxy.RouteParsingStrategy;
 import io.undertow.util.AttachmentKey;
 import io.undertow.util.AttachmentList;
 import io.undertow.util.CopyOnWriteMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.xnio.OptionMap;
-import org.xnio.ssl.XnioSsl;
 
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.TimeUnit;
-
-import static io.undertow.attribute.ExchangeAttributes.remoteIp;
-import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.AVAILABLE;
-import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL;
-import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL_QUEUE;
-import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.PROBLEM;
-import static org.xnio.IoUtils.safeClose;
-
-@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused", "SameParameterValue"})
+//@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused", "SameParameterValue"})
 public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedProxyClient {
 
     private final Log logger = LogFactory.getLog(this.getClass());
@@ -188,7 +188,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host) {
         return addHost(host, null, null);
     }
-    
+
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host, OptionMap options) {
         return addHost(null, host, null, null, options);
     }
@@ -218,7 +218,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
     public synchronized ExtendedLoadBalancingProxyClient addHost(final URI host, String jvmRoute, XnioSsl ssl, OptionMap options) {
         return addHost(null, host, jvmRoute, ssl, options);
     }
-    
+
     public synchronized ExtendedLoadBalancingProxyClient addHost(final InetSocketAddress bindAddress, final URI host, String jvmRoute, XnioSsl ssl, OptionMap options) {
         Host h = new Host(jvmRoute, bindAddress, host, ssl, options);
         Host[] existing = hosts;
@@ -355,7 +355,7 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
 		} catch (IllegalArgumentException e) {
 			logger.warn("Request from ip " + remoteIp().readAttribute(exchange) + " contains invalid encoding in headers");
 		}
-		
+
 		return routeIteratorFactory.iterator(null);
 	}
 

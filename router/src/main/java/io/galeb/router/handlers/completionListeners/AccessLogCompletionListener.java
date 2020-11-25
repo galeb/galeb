@@ -16,23 +16,27 @@
 
 package io.galeb.router.handlers.completionListeners;
 
-import com.google.gson.JsonObject;
+import static io.undertow.attribute.ExchangeAttributes.localServerName;
+import static io.undertow.attribute.ExchangeAttributes.remoteIp;
+import static io.undertow.attribute.ExchangeAttributes.requestHeader;
+import static io.undertow.attribute.ExchangeAttributes.requestList;
+import static io.undertow.attribute.ExchangeAttributes.responseCode;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Component;
+
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.client.hostselectors.HostSelector;
 import io.galeb.router.handlers.RequestIDHandler;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.stereotype.Component;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static io.undertow.attribute.ExchangeAttributes.*;
 
 @Component
 public class AccessLogCompletionListener extends ProcessorLocalStatusCode implements ExchangeCompletionListener {

@@ -19,19 +19,15 @@ package io.galeb.router.services;
 import static io.galeb.router.configurations.ManagerClientCacheConfiguration.FULLHASH_PROP;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.google.common.collect.MapDifference.ValueDifference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,10 +49,6 @@ import io.undertow.server.handlers.NameVirtualHostHandler;
 public class UpdaterService {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdaterService.class);
-
-    public static final String ALIAS_OF = "alias_of";
-    public static final long WAIT_TIMEOUT = Long
-            .parseLong(Optional.ofNullable(System.getenv("WAIT_TIMEOUT")).orElse("20000")); // ms
 
     private final String envName = SystemEnv.ENVIRONMENT_NAME.getValue();
     private final AtomicBoolean executeSync = new AtomicBoolean(false);
@@ -111,6 +103,12 @@ public class UpdaterService {
             List<VirtualHost> toRemove = new ArrayList<VirtualHost>(diff.entriesOnlyOnLeft().values());
             List<VirtualHost> virtualHosts = new ArrayList<VirtualHost>(diff.entriesOnlyOnRight().values());
             virtualHosts.addAll(diff.entriesDiffering().values().stream().map(v -> {
+                // If old virtual host has alias, remove it now
+                // might re-add them later
+                // TODO: check if aliases are equal, only remove if changed;
+                v.leftValue().getAliases().forEach(alias -> {
+                    nameVirtualHostHandler.removeHost(alias);
+                });
                 return v.rightValue();
             }).collect(Collectors.toList()));
 
@@ -119,9 +117,6 @@ public class UpdaterService {
             logger.info("Processing " + toRemove.size() + " virtualhost(s) to remove");
             logger.info("Processing " + virtualHosts.size() + " virtualhost(s) to add/update");
 
-            // Update handlers
-            new HandlerBuilder().build(virtualHosts, applicationContext, nameVirtualHostHandler, cache);
-
             // Remove unused handlers
             toRemove.forEach(vh -> {
                 nameVirtualHostHandler.removeHost(vh.getName());
@@ -129,6 +124,9 @@ public class UpdaterService {
                     nameVirtualHostHandler.removeHost(alias);
                 });
             });
+
+            // Update handlers
+            new HandlerBuilder().build(virtualHosts, applicationContext, nameVirtualHostHandler, cache);
 
             updateEtagIfNecessary(virtualHosts);
 

@@ -16,26 +16,27 @@
 
 package io.galeb.router.tests.backend;
 
-import io.galeb.router.tests.client.HttpClient;
-import io.undertow.Undertow;
-import io.undertow.UndertowOptions;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import io.galeb.router.tests.client.HttpClient;
+import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.ResponseCodeHandler;
 
 @Service
 public class SimulatedBackendService {
 
-    @SuppressWarnings("unused")
     public enum ResponseBehavior {
         BROKEN(ResponseCodeHandler.HANDLE_500),
         FASTTER(ResponseCodeHandler.HANDLE_200),
+        DEFAULT(ResponseCodeHandler.HANDLE_200),
         FAST(exchange -> exchange.getResponseSender().send("A")),
         SLOW(exchange -> { Thread.sleep(5000); ResponseCodeHandler.HANDLE_200.handleRequest(exchange);}),
         HUGE(exchange -> {

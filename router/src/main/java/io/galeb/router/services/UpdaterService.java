@@ -97,6 +97,7 @@ public class UpdaterService {
 
             final List<VirtualHost> managerVirtualHosts = Lists.newArrayList(vhsFromManager.virtualhosts);
             logger.info("Processing " + managerVirtualHosts.size() + " virtualhost(s): Check update initialized");
+            String etag = managerVirtualHosts.get(0).getEnvironment().getProperties().get(FULLHASH_PROP);
 
             MapDifference<String, VirtualHost> diff = cache
                     .diff(Maps.uniqueIndex(managerVirtualHosts, VirtualHost::getName));
@@ -127,8 +128,7 @@ public class UpdaterService {
 
             // Update handlers
             new HandlerBuilder().build(virtualHosts, applicationContext, nameVirtualHostHandler, cache);
-
-            updateEtagIfNecessary(virtualHosts);
+            cache.updateEtag(etag);
 
             logger.info("Processed " + virtualHosts.size() + " virtualhost(s): Done");
         };
@@ -137,15 +137,5 @@ public class UpdaterService {
         // List<VirtualHost> lastCache = new ArrayList<>(cache.values());
         managerClient.register(etag);
         managerClient.getVirtualhosts(envName, etag, resultCallBack);
-    }
-
-    private void updateEtagIfNecessary(final List<VirtualHost> virtualhosts) {
-        final String etag;
-        if (!virtualhosts.isEmpty()) {
-            etag = virtualhosts.get(0).getEnvironment().getProperties().get(FULLHASH_PROP);
-        } else {
-            etag = ManagerClientCache.EMPTY;
-        }
-        cache.updateEtag(etag);
     }
 }

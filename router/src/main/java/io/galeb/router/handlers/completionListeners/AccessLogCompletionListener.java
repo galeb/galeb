@@ -46,8 +46,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
     @Override
     public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
         try {
-            JsonObject json = getJsonObject(exchange);
-            logger.info(json.toString());
+            logger.info(getJsonObject(exchange));
         } catch (Exception e) {
             logger.error(ExceptionUtils.getStackTrace(e));
         } finally {
@@ -55,7 +54,7 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
         }
     }
 
-    public JsonObject getJsonObject(HttpServerExchange exchange) {
+    public String getJsonObject(HttpServerExchange exchange) {
         final String remoteAddr = remoteIp().readAttribute(exchange);
         final String host = localServerName().readAttribute(exchange);
         final String requestElements[] = requestList().readAttribute(exchange).split(" ");
@@ -78,29 +77,33 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
         final int fakeStatusCode = getFakeStatusCode(realDestAttached, originalStatusCode, responseBytesSent, responseTime, MAX_REQUEST_TIME);
         final int statusCode = fakeStatusCode != ProcessorLocalStatusCode.NOT_MODIFIED ? fakeStatusCode : originalStatusCode;
 
-        JsonObject json = new JsonObject();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"); // ISO-8601
-        json.addProperty("@timestamp", dateFormat.format(new Date()));
-        json.addProperty("@version", "1");
-        json.addProperty("host", SystemEnv.HOSTNAME.getValue());
-        json.addProperty("short_message", SHORT_MESSAGE);
-        json.addProperty("vhost", host);
-        json.addProperty("_tags", SystemEnv.LOGGING_TAGS.getValue() + ",ACCESS");
-        json.addProperty("remote_addr", remoteAddr);
-        json.addProperty("request_method", method);
-        json.addProperty("request_uri", requestUri);
-        json.addProperty("server_protocol", proto);
-        json.addProperty("http_referer", (httpReferer != null ? httpReferer : "-"));
-        json.addProperty("http_x_mobile_group", (xMobileGroup != null ? xMobileGroup : "-"));
-        json.addProperty("status", Integer.toString(statusCode));
-        json.addProperty("body_bytes_sent", bytesSent);
-        json.addProperty("request_time", Integer.toString(responseTime));
-        json.addProperty("upstream_addr", realDest);
-        json.addProperty("upstream_status", Integer.toString(originalStatusCode));
-        json.addProperty("upstream_response_length", bytesSentOrDash);
-        json.addProperty("http_user_agent", (userAgent != null ? userAgent : "-"));
-        json.addProperty("request_id_final",(requestId != null ? requestId : "-"));
-        json.addProperty("http_x_forwarded_for", (xForwardedFor != null ? xForwardedFor : "-"));
+        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"); // ISO-8601
+        final String json = "{" +
+                "\"@timestamp\":\"" + dateFormat.format(new Date()) + "\"," +
+                "\"@version\":\"" + "1" + "\"," +
+                "\"host\":\"" + SystemEnv.HOSTNAME.getValue() + "\"," +
+                "\"short_message\":\"" + SHORT_MESSAGE + "\"," +
+                "\"vhost\":\"" + host + "\"," +
+                "\"_tags\":\"" + SystemEnv.LOGGING_TAGS.getValue() + ",ACCESS" + "\"," +
+                "\"remote_addr\":\"" + remoteAddr + "\"," +
+                "\"request_method\":\"" + method + "\"," +
+                "\"request_uri\":\"" + requestUri + "\"," +
+                "\"server_protocol\":\"" + proto + "\"," +
+                "\"http_referer\":\"" +  (httpReferer != null ? httpReferer : "-") + "\"," +
+                "\"http_x_mobile_group\":\"" + (xMobileGroup != null ? xMobileGroup : "-") + "\"," +
+                "\"status\":\"" + statusCode + "\"," +
+                "\"body_bytes_sent\":\"" + bytesSent + "\"," +
+                "\"request_time\":\"" + responseTime + "\"," +
+                "\"upstream_addr\":\"" + realDest + "\"," +
+                "\"upstream_status\":\"" + originalStatusCode + "\"," +
+                "\"upstream_addr\":\"" + realDest + "\"," +
+                "\"upstream_status\":\"" + originalStatusCode + "\"," +
+                "\"upstream_response_length\":\"" + bytesSentOrDash + "\"," +
+                "\"http_user_agent\":\"" + (userAgent != null ? userAgent : "-") + "\"," +
+                "\"request_id_final\":\"" + (requestId != null ? requestId : "-") + "\"," +
+                "\"http_x_forwarded_for\":\"" + (xForwardedFor != null ? xForwardedFor : "-") + "\"" +
+                "}";
+
         return json;
     }
 }

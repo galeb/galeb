@@ -17,6 +17,35 @@
 
 package io.galeb.router.tests.cucumber;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+
+import org.asynchttpclient.uri.Uri;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootContextLoader;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
@@ -27,26 +56,8 @@ import io.galeb.router.tests.client.HttpClient;
 import io.galeb.router.tests.client.JmxClientService;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.asynchttpclient.RequestBuilder;
-import org.asynchttpclient.Response;
-import org.asynchttpclient.uri.Uri;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootContextLoader;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.PostConstruct;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(
@@ -64,6 +75,7 @@ public class StepDefs {
     private Uri uri = Uri.create("http://127.0.0.1:" + SystemEnv.ROUTER_PORT.getValue());
     private final InetAddress address= InetAddress.getLocalHost();
     private final HttpHeaders headers = new DefaultHttpHeaders();
+    private final List<Cookie> cookies = new ArrayList<Cookie>();
 
     @Autowired
     private HttpClient httpClient;
@@ -79,6 +91,7 @@ public class StepDefs {
 
     private long requestTime = 0L;
 
+
     public StepDefs() throws UnknownHostException {}
 
     @Before
@@ -93,7 +106,7 @@ public class StepDefs {
 
     private void executeRequest() throws InterruptedException, java.util.concurrent.ExecutionException {
         long start = System.currentTimeMillis();
-        this.response = client.execute(new RequestBuilder(method,true)
+		this.response = client.execute(new RequestBuilder(method,true).setCookies(this.cookies)
                 .setHeaders(headers).setAddress(address).setUri(uri));
         this.requestTime = System.currentTimeMillis() - start;
         logger.info("request time (ms): " + requestTime);
@@ -111,7 +124,17 @@ public class StepDefs {
     @Do("^with headers:$")
     public void withHeaders(final Map<String, String> headers) throws Throwable {
         for (Map.Entry<String, String> header: headers.entrySet()) {
+        	System.out.println(header.getKey() + " - " + header.getValue());
             this.headers.add(header.getKey(), header.getValue());
+        }
+    }
+    
+    @Do("^with cookies:$")
+    public void withCookies(final Map<String, String> cookies) throws Throwable {
+        for (Map.Entry<String, String> cookie: cookies.entrySet()) {
+        	System.out.println(cookie.getKey() + " - " + cookie.getValue());
+        	Cookie c = new DefaultCookie(cookie.getKey(), cookie.getValue());
+        	this.cookies.add(c);
         }
     }
 

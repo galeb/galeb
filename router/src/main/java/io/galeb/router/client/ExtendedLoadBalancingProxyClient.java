@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 
+import static io.undertow.attribute.ExchangeAttributes.remoteIp;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.AVAILABLE;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL_QUEUE;
@@ -341,16 +342,22 @@ public class ExtendedLoadBalancingProxyClient implements ProxyClient, ExtendedPr
         return null;
     }
 
-    protected Iterator<CharSequence> parseRoutes(HttpServerExchange exchange) {
-        Map<String, Cookie> cookies = exchange.getRequestCookies();
-        for (String cookieName : sessionCookieNames) {
-            Cookie sessionCookie = cookies.get(cookieName);
-            if (sessionCookie != null) {
-                return routeIteratorFactory.iterator(sessionCookie.getValue());
-            }
-        }
-        return routeIteratorFactory.iterator(null);
-    }
+	public Iterator<CharSequence> parseRoutes(HttpServerExchange exchange) {
+		try {
+			Map<String, Cookie> cookies = exchange.getRequestCookies();
+
+			for (String cookieName : sessionCookieNames) {
+				Cookie sessionCookie = cookies.get(cookieName);
+				if (sessionCookie != null) {
+					return routeIteratorFactory.iterator(sessionCookie.getValue());
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			logger.warn("Request from ip " + remoteIp().readAttribute(exchange) + " contains invalid encoding in headers");
+		}
+		
+		return routeIteratorFactory.iterator(null);
+	}
 
     private void sortHosts(final Host[] newHosts) {
         Arrays.sort(newHosts, Host::compareTo);

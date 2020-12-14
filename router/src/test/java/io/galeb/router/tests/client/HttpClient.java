@@ -38,6 +38,7 @@ public class HttpClient {
     private static final int TIMEOUT = 10000;
 
     private final AsyncHttpClient asyncHttpClient = asyncHttpClient(config()
+    		.setUseLaxCookieEncoder(true)
             .setFollowRedirect(FOLLOW_REDIRECT)
             .setKeepAlive(KEEP_ALIVE)
             .setConnectTimeout(TIMEOUT)

@@ -22,3 +22,12 @@ Feature: Request Support
     Given a valid host request to FASTTER backend
     When Do GET /search?query=query{"key":"value"}
     Then the response status is 200
+    
+  Scenario: Sending GET to /search?query=query{%22key%22:%22value%22} with valid host header
+    Given a valid host request to FASTTER backend
+    When Do GET /search?query=query{"key":"value"}
+    And with cookies: 
+        | glb_uid | CpFïfJvI�� {�O>0�����RF�w��t��L�9RԂ�= |
+        | JSESSIONID | xxxxXXXXXXxxxxx |
+    Then the response status is 200
+    

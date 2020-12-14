@@ -213,6 +213,16 @@ public enum SystemEnv {
     ENABLE_STATSD         ("ENABLE_STATSD",         Boolean.TRUE),
 
     /**
+     * Enable prometheus.
+     */
+    ENABLE_PROMETHEUS     ("ENABLE_PROMETHEUS",     Boolean.TRUE),
+
+    /**
+     * Prometheus port.
+     */
+    PROMETHEUS_PORT       ("PROMETHEUS_PORT",       9091),
+
+    /**
      * Get and send to statsd the Target(Backend) openConnections counter.
      */
     SEND_OPENCONN_COUNTER ("SEND_OPENCONN_COUNTER", Boolean.TRUE),
@@ -276,7 +286,7 @@ public enum SystemEnv {
      * Statsd target tag.
      */
     STATSD_TARGET_TAG       ("STATSD_TARGET_TAG",       "_TARGET_."),
-    
+
     /**
      * PREFIX_UNDERTOW_CLIENT
      */

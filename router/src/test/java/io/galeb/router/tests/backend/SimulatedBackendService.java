@@ -106,7 +106,6 @@ public class SimulatedBackendService {
 
     @PreDestroy
     public void onDestroy() throws Exception {
-        logger.info(this.getClass().getSimpleName() + " stoping");
         if (undertow != null) {
             undertow.stop();
             logger.info(this.getClass().getSimpleName() + " stopped");

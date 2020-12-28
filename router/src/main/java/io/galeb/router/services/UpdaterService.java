@@ -84,6 +84,14 @@ public class UpdaterService {
     }
 
     public void sync() {
+        final ManagerClient.ResultCallBack resultCallBack = getResultCallback();
+        String etag = cache.etag();
+        // List<VirtualHost> lastCache = new ArrayList<>(cache.values());
+        managerClient.register(etag);
+        managerClient.getVirtualhosts(envName, etag, resultCallBack);
+    }
+
+    public final ManagerClient.ResultCallBack getResultCallback() {
         final ManagerClient.ResultCallBack resultCallBack = (status, vhsFromManager) -> {
             if (status == 304 || status != 200) {
                 logger.info("Environment " + envName + " status: " + status);
@@ -132,10 +140,6 @@ public class UpdaterService {
 
             logger.info("Processed " + virtualHosts.size() + " virtualhost(s): Done");
         };
-
-        String etag = cache.etag();
-        // List<VirtualHost> lastCache = new ArrayList<>(cache.values());
-        managerClient.register(etag);
-        managerClient.getVirtualhosts(envName, etag, resultCallBack);
+        return resultCallBack;
     }
 }

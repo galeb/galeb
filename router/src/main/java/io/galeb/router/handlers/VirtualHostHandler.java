@@ -20,8 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.context.ApplicationContext;
-
 import io.galeb.router.ResponseCodeOnError;
 import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;

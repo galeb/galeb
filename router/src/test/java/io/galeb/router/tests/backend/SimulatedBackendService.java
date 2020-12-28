@@ -16,26 +16,32 @@
 
 package io.galeb.router.tests.backend;
 
-import io.galeb.router.tests.client.HttpClient;
-import io.undertow.Undertow;
-import io.undertow.UndertowOptions;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
+import javax.annotation.PreDestroy;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
+import io.galeb.router.tests.client.HttpClient;
+import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.ResponseCodeHandler;
 
 @Service
 public class SimulatedBackendService {
 
-    @SuppressWarnings("unused")
     public enum ResponseBehavior {
-        BROKEN(ResponseCodeHandler.HANDLE_500),
+        BROKEN(exchange -> {
+            logger.warn("Broken");
+            exchange.setStatusCode(500);
+        }),
         FASTTER(ResponseCodeHandler.HANDLE_200),
+        DEFAULT(ResponseCodeHandler.HANDLE_200),
         FAST(exchange -> exchange.getResponseSender().send("A")),
         SLOW(exchange -> { Thread.sleep(5000); ResponseCodeHandler.HANDLE_200.handleRequest(exchange);}),
         HUGE(exchange -> {
@@ -56,7 +62,7 @@ public class SimulatedBackendService {
         }
     }
 
-    private final Log logger = LogFactory.getLog(this.getClass());
+    private static final Log logger = LogFactory.getLog(SimulatedBackendService.class);
     private final HttpClient client;
 
     private ResponseBehavior behavior = null;
@@ -71,6 +77,7 @@ public class SimulatedBackendService {
     public SimulatedBackendService setResponseBehavior(ResponseBehavior behavior) {
         this.behavior = behavior;
         int backendPort = 8080;
+        logger.info("Using behaviour: " + behavior.name());
         this.undertow = Undertow.builder()
                                 .setServerOption(UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL, true)
                                 .addHttpListener(backendPort, "0.0.0.0", behavior.getHandler()).build();
@@ -95,5 +102,13 @@ public class SimulatedBackendService {
             undertow.stop();
         }
         logger.info(this.getClass().getSimpleName() + " stopped");
+    }
+
+    @PreDestroy
+    public void onDestroy() throws Exception {
+        if (undertow != null) {
+            undertow.stop();
+            logger.info(this.getClass().getSimpleName() + " stopped");
+        }
     }
 }

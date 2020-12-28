@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
 public class HostSelectorLookup {
     private static final Map<String, Class<? extends HostSelector>> hostSelectorMap = new HashMap<>();
 

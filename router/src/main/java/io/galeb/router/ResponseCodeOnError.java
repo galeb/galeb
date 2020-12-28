@@ -16,12 +16,11 @@
 
 package io.galeb.router;
 
+import static io.undertow.util.HttpString.tryFromString;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.util.HttpString;
 
-import static io.undertow.util.HttpString.tryFromString;
-
-@SuppressWarnings("unused")
 public enum ResponseCodeOnError {
     RULE_PATH_NOT_FOUND              ("RULE_PATH_NOT_FOUND",              503),
     PROXY_HANDLER_NOT_DEFINED        ("PROXY_HANDLER_NOT_DEFINED",        503),

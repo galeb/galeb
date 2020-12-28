@@ -16,31 +16,32 @@
 
 package io.galeb.router.tests.completionListeners;
 
-import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
-import io.galeb.router.services.StatsdClientService;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+
+import java.util.AbstractMap;
+import java.util.Map;
+
+import org.junit.Test;
+
+import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
+import io.galeb.router.services.StatsdClientService;
 
 public class StatsdCompletionListenerTest {
 
     private StatsdClientService statsdClientService = mock(StatsdClientService.class);
     private final StatsdCompletionListener statsdCompletionListener = new StatsdCompletionListener(statsdClientService);
-    private final Map<String, String> results = new HashMap<String, String>(){{
-        put("http://127.0.0.1","127_0_0_1");
-        put("a.b.c.d", "a_b_c_d");
-        put("a b c d", "a_b_c_d");
-        put("a:b:c:d", "a_b_c_d");
-        put("a:b c.d_e", "a_b_c_d_e");
-    }};
 
     @Test
     public void cleanUpKeyTest() {
-        for (Map.Entry<String, String> entry: results.entrySet()) {
+        Map<String, String> results = Map.ofEntries(
+                new AbstractMap.SimpleEntry<String, String>("http://127.0.0.1", "127_0_0_1"),
+                new AbstractMap.SimpleEntry<String, String>("a.b.c.d", "a_b_c_d"),
+                new AbstractMap.SimpleEntry<String, String>("a b c d", "a_b_c_d"),
+                new AbstractMap.SimpleEntry<String, String>("a:b:c:d", "a_b_c_d"),
+                new AbstractMap.SimpleEntry<String, String>("a:b c.d_e", "a_b_c_d_e"));
+
+        for (Map.Entry<String, String> entry : results.entrySet()) {
             assertTrue(statsdCompletionListener.cleanUpKey(entry.getKey()).equals(entry.getValue()));
         }
     }

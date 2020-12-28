@@ -18,7 +18,6 @@ package io.galeb.router.sync.structure;
 
 import java.io.Serializable;
 
-@SuppressWarnings("unused")
 public class VirtualhostsName implements Serializable {
     private static final long serialVersionUID = 1L;
 

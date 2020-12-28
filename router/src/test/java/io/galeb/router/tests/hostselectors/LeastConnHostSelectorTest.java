@@ -16,20 +16,20 @@
 
 package io.galeb.router.tests.hostselectors;
 
-import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
-import io.galeb.router.client.hostselectors.HostSelector;
-import io.galeb.router.client.hostselectors.HostSelectorLookup;
-import io.galeb.router.client.hostselectors.StrictLeastConnHostSelector;
-import org.junit.Test;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static io.galeb.router.client.hostselectors.HostSelectorLookup.STRICT_LEASTCONN;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
+
+import io.galeb.router.client.ExtendedLoadBalancingProxyClient.Host;
+import io.galeb.router.client.hostselectors.HostSelector;
+import io.galeb.router.client.hostselectors.HostSelectorLookup;
+import io.galeb.router.client.hostselectors.StrictLeastConnHostSelector;
 
 public class LeastConnHostSelectorTest extends AbstractHostSelectorTest {
 

@@ -16,28 +16,32 @@
 
 package io.galeb.router.tests.handlers;
 
-import io.galeb.router.handlers.PathGlobHandler;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.ServerConnection;
-import io.undertow.server.handlers.ResponseCodeHandler;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.hamcrest.Matchers.equalTo;
+import static io.galeb.router.tests.mocks.MockHttpServerExchange.createMockExchange;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.google.common.collect.ImmutableSortedMap;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.galeb.router.ResponseCodeOnError.Header;
+import io.galeb.router.handlers.PathGlobHandler;
+import io.galeb.router.handlers.PathGlobHandler.PathOrdered;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 
 public class PathGlobHandlerTest {
 
-    private final Log logger = LogFactory.getLog(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Test
     public void pathOrderedTest() {
@@ -67,160 +71,68 @@ public class PathGlobHandlerTest {
     }
 
     @Test
-    public void addRemoveTest() {
-        PathGlobHandler pathGlobHandler = new PathGlobHandler();
+    public void handlerRoutesEmptyTest() {
+        ImmutableSortedMap<PathOrdered, HttpHandler> paths = ImmutableSortedMap.<PathOrdered, HttpHandler>naturalOrder()
+                .build();
+        PathGlobHandler handler = new PathGlobHandler(paths);
 
-        pathGlobHandler.addPath("x", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("x", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("y", 0, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("z", 1, ResponseCodeHandler.HANDLE_200);
-        pathGlobHandler.addPath("w", 1, ResponseCodeHandler.HANDLE_200);
-
+        HttpServerExchange exchange = createMockExchange("/");
         try {
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(4));
-
-            assertThat(pathGlobHandler.contains("x"), is(true));
-            pathGlobHandler.removePath("x");
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(3));
-            assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("y", 0),
-                    new PathGlobHandler.PathOrdered("w", 1),
-                    new PathGlobHandler.PathOrdered("z", 1))
-            );
-
-            assertThat(pathGlobHandler.contains("z"), is(true));
-            pathGlobHandler.removePath("z");
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(2));
-            assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("y", 0),
-                    new PathGlobHandler.PathOrdered("w", 1)
-                    )
-            );
-
-            assertThat(pathGlobHandler.contains("y"), is(true));
-            pathGlobHandler.removePath("y");
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(1));
-            assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("w", 1))
-            );
-
-            pathGlobHandler.removePath("k");
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(1));
-            assertThat(pathGlobHandler.getPaths().keySet(), Matchers.contains(
-                    new PathGlobHandler.PathOrdered("w", 1))
-            );
-
-            assertThat(pathGlobHandler.contains("w"), is(true));
-            pathGlobHandler.removePath("w");
-            assertThat(pathGlobHandler.getPaths().entrySet(), Matchers.hasSize(0));
-
-        } catch (AssertionError e) {
-            logger.error("size wrong. pathGlobHandler registered paths are:");
-            pathGlobHandler.getPaths().forEach((k, v) -> logger.error(k.getPath()));
-            throw e;
+            handler.handleRequest(exchange);
+        } catch (Exception e) {
+            logger.error(ExceptionUtils.getStackTrace(e));
         }
+
+        Assert.assertEquals("", exchange.getResponseHeaders().get(Header.X_GALEB_ERROR).get(0), "RULES_EMPTY");
+        Assert.assertEquals("", exchange.getStatusCode(), 503);
     }
 
     @Test
-    public void checkMatch() {
+    public void handlerRoutesCorrectlyTest() {
         final AtomicReference<String> result = new AtomicReference<>("default");
+        Map<PathOrdered, HttpHandler> allPaths = new HashMap<>();
 
-        HttpHandler defaultHandler = mock(HttpHandler.class);
-        PathGlobHandler pathGlobHandler = new PathGlobHandler();
-        pathGlobHandler.setDefaultHandler(defaultHandler);
+        allPaths.put(new PathOrdered("/x*", 0), exchange -> result.set("/x"));
+        allPaths.put(new PathOrdered("/y*", 0), exchange -> result.set("/y"));
+        allPaths.put(new PathOrdered("/z*", 0), exchange -> result.set("/z"));
+        allPaths.put(new PathOrdered("/w*", 0), exchange -> result.set("/w"));
+        allPaths.put(new PathOrdered("/exception/*", 0), exchange -> {
+            throw new Exception();
+        });
+        allPaths.put(new PathOrdered("/1*", 1), exchange -> result.set("/1"));
+        allPaths.put(new PathOrdered("/2*", 2), exchange -> result.set("/2"));
+        allPaths.put(new PathOrdered("/3*", 3), exchange -> result.set("/3"));
+        allPaths.put(new PathOrdered("/4/*", Integer.MAX_VALUE - 1), exchange -> result.set("/4"));
+        allPaths.put(new PathOrdered("/5/*.json", Integer.MAX_VALUE - 1), exchange -> result.set("/5"));
+        allPaths.put(new PathOrdered("/", Integer.MAX_VALUE), exchange -> result.set("slash"));
 
-        pathGlobHandler.addPath("/x", 0, exchange -> result.set("x"));
-        pathGlobHandler.addPath("/y", 0, exchange -> result.set("y"));
-        pathGlobHandler.addPath("/z", 0, exchange -> result.set("z"));
-        pathGlobHandler.addPath("/w", 0, exchange -> result.set("w"));
-        pathGlobHandler.addPath("/1", 1, exchange -> result.set("1"));
-        pathGlobHandler.addPath("/2", 2, exchange -> result.set("2"));
-        pathGlobHandler.addPath("/3", 3, exchange -> result.set("3"));
-        pathGlobHandler.addPath("/4", 4, exchange -> result.set("4"));
-        pathGlobHandler.addPath("/5*", 4, exchange -> result.set("5"));
-        pathGlobHandler.addPath("/6/*", Integer.MAX_VALUE - 1, exchange -> result.set("6"));
-        pathGlobHandler.addPath("/7/*.json", Integer.MAX_VALUE - 1, exchange -> result.set("7"));
-        pathGlobHandler.addPath("/", Integer.MAX_VALUE, exchange -> result.set("slash"));
+        ImmutableSortedMap<PathOrdered, HttpHandler> paths = ImmutableSortedMap.<PathOrdered, HttpHandler>naturalOrder()
+                .putAll(allPaths).build();
+        PathGlobHandler handler = new PathGlobHandler(paths);
+        handler.setDefaultHandler(exchange -> result.set("default-handler"));
 
-        ServerConnection serverConnection = mock(ServerConnection.class);
-        try {
-            HttpServerExchange exchangeNotMatch = new HttpServerExchange(serverConnection);
-            exchangeNotMatch.setRelativePath(UUID.randomUUID().toString());
-            HttpServerExchange exchangeX = new HttpServerExchange(serverConnection);
-            exchangeX.setRelativePath("/x");
-            HttpServerExchange exchangeY = new HttpServerExchange(serverConnection);
-            exchangeY.setRelativePath("/y");
-            HttpServerExchange exchangeZ = new HttpServerExchange(serverConnection);
-            exchangeZ.setRelativePath("/z");
-            HttpServerExchange exchangeW = new HttpServerExchange(serverConnection);
-            exchangeW.setRelativePath("/w");
-            HttpServerExchange exchange1 = new HttpServerExchange(serverConnection);
-            exchange1.setRelativePath("/1");
-            HttpServerExchange exchange2 = new HttpServerExchange(serverConnection);
-            exchange2.setRelativePath("/2");
-            HttpServerExchange exchange3 = new HttpServerExchange(serverConnection);
-            exchange3.setRelativePath("/3");
-            HttpServerExchange exchange4 = new HttpServerExchange(serverConnection);
-            exchange4.setRelativePath("/4");
-            HttpServerExchange exchange5 = new HttpServerExchange(serverConnection);
-            exchange5.setRelativePath("/555");
-            HttpServerExchange exchange6 = new HttpServerExchange(serverConnection);
-            exchange6.setRelativePath("/6/xpto");
-            HttpServerExchange exchange7 = new HttpServerExchange(serverConnection);
-            exchange7.setRelativePath("/7/xpto/test.json");
-            HttpServerExchange exchangeSlash = new HttpServerExchange(serverConnection);
-            exchangeSlash.setRelativePath("/");
+        Map<String, String> tests = Map.ofEntries(new AbstractMap.SimpleEntry<String, String>("/x", "/x"),
+                new AbstractMap.SimpleEntry<String, String>("/y", "/y"),
+                new AbstractMap.SimpleEntry<String, String>("/z", "/z"),
+                new AbstractMap.SimpleEntry<String, String>("/w", "/w"),
+                new AbstractMap.SimpleEntry<String, String>("/1", "/1"),
+                new AbstractMap.SimpleEntry<String, String>("/2", "/2"),
+                new AbstractMap.SimpleEntry<String, String>("/3", "/3"),
+                new AbstractMap.SimpleEntry<String, String>("/4/asdf", "/4"),
+                new AbstractMap.SimpleEntry<String, String>("/5/asdf.json", "/5"),
+                new AbstractMap.SimpleEntry<String, String>("/", "slash"),
+                new AbstractMap.SimpleEntry<String, String>("/tests", "default-handler"),
+                new AbstractMap.SimpleEntry<String, String>("/exception/a", "default-handler"));
 
-            pathGlobHandler.handleRequest(exchangeNotMatch);
-            assertThat(result.get(), equalTo("default"));
+        tests.forEach((url, expected) -> {
+            HttpServerExchange exchange = createMockExchange(url);
+            try {
+                handler.handleRequest(exchange);
+            } catch (Exception e) {
+                logger.error(ExceptionUtils.getStackTrace(e));
+            }
+            Assert.assertEquals("", result.get(), expected);
+        });
 
-            pathGlobHandler.handleRequest(exchangeX);
-            assertThat(result.get(), equalTo("x"));
-
-            pathGlobHandler.handleRequest(exchangeY);
-            assertThat(result.get(), equalTo("y"));
-
-            pathGlobHandler.handleRequest(exchangeZ);
-            assertThat(result.get(), equalTo("z"));
-
-            pathGlobHandler.handleRequest(exchangeW);
-            assertThat(result.get(), equalTo("w"));
-
-            pathGlobHandler.handleRequest(exchange1);
-            assertThat(result.get(), equalTo("1"));
-
-            pathGlobHandler.handleRequest(exchange2);
-            assertThat(result.get(), equalTo("2"));
-
-            pathGlobHandler.handleRequest(exchange3);
-            assertThat(result.get(), equalTo("3"));
-
-            pathGlobHandler.handleRequest(exchange4);
-            assertThat(result.get(), equalTo("4"));
-
-            pathGlobHandler.handleRequest(exchange2);
-            assertThat(result.get(), equalTo("2"));
-
-            pathGlobHandler.handleRequest(exchange1);
-            assertThat(result.get(), equalTo("1"));
-
-            pathGlobHandler.handleRequest(exchange5);
-            assertThat(result.get(), equalTo("5"));
-
-            pathGlobHandler.handleRequest(exchange6);
-            assertThat(result.get(), equalTo("6"));
-
-            pathGlobHandler.handleRequest(exchange7);
-            assertThat(result.get(), equalTo("7"));
-
-            pathGlobHandler.handleRequest(exchangeSlash);
-            assertThat(result.get(), equalTo("slash"));
-
-        } catch (Exception e) {
-            logger.error(ExceptionUtils.getStackTrace(e));
-        } catch (AssertionError assertionError) {
-            pathGlobHandler.getPaths().forEach((k, v) -> logger.error(k.getPath() + " -> " + k.getOrder()));
-            throw assertionError;
-        }
     }
 }

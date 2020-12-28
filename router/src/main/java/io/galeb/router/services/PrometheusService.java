@@ -16,6 +16,8 @@
 
 package io.galeb.router.services;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,7 @@ import io.prometheus.client.hotspot.DefaultExports;
 @Order(11)
 public class PrometheusService {
 
-    protected static HTTPServer server;
+    private HTTPServer server;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -41,5 +43,10 @@ public class PrometheusService {
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
+    }
+
+    @PreDestroy
+    public void onDestroy() throws Exception {
+        this.server.stop();
     }
 }

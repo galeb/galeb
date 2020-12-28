@@ -1,12 +1,7 @@
 package io.galeb.router.tests.completionListeners;
 
-import com.google.gson.JsonObject;
-import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
-import io.undertow.server.Connectors;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.ServerConnection;
-import io.undertow.util.HeaderMap;
-import io.undertow.util.HttpString;
+import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -15,7 +10,12 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.mockito.Mockito;
 
-import java.net.InetSocketAddress;
+import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
+import io.undertow.server.Connectors;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.ServerConnection;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.HttpString;
 
 public class AccessLogCompletionListenerTest {
 

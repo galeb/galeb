@@ -42,5 +42,6 @@ public class ExtendedLoadBalancingProxyClientTest {
 
         proxyClient.removeHost(URI.create("http://127.0.0.1:8080"));
         assertThat(proxyClient.isHostsEmpty(), Matchers.equalTo(true));
-    }  
+    }
+
 }

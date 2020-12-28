@@ -23,6 +23,7 @@ Feature: Internal healthcheck support
     Then the response status is 200
     And body is POOL_REACHABLE
 
+  @DirtyContextAfter
   Scenario: Check rule path
     Given a valid host request to FASTTER backend
     When Do GET /__galeb_rule_path_check__

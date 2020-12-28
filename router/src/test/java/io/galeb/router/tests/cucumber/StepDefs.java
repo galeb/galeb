@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.asynchttpclient.RequestBuilder;
 import org.asynchttpclient.Response;
-
 import org.asynchttpclient.uri.Uri;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -44,16 +43,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootContextLoader;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.eo.Do;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.Application;
+import io.galeb.router.sync.ManagerClient;
 import io.galeb.router.tests.backend.SimulatedBackendService;
 import io.galeb.router.tests.client.HttpClient;
 import io.galeb.router.tests.client.JmxClientService;
+import io.galeb.router.tests.mocks.ManagerClientConfigurationMock;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -65,6 +68,7 @@ import io.netty.handler.codec.http.cookie.DefaultCookie;
         loader = SpringBootContextLoader.class
 )
 @ActiveProfiles({ "test" })
+@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, CucumberFeatureDirty.class})
 @Ignore
 public class StepDefs {
 
@@ -78,10 +82,13 @@ public class StepDefs {
     private final List<Cookie> cookies = new ArrayList<Cookie>();
 
     @Autowired
-    private HttpClient httpClient;
+    private SimulatedBackendService backendService;
 
     @Autowired
-    private SimulatedBackendService backendService;
+    private ManagerClient managerClient;
+
+    @Autowired
+    private ManagerClientConfigurationMock managerConfigMock;
 
     @Autowired
     private HttpClient client;
@@ -101,7 +108,7 @@ public class StepDefs {
 
     @PostConstruct
     void init() {
-        logger.info("Using " + httpClient.getClass().getName());
+        logger.info("Using " + managerClient.getClass().getName());
     }
 
     private void executeRequest() throws InterruptedException, java.util.concurrent.ExecutionException {
@@ -121,6 +128,25 @@ public class StepDefs {
         this.headers.add("host", ("valid".equals(expression) ? "test.com" : expression));
     }
 
+    @Given("^a vhost (.+) request to (.+) backend with (.+)$")
+    public void withVHostRequesterAndConfig(String expression, String backendBehavior, String config) throws Throwable {
+        response = null;
+        backendService.stop();
+        backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
+        managerConfigMock.setResponse(ManagerClientConfigurationMock.ManagerResponse.valueOf(config));
+        this.headers.remove("host");
+        this.headers.add("host", expression);
+    }
+
+    @Given("^a vhost (.+) request to (.+) backend$")
+    public void withVHostRequester(String expression, String backendBehavior) throws Throwable {
+        response = null;
+        backendService.stop();
+        backendService.setResponseBehavior(SimulatedBackendService.ResponseBehavior.valueOf(backendBehavior)).start();
+        this.headers.remove("host");
+        this.headers.add("host", expression);
+    }
+
     @Do("^with headers:$")
     public void withHeaders(final Map<String, String> headers) throws Throwable {
         for (Map.Entry<String, String> header: headers.entrySet()) {
@@ -128,7 +154,7 @@ public class StepDefs {
             this.headers.add(header.getKey(), header.getValue());
         }
     }
-    
+
     @Do("^with cookies:$")
     public void withCookies(final Map<String, String> cookies) throws Throwable {
         for (Map.Entry<String, String> cookie: cookies.entrySet()) {

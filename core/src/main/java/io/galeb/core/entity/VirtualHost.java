@@ -185,7 +185,7 @@ public class VirtualHost extends AbstractEntity<VirtualHost>
         if (obj == null || getClass() != obj.getClass())
             return false;
         VirtualHost other = (VirtualHost) obj;
-        return other.getName() != null && other.getName().equals(getName()) && other.getHash() == getHash() && other.getAliases().equals(getAliases());
+        return other.getName() != null && other.getName().equals(getName()) && other.getHash() == getHash() && other.getAliases().equals(getAliases()) && other.getRules().equals(getRules()) && other.getRulesOrdered().equals(getRulesOrdered());
     }
 
 }

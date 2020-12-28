@@ -16,6 +16,7 @@
 
 package io.galeb.router.client;
 
+import static io.undertow.attribute.ExchangeAttributes.remoteIp;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.AVAILABLE;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL;
 import static io.undertow.server.handlers.proxy.ProxyConnectionPool.AvailabilityType.FULL_QUEUE;

@@ -22,9 +22,9 @@ import io.galeb.router.handlers.PathGlobHandler;
 import io.galeb.router.handlers.PathGlobHandler.PathOrdered;
 import io.galeb.router.handlers.PoolHandler;
 import io.galeb.router.handlers.RequestIDHandler;
+import io.galeb.router.handlers.VirtualHostHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.IPAddressAccessControlHandler;
-import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 
 public class HandlerBuilder {
@@ -41,7 +41,7 @@ public class HandlerBuilder {
 
     }
 
-    public void build(List<VirtualHost> vhs, final ApplicationContext context, final NameVirtualHostHandler vhHandler, final ManagerClientCache cache) {
+    public void build(List<VirtualHost> vhs, final ApplicationContext context, final VirtualHostHandler vhHandler, final ManagerClientCache cache) {
         OptionMap options = context.getBean("undertowOptionMap", OptionMap.class);
 
         vhs.forEach(vh -> {

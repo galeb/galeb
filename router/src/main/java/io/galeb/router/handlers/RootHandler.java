@@ -16,6 +16,12 @@
 
 package io.galeb.router.handlers;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
@@ -23,17 +29,12 @@ import io.galeb.router.handlers.completionListeners.PrometheusCompletionListener
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.NameVirtualHostHandler;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class RootHandler implements HttpHandler {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private final NameVirtualHostHandler nameVirtualHostHandler;
+    private final VirtualHostHandler virtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
     private final PrometheusCompletionListener prometheusCompletionListener;
@@ -43,11 +44,11 @@ public class RootHandler implements HttpHandler {
     private final boolean enableStatsd     = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
     private final boolean enablePrometheus = Boolean.parseBoolean(SystemEnv.ENABLE_PROMETHEUS.getValue());
 
-    public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
+    public RootHandler(final VirtualHostHandler virtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,
                        final StatsdCompletionListener statsdCompletionListener,
                        final PrometheusCompletionListener prometheusCompletionListener) {
-        this.nameVirtualHostHandler = nameVirtualHostHandler;
+        this.virtualHostHandler = virtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
         this.prometheusCompletionListener = prometheusCompletionListener;
@@ -59,7 +60,7 @@ public class RootHandler implements HttpHandler {
         if (enableStatsd) exchange.addExchangeCompleteListener(statsdCompletionListener);
         if (enablePrometheus) exchange.addExchangeCompleteListener(prometheusCompletionListener);
         try {
-            nameVirtualHostHandler.handleRequest(exchange);
+            virtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {
             rootHandlerFailed.compareAndSet(false, true);
             logger.error(ExceptionUtils.getStackTrace(e));

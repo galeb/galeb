@@ -40,9 +40,9 @@ import org.springframework.stereotype.Service;
 import io.galeb.core.entity.VirtualHost;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.configurations.ManagerClientCacheConfiguration.ManagerClientCache;
+import io.galeb.router.handlers.VirtualHostHandler;
 import io.galeb.router.handlers.builder.HandlerBuilder;
 import io.galeb.router.sync.ManagerClient;
-import io.undertow.server.handlers.NameVirtualHostHandler;
 
 @Service
 @Order(4)
@@ -54,17 +54,17 @@ public class UpdaterService {
     private final AtomicBoolean executeSync = new AtomicBoolean(false);
     private final ManagerClient managerClient;
     private final ManagerClientCache cache;
-    private final NameVirtualHostHandler nameVirtualHostHandler;
+    private final VirtualHostHandler virtualHostHandler;
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Autowired
     public UpdaterService(final ManagerClient managerClient, final ManagerClientCache cache,
-            final NameVirtualHostHandler nameVirtualHostHandler) {
+            final VirtualHostHandler virtualHostHandler) {
         this.managerClient = managerClient;
         this.cache = cache;
-        this.nameVirtualHostHandler = nameVirtualHostHandler;
+        this.virtualHostHandler = virtualHostHandler;
     }
 
     @PostConstruct
@@ -116,7 +116,7 @@ public class UpdaterService {
                 // might re-add them later
                 // TODO: check if aliases are equal, only remove if changed;
                 v.leftValue().getAliases().forEach(alias -> {
-                    nameVirtualHostHandler.removeHost(alias);
+                    virtualHostHandler.removeHost(alias);
                 });
                 return v.rightValue();
             }).collect(Collectors.toList()));
@@ -128,14 +128,14 @@ public class UpdaterService {
 
             // Remove unused handlers
             toRemove.forEach(vh -> {
-                nameVirtualHostHandler.removeHost(vh.getName());
+                virtualHostHandler.removeHost(vh.getName());
                 vh.getAliases().forEach(alias -> {
-                    nameVirtualHostHandler.removeHost(alias);
+                    virtualHostHandler.removeHost(alias);
                 });
             });
 
             // Update handlers
-            new HandlerBuilder().build(virtualHosts, applicationContext, nameVirtualHostHandler, cache);
+            new HandlerBuilder().build(virtualHosts, applicationContext, virtualHostHandler, cache);
             cache.updateEtag(etag);
 
             logger.info("Processed " + virtualHosts.size() + " virtualhost(s): Done");

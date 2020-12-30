@@ -41,16 +41,18 @@ public class PoolHandler implements HttpHandler {
     private final ProxyHandler proxyHandler;
     private final boolean hostsEmpty;
     private final Pool pool;
+    private final String poolName;
 
     public PoolHandler(final Pool pool, ProxyHandler proxyHandler) {
         this.pool = pool;
+        this.poolName = pool.getName();
         this.proxyHandler = proxyHandler;
         this.hostsEmpty = ((ExtendedLoadBalancingProxyClient) proxyHandler.getProxyClient()).isHostsEmpty();
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        exchange.putAttachment(POOL_NAME, pool.getName());
+        exchange.putAttachment(POOL_NAME, poolName);
         if (exchange.getRequestHeaders().contains(CHECK_RULE_HEADER)) {
             healthcheckPoolHandler().handleRequest(exchange);
             return;
@@ -71,7 +73,7 @@ public class PoolHandler implements HttpHandler {
             logger.warn("detected header " + CHECK_RULE_HEADER);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
             exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
-            exchange.getResponseHeaders().put(HttpString.tryFromString(X_POOL_NAME_HEADER), pool.getName());
+            exchange.getResponseHeaders().put(HttpString.tryFromString(X_POOL_NAME_HEADER), poolName);
             exchange.getResponseSender().send("POOL_REACHABLE");
         };
     }

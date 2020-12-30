@@ -103,7 +103,7 @@ public class PathGlobHandler implements HttpHandler {
             this.order = order;
         }
 
-        public String getPath() {
+        public final String getPath() {
             return path;
         }
 

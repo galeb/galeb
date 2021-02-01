@@ -19,7 +19,6 @@ package io.galeb.router.handlers;
 import io.galeb.core.enums.SystemEnv;
 import io.galeb.router.ResponseCodeOnError;
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
-import io.galeb.router.handlers.completionListeners.PrometheusCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -36,28 +35,23 @@ public class RootHandler implements HttpHandler {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
-    private final PrometheusCompletionListener prometheusCompletionListener;
     private final AtomicBoolean rootHandlerFailed = new AtomicBoolean(false);
 
-    private final boolean enableAccessLog  = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
-    private final boolean enableStatsd     = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
-    private final boolean enablePrometheus = Boolean.parseBoolean(SystemEnv.ENABLE_PROMETHEUS.getValue());
+    private final boolean enableAccessLog = Boolean.parseBoolean(SystemEnv.ENABLE_ACCESSLOG.getValue());
+    private final boolean enableStatsd    = Boolean.parseBoolean(SystemEnv.ENABLE_STATSD.getValue());
 
     public RootHandler(final NameVirtualHostHandler nameVirtualHostHandler,
                        final AccessLogCompletionListener accessLogCompletionListener,
-                       final StatsdCompletionListener statsdCompletionListener,
-                       final PrometheusCompletionListener prometheusCompletionListener) {
+                       final StatsdCompletionListener statsdCompletionListener) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
-        this.prometheusCompletionListener = prometheusCompletionListener;
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (enableAccessLog) exchange.addExchangeCompleteListener(accessLogCompletionListener);
         if (enableStatsd) exchange.addExchangeCompleteListener(statsdCompletionListener);
-        if (enablePrometheus) exchange.addExchangeCompleteListener(prometheusCompletionListener);
         try {
             nameVirtualHostHandler.handleRequest(exchange);
         } catch (Exception e) {

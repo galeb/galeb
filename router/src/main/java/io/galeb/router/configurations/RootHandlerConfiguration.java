@@ -18,7 +18,6 @@ package io.galeb.router.configurations;
 
 import io.galeb.router.handlers.completionListeners.AccessLogCompletionListener;
 import io.galeb.router.handlers.completionListeners.StatsdCompletionListener;
-import io.galeb.router.handlers.completionListeners.PrometheusCompletionListener;
 import io.galeb.router.handlers.RootHandler;
 import io.undertow.server.handlers.NameVirtualHostHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,22 +32,19 @@ public class RootHandlerConfiguration {
     private final NameVirtualHostHandler nameVirtualHostHandler;
     private final AccessLogCompletionListener accessLogCompletionListener;
     private final StatsdCompletionListener statsdCompletionListener;
-    private final PrometheusCompletionListener prometheusCompletionListener;
 
     @Autowired
     public RootHandlerConfiguration(final NameVirtualHostHandler nameVirtualHostHandler,
                                     final AccessLogCompletionListener accessLogCompletionListener,
-                                    final StatsdCompletionListener statsdCompletionListener,
-                                    final PrometheusCompletionListener prometheusCompletionListener) {
+                                    final StatsdCompletionListener statsdCompletionListener) {
         this.nameVirtualHostHandler = nameVirtualHostHandler;
         this.accessLogCompletionListener = accessLogCompletionListener;
         this.statsdCompletionListener = statsdCompletionListener;
-        this.prometheusCompletionListener = prometheusCompletionListener;
     }
 
     @Bean
     public RootHandler rootHandler() {
-        return new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener, prometheusCompletionListener);
+        return new RootHandler(nameVirtualHostHandler, accessLogCompletionListener, statsdCompletionListener);
     }
 
 }

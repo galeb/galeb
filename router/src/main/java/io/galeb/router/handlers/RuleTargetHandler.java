@@ -43,7 +43,7 @@ public class RuleTargetHandler implements HttpHandler {
     private final PathGlobHandler pathGlobHandler;
     private final ApplicationContext context;
     private PoolHandler poolHandler = null;
-
+    
 
     public RuleTargetHandler(final VirtualHost virtualHost, final ApplicationContext context) {
         this.context = context;

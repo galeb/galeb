@@ -1,7 +1,0 @@
-export MANAGER_URL="http://localhost:8080"
-export REUSE_XFORWARDED=true
-export ROUTER_PORT=8000
-export ZONE_ID="CMAH08FE"
-export WORKER_THREADS=256
-export IO_THREADS=16
-export ENVIRONMENT_NAME="BE-LAB"

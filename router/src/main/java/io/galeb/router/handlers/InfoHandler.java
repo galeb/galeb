@@ -42,9 +42,6 @@ public class InfoHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        exchange.putAttachment(PoolHandler.POOL_NAME, "__info__");
-        exchange.putAttachment(PathGlobHandler.RULE_NAME, "__info__");
-
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
         exchange.getResponseHeaders().put(Headers.SERVER, "GALEB");
         exchange.setStatusCode(StatusCodes.OK);

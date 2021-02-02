@@ -96,11 +96,9 @@ public class AccessLogCompletionListener extends ProcessorLocalStatusCode implem
                 "\"request_time\":\"" + responseTime + "\"," +
                 "\"upstream_addr\":\"" + realDest + "\"," +
                 "\"upstream_status\":\"" + originalStatusCode + "\"," +
-                "\"upstream_addr\":\"" + realDest + "\"," +
-                "\"upstream_status\":\"" + originalStatusCode + "\"," +
                 "\"upstream_response_length\":\"" + bytesSentOrDash + "\"," +
                 "\"http_user_agent\":\"" + (userAgent != null ? userAgent : "-") + "\"," +
-                "\"request_id_final\":\"" + (requestId != null ? requestId : "-") + "\"," +
+                "\"request_id\":\"" + (requestId != null ? requestId : "-") + "\"," +
                 "\"http_x_forwarded_for\":\"" + (xForwardedFor != null ? xForwardedFor : "-") + "\"" +
                 "}";
 

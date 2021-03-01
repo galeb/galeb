@@ -16,10 +16,31 @@
 
 package io.galeb.core.entity;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
+
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @NamedQueries({ @NamedQuery(name = "PoolDefault", query = "SELECT DISTINCT entity From Pool entity WHERE entity.id IN "
         + "(SELECT entity.id FROM Pool entity INNER JOIN entity.project p INNER JOIN p.teams t INNER JOIN t.accounts a LEFT JOIN entity.rules r "
@@ -30,6 +51,7 @@ import java.util.*;
 @Entity
 @Table(uniqueConstraints = {
         @UniqueConstraint(name = "UK_pool_name_project_id", columnNames = { "name", "project_id" }) })
+@JsonIgnoreProperties({ "handler", "hibernate_lazy_initializer", "hc_headers" })
 public class Pool extends AbstractEntity implements WithStatus, WithGlobal {
 
     @ManyToMany(mappedBy = "pools")

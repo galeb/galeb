@@ -1,45 +1,130 @@
 package io.galeb.health.services;
 
-import io.galeb.core.entity.HealthStatus;
-import io.galeb.core.entity.Pool;
-import io.galeb.core.entity.Target;
-import io.galeb.core.enums.SystemEnv;
-import org.junit.*;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
+import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.apache.activemq.artemis.api.core.Message.HDR_DUPLICATE_DETECTION_ID;
+import javax.jms.JMSException;
+import javax.jms.Message;
+
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.Cookie;
+import org.mockserver.model.Header;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+import org.mockserver.model.NottableString;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import io.galeb.core.entity.HealthStatus;
+import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.health.util.CallBackQueue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class HealthCheckServiceTest {
+    @BeforeClass
+    public static void setEnvironmentVariables() {
+        environmentVariables.set("ENVIRONMENT_ID", "env1");
+        environmentVariables.set("ZONE_ID", "zone1");
+        
+        environmentVariables.set(SystemEnv.BROKER_CONN.name(), SystemEnv.BROKER_CONN.getValue());
+        
+        mockServer = ClientAndServer.startClientAndServer(5000);
+        mockServer.when(HttpRequest.request()
+                        .withMethod("GET")
+                        .withPath("/")
+                        .withHeaders(
+                                Header.header("user-agent", "Galeb_HealthChecker/1.0"),
+                                Header.header(NottableString.not("cookie")))
+                        .withKeepAlive(true))
+                  .respond(HttpResponse.response()
+                        .withCookie(new Cookie("session", "test-cookie"))
+                        .withStatusCode(HttpStatus.OK.value()));
+    }
 
-    @Autowired
-    private JmsTemplate jmsTemplate;
+	public final String queueName = SystemEnv.QUEUE_NAME.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
+									+ SystemEnv.ENVIRONMENT_ID.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
+									+ SystemEnv.ZONE_ID.getValue().toLowerCase();
+    
+	@Autowired
+	private JmsTemplate jmsTemplate;
 
     @ClassRule
     public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-
-    @BeforeClass
-    public static void setEnvironmentVariables() {
-        environmentVariables.set("ENVIRONMENT_NAME", "env1");
-        environmentVariables.set("ZONE_ID", "zone1");
-    }
+    
+    private static ClientAndServer mockServer;
 
     @Test
-    public void shouldCheckTargetWithHealthy() throws JMSException {
+    public void testCheckWithCookie() {
+        Pool pool = new Pool();
+        pool.setName("pool");
+        pool.setId(1L);
+        pool.setHcPath("/");
+        pool.setHcHttpStatusCode("200");
+        pool.setHcTcpOnly(false);
+        Target target = new Target();
+        target.setName("http://127.0.0.1:5000");
+        target.setId(1L);
+        target.setLastModifiedAt(new Date());
+        target.setPool(pool);
+        
+        TargetDTO targetDTO = new TargetDTO(target);
+        
+        CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
+        Mockito.doNothing().when(callBackQueue).update(targetDTO);
+        HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
+        
+        healthCheckerService.check(targetDTO);
+        
+        mockServer.verify(HttpRequest.request()
+                .withMethod("GET")
+                .withPath("/")
+                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
+        
+        healthCheckerService.check(targetDTO);
+
+        mockServer.verify(HttpRequest.request()
+                .withMethod("GET")
+                .withPath("/")
+                .withHeader("user-agent", "Galeb_HealthChecker/1.0")); 
+       
+        healthCheckerService.check(targetDTO);
+        
+        mockServer.verify(HttpRequest.request()
+                .withMethod("GET")
+                .withPath("/")
+                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
+        
+        HttpRequest[] requests = mockServer.retrieveRecordedRequests(HttpRequest.request()
+                .withMethod("GET")
+                .withPath("/")
+                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
+        
+        Assert.assertEquals(0, requests[0].getCookies().size());
+        Assert.assertEquals(0, requests[1].getCookies().size());
+        Assert.assertEquals(0, requests[2].getCookies().size());
+    }
+    
+    
+    @Test
+    public void shouldCheckTargetWithHealthy() throws JMSException, InterruptedException {
         //Arrange
         MessageCreator messageCreator = session -> {
             Pool pool = new Pool();
@@ -50,7 +135,8 @@ public class HealthCheckServiceTest {
             target.setId(1L);
             target.setLastModifiedAt(new Date());
             target.setPool(pool);
-            Message message = session.createObjectMessage(target);
+            TargetDTO tdto = new TargetDTO(target);
+            Message message = session.createObjectMessage(tdto);
             String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);
             message.setJMSMessageID(uniqueId);
@@ -58,29 +144,34 @@ public class HealthCheckServiceTest {
 
             return message;
         };
+		
         //Action
-        jmsTemplate.send(SystemEnv.QUEUE_NAME.getValue() + "_env1", messageCreator);
+        jmsTemplate.send(queueName, messageCreator);
         jmsTemplate.setReceiveTimeout(5000);
-        Message message = jmsTemplate.receive( "health-callback");
-        HealthStatus hs = message.getBody(HealthStatus.class);
+        Message message = jmsTemplate.receive("health-callback");
+        TargetDTO targetDTO = message.getBody(TargetDTO.class);
 
         //Assert
-        Assert.assertTrue(hs.getStatus().equals(HealthStatus.Status.HEALTHY));
+        HealthStatus healthStatus = targetDTO.getHealthStatus(SystemEnv.ZONE_ID.getValue().toLowerCase()).get();
+        Assert.assertEquals(healthStatus.getStatus() ,HealthStatus.Status.HEALTHY);
     }
 
+
     @Test
-    public void shouldCheckTargetWithUnknowError() throws JMSException {
+    public void shouldCheckTargetWithServerUnreacheableReturnFail() throws JMSException {
         //Arrange
         MessageCreator messageCreator = session -> {
             Pool pool = new Pool();
             pool.setName("pool");
             pool.setId(1L);
+            pool.setHcTcpOnly(false);
             Target target = new Target();
             target.setName("http://127.0.0.1:1");
             target.setId(1L);
             target.setLastModifiedAt(new Date());
             target.setPool(pool);
-            Message message = session.createObjectMessage(target);
+            TargetDTO tdto = new TargetDTO(target);
+            Message message = session.createObjectMessage(tdto);
             String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);
             message.setJMSMessageID(uniqueId);
@@ -90,13 +181,14 @@ public class HealthCheckServiceTest {
         };
 
         //Action
-        jmsTemplate.send(SystemEnv.QUEUE_NAME.getValue() + "_env1", messageCreator);
+        jmsTemplate.send(queueName, messageCreator);
         jmsTemplate.setReceiveTimeout(5000);
-        Message message = jmsTemplate.receive( "health-callback");
-        HealthStatus hs = message.getBody(HealthStatus.class);
+        Message message = jmsTemplate.receive("health-callback");
+        TargetDTO targetDTO = message.getBody(TargetDTO.class);
 
         //Assert
-        Assert.assertTrue(hs.getStatus().equals(HealthStatus.Status.UNKNOWN));
+        HealthStatus healthStatus = targetDTO.getHealthStatus(SystemEnv.ZONE_ID.getValue().toLowerCase()).get();
+        Assert.assertEquals(HealthStatus.Status.FAIL, healthStatus.getStatus());
     }
 
     @Test
@@ -107,12 +199,14 @@ public class HealthCheckServiceTest {
             pool.setName("pool");
             pool.setId(1L);
             pool.setHcHttpStatusCode("500");
+            pool.setHcTcpOnly(false);
             Target target = new Target();
             target.setName("http://127.0.0.1:" + SystemEnv.HEALTH_PORT.getValue());
             target.setId(1L);
             target.setLastModifiedAt(new Date());
             target.setPool(pool);
-            Message message = session.createObjectMessage(target);
+            TargetDTO tdto = new TargetDTO(target);
+            Message message = session.createObjectMessage(tdto);
             String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);
             message.setJMSMessageID(uniqueId);
@@ -121,13 +215,14 @@ public class HealthCheckServiceTest {
         };
 
         //Action
-        jmsTemplate.send(SystemEnv.QUEUE_NAME.getValue() + "_env1", messageCreator);
+        jmsTemplate.send(queueName, messageCreator);
         jmsTemplate.setReceiveTimeout(5000);
-        Message message = jmsTemplate.receive( "health-callback");
-        HealthStatus hs = message.getBody(HealthStatus.class);
+        Message message = jmsTemplate.receive("health-callback");
+        TargetDTO targetDTO = message.getBody(TargetDTO.class);
 
         //Assert
-        Assert.assertTrue(hs.getStatus().equals(HealthStatus.Status.FAIL));
+        HealthStatus healthStatus = targetDTO.getHealthStatus(SystemEnv.ZONE_ID.getValue().toLowerCase()).get();
+        Assert.assertEquals(HealthStatus.Status.FAIL, healthStatus.getStatus());
     }
 
     @Test
@@ -137,13 +232,15 @@ public class HealthCheckServiceTest {
             Pool pool = new Pool();
             pool.setName("pool");
             pool.setId(1L);
-            pool.setHcBody("UNKNOW");
+            pool.setHcTcpOnly(false);
+            pool.setHcBody("UNKNOWN");
             Target target = new Target();
             target.setName("http://127.0.0.1:" + SystemEnv.HEALTH_PORT.getValue());
             target.setId(1L);
             target.setLastModifiedAt(new Date());
             target.setPool(pool);
-            Message message = session.createObjectMessage(target);
+            TargetDTO tdto = new TargetDTO(target);
+            Message message = session.createObjectMessage(tdto);
             String uniqueId = "ID:" + target.getId() + "-" + target.getLastModifiedAt().getTime() + "-" + (System.currentTimeMillis() / 10000L);
             message.setStringProperty("_HQ_DUPL_ID", uniqueId);
             message.setJMSMessageID(uniqueId);
@@ -152,13 +249,14 @@ public class HealthCheckServiceTest {
         };
 
         //Action
-        jmsTemplate.send(SystemEnv.QUEUE_NAME.getValue() + "_env1", messageCreator);
+        jmsTemplate.send(queueName, messageCreator);
         jmsTemplate.setReceiveTimeout(5000);
         Message message = jmsTemplate.receive( "health-callback");
-        HealthStatus hs = message.getBody(HealthStatus.class);
+        TargetDTO targetDTO = message.getBody(TargetDTO.class);
 
         //Assert
-        Assert.assertTrue(hs.getStatus().equals(HealthStatus.Status.FAIL));
+        HealthStatus healthStatus = targetDTO.getHealthStatus(SystemEnv.ZONE_ID.getValue().toLowerCase()).get();
+        Assert.assertEquals(healthStatus.getStatus(), HealthStatus.Status.FAIL);
     }
 
     @Test
@@ -168,6 +266,7 @@ public class HealthCheckServiceTest {
             Pool pool = new Pool();
             pool.setName("pool");
             pool.setId(2L);
+            pool.setHcTcpOnly(false);
             Target target = new Target();
             target.setName("http://127.0.0.1:" + SystemEnv.HEALTH_PORT.getValue());
             target.setId(2L);
@@ -190,12 +289,13 @@ public class HealthCheckServiceTest {
         };
 
         //Action
-        jmsTemplate.send(SystemEnv.QUEUE_NAME.getValue() + "_env1", messageCreator);
-        jmsTemplate.setReceiveTimeout(5000);
+        jmsTemplate.send(queueName, messageCreator);
+        jmsTemplate.setReceiveTimeout(500);
         Message message = jmsTemplate.receive( "health-callback");
 
         //Assert
-        Assert.assertTrue(message == null);
+        Assert.assertNull(message);
     }
+
 
 }

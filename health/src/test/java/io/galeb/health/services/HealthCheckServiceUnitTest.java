@@ -10,7 +10,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Cookie;
@@ -18,9 +17,7 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.NottableString;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import io.galeb.core.entity.HealthStatus;
 import io.galeb.core.entity.Pool;
@@ -28,8 +25,6 @@ import io.galeb.core.entity.Target;
 import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.health.util.CallBackQueue;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class HealthCheckServiceUnitTest {
     private static Integer BACKEND_PORT = 5000;
     private static Integer BACKEND_PORT_TCP_ONLY = 5001;
@@ -77,57 +72,6 @@ public class HealthCheckServiceUnitTest {
         }
     }
 
-    @Test
-    public void testCheckWithCookie() {
-        Pool pool = new Pool();
-        pool.setName("pool");
-        pool.setId(1L);
-        pool.setHcPath("/");
-        pool.setHcHttpStatusCode("200");
-        pool.setHcTcpOnly(false);
-        Target target = new Target();
-        target.setName("http://127.0.0.1:" + BACKEND_PORT.toString());
-        target.setId(1L);
-        target.setLastModifiedAt(new Date());
-        target.setPool(pool);
-        
-        TargetDTO targetDTO = new TargetDTO(target);
-        
-        CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
-        Mockito.doNothing().when(callBackQueue).update(targetDTO);
-        HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
-        
-        healthCheckerService.check(targetDTO);
-        
-        mockServer.verify(HttpRequest.request()
-                .withMethod("GET")
-                .withPath("/")
-                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
-        
-        healthCheckerService.check(targetDTO);
-
-        mockServer.verify(HttpRequest.request()
-                .withMethod("GET")
-                .withPath("/")
-                .withHeader("user-agent", "Galeb_HealthChecker/1.0")); 
-       
-        healthCheckerService.check(targetDTO);
-        
-        mockServer.verify(HttpRequest.request()
-                .withMethod("GET")
-                .withPath("/")
-                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
-        
-        HttpRequest[] requests = mockServer.retrieveRecordedRequests(HttpRequest.request()
-                .withMethod("GET")
-                .withPath("/")
-                .withHeader("user-agent", "Galeb_HealthChecker/1.0"));
-        
-        Assert.assertEquals(0, requests[0].getCookies().size());
-        Assert.assertEquals(0, requests[1].getCookies().size());
-        Assert.assertEquals(0, requests[2].getCookies().size());
-    }
-    
     @Test
     public void testCheckTCPOnly() throws Exception {
         Pool pool = new Pool();

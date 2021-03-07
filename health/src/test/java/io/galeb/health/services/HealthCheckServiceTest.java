@@ -9,6 +9,11 @@ import java.util.Set;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.apache.activemq.artemis.core.security.CheckType;
+import org.apache.activemq.artemis.core.security.Role;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -39,12 +44,23 @@ import io.galeb.health.util.CallBackQueue;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class HealthCheckServiceTest {
+
+    @ClassRule
+    public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+    public static ClientAndServer mockServer;
+    private static EmbeddedActiveMQ embeddedBus;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
+
+    public final String queueName = SystemEnv.QUEUE_NAME.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
+            + SystemEnv.ENVIRONMENT_ID.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
+            + SystemEnv.ZONE_ID.getValue().toLowerCase();
+    
     @BeforeClass
-    public static void setEnvironmentVariables() {
-        environmentVariables.set("ENVIRONMENT_ID", "env1");
-        environmentVariables.set("ZONE_ID", "zone1");
-        
-        environmentVariables.set(SystemEnv.BROKER_CONN.name(), SystemEnv.BROKER_CONN.getValue());
+    public static void setEnvironmentVariables() throws Exception {
+        environmentVariables.set(SystemEnv.ENVIRONMENT_ID.name(), "env1");
+        environmentVariables.set(SystemEnv.ZONE_ID.name(), "zone1");
         
         mockServer = ClientAndServer.startClientAndServer(5000);
         mockServer.when(HttpRequest.request()
@@ -57,19 +73,23 @@ public class HealthCheckServiceTest {
                   .respond(HttpResponse.response()
                         .withCookie(new Cookie("session", "test-cookie"))
                         .withStatusCode(HttpStatus.OK.value()));
+        
+        embeddedBus = new EmbeddedActiveMQ();
+        embeddedBus.setConfigResourcePath("broker.xml");
+        ActiveMQSecurityManager activeMQSecurityManager = new ActiveMQSecurityManager() {
+            public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType) {return true;}
+            public boolean validateUser(String user, String password) {return true;}
+        };
+        embeddedBus.setSecurityManager(activeMQSecurityManager);
+        embeddedBus.start();
     }
-
-	public final String queueName = SystemEnv.QUEUE_NAME.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
-									+ SystemEnv.ENVIRONMENT_ID.getValue() + SystemEnv.QUEUE_NAME_SEPARATOR.getValue()
-									+ SystemEnv.ZONE_ID.getValue().toLowerCase();
     
-	@Autowired
-	private JmsTemplate jmsTemplate;
-
-    @ClassRule
-    public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-    
-    private static ClientAndServer mockServer;
+    @AfterClass
+    public static void freeResources() throws Exception {
+        embeddedBus.stop();
+        mockServer.stop();
+        environmentVariables.clear(SystemEnv.ENVIRONMENT_ID.name(),SystemEnv.ZONE_ID.name());
+    }
 
     @Test
     public void testCheckWithCookie() {
@@ -122,7 +142,6 @@ public class HealthCheckServiceTest {
         Assert.assertEquals(0, requests[2].getCookies().size());
     }
     
-    
     @Test
     public void shouldCheckTargetWithHealthy() throws JMSException, InterruptedException {
         //Arrange
@@ -144,7 +163,7 @@ public class HealthCheckServiceTest {
 
             return message;
         };
-		
+        
         //Action
         jmsTemplate.send(queueName, messageCreator);
         jmsTemplate.setReceiveTimeout(5000);
@@ -155,7 +174,6 @@ public class HealthCheckServiceTest {
         HealthStatus healthStatus = targetDTO.getHealthStatus(SystemEnv.ZONE_ID.getValue().toLowerCase()).get();
         Assert.assertEquals(healthStatus.getStatus() ,HealthStatus.Status.HEALTHY);
     }
-
 
     @Test
     public void shouldCheckTargetWithServerUnreacheableReturnFail() throws JMSException {

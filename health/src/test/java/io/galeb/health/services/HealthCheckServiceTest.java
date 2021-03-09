@@ -9,10 +9,6 @@ import java.util.Set;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.apache.activemq.artemis.core.security.CheckType;
-import org.apache.activemq.artemis.core.security.Role;
-import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
-import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -39,16 +35,16 @@ import io.galeb.core.entity.Pool;
 import io.galeb.core.entity.Target;
 import io.galeb.core.entity.dto.TargetDTO;
 import io.galeb.core.enums.SystemEnv;
+import io.galeb.health.suites.ManagerTestSuite;
 import io.galeb.health.util.CallBackQueue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class HealthCheckServiceTest {
+public class HealthCheckServiceTest extends ManagerTestSuite {
 
     @ClassRule
     public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
     public static ClientAndServer mockServer;
-    private static EmbeddedActiveMQ embeddedBus;
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -73,20 +69,10 @@ public class HealthCheckServiceTest {
                   .respond(HttpResponse.response()
                         .withCookie(new Cookie("session", "test-cookie"))
                         .withStatusCode(HttpStatus.OK.value()));
-        
-        embeddedBus = new EmbeddedActiveMQ();
-        embeddedBus.setConfigResourcePath("broker.xml");
-        ActiveMQSecurityManager activeMQSecurityManager = new ActiveMQSecurityManager() {
-            public boolean validateUserAndRole(String user, String password, Set<Role> roles, CheckType checkType) {return true;}
-            public boolean validateUser(String user, String password) {return true;}
-        };
-        embeddedBus.setSecurityManager(activeMQSecurityManager);
-        embeddedBus.start();
     }
     
     @AfterClass
     public static void freeResources() throws Exception {
-        embeddedBus.stop();
         mockServer.stop();
         environmentVariables.clear(SystemEnv.ENVIRONMENT_ID.name(),SystemEnv.ZONE_ID.name());
     }

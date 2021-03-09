@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.mockito.Mockito;
 import org.mockserver.integration.ClientAndServer;
+import org.mockserver.mockserver.MockServer;
 import org.mockserver.model.Cookie;
 import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
@@ -165,12 +166,13 @@ public class HealthCheckServiceUnitTest {
         target.setPool(pool);
 
         TargetDTO targetDTO = new TargetDTO(target);
-
+        
         CallBackQueue callBackQueue = Mockito.mock(CallBackQueue.class);
         Mockito.doNothing().when(callBackQueue).update(targetDTO);
         HealthCheckerService healthCheckerService = new HealthCheckerService(callBackQueue);
 
-        healthCheckerService.check(targetDTO);
+        healthCheckerService.check(targetDTO);      
+        waitAsyncRequest("/", mockServer);
         
         mockServer.verify(HttpRequest.request()
                 .withMethod("GET")
@@ -180,6 +182,7 @@ public class HealthCheckServiceUnitTest {
         Assert.assertEquals(HealthStatus.Status.HEALTHY, targetDTO.getHealthStatus("zone1").get().getStatus());
         Mockito.verify(callBackQueue, Mockito.times(1)).update(targetDTO);
     }
+
     
     @Test
     public void testCheckTCPOnlyFailStatus() throws Exception {
@@ -223,4 +226,17 @@ public class HealthCheckServiceUnitTest {
         serverTCP.start();
     }
     
+	private void waitAsyncRequest(String path, ClientAndServer mockServer) throws InterruptedException {
+		HttpRequest[] asyncRequestsRetrieved = null;
+        int start = 0;
+        while (start < 10) {
+            asyncRequestsRetrieved = mockServer.retrieveRecordedRequests(HttpRequest.request().withPath(path));
+            if (asyncRequestsRetrieved != null && asyncRequestsRetrieved.length > 0) {
+                return;
+            }
+            Thread.sleep(5L);
+        }
+        
+        Assert.fail("Do not receive request in path: " + path);
+	}
 }

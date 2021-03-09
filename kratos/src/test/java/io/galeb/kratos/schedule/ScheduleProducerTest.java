@@ -1,14 +1,17 @@
 package io.galeb.kratos.schedule;
 
-import io.galeb.core.entity.Environment;
-import io.galeb.core.entity.Pool;
-import io.galeb.core.entity.Target;
-import io.galeb.core.enums.SystemEnv;
-import io.galeb.kratos.repository.EnvironmentRepository;
-import io.galeb.kratos.repository.TargetRepository;
-import io.galeb.kratos.scheduler.ScheduledProducer;
-import io.galeb.kratos.services.HealthSchema;
-import io.galeb.kratos.services.HealthService;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,21 +24,31 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import java.util.*;
-
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
+import io.galeb.core.entity.Environment;
+import io.galeb.core.entity.Pool;
+import io.galeb.core.entity.Target;
+import io.galeb.core.entity.dto.TargetDTO;
+import io.galeb.core.enums.SystemEnv;
+import io.galeb.kratos.repository.EnvironmentRepository;
+import io.galeb.kratos.repository.TargetRepository;
+import io.galeb.kratos.scheduler.ScheduledProducer;
+import io.galeb.kratos.services.HealthSchema;
+import io.galeb.kratos.services.HealthService;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = "app.scheduling.enabled=false")
 @SpringBootTest
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ScheduleProducerTest {
-
+	
+	private static final String QUEUE_NAME = SystemEnv.QUEUE_NAME.getValue();
+	private static final String QUEUE_NAME_SEPARATOR = SystemEnv.QUEUE_NAME_SEPARATOR.getValue();
+    
     @Autowired
     private JmsTemplate jmsTemplate;
 
@@ -49,7 +62,7 @@ public class ScheduleProducerTest {
 
     @Mock
     private TargetRepository targetRepository;
-
+    
     @Before
     public void setupScheduleProducer() {
         scheduledProducer = new ScheduledProducer(targetRepository, environmentRepository, jmsTemplate, healthService);
@@ -88,13 +101,15 @@ public class ScheduleProducerTest {
 
         //Action
         scheduledProducer.sendToTargetsToQueue();
+
+        String queueName = QUEUE_NAME + QUEUE_NAME_SEPARATOR + envId + QUEUE_NAME_SEPARATOR + sourceName;
         jmsTemplate.setReceiveTimeout(5000);
-        Message message = jmsTemplate.receive(SystemEnv.QUEUE_NAME.getValue() + "_" + envId + "_" + sourceName);
+        Message message = jmsTemplate.receive(queueName);
 
         //Assert
-        Assert.assertTrue(message.isBodyAssignableTo(Target.class));
-        Target t = message.getBody(Target.class);
-        Assert.assertTrue(t.getName().equals("http://127.0.0.1:8080"));
+        Assert.assertTrue(message.isBodyAssignableTo(TargetDTO.class));
+        TargetDTO t = message.getBody(TargetDTO.class);
+        Assert.assertTrue(t.getTarget().getName().equals("http://127.0.0.1:8080"));
 
     }
 

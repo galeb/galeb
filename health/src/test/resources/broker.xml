@@ -24,7 +24,7 @@ under the License.
   </jms>
   <core xmlns="urn:activemq:core">
     <name>5598b822c03e</name>
-    <persistence-enabled>true</persistence-enabled>
+    <persistence-enabled>false</persistence-enabled>
     <!-- this could be ASYNCIO or NIO
        -->
     <journal-type>ASYNCIO</journal-type>

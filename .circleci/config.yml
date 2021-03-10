@@ -4,7 +4,7 @@ jobs:
         working_directory: ~/circleci-java-spring
 
         docker:
-            - image: localhost:5000/galeb/rhcircleci-local:latest
+            - image: galeb/rhcircleci
             - image: mysql:5.6
               container_name: mysql
               environment:

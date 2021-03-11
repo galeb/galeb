@@ -3,14 +3,19 @@ VERSION=${RPM_VER}
 RELEASE=$(shell date +%y%m%d%H%M)
 SERVICES=router api legba kratos health
 
-deploy-snapshot:
-	mvn clean install -DskipTests deploy:deploy -DaltDeploymentRepository=oss-jfrog::default::http://oss.jfrog.org/artifactory/oss-snapshot-local
-
-galeb: clean
+galeb: check-env clean
 	mvn package -DskipTests
 
 test:
 	mvn test
+
+test-local: clean containers-up test containers-down
+
+containers-up:
+	cd ./docker && 	docker-compose up -d && cd ..
+
+containers-down:
+	cd ./docker && docker-compose stop && docker-compose rm -f && cd ..
 
 clean:
 	mvn clean
@@ -54,4 +59,9 @@ doc:
 	cd core/docs && rm -rf html && doxygen Doxyfile && \
 	cd ../../health/docs && rm -rf html && doxygen Doxyfile && \
 	cd ../../router/docs && rm -rf html && doxygen Doxyfile && \
-  cd ../..
+        cd ../..
+
+
+check-env: 
+	ifndef GALEB_VERSION; $(error GALEB_VERSION is undefined); endif
+

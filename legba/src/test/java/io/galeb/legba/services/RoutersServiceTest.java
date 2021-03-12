@@ -175,7 +175,6 @@ public class RoutersServiceTest {
         Assert.assertTrue(hasChanges);
     }
 
-    @Ignore
     @Test
     public void shouldRegisterRouterAndAutoRemoveWhenExpires() {
         //Arrange
@@ -186,20 +185,21 @@ public class RoutersServiceTest {
         routerMeta.envId = "1";
         routerMeta.zoneId = null;
 
-        //routersService.REGISTER_TTL = 1L;
+        routersService.REGISTER_TTL = 1L;
 
         //Action
         routersService.put(routerMeta);
 
         //Assert
         try {
-            Thread.sleep(1L);
+            Thread.sleep(5L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         Set<JsonSchema.Env> envs = routersService.get(routerMeta.envId);
         JsonSchema.Env env = envs.stream().filter(e -> e.getEnvId().equals(routerMeta.envId)).findAny().orElse(null);
         Assert.assertNull(env);
-
+        
+        routersService.REGISTER_TTL = 30000L;
     }
 }

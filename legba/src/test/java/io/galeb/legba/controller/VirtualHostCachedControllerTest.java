@@ -41,23 +41,24 @@ public class VirtualHostCachedControllerTest {
     private RoutersService routersService;
 
     @Test
-    public void shouldBadRequestWhenPassingApiVersionInexistent() throws Exception {
+    public void shouldNotFoundResponseWhenPassingVersionGreaterThanCachedVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
+        when(versionService.lastCacheVersion("1", "zone-local", "2")).thenReturn("1");
+
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("If-None-Match", "1");
+        httpHeaders.add("If-None-Match", "2");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
         httpHeaders.add("X-Galeb-ZoneID", "zone-local");
         this.mockMvc.perform(get("/xxx/virtualhostscached/1").headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().is(400));
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void shouldOkResponseWhenNotPassingApiVersion() throws Exception {
+    public void shouldOkResponseWhenPassingOlderVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
-        when(routersService.get("1", "group-local")).thenReturn(1);
+        when(versionService.lastCacheVersion("1", "zone-local", "2")).thenReturn("3");
+        when(versionService.getCache("1", "zone-local", "2")).thenReturn("{\"virtualhosts\":[]}");
 
         List<VirtualHost> listVirtualHost = new ArrayList<>();
         when(copyService.getVirtualHosts(Long.parseLong("1"))).thenReturn(listVirtualHost);
@@ -65,6 +66,7 @@ public class VirtualHostCachedControllerTest {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
+        httpHeaders.add("X-Galeb-ZoneID", "zone-local");
         this.mockMvc.perform(get("/virtualhostscached/1").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -72,8 +74,9 @@ public class VirtualHostCachedControllerTest {
     }
 
     @Test
-    public void shouldOkResponseWhenDoesNotExistsCache() throws Exception {
+    public void shouldNotFoundResponseWhenDoesNotExistsCache() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("2");
+        when(versionService.lastCacheVersion("1", "zone-local", "2")).thenReturn("2");
         when(versionService.getCache("1", "zone-local", "2")).thenReturn(null);
         when(routersService.get("1", "group-local")).thenReturn(1);
 
@@ -86,33 +89,20 @@ public class VirtualHostCachedControllerTest {
         httpHeaders.add("X-Galeb-ZoneID", "zone-local");
         this.mockMvc.perform(get("/v1/virtualhostscached/1").headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().string("{\"virtualhosts\":[]}"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void shouldNotModifiedResponse() throws Exception {
+    public void shouldNotModifiedResponsePassingSameVersion() throws Exception {
         when(versionService.getActualVersion("1")).thenReturn("1");
-        HttpHeaders httpHeaders = new HttpHeaders();
+        when(versionService.lastCacheVersion("1", "zone-local", "1")).thenReturn("1");
+    	
+    	HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("If-None-Match", "1");
         httpHeaders.add("X-Galeb-GroupID", "group-local");
         httpHeaders.add("X-Galeb-ZoneID", "zone-local");
-        this.mockMvc.perform(get("/v1/virtualhostscached/1").headers(httpHeaders))
+        this.mockMvc.perform(get("/xxx/virtualhostscached/1").headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().is(304));
+                .andExpect(status().isNotModified());
     }
-
-    @Test
-    public void shouldNotFoundResponse() throws Exception {
-        when(versionService.getActualVersion("1")).thenReturn("2");
-        when(versionService.getCache("1", "zone-local", "2")).thenReturn("");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("If-None-Match", "1");
-        httpHeaders.add("X-Galeb-GroupID", "group-local");
-        httpHeaders.add("X-Galeb-ZoneID", "zone-local");
-        this.mockMvc.perform(get("/v1/virtualhostscached/1").headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().is(404));
-    }
-
 }

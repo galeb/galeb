@@ -1,17 +1,33 @@
-[![CircleCI](https://circleci.com/gh/galeb/galeb/tree/master.svg?style=svg)](https://circleci.com/gh/galeb/galeb/tree/master)
+# Galeb v4
 
-GALEB 4
+![GitHub Release (latest by date)](https://img.shields.io/github/v/release/galeb/galeb)
+[![CircleCI Master](https://circleci.com/gh/galeb/galeb/tree/master.svg?style=shield)](https://circleci.com/gh/galeb/galeb/tree/master)
 
-1. Using Makefile
+## About
 
-1.1. Building docs (requires Doxygen)
+Galeb is an open source HTTP load balancing service.
 
-`make doc`
+## Galeb Architecture
 
-1.2. Building RH7/EL7 rpm (requires FPM)
+![](imgs/architecture.png)
 
-`make dist`
+## Setup
 
-2. Installing
+To generate rpm for galeb in the root project directory run:
+```
+$ export GALEB_VERSION="4.0.000"
+$ make dist
+```
+The artifacts is generated in folder ${PROJECT_DIR}/dists
 
-`mvn clean install -DskipTests`
+To install rpm run: 
+```
+$ yum install galeb-${service}-${GALEB_VERSION}.el7.noarch.rpm
+```
+
+## Tests
+
+To run all tests:
+```
+$ make test-local
+```

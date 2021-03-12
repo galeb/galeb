@@ -20,8 +20,8 @@ containers-down:
 clean:
 	mvn clean
 	for service in ${SERVICES} ; do \
-		rm -f dists/galeb-$$service-${RPM_VER}*.rpm; \
-	done
+            rm -f dists/galeb-$$service-${RPM_VER}*.rpm; \
+        done
 
 dist: galeb
 	type fpm > /dev/null 2>&1 && \
@@ -59,9 +59,10 @@ doc:
 	cd core/docs && rm -rf html && doxygen Doxyfile && \
 	cd ../../health/docs && rm -rf html && doxygen Doxyfile && \
 	cd ../../router/docs && rm -rf html && doxygen Doxyfile && \
-        cd ../..
-
+	cd ../..
 
 check-env: 
-	ifndef GALEB_VERSION; $(error GALEB_VERSION is undefined); endif
+ifndef GALEB_VERSION
+	$(error GALEB_VERSION is undefined)
+endif
 

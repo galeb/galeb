@@ -18,7 +18,7 @@ To generate rpm for galeb in the root project directory run:
 $ export GALEB_VERSION="4.0.000"
 $ make dist
 ```
-The artifacts is generated in folder ${PROJECT_DIR}/dists
+The artifacts are generated in folder ${PROJECT_DIR}/dists
 
 To install rpm run: 
 ```

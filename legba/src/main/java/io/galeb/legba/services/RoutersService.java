@@ -50,9 +50,9 @@ public class RoutersService {
      * {1} - Group ID
      * {2} - Local IP
      */
-    private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
-
-    private static final long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+	public static long REGISTER_TTL = Long.parseLong(SystemEnv.REGISTER_ROUTER_TTL.getValue());
+    
+	private static final String FORMAT_KEY_ROUTERS = "routers:{0}:{1}:{2}";
 
     private static final long LEGBA_CACHE_EXPIRATION = Long.parseLong(SystemEnv.LEGBA_CACHE_EXPIRATION.getValue());
 

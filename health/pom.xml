@@ -275,6 +275,12 @@
 		    <version>1.4.16.Final</version>
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>org.apache.activemq</groupId>
+		    <artifactId>artemis-server</artifactId>
+		    <version>1.5.5</version>
+		    <scope>test</scope>
+		</dependency>
     </dependencies>
 
     <build>

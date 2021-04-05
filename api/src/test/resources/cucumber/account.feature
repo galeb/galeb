@@ -10,7 +10,7 @@ Feature: Account Support
       Then the response status is 200
       Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
-        | name     | teamOne              |
+        | name     | teamOne   |
       And send POST /team
       Then the response status is 201
       Given a REST client authenticated as adminTeamOne with password pass
@@ -33,16 +33,16 @@ Feature: Account Support
     Scenario: Create duplicated Account
       Given a REST client authenticated as adminTeamOne with password pass
       When request json body has:
-        | username     | accountOne              |
-        | email    | accountOne@test.com               |
+        | username     | accountOne            |
+        | email    	   | accountOne@test.com   |
       And send POST /account
       Then the response status is 409
 
     Scenario: Update Account name
       Given a REST client authenticated as adminTeamOne with password ""
       When request json body has:
-        | username     | accountThree            |
-        | email    | test3@teste.com             |
+        | username   | accountThree      |
+        | email      | test3@teste.com   |
       And send PUT Account=adminTeamOne
       Then the response status is 200
       And a REST client authenticated as adminTeamOne with password ""
@@ -62,7 +62,7 @@ Feature: Account Support
       And property email contains accountTwo@test.com
 
     Scenario: Delete Account Denied
-      Given a REST client authenticated as adminTeamOne with password ""
+      Given a REST client authenticated as accountTwo with password ""
       When send DELETE Account=accountOne
       Then the response status is 403
 
@@ -70,6 +70,6 @@ Feature: Account Support
       Given a REST client authenticated as adminTeamOne with password pass
       When send DELETE Account=adminTeamOne
       Then the response status is 204
-      Given a REST client authenticated as adminTeamOne with password pass
+      Given a REST client authenticated as accountSuperAdmin with password pass
       When send GET Account=adminTeamOne
       Then the response status is 404

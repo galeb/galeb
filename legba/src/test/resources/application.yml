@@ -23,7 +23,7 @@ spring:
     datasource:
         driverClassName: ${GALEB_DB_DRIVER:com.mysql.cj.jdbc.Driver}
         password: ${GALEB_DB_PASS:password}
-        url: ${GALEB_DB_URL:jdbc:mysql://127.0.0.1:3306/galeb_api}
+        url: ${GALEB_DB_URL:jdbc:mysql://127.0.0.1:3306/galeb_api?verifyServerCertificate=false&useSSL=false}
         username: ${GALEB_DB_USER:root}
 
     jackson:

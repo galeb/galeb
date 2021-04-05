@@ -84,6 +84,7 @@ hs_err_pid*
 .idea/
 .idea_modules/
 *.iml
+/.idea/
 
 # Eclipse IDE
 .project
@@ -102,9 +103,12 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-/.idea/
+# Build Artifacts
 vendor/cache/*
 *.rpm
 router/docs/html/*
 core/docs/html/*
 health/docs/html/*
+
+# Artemis embedded artifacts
+data/

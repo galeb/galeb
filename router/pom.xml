@@ -66,7 +66,7 @@
         <java-statsd-client.version>3.1.0</java-statsd-client.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <commons-io.version>2.5</commons-io.version>
-        <disruptor.version>3.3.6</disruptor.version>
+        <disruptor.version>3.4.4</disruptor.version>
         <metrics.version>3.2.2</metrics.version>
         <jodd.version>3.8.1</jodd.version>
         <guava.version>21.0</guava.version>
